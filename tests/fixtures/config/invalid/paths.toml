@@ -1,0 +1,17 @@
+[category.default]
+media_dir = "Videos"                # not a full path
+tmp_dir = "tmp"                     # not a full path
+output = "{source}/{title} [{id}]"  # not a full path
+
+[category.music]
+output = "{media_dir}/{title}"      # no {id}
+tmp_dir = "{data_dir}/{source}"     # only {media_dir} and {data_dir}
+
+[sources.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+dir = "lofi"                        # removed: use output
+root = "/nas"                       # renamed to media_dir
+
+[hooks.notify]
+command = ["notify-send", "{title}"]
+cwd = "/tmp"                        # renamed to work_dir

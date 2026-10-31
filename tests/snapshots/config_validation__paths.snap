@@ -1,0 +1,12 @@
+---
+source: tests/config_validation.rs
+expression: err
+---
+paths.toml:2:13 category.default.media_dir: "Videos": must be a full path: start with /, ~ or $VAR
+paths.toml:3:11 category.default.tmp_dir: "tmp": must be a full path: start with /, ~, $VAR, {media_dir} or {data_dir}
+paths.toml:4:10 category.default.output: "{source}/{title} [{id}]": must be a full path: start with /, ~, $VAR, {media_dir} or {data_dir}
+paths.toml:7:10 category.music.output: "{media_dir}/{title}": must contain {id}
+paths.toml:8:11 category.music.tmp_dir: "{data_dir}/{source}": placeholder {source} is not allowed in tmp_dir
+paths.toml:12:1 sources.lofi.dir: unknown key "dir"
+paths.toml:13:1 sources.lofi.root: unknown key "root"
+paths.toml:17:1 hooks.notify.cwd: unknown key "cwd"

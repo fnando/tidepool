@@ -55,11 +55,11 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # default, and a source can override any of these settings for itself.
 
 [category.default]
-# root = "~/.local/share/tidepool/media" # where videos go
-# tmp_dir = "tmp"                   # work area, relative to root (same filesystem, atomic move)
+# media_dir = "~/.local/share/tidepool/media" # where videos go; {media_dir} in output
+# tmp_dir = "{data_dir}/tmp"        # work area for downloads in progress
 # format = "bv*+ba/b/bv*/ba"        # best video + audio, else best single file, else video or audio alone
 # merge_output_format = "mkv"       # container for merged formats
-# output = "{source_dir}/{upload_date} - {title} [{id}]"   # each video's directory, must contain {id}
+# output = "{media_dir}/{source}/{upload_date} - {title} [{id}]"   # each video's directory, a full path; must contain {id}
 # ytdlp_args = []                   # extra yt-dlp arguments, e.g. ["--write-subs", "--sub-langs", "en.*"]
 # cookies_file = ""                 # Netscape cookies file, for private playlists
 # thumbnail_format = "jpg"          # jpg | webp | original
@@ -103,10 +103,10 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # keep_latest = 0                   # protect the newest N videos from every other limit
 
 [category.music]                    # an example: audio only, for sources with category = "music"
-# root = "~/Music/tidepool"         # e.g. keep music somewhere else
+# media_dir = "~/Music/tidepool"    # e.g. keep music somewhere else
 format = "ba/b"                     # best audio
 ytdlp_args = ["-x", "--audio-format", "opus"]
-output = "{source_dir}/{title} [{id}]"
+output = "{media_dir}/{source}/{title} [{id}]"
 cover_name = "cover"
 
 # Hooks: commands run after each download (or before cleanup). Example:
@@ -118,7 +118,7 @@ cover_name = "cover"
 # on_failure = "fail"               # fail | warn | retry
 # retries = 0                       # used by on_failure = "retry"
 # env = {}                          # extra environment variables
-# cwd = "."                         # working directory; defaults to the video's directory
+# work_dir = "~"                    # working directory, a full path; defaults to the video's directory
 
 # Sources to keep in sync (YouTube playlists). A source can set any category
 # setting for itself.
@@ -126,7 +126,6 @@ cover_name = "cover"
 [sources.sample]                    # one short video, to see tidepool work; replace it with your own
 url = "@SAMPLE_SOURCE_URL@"   # the playlist's URL
 # category = "default"              # which category's settings to use, e.g. "music"
-# dir = "sample"                    # folder under root; defaults to the source name
 # enabled = true                    # disabled sources are skipped
 # hooks = ["notify"]                # hook names, run in order after each download
 "#;
@@ -202,10 +201,10 @@ mod tests {
         let builtin = effective_source(&Config::default(), "x", &plain);
         // The template shows these as examples rather than defaults.
         assert_eq!(
-            documented.root.as_deref(),
+            documented.media_dir.as_deref(),
             Some("~/.local/share/tidepool/media")
         );
-        documented.root = None;
+        documented.media_dir = None;
         documented.youtube.api_key = None;
         assert_eq!(
             documented, builtin,

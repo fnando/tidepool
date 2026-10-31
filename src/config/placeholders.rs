@@ -2,12 +2,15 @@
 //! and hook `command` arrays.
 
 use std::fmt;
+use std::path::{Component, Path, PathBuf};
 
 /// Which setting a template belongs to; decides which placeholders are allowed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Setting {
-    /// `output`: the video's directory path under `root`.
+    /// `output`: the video's directory, a full path.
     Output,
+    /// `tmp_dir`: the work area, a full path.
+    TmpDir,
     /// `cover_name`: the poster file name, no extension.
     CoverName,
     /// `embed.tags` values.
@@ -20,6 +23,7 @@ impl Setting {
     fn bit(self) -> u8 {
         match self {
             Setting::Output => OUT,
+            Setting::TmpDir => TMP,
             Setting::CoverName => COV,
             Setting::Tags => TAG,
             Setting::Hook => HOOK,
@@ -36,6 +40,7 @@ impl fmt::Display for Setting {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
             Setting::Output => "output",
+            Setting::TmpDir => "tmp_dir",
             Setting::CoverName => "cover_name",
             Setting::Tags => "embed.tags",
             Setting::Hook => "hook command",
@@ -46,6 +51,7 @@ impl fmt::Display for Setting {
 const OUT: u8 = 1;
 const COV: u8 = 2;
 const TAG: u8 = 4;
+const TMP: u8 = 16;
 const HOOK: u8 = 8;
 const ALL: u8 = OUT | COV | TAG | HOOK;
 
@@ -89,11 +95,12 @@ pub const PLACEHOLDERS: &[Placeholder] = &[
     ph!("duration", true, ALL, Some("TIDEPOOL_DURATION")),
     ph!("position", true, ALL, Some("TIDEPOOL_POSITION")),
     ph!("source", false, ALL, Some("TIDEPOOL_SOURCE")),
-    ph!("source_dir", false, OUT | HOOK, None),
     ph!("source_id", false, ALL, Some("TIDEPOOL_SOURCE_ID")),
     ph!("source_title", false, ALL, Some("TIDEPOOL_SOURCE_TITLE")),
     ph!("url", false, TAG | HOOK, Some("TIDEPOOL_URL")),
     ph!("category", false, ALL, Some("TIDEPOOL_CATEGORY")),
+    ph!("media_dir", false, OUT | TMP, None),
+    ph!("data_dir", false, OUT | TMP, None),
     ph!("video_dir", false, HOOK, Some("TIDEPOOL_VIDEO_DIR")),
     ph!("media_path", false, HOOK, Some("TIDEPOOL_MEDIA_PATH")),
     ph!("cover_path", false, HOOK, Some("TIDEPOOL_COVER_PATH")),
@@ -121,6 +128,7 @@ pub enum TemplateError {
     BadFormatSpec(String),
     MissingId,
     PathSeparator,
+    NotFullPath,
 }
 
 impl fmt::Display for TemplateError {
@@ -139,6 +147,9 @@ impl fmt::Display for TemplateError {
             ),
             TemplateError::MissingId => f.write_str("must contain {id}"),
             TemplateError::PathSeparator => f.write_str("must not contain path separators"),
+            TemplateError::NotFullPath => {
+                f.write_str("must be a full path: start with /, ~, $VAR, {media_dir} or {data_dir}")
+            }
         }
     }
 }
@@ -230,7 +241,29 @@ pub fn validate(template: &str, setting: Setting) -> Result<Vec<Segment>, Templa
     if setting == Setting::Output && !has_id {
         return Err(TemplateError::MissingId);
     }
+    if matches!(setting, Setting::Output | Setting::TmpDir) {
+        let starts_full = match segments.first() {
+            Some(Segment::Literal(text)) => check_full_path(text).is_ok(),
+            Some(Segment::Placeholder { name, .. }) => {
+                matches!(name.as_str(), "media_dir" | "data_dir")
+            }
+            None => false,
+        };
+        if !starts_full {
+            return Err(TemplateError::NotFullPath);
+        }
+    }
     Ok(segments)
+}
+
+/// A path that doesn't depend on the current directory: `/…`, `~`, `~/…` or
+/// `$VAR…`.
+pub fn check_full_path(path: &str) -> Result<(), TemplateError> {
+    if path.starts_with('/') || path == "~" || path.starts_with("~/") || path.starts_with('$') {
+        Ok(())
+    } else {
+        Err(TemplateError::NotFullPath)
+    }
 }
 
 /// Strip characters that are unsafe in file names, collapse whitespace and cap
@@ -291,6 +324,39 @@ pub fn render(
     out
 }
 
+/// Render a full-path template (`output`, `tmp_dir`): expand `~` and `$VARS`
+/// in the template itself, fill in placeholders (values used as given), and
+/// normalize the result. Fails unless it's a full path without `..`.
+pub fn render_path(
+    template: &str,
+    setting: Setting,
+    home: &Path,
+    value: impl Fn(&str) -> Option<String>,
+) -> Result<PathBuf, String> {
+    let expanded = crate::paths::expand(template, home)?;
+    let expanded = expanded.to_string_lossy();
+    let segments = validate(&expanded, setting).map_err(|e| format!("{template:?}: {e}"))?;
+    let rendered = render(&segments, Setting::Tags, value);
+    let mut path = PathBuf::from("/");
+    for component in Path::new(&rendered).components() {
+        match component {
+            Component::RootDir | Component::CurDir => {}
+            Component::Normal(part) => path.push(part),
+            Component::ParentDir | Component::Prefix(_) => {
+                return Err(format!(
+                    "{template:?} renders to {rendered:?}, which uses \"..\""
+                ));
+            }
+        }
+    }
+    if !rendered.starts_with('/') || path == Path::new("/") {
+        return Err(format!(
+            "{template:?} renders to {rendered:?}, which isn't a full path"
+        ));
+    }
+    Ok(path)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -336,11 +402,35 @@ mod tests {
     fn validates_per_setting() {
         assert!(
             validate(
-                "{source_dir}/{upload_date} - {title} [{id}]",
+                "{media_dir}/{source}/{upload_date} - {title} [{id}]",
                 Setting::Output
             )
             .is_ok()
         );
+        for full in [
+            "/nas/{id}",
+            "~/Videos/{id}",
+            "$MEDIA/{id}",
+            "{data_dir}/x/{id}",
+        ] {
+            assert!(validate(full, Setting::Output).is_ok(), "{full:?}");
+        }
+        for relative in ["{source}/{id}", "videos/{id}", "./{id}", "~me/{id}"] {
+            assert_eq!(
+                validate(relative, Setting::Output),
+                Err(TemplateError::NotFullPath),
+                "{relative:?}"
+            );
+        }
+        assert!(validate("{data_dir}/tmp", Setting::TmpDir).is_ok());
+        assert_eq!(
+            validate("tmp", Setting::TmpDir),
+            Err(TemplateError::NotFullPath)
+        );
+        assert!(matches!(
+            validate("{data_dir}/{title}", Setting::TmpDir),
+            Err(TemplateError::NotAllowed { .. })
+        ));
         assert_eq!(
             validate("{title}", Setting::Output),
             Err(TemplateError::MissingId)
@@ -385,7 +475,11 @@ mod tests {
 
     #[test]
     fn renders_with_padding_sanitizing_and_missing_values() {
-        let segs = validate("{position:03} - {title} [{id}] {channel}", Setting::Output).unwrap();
+        let segs = validate(
+            "{position:03} - {title} [{id}] {channel}",
+            Setting::CoverName,
+        )
+        .unwrap();
         let out = render(&segs, Setting::Output, |name| match name {
             "position" => Some("7".into()),
             "title" => Some("a/b: c".into()),

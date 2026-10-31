@@ -28,6 +28,8 @@ pub const FORMATS: &[&str] = &[
     "optional-byte-size",
     "cutoff",
     "output-template",
+    "tmp-dir-template",
+    "full-path",
     "file-name-template",
     "tag-template",
     "hook-template",
@@ -51,6 +53,9 @@ pub fn check_format(format: &str, value: &str) -> Result<(), String> {
         "optional-byte-size" => parse_size(value).map(drop),
         "cutoff" => value.parse::<Cutoff>().map(drop),
         "output-template" => template(Setting::Output),
+        "tmp-dir-template" => template(Setting::TmpDir),
+        "full-path" => placeholders::check_full_path(value)
+            .map_err(|_| format!("{value:?}: must be a full path: start with /, ~ or $VAR")),
         "file-name-template" => template(Setting::CoverName),
         "tag-template" => template(Setting::Tags),
         "hook-template" => template(Setting::Hook),

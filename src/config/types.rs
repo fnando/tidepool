@@ -255,7 +255,7 @@ pub struct HookConfig {
     pub env: BTreeMap<String, String>,
     /// Working directory. Defaults to the video's directory.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub cwd: Option<String>,
+    pub work_dir: Option<String>,
 }
 
 fn hook_command_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
@@ -313,11 +313,15 @@ macro_rules! options_struct {
         $(#[$meta])*
         pub struct $name {
             $($extra)*
-            /// Where videos go. Defaults to ~/.local/share/tidepool/media.
+            /// The media folder, a full path; `output` refers to it as {media_dir}.
+            /// Defaults to ~/.local/share/tidepool/media.
             #[serde(default, skip_serializing_if = "Option::is_none")]
-            pub root: Option<String>,
-            /// Work area, relative to `root` (same filesystem, so the final move is atomic).
+            #[schemars(extend("format" = "full-path"))]
+            pub media_dir: Option<String>,
+            /// Work area for downloads in progress, a full path ({data_dir} and
+            /// {media_dir} allowed). Defaults to {data_dir}/tmp.
             #[serde(default, skip_serializing_if = "Option::is_none")]
+            #[schemars(extend("format" = "tmp-dir-template"))]
             pub tmp_dir: Option<String>,
             /// yt-dlp format selector (`-f`).
             #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -325,7 +329,8 @@ macro_rules! options_struct {
             /// Container for merged formats (`--merge-output-format`).
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub merge_output_format: Option<String>,
-            /// Each video's directory, relative to `root`. Must contain {id}.
+            /// Each video's directory, a full path. Must contain {id}.
+            /// Defaults to "{media_dir}/{source}/{upload_date} - {title} [{id}]".
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "output-template"))]
             pub output: Option<String>,
@@ -391,7 +396,7 @@ macro_rules! options_struct {
             /// The shared options, for merging.
             pub fn options(&self) -> Options {
                 Options {
-                    root: self.root.clone(),
+                    media_dir: self.media_dir.clone(),
                     tmp_dir: self.tmp_dir.clone(),
                     format: self.format.clone(),
                     merge_output_format: self.merge_output_format.clone(),
@@ -441,10 +446,6 @@ options_struct! {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(regex(pattern = r"^[a-z0-9][a-z0-9_-]*$"))]
         pub category: Option<String>,
-        /// Directory under `root`. Defaults to the source name.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(length(min = 1))]
-        pub dir: Option<String>,
         /// Disabled sources are skipped.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         pub enabled: Option<bool>,

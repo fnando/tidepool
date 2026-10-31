@@ -70,7 +70,7 @@ impl Env {
     /// same playlist).
     fn config(&self, extra: &str) -> String {
         let text = format!(
-            "[category.default]\nroot = \"{}\"\n{extra}\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
+            "[category.default]\nmedia_dir = \"{}\"\n{extra}\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
              [sources.dl]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads\"\nytdlp_args = [\"--write-subs\"]\n",
             self.media().display(),
             test_bin().join("yt-dlp").display()
@@ -146,13 +146,8 @@ async fn run_indexes_and_downloads_into_the_library() {
             .is_file()
     );
     // Nothing left in the work area, and no raw info JSON kept by default.
-    assert!(
-        !env.media().join("tmp").exists()
-            || fs::read_dir(env.media().join("tmp"))
-                .unwrap()
-                .next()
-                .is_none()
-    );
+    let tmp = env.path("data/tidepool/tmp");
+    assert!(!tmp.exists() || fs::read_dir(&tmp).unwrap().next().is_none());
     assert!(!rick.join("ytdlp.info.json").exists());
 
     assert_eq!(
@@ -242,6 +237,8 @@ async fn interrupting_a_download_puts_it_back_in_the_queue() {
     let env = Env::new().await;
     let config = env.config("");
     env.cmd(&["index", "--config", &config]).assert().code(0);
+    // Something that isn't tidepool's in the work area survives the cleanup.
+    fs::create_dir_all(env.path("data/tidepool/tmp/keep-me")).unwrap();
 
     let mut child = std::process::Command::new(assert_cmd::cargo::cargo_bin("tidepool"));
     child
@@ -271,11 +268,12 @@ async fn interrupting_a_download_puts_it_back_in_the_queue() {
     let status = child.wait().unwrap();
     assert_eq!(status.code(), Some(130));
     assert_eq!(env.statuses("dl")[0].1, "pending");
-    let tmp = env.media().join("tmp");
-    assert!(
-        !tmp.exists() || fs::read_dir(&tmp).unwrap().next().is_none(),
-        "work area cleared"
-    );
+    let tmp = env.path("data/tidepool/tmp");
+    let left: Vec<_> = fs::read_dir(&tmp)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
+    assert_eq!(left, ["keep-me"], "work folders cleared, nothing else");
     assert!(!env.media().join(RICK_DIR).exists());
 }
 
@@ -377,10 +375,10 @@ async fn verbose_shows_config_and_progress() {
         &format!(
             "media in {}, work area {}",
             env.media().display(),
-            env.media().join("tmp").display()
+            env.path("data/tidepool/tmp").display()
         ),
         "yt-dlp 2026.10.01 at ",
-        "dl: https://www.youtube.com/playlist?list=PLdownloads → dl/ (category default), format bv*+ba/b/bv*/ba, output {source_dir}/{upload_date} - {title} [{id}]",
+        "dl: https://www.youtube.com/playlist?list=PLdownloads (category default), format bv*+ba/b/bv*/ba, output {media_dir}/{source}/{upload_date} - {title} [{id}]",
         "dl: filters: min_duration 250s",
         "dl: listing https://www.youtube.com/playlist?list=PLdownloads",
         "dl: listed 4 videos in ",
@@ -390,7 +388,12 @@ async fn verbose_shows_config_and_progress() {
         "dl: “Video okvideo01”: 50% of 20 B",
         "dl: “Video okvideo01”: 100% of 20 B",
         "dl: “Video okvideo01”: cover 1280×720 from ",
-        "dl: “Video okvideo01”: moved into dl/2026-09-01 - Video okvideo01 [okvideo01] (",
+        &format!(
+            "dl: “Video okvideo01”: moved into {} (",
+            env.media()
+                .join("dl/2026-09-01 - Video okvideo01 [okvideo01]")
+                .display()
+        ),
     ] {
         assert!(
             stderr.contains(expected),
@@ -443,7 +446,7 @@ async fn categories_send_sources_to_their_own_folders() {
     let music = env.path("music");
     let text = fs::read_to_string(&config).unwrap()
         + &format!(
-            "\n[category.music]\nroot = \"{}\"\noutput = \"{{category}}/{{title}} [{{id}}]\"\n\
+            "\n[category.music]\nmedia_dir = \"{}\"\noutput = \"{{media_dir}}/{{category}}/{{title}} [{{id}}]\"\n\
              \n[sources.tunes]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\ncategory = \"music\"\n",
             music.display()
         );

@@ -2,7 +2,6 @@
 //! ordering between values. Reported with the same path + line format.
 
 use std::collections::BTreeMap;
-use std::path::{Component, Path};
 
 use super::load::Diagnostic;
 use super::merge::{DEFAULT_CATEGORY, category_of, category_settings, effective_source};
@@ -13,7 +12,7 @@ pub fn check(config: &Config) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     check_hook_references(config, &mut out);
     check_categories(config, &mut out);
-    check_unique_ids_and_dirs(config, &mut out);
+    check_unique_ids(config, &mut out);
     check_durations(config, &mut out);
     check_youtube(config, &mut out);
     check_server(config, &mut out);
@@ -70,66 +69,20 @@ fn check_categories(config: &Config, out: &mut Vec<Diagnostic>) {
     }
 }
 
-fn check_unique_ids_and_dirs(config: &Config, out: &mut Vec<Diagnostic>) {
+fn check_unique_ids(config: &Config, out: &mut Vec<Diagnostic>) {
     let mut ids: BTreeMap<String, &str> = BTreeMap::new();
-    // Folders must be unique within the same root.
-    let mut dirs: BTreeMap<(Option<String>, String), &str> = BTreeMap::new();
     for (key, source) in &config.sources {
         let effective = effective_source(config, key, source);
-        let id_pointer = format!("/sources/{key}/url");
         if let Some(other) = ids.insert(effective.id.clone(), key) {
             out.push(Diagnostic::error(
-                id_pointer,
+                format!("/sources/{key}/url"),
                 format!(
                     "playlist {} is already used by sources.{other}",
                     effective.id
                 ),
             ));
         }
-
-        let dir_pointer = if source.dir.is_some() {
-            format!("/sources/{key}/dir")
-        } else {
-            format!("/sources/{key}")
-        };
-        match normalize_dir(&effective.dir) {
-            None => out.push(Diagnostic::error(
-                dir_pointer,
-                format!(
-                    "dir {:?} must be a relative path that stays inside the root",
-                    effective.dir
-                ),
-            )),
-            Some(normalized) => {
-                let root = effective
-                    .root
-                    .clone()
-                    .map(|r| r.trim_end_matches('/').to_string());
-                if let Some(other) = dirs.insert((root, normalized), key) {
-                    out.push(Diagnostic::error(
-                        dir_pointer,
-                        format!("dir {:?} is also used by sources.{other}", effective.dir),
-                    ));
-                }
-            }
-        }
     }
-}
-
-/// Normalize a source dir; `None` if it is absolute or escapes the root.
-fn normalize_dir(dir: &str) -> Option<String> {
-    let mut parts = Vec::new();
-    for component in Path::new(dir).components() {
-        match component {
-            Component::Normal(part) => parts.push(part.to_string_lossy().into_owned()),
-            Component::CurDir => {}
-            Component::ParentDir => {
-                parts.pop()?;
-            }
-            Component::RootDir | Component::Prefix(_) => return None,
-        }
-    }
-    (!parts.is_empty()).then(|| parts.join("/"))
 }
 
 fn check_durations(config: &Config, out: &mut Vec<Diagnostic>) {
@@ -224,19 +177,5 @@ fn check_server(config: &Config, out: &mut Vec<Diagnostic>) {
                 server.listen
             ),
         ));
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn normalizes_dirs() {
-        assert_eq!(normalize_dir("lofi"), Some("lofi".into()));
-        assert_eq!(normalize_dir("./a/b/../c"), Some("a/c".into()));
-        assert_eq!(normalize_dir("../x"), None);
-        assert_eq!(normalize_dir("/abs"), None);
-        assert_eq!(normalize_dir("."), None);
     }
 }

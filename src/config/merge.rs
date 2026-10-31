@@ -23,9 +23,9 @@ pub const DEFAULT_CATEGORY: &str = "default";
 pub mod builtin {
     pub const FORMAT: &str = "bv*+ba/b/bv*/ba";
     pub const MERGE_OUTPUT_FORMAT: &str = "mkv";
-    pub const OUTPUT: &str = "{source_dir}/{upload_date} - {title} [{id}]";
+    pub const OUTPUT: &str = "{media_dir}/{source}/{upload_date} - {title} [{id}]";
     pub const COVER_NAME: &str = "{title}-poster";
-    pub const TMP_DIR: &str = "tmp";
+    pub const TMP_DIR: &str = "{data_dir}/tmp";
 }
 
 /// One source with every option resolved.
@@ -38,11 +38,10 @@ pub struct EffectiveSource {
     pub id: String,
     pub url: String,
     pub category: String,
-    pub dir: String,
     pub enabled: bool,
     /// Unset means the default media folder.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub root: Option<String>,
+    pub media_dir: Option<String>,
     pub tmp_dir: String,
     pub format: String,
     pub merge_output_format: String,
@@ -175,9 +174,8 @@ fn resolve(
         id: source_id_from_url(&source.url).unwrap_or_default(),
         url: source.url.clone(),
         category,
-        dir: source.dir.clone().unwrap_or_else(|| key.to_string()),
         enabled: source.enabled.unwrap_or(true),
-        root: layers.iter().rev().find_map(|l| l.root.clone()),
+        media_dir: layers.iter().rev().find_map(|l| l.media_dir.clone()),
         tmp_dir: pick!(tmp_dir, builtin::TMP_DIR.into()),
         format: pick!(format, builtin::FORMAT.into()),
         merge_output_format: pick!(merge_output_format, builtin::MERGE_OUTPUT_FORMAT.into()),
@@ -288,11 +286,11 @@ mod tests {
         assert_eq!(p.id, "PLx");
         assert_eq!(p.url, "https://www.youtube.com/playlist?list=PLx");
         assert_eq!(
-            (p.category.as_str(), p.dir.as_str(), p.root.as_deref()),
-            ("default", "lofi", None)
+            (p.category.as_str(), p.media_dir.as_deref()),
+            ("default", None)
         );
         assert!(p.enabled);
-        assert_eq!(p.tmp_dir, "tmp");
+        assert_eq!(p.tmp_dir, "{data_dir}/tmp");
         assert_eq!(
             p.format, "bv*+ba/b/bv*/ba",
             "best video + audio, then the best single file, then video or audio alone"
@@ -316,8 +314,8 @@ mod tests {
     #[test]
     fn layers_stack_default_then_category_then_source() {
         let c = config(&format!(
-            "[category.default]\nroot = '~/Videos'\nformat = 'a'\ncutoff = '30d'\nthumbnail_format = 'webp'\n\
-             [category.music]\nroot = '/nas/music'\nformat = 'ba/b'\n\
+            "[category.default]\nmedia_dir = '~/Videos'\nformat = 'a'\ncutoff = '30d'\nthumbnail_format = 'webp'\n\
+             [category.music]\nmedia_dir = '/nas/music'\nformat = 'ba/b'\n\
              [sources.lofi]\n{URL}\ncategory = 'music'\ncutoff = 'none'\n\
              [sources.talks]\nurl = 'https://www.youtube.com/playlist?list=PLy'"
         ));
@@ -326,7 +324,7 @@ mod tests {
         assert_eq!(
             (
                 lofi.category.as_str(),
-                lofi.root.as_deref(),
+                lofi.media_dir.as_deref(),
                 lofi.format.as_str()
             ),
             ("music", Some("/nas/music"), "ba/b")
@@ -340,7 +338,7 @@ mod tests {
         assert_eq!(
             (
                 talks.category.as_str(),
-                talks.root.as_deref(),
+                talks.media_dir.as_deref(),
                 talks.format.as_str()
             ),
             ("default", Some("~/Videos"), "a")

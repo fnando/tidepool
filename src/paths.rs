@@ -42,8 +42,8 @@ impl Dirs {
         self.config_dir.join("config.toml")
     }
 
-    /// Media root when no category sets `root`.
-    pub fn default_media_root(&self) -> PathBuf {
+    /// The media folder when no category sets `media_dir`.
+    pub fn default_media_dir(&self) -> PathBuf {
         self.data_dir.join("media")
     }
 
@@ -157,9 +157,6 @@ mod tests {
         assert_eq!(state.state_db, PathBuf::from("/d/tidepool/state.db"));
         assert_eq!(state.lock, PathBuf::from("/d/tidepool/lock"));
         assert_eq!(state.hook_logs, PathBuf::from("/d/tidepool/logs/hooks"));
-        assert_eq!(
-            dirs.default_media_root(),
-            PathBuf::from("/d/tidepool/media")
-        );
+        assert_eq!(dirs.default_media_dir(), PathBuf::from("/d/tidepool/media"));
     }
 }

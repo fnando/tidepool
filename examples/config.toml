@@ -35,11 +35,11 @@ read_only_config = false            # true = config editor disabled
 # [category.audio] on top of it.
 
 [category.default]
-root = "~/Videos/youtube"           # media; default ~/.local/share/tidepool/media
-tmp_dir = "tmp"                     # relative to root: same filesystem, atomic move
+media_dir = "~/Videos/youtube"      # {media_dir}; default ~/.local/share/tidepool/media
+tmp_dir = "{data_dir}/tmp"          # downloads in progress; default {data_dir}/tmp
 format = "bv*[height<=1080]+ba/b"
 merge_output_format = "mkv"
-output = "{source_dir}/{upload_date} - {title} [{id}]"  # directory per video
+output = "{media_dir}/{source}/{upload_date} - {title} [{id}]"  # each video's directory, a full path
 ytdlp_args = ["--write-subs", "--sub-langs", "en.*"]
 cookies_file = ""                   # optional, for private playlists
 thumbnail_format = "jpg"            # jpg | webp | original
@@ -78,7 +78,7 @@ removed_from_source = "keep"        # keep | remove
 keep = "metadata"                   # nothing | metadata (keep json + cover, drop media)
 
 [category.audio]                    # only what differs from default
-root = "~/Music/youtube"            # audio goes somewhere else
+media_dir = "~/Music/youtube"       # audio goes somewhere else
 format = "ba/b"                     # audio only
 ytdlp_args = ["-x", "--audio-format", "opus"]
 cover_name = "cover"
@@ -99,7 +99,6 @@ on_failure = "warn"
 
 [sources.lofi]
 url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # the playlist's URL
-dir = "lofi"                        # defaults to the source name
 enabled = true
 include = ['(?i)\blive\b', { field = "channel", pattern = '^Lofi Girl$' }]
 exclude = ['(?i)\b(trailer|teaser)\b']

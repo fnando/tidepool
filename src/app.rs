@@ -10,7 +10,7 @@ use crate::cli::{
     Cli, Command, ConfigArgs, ConfigCmd, DownloadArgs, FilterCmd, InitArgs, ResetArgs, RunArgs,
     ScopeArgs, SourceRef, YtdlpCmd,
 };
-use crate::config::check::{EffectiveConfig, Finding, check_environment, media_root};
+use crate::config::check::{EffectiveConfig, Finding, check_environment, media_dir, tmp_dir};
 use crate::config::diff::{key_changes, mask_json, mask_toml, text_diff};
 use crate::config::merge::{EffectiveSource, effective_sources};
 use crate::config::schema::schema_json;
@@ -183,11 +183,11 @@ impl App<'_> {
         }
         let mut folders: Vec<(PathBuf, PathBuf)> = Vec::new();
         for source in sources {
-            if let Ok(root) = media_root(source, &self.dirs) {
-                let tmp = root.join(&source.tmp_dir);
-                if !folders.contains(&(root.clone(), tmp.clone())) {
-                    folders.push((root, tmp));
-                }
+            if let (Ok(root), Ok(tmp)) =
+                (media_dir(source, &self.dirs), tmp_dir(source, &self.dirs))
+                && !folders.contains(&(root.clone(), tmp.clone()))
+            {
+                folders.push((root, tmp));
             }
         }
         for (root, tmp) in folders {
@@ -204,10 +204,9 @@ impl App<'_> {
         }
         for source in sources {
             tracing::debug!(
-                "{}: {} → {}/ (category {}), format {}, output {}",
+                "{}: {} (category {}), format {}, output {}",
                 source.key,
                 source.url,
-                source.dir,
                 source.category,
                 source.format,
                 source.output
@@ -449,6 +448,7 @@ impl App<'_> {
             thumbnail_base = base;
         }
         let ctx = Context {
+            dirs: self.dirs.clone(),
             ytdlp_version: crate::ytdlp::manager::tool_version(&ytdlp).ok(),
             ytdlp,
             duplicates: config.general.duplicates,
@@ -470,10 +470,9 @@ impl App<'_> {
         };
         let dirs = &self.dirs;
         let paths = |source: &EffectiveSource| {
-            let root = media_root(source, dirs)?;
             Ok(crate::download::SourcePaths {
-                tmp_root: root.join(&source.tmp_dir),
-                root,
+                media_dir: media_dir(source, dirs)?,
+                tmp_root: tmp_dir(source, dirs)?,
                 cookies: crate::pipeline::cookies_file(source, dirs)?,
             })
         };
@@ -1030,7 +1029,7 @@ impl App<'_> {
         writeln!(out, "Stored it as config revision {rev}")?;
         let default =
             crate::config::merge::category_settings(config, crate::config::merge::DEFAULT_CATEGORY);
-        if let Ok(root) = media_root(&default, &self.dirs) {
+        if let Ok(root) = media_dir(&default, &self.dirs) {
             writeln!(out, "Videos go to {}", root.display())?;
         }
         if errors > 0 {

@@ -118,27 +118,27 @@ url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
 
 `url` is the playlist's address, as you'd copy it from your browser. A link to
 a video inside a playlist works too, as long as it contains `list=`. The name
-(`lofi` here) is up to you: lowercase letters, digits, `-` and `_`. It's also
-the name of the source's folder, unless you set `dir`.
+(`lofi` here) is up to you: lowercase letters, digits, `-` and `_`. By
+default it's also the name of the source's folder (see `output` below).
 
 See [`examples/config.toml`](examples/config.toml) for a complete example.
 
 ### Categories
 
-Most settings live in categories: where videos go (`root`), the quality
-(`format`), folder and file names (`output`, `cover_name`), filters, limits and
+Most settings live in categories: where videos go (`media_dir`, `output`), the quality
+(`format`), the poster's file name (`cover_name`), filters, limits and
 your YouTube API key. Every source uses `[category.default]`. Give a source
 another category to change some of those settings for a group of sources;
 the category only lists what differs from `default`:
 
 ```toml
 [category.default]
-root = "~/Videos/youtube"
+media_dir = "~/Videos/youtube"
 format = "bv*[height<=1080]+ba/b"
 exclude = ['(?i)#shorts']
 
 [category.music]
-root = "~/Music/youtube"                 # music goes somewhere else
+media_dir = "~/Music/youtube"            # music goes somewhere else
 format = "ba/b"                          # audio only
 ytdlp_args = ["-x", "--audio-format", "opus"]
 
@@ -160,7 +160,7 @@ cutoff = "none"                          # keep the whole back catalogue
 
 Lists like `include`, `exclude` and `hooks` replace the inherited ones. Add
 `inherit_rules = true` (or `inherit_hooks = true`) to add to them instead.
-`{category}` can be used in `output`, e.g. `output = "{category}/{source_dir}/{title} [{id}]"`.
+`{category}` can be used in `output`, e.g. `output = "{media_dir}/{category}/{source}/{title} [{id}]"`.
 
 ### Applying changes
 
@@ -276,8 +276,8 @@ Add `--source <name>` (or `-s`) to run only some sources.
 Each video gets its own folder:
 
 ```
-~/.local/share/tidepool/media/      # or the category's root
-  lofi/                             # one folder per source (its name, or `dir`)
+~/.local/share/tidepool/media/      # media_dir
+  lofi/                             # the source's name
     2025-03-01 - Some title [dQw4w9WgXcQ]/
       media.mkv                     # the video
       Some title-poster.jpg         # the largest cover image available
@@ -285,10 +285,25 @@ Each video gets its own folder:
       media.en.vtt                  # subtitles, if you asked yt-dlp for them
 ```
 
-The folder and file names come from the `output` and `cover_name` settings, and
-the video quality from `format` (yt-dlp's format selector). A video's folder
-only appears once it's complete, so you never find half-downloaded videos in
-your media folders.
+Each video's folder is the `output` setting, a full path; the default is
+`"{media_dir}/{source}/{upload_date} - {title} [{id}]"`. It must contain
+`{id}`, and must start with `/`, `~`, an environment variable like `$HOME`,
+`{media_dir}` or `{data_dir}` (tidepool's data folder,
+`~/.local/share/tidepool`). For example, to put everything in one folder per
+channel on a NAS:
+
+```toml
+[category.default]
+output = "/nas/youtube/{channel}/{title} [{id}]"
+```
+
+The poster's name comes from `cover_name`, and the video quality from `format`
+(yt-dlp's format selector). A video's folder only appears once it's complete,
+so you never find half-downloaded videos in your media folders: downloads in
+progress live in `tmp_dir` (default `"{data_dir}/tmp"`) and are moved into
+place when done. When `tmp_dir` is on a different disk than the video's
+folder, the finished video is copied next to its folder first, then moved into
+place, so it still appears all at once.
 
 By default, `format` is `"bv*+ba/b/bv*/ba"`: the best video and the best audio
 merged into one file; otherwise the best single file that has both; otherwise
@@ -463,8 +478,8 @@ download's progress, cover and destination:
 ```
 $ tidepool run -v
 DEBUG config revision 2, imported from ~/.config/tidepool/config.toml on 2026-10-31 20:48 UTC
-DEBUG media in ~/.local/share/tidepool/media, work area ~/.local/share/tidepool/media/tmp
-DEBUG sample: https://www.youtube.com/playlist?list=PLXLpuA-bwY4s → sample/ (category default), format bv*[height<=360]+ba/b, output {source_dir}/{upload_date} - {title} [{id}]
+DEBUG media in ~/.local/share/tidepool/media, work area ~/.local/share/tidepool/tmp
+DEBUG sample: https://www.youtube.com/playlist?list=PLXLpuA-bwY4s (category default), format bv*[height<=360]+ba/b, output {media_dir}/{source}/{upload_date} - {title} [{id}]
 DEBUG yt-dlp 2026.10.29.232701 at ~/.local/share/tidepool/bin/yt-dlp-nightly (managed, nightly channel)
 DEBUG sample: listed 1 video in 2.9s
 DEBUG sample: new: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” [dQw4w9WgXcQ]: keep (no include rules)
@@ -472,7 +487,7 @@ sample: 1 video (1 new): 1 to download
 DEBUG sample: downloading “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” [dQw4w9WgXcQ]
 DEBUG sample: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”: 36% of 5.7 MB at 38.2 MB/s, 0:00 left
 DEBUG sample: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”: cover 1280×720 from https://i.ytimg.com/vi_webp/dQw4w9WgXcQ/maxresdefault.webp
-DEBUG sample: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”: moved into sample/2009-10-25 - Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster) [dQw4w9WgXcQ] (12.3s)
+DEBUG sample: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”: moved into ~/.local/share/tidepool/media/sample/2009-10-25 - Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster) [dQw4w9WgXcQ] (12.3s)
 sample: downloaded “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” (9.1 MB)
 ```
 
@@ -489,7 +504,8 @@ so `tidepool run -v > out.txt` keeps the summary lines separate. With
 | What | Where |
 | --- | --- |
 | Your config file | `~/.config/tidepool/config.toml` |
-| Videos (unless a category sets `root`) | `~/.local/share/tidepool/media` |
+| Videos (unless a category sets `media_dir` or `output`) | `~/.local/share/tidepool/media` |
+| Downloads in progress (unless a category sets `tmp_dir`) | `~/.local/share/tidepool/tmp` |
 | tidepool's own data | `~/.local/share/tidepool/` |
 
 If you set `XDG_CONFIG_HOME` or `XDG_DATA_HOME`, tidepool uses those folders

@@ -48,7 +48,7 @@ impl Env {
     fn write_config(&self, name: &str, extra: &str) -> String {
         let ytdlp = test_bin().join("yt-dlp");
         let text = format!(
-            "# my config\n[category.default]\nroot = \"{}\"\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
+            "# my config\n[category.default]\nmedia_dir = \"{}\"\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
              [category.default.youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n\n\
              [sources.lofi]\nurl = \"https://www.youtube.com/playlist?list=PLaaaaaaaaaaaa\"\ninclude = ['(?i)\\blive\\b']\nexclude = ['(?i)trailer']\n{extra}",
             self.path("media").display(),
@@ -642,7 +642,7 @@ fn filter_test_ignores_duration_and_cutoff_limits() {
 fn write_index_config(env: &Env, extra_mixed: &str) -> String {
     let ytdlp = test_bin().join("yt-dlp");
     let text = format!(
-        "[category.default]\nroot = \"{root}\"\n\n[ytdlp]\nmanaged = false\npath = \"{ytdlp}\"\n\n\
+        "[category.default]\nmedia_dir = \"{root}\"\n\n[ytdlp]\nmanaged = false\npath = \"{ytdlp}\"\n\n\
          [sources.sample]\nurl = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"\n\n\
          [sources.mixed]\nurl = \"https://www.youtube.com/playlist?list=PLmixedmixedmixed\"\n\
          min_duration = \"60s\"\nmax_duration = \"4h\"\ncutoff = \"2026-01-01\"\n{extra_mixed}\n\

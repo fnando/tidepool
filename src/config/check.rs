@@ -9,6 +9,7 @@ use serde::Serialize;
 
 use super::diff::mask_secret;
 use super::merge::{DEFAULT_CATEGORY, EffectiveSource, category_settings, effective_sources};
+use super::placeholders::{Setting, render_path};
 use super::types::{Config, GeneralConfig, HookConfig, ScheduleConfig, ServerConfig, YtdlpConfig};
 use crate::paths::{Dirs, expand};
 
@@ -20,18 +21,34 @@ pub enum Finding {
     Error(String),
 }
 
-/// A source's media folder (`root`, expanding `~`/`$VARS`), defaulting to
-/// the data dir.
-pub fn media_root(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, String> {
-    match &source.root {
-        Some(root) => expand(root, &dirs.home),
-        None => Ok(dirs.default_media_root()),
+/// A source's media folder (`media_dir`, expanding `~`/`$VARS`), defaulting
+/// to ~/.local/share/tidepool/media.
+pub fn media_dir(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, String> {
+    match &source.media_dir {
+        Some(dir) => expand(dir, &dirs.home),
+        None => Ok(dirs.default_media_dir()),
     }
+}
+
+/// A source's work area (`tmp_dir`, with `{media_dir}` and `{data_dir}` filled in).
+pub fn tmp_dir(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, String> {
+    let media = media_dir(source, dirs)?;
+    render_path(
+        &source.tmp_dir,
+        Setting::TmpDir,
+        &dirs.home,
+        |name| match name {
+            "media_dir" => Some(media.display().to_string()),
+            "data_dir" => Some(dirs.data_dir.display().to_string()),
+            _ => None,
+        },
+    )
+    .map_err(|e| format!("tmp_dir {e}"))
 }
 
 /// Every media folder the config uses: each category's and each source's,
 /// without repeats.
-pub fn media_roots(config: &Config, dirs: &Dirs) -> Vec<Result<PathBuf, String>> {
+pub fn media_dirs(config: &Config, dirs: &Dirs) -> Vec<Result<PathBuf, String>> {
     let mut categories: Vec<&str> = vec![DEFAULT_CATEGORY];
     categories.extend(
         config
@@ -45,9 +62,9 @@ pub fn media_roots(config: &Config, dirs: &Dirs) -> Vec<Result<PathBuf, String>>
         .iter()
         .map(|c| category_settings(config, c))
         .chain(effective_sources(config));
-    for root in settings.map(|s| media_root(&s, dirs)) {
-        if !roots.contains(&root) {
-            roots.push(root);
+    for dir in settings.map(|s| media_dir(&s, dirs)) {
+        if !roots.contains(&dir) {
+            roots.push(dir);
         }
     }
     roots
@@ -102,13 +119,28 @@ pub fn check_tools(config: &Config, dirs: &Dirs) -> Vec<Finding> {
 /// A writable media root, and a private config file when it holds secrets.
 pub fn check_storage(config: &Config, dirs: &Dirs, config_file: Option<&Path>) -> Vec<Finding> {
     let mut out = Vec::new();
-    for root in media_roots(config, dirs) {
+    for root in media_dirs(config, dirs) {
         out.push(match root {
             Ok(root) => match check_writable(&root) {
                 Ok(()) => Finding::Ok(format!("media folder {} is writable", root.display())),
                 Err(e) => Finding::Error(format!("media folder {}: {e}", root.display())),
             },
-            Err(e) => Finding::Error(format!("root: {e}")),
+            Err(e) => Finding::Error(format!("media_dir: {e}")),
+        });
+    }
+    let mut work_areas: Vec<Result<PathBuf, String>> = Vec::new();
+    for dir in effective_sources(config).iter().map(|s| tmp_dir(s, dirs)) {
+        if !work_areas.contains(&dir) {
+            work_areas.push(dir);
+        }
+    }
+    for dir in work_areas {
+        out.push(match dir {
+            Ok(dir) => match check_writable(&dir) {
+                Ok(()) => Finding::Ok(format!("work area {} is writable", dir.display())),
+                Err(e) => Finding::Error(format!("work area {}: {e}", dir.display())),
+            },
+            Err(e) => Finding::Error(e),
         });
     }
 
@@ -199,8 +231,8 @@ impl EffectiveConfig {
                 if !show_secrets {
                     source.youtube.api_key = source.youtube.api_key.as_deref().map(mask_secret);
                 }
-                if let Ok(root) = media_root(&source, dirs) {
-                    source.root = Some(root.display().to_string());
+                if let Ok(dir) = media_dir(&source, dirs) {
+                    source.media_dir = Some(dir.display().to_string());
                 }
                 (source.key.clone(), source)
             })
@@ -233,23 +265,29 @@ mod tests {
     }
 
     #[test]
-    fn resolves_media_roots() {
+    fn resolves_media_dirs() {
         let config: Config = toml::from_str(
-            "[category.default]\nroot = '~/Videos'\n[category.music]\nroot = '/nas/music'\n[category.misc]\n\
+            "[category.default]\nmedia_dir = '~/Videos'\n[category.music]\nmedia_dir = '/nas/music'\ntmp_dir = '{media_dir}/.work'\n[category.misc]\n\
              [sources.a]\nurl = 'https://www.youtube.com/playlist?list=PLa'\ncategory = 'music'",
         )
         .unwrap();
         let source = effective_sources(&config).remove(0);
-        assert_eq!(media_root(&source, &dirs()), Ok("/nas/music".into()));
+        assert_eq!(media_dir(&source, &dirs()), Ok("/nas/music".into()));
+        assert_eq!(tmp_dir(&source, &dirs()), Ok("/nas/music/.work".into()));
         assert_eq!(
-            media_roots(&config, &dirs()),
+            media_dirs(&config, &dirs()),
             vec![Ok("/home/me/Videos".into()), Ok("/nas/music".into())],
             "default, then each category's, without repeats"
         );
         assert_eq!(
-            media_roots(&Config::default(), &dirs()),
+            media_dirs(&Config::default(), &dirs()),
             vec![Ok("/d/tidepool/media".into())]
         );
+        let config: Config =
+            toml::from_str("[sources.a]\nurl = 'https://www.youtube.com/playlist?list=PLa'")
+                .unwrap();
+        let source = effective_sources(&config).remove(0);
+        assert_eq!(tmp_dir(&source, &dirs()), Ok("/d/tidepool/tmp".into()));
     }
 
     #[test]
@@ -264,10 +302,10 @@ mod tests {
             text.contains("AIza…x1Qw") && !text.contains("1234567890"),
             "{text}"
         );
-        assert!(text.contains("root = \"/d/tidepool/media\""), "{text}");
+        assert!(text.contains("media_dir = \"/d/tidepool/media\""), "{text}");
         assert!(text.contains("[sources.lofi]"), "{text}");
         assert!(
-            text.contains("output = \"{source_dir}/{upload_date} - {title} [{id}]\""),
+            text.contains("output = \"{media_dir}/{source}/{upload_date} - {title} [{id}]\""),
             "{text}"
         );
         let shown = EffectiveConfig::new(&config, &dirs(), true).to_toml();
@@ -277,7 +315,7 @@ mod tests {
     #[test]
     fn missing_ytdlp_is_an_error() {
         let config: Config = toml::from_str(
-            "[ytdlp]\nmanaged = false\npath = '/nonexistent/yt-dlp'\n[category.default]\nroot = '/tmp'",
+            "[ytdlp]\nmanaged = false\npath = '/nonexistent/yt-dlp'\n[category.default]\nmedia_dir = '/tmp'",
         )
         .unwrap();
         let findings = check_environment(&config, &dirs(), None);
@@ -297,7 +335,7 @@ mod tests {
 
     #[test]
     fn missing_managed_ytdlp_is_fine() {
-        let config: Config = toml::from_str("[category.default]\nroot = '/tmp'").unwrap();
+        let config: Config = toml::from_str("[category.default]\nmedia_dir = '/tmp'").unwrap();
         let findings = check_environment(&config, &dirs(), None);
         assert!(
             findings
@@ -319,7 +357,8 @@ mod tests {
         std::fs::write(&file, "").unwrap();
         std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o644)).unwrap();
         let config: Config =
-            toml::from_str("[server]\ntoken = 'k'\n[category.default]\nroot = '/tmp'").unwrap();
+            toml::from_str("[server]\ntoken = 'k'\n[category.default]\nmedia_dir = '/tmp'")
+                .unwrap();
         let findings = check_environment(&config, &dirs(), Some(&file));
         assert!(
             findings

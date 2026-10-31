@@ -82,6 +82,11 @@
           "format": "optional-duration",
           "type": "string"
         },
+        "media_dir": {
+          "description": "The media folder, a full path; `output` refers to it as {media_dir}.\nDefaults to ~/.local/share/tidepool/media.",
+          "format": "full-path",
+          "type": "string"
+        },
         "merge_output_format": {
           "description": "Container for merged formats (`--merge-output-format`).",
           "type": "string"
@@ -95,7 +100,7 @@
           "type": "string"
         },
         "output": {
-          "description": "Each video's directory, relative to `root`. Must contain {id}.",
+          "description": "Each video's directory, a full path. Must contain {id}.\nDefaults to \"{media_dir}/{source}/{upload_date} - {title} [{id}]\".",
           "format": "output-template",
           "type": "string"
         },
@@ -103,16 +108,13 @@
           "description": "Download again when a downloaded item's media file is gone.",
           "type": "boolean"
         },
-        "root": {
-          "description": "Where videos go. Defaults to ~/.local/share/tidepool/media.",
-          "type": "string"
-        },
         "thumbnail_format": {
           "$ref": "#/$defs/ThumbnailFormat",
           "description": "Cover image format."
         },
         "tmp_dir": {
-          "description": "Work area, relative to `root` (same filesystem, so the final move is atomic).",
+          "description": "Work area for downloads in progress, a full path ({data_dir} and\n{media_dir} allowed). Defaults to {data_dir}/tmp.",
+          "format": "tmp-dir-template",
           "type": "string"
         },
         "youtube": {
@@ -318,10 +320,6 @@
           "minItems": 1,
           "type": "array"
         },
-        "cwd": {
-          "description": "Working directory. Defaults to the video's directory.",
-          "type": "string"
-        },
         "env": {
           "additionalProperties": {
             "type": "string"
@@ -354,6 +352,10 @@
             "30d"
           ],
           "format": "duration",
+          "type": "string"
+        },
+        "work_dir": {
+          "description": "Working directory. Defaults to the video's directory.",
           "type": "string"
         }
       },
@@ -501,11 +503,6 @@
           "format": "cutoff",
           "type": "string"
         },
-        "dir": {
-          "description": "Directory under `root`. Defaults to the source name.",
-          "minLength": 1,
-          "type": "string"
-        },
         "embed": {
           "$ref": "#/$defs/EmbedOptions",
           "description": "Metadata embedded in the media file."
@@ -567,6 +564,11 @@
           "format": "optional-duration",
           "type": "string"
         },
+        "media_dir": {
+          "description": "The media folder, a full path; `output` refers to it as {media_dir}.\nDefaults to ~/.local/share/tidepool/media.",
+          "format": "full-path",
+          "type": "string"
+        },
         "merge_output_format": {
           "description": "Container for merged formats (`--merge-output-format`).",
           "type": "string"
@@ -580,7 +582,7 @@
           "type": "string"
         },
         "output": {
-          "description": "Each video's directory, relative to `root`. Must contain {id}.",
+          "description": "Each video's directory, a full path. Must contain {id}.\nDefaults to \"{media_dir}/{source}/{upload_date} - {title} [{id}]\".",
           "format": "output-template",
           "type": "string"
         },
@@ -588,16 +590,13 @@
           "description": "Download again when a downloaded item's media file is gone.",
           "type": "boolean"
         },
-        "root": {
-          "description": "Where videos go. Defaults to ~/.local/share/tidepool/media.",
-          "type": "string"
-        },
         "thumbnail_format": {
           "$ref": "#/$defs/ThumbnailFormat",
           "description": "Cover image format."
         },
         "tmp_dir": {
-          "description": "Work area, relative to `root` (same filesystem, so the final move is atomic).",
+          "description": "Work area for downloads in progress, a full path ({data_dir} and\n{media_dir} allowed). Defaults to {data_dir}/tmp.",
+          "format": "tmp-dir-template",
           "type": "string"
         },
         "url": {

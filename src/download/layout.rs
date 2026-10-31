@@ -2,10 +2,11 @@
 //! and the poster file name (`cover_name`).
 
 use std::collections::BTreeMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::config::merge::EffectiveSource;
 use crate::config::placeholders::{self, PLACEHOLDERS, Setting};
+use crate::paths::Dirs;
 
 use super::info::VideoInfo;
 
@@ -40,7 +41,6 @@ impl Values {
         put("duration", info.duration_seconds().map(|d| d.to_string()));
         put("position", Some(position.to_string()));
         put("source", Some(source.key.clone()));
-        put("source_dir", Some(source.dir.clone()));
         put("source_id", Some(source.id.clone()));
         put("source_title", source_title.map(str::to_string));
         put(
@@ -55,14 +55,12 @@ impl Values {
         self.0.get(key).map(String::as_str)
     }
 
-    /// Values ready for file names: sanitized, `NA` when unknown, and
-    /// `source_dir` normalized as a relative path.
+    /// Values ready for file names: sanitized, `NA` when unknown.
     fn for_file_names(&self) -> BTreeMap<&'static str, String> {
         PLACEHOLDERS
             .iter()
             .map(|p| {
                 let value = match (p.name, self.get(p.name)) {
-                    ("source_dir", Some(dir)) => normalize_dir(dir).unwrap_or_else(|| "NA".into()),
                     (_, Some(value)) => match placeholders::sanitize(value) {
                         s if s.is_empty() => "NA".into(),
                         s => s,
@@ -75,40 +73,35 @@ impl Values {
     }
 }
 
-/// `a/./b/` → `a/b`; `None` for absolute paths or `..`.
-fn normalize_dir(dir: &str) -> Option<String> {
-    let mut parts = Vec::new();
-    for part in dir.split('/') {
-        match part {
-            "" | "." => {}
-            ".." => return None,
-            p => parts.push(p),
-        }
-    }
-    (!parts.is_empty() && !dir.starts_with('/')).then(|| parts.join("/"))
-}
-
 fn render_file_name(template: &str, setting: Setting, values: &Values) -> Result<String, String> {
     let segments =
         placeholders::validate(template, setting).map_err(|e| format!("{template:?}: {e}"))?;
     let values = values.for_file_names();
-    // Values are already sanitized; render without sanitizing again so a
-    // normalized `source_dir` keeps its slashes.
+    // Values are already sanitized.
     Ok(placeholders::render(&segments, Setting::Tags, |name| {
         values.get(name).cloned()
     }))
 }
 
-/// The video's directory, relative to the media root.
-pub fn video_dir(source: &EffectiveSource, values: &Values) -> Result<PathBuf, String> {
-    let rendered = render_file_name(&source.output, Setting::Output, values)?;
-    let relative = normalize_dir(&rendered).ok_or_else(|| {
-        format!(
-            "output {:?} renders to {rendered:?}, which isn't inside the media folder",
-            source.output
-        )
-    })?;
-    Ok(PathBuf::from(relative))
+/// The video's directory (`output`), a full path.
+pub fn video_dir(
+    source: &EffectiveSource,
+    values: &Values,
+    media_dir: &Path,
+    dirs: &Dirs,
+) -> Result<PathBuf, String> {
+    let values = values.for_file_names();
+    placeholders::render_path(
+        &source.output,
+        Setting::Output,
+        &dirs.home,
+        |name| match name {
+            "media_dir" => Some(media_dir.display().to_string()),
+            "data_dir" => Some(dirs.data_dir.display().to_string()),
+            _ => values.get(name).cloned(),
+        },
+    )
+    .map_err(|e| format!("output {e}"))
 }
 
 /// The poster file name, e.g. `Some title-poster.jpg`.
@@ -149,13 +142,25 @@ mod tests {
         Values::new(&info(title), source, Some("Rick's hits"), 7)
     }
 
+    fn dirs() -> Dirs {
+        Dirs {
+            home: "/home/me".into(),
+            config_dir: "/c".into(),
+            data_dir: "/d/tidepool".into(),
+        }
+    }
+
+    fn dir_of(s: &EffectiveSource, v: &Values) -> Result<PathBuf, String> {
+        video_dir(s, v, Path::new("/media"), &dirs())
+    }
+
     #[test]
     fn renders_the_default_layout() {
         let s = source("");
         let v = values(&s, "Never: Gonna/Give You Up?");
         assert_eq!(
-            video_dir(&s, &v).unwrap(),
-            PathBuf::from("lofi/2009-10-25 - Never GonnaGive You Up [dQw4w9WgXcQ]")
+            dir_of(&s, &v).unwrap(),
+            PathBuf::from("/media/lofi/2009-10-25 - Never GonnaGive You Up [dQw4w9WgXcQ]")
         );
         assert_eq!(
             cover_file_name(&s, &v, "jpg").unwrap(),
@@ -164,14 +169,14 @@ mod tests {
     }
 
     #[test]
-    fn nested_dirs_padding_and_missing_values() {
+    fn full_paths_padding_and_missing_values() {
         let s = source(
-            "dir = 'music/./lofi'\noutput = '{source_dir}/{upload_year}/{position:03} {channel_id} [{id}]'\ncover_name = 'cover'",
+            "output = '~/Music/./{source}/{upload_year}/{position:03} {channel_id} [{id}]'\ncover_name = 'cover'",
         );
         let v = values(&s, "x");
         assert_eq!(
-            video_dir(&s, &v).unwrap(),
-            PathBuf::from("music/lofi/2009/007 NA [dQw4w9WgXcQ]")
+            dir_of(&s, &v).unwrap(),
+            PathBuf::from("/home/me/Music/lofi/2009/007 NA [dQw4w9WgXcQ]")
         );
         assert_eq!(cover_file_name(&s, &v, "webp").unwrap(), "cover.webp");
         assert_eq!(v.get("source_title"), Some("Rick's hits"));
@@ -179,15 +184,20 @@ mod tests {
             v.get("url"),
             Some("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
         );
+        let s = source("output = '{data_dir}/{category}/{id}'");
+        assert_eq!(
+            dir_of(&s, &values(&s, "x")).unwrap(),
+            PathBuf::from("/d/tidepool/default/dQw4w9WgXcQ")
+        );
     }
 
     #[test]
-    fn rejects_paths_outside_the_media_folder() {
-        let s = source("output = '../{id}'");
+    fn rejects_parent_dirs() {
+        let s = source("output = '{media_dir}/../{id}'");
         assert!(
-            video_dir(&s, &values(&s, "x"))
+            dir_of(&s, &values(&s, "x"))
                 .unwrap_err()
-                .contains("isn't inside the media folder")
+                .contains("uses \"..\"")
         );
     }
 }

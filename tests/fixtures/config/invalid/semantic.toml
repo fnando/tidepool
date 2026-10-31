@@ -8,26 +8,22 @@ command = ["to-h265.sh", "{media_path}"]
 
 [sources.one]
 url = "https://www.youtube.com/playlist?list=PLsamesame"
-dir = "music"
 hooks = ["transcode", "upload"]
 
 [sources.two]
 url = "https://www.youtube.com/playlist?list=PLsamesame"
-dir = "./music"
 
 [sources.three]
 url = "https://www.youtube.com/playlist?list=PLthree"
-dir = "../outside"
 max_duration = "1m"
 min_duration = "2m"
 
 [category.music]
-root = "/nas/music"
+media_dir = "/nas/music"
 
 [sources.four]
 url = "https://www.youtube.com/playlist?list=PLfour"
 category = "music"
-dir = "music"                       # fine: a different root than sources.one
 
 [sources.five]
 url = "https://www.youtube.com/playlist?list=PLfive"

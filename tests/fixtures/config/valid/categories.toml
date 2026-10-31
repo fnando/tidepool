@@ -2,14 +2,16 @@
 concurrency = 4
 
 [category.default]
-root = "~/Videos/youtube"
+media_dir = "~/Videos/youtube"
 exclude = ['(?i)#shorts']
 
 [category.default.youtube]
 api_key = "AIzaSyD-1234567890x1Qw"
 
 [category.music]
-root = "~/Music/youtube"
+media_dir = "~/Music/youtube"
+output = "{media_dir}/{title} [{id}]"
+tmp_dir = "{media_dir}/.tmp"
 format = "ba/b"
 inherit_rules = true
 exclude = ['(?i)\blive\b']
@@ -23,4 +25,3 @@ category = "music"
 
 [sources.talks]
 url = "https://www.youtube.com/playlist?list=PLyyyyyyyy"
-dir = "lofi"                        # same dir name, different root: fine

@@ -34,15 +34,17 @@ const SUBTITLE_EXTENSIONS: [&str; 6] = ["vtt", "srt", "ass", "ssa", "lrc", "ttml
 /// Where one source's downloads go.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SourcePaths {
-    /// The source's media folder (its category's `root`).
-    pub root: PathBuf,
-    /// Its work area, on the same filesystem as `root`.
+    /// The source's media folder (`media_dir`), for `{media_dir}` in `output`.
+    pub media_dir: PathBuf,
+    /// Its work area (`tmp_dir`).
     pub tmp_root: PathBuf,
     pub cookies: Option<PathBuf>,
 }
 
 /// What every download shares.
 pub struct Context {
+    /// For `~` and `{data_dir}` in `output`.
+    pub dirs: crate::paths::Dirs,
     pub ytdlp: PathBuf,
     pub ytdlp_version: Option<String>,
     pub duplicates: Duplicates,
@@ -167,6 +169,21 @@ fn commit(tmp: &Path, target: &Path) -> std::io::Result<()> {
     if let Some(parent) = target.parent() {
         std::fs::create_dir_all(parent)?;
     }
+    // A work area on another filesystem can't be renamed into place: copy it
+    // next to the target first, so the target still appears in one rename.
+    let staged = staging_path(target);
+    match std::fs::rename(tmp, &staged) {
+        Ok(()) => {}
+        Err(e) if e.raw_os_error() == Some(libc::EXDEV) => {
+            let _ = std::fs::remove_dir_all(&staged);
+            if let Err(e) = copy_dir(tmp, &staged) {
+                let _ = std::fs::remove_dir_all(&staged);
+                return Err(e);
+            }
+            std::fs::remove_dir_all(tmp)?;
+        }
+        Err(e) => return Err(e),
+    }
     let aside = target.exists().then(|| {
         let mut name = target.as_os_str().to_owned();
         name.push(format!(".replaced-{}", std::process::id()));
@@ -175,11 +192,52 @@ fn commit(tmp: &Path, target: &Path) -> std::io::Result<()> {
     if let Some(aside) = &aside {
         std::fs::rename(target, aside)?;
     }
-    std::fs::rename(tmp, target)?;
+    std::fs::rename(&staged, target)?;
     if let Some(aside) = &aside {
         let _ = std::fs::remove_dir_all(aside);
     }
     Ok(())
+}
+
+/// The hidden folder next to `target` a download is staged in before its
+/// final rename.
+fn staging_path(target: &Path) -> PathBuf {
+    let name = target
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    target.with_file_name(format!(".{name}.tidepool-partial"))
+}
+
+/// Copy a directory tree (files and folders only).
+fn copy_dir(from: &Path, to: &Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(to)?;
+    for entry in std::fs::read_dir(from)? {
+        let entry = entry?;
+        let dest = to.join(entry.file_name());
+        if entry.file_type()?.is_dir() {
+            copy_dir(&entry.path(), &dest)?;
+        } else {
+            std::fs::copy(entry.path(), &dest)?;
+        }
+    }
+    Ok(())
+}
+
+/// Whether `name` is a folder tidepool creates in a work area
+/// (`<video_id>.<source>`).
+fn is_work_folder(name: &str) -> bool {
+    let Some((id, source)) = name.split_once('.') else {
+        return false;
+    };
+    id.len() == 11
+        && id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+        && !source.is_empty()
+        && source
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '_')
 }
 
 async fn process(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
@@ -316,7 +374,8 @@ async fn assemble(
         job.queued.source_title.as_deref(),
         job.queued.position,
     );
-    let dir = layout::video_dir(source, &values).map_err(fail)?;
+    let target =
+        layout::video_dir(source, &values, &job.paths.media_dir, &ctx.dirs).map_err(fail)?;
 
     // Cover: reuse the other source's, or fetch the biggest.
     let mut cover: Option<Cover> = None;
@@ -406,11 +465,10 @@ async fn assemble(
         .and_then(|_| file.sync_all())
         .map_err(|e| io_fail("cannot write", &metadata_path, e))?;
 
-    let target = job.paths.root.join(&dir);
     commit(tmp, &target).map_err(|e| io_fail("cannot move the download into", &target, e))?;
     tracing::debug!(
         "{label}: moved into {} ({:.1}s)",
-        dir.display(),
+        target.display(),
         started.elapsed().as_secs_f64()
     );
     Ok(Outcome::Done {
@@ -433,10 +491,19 @@ async fn interrupted() -> i32 {
 }
 
 /// Clear the work areas and put interrupted downloads back in the queue.
+/// Only the folders tidepool creates there are removed, so a `tmp_dir`
+/// pointing somewhere shared never loses anything else.
 pub fn recover(state: &State, tmp_roots: &[PathBuf]) -> Result<usize, String> {
-    for tmp_root in tmp_roots.iter().filter(|t| t.exists()) {
-        std::fs::remove_dir_all(tmp_root)
+    for tmp_root in tmp_roots.iter().filter(|t| t.is_dir()) {
+        let entries = std::fs::read_dir(tmp_root)
             .map_err(|e| format!("cannot clear {}: {e}", tmp_root.display()))?;
+        for entry in entries.flatten() {
+            let name = entry.file_name();
+            if is_work_folder(&name.to_string_lossy()) && entry.path().is_dir() {
+                std::fs::remove_dir_all(entry.path())
+                    .map_err(|e| format!("cannot clear {}: {e}", entry.path().display()))?;
+            }
+        }
     }
     items::reset_interrupted(&state.conn).map_err(|e| e.to_string())
 }
@@ -630,4 +697,59 @@ fn record(
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn recognizes_work_folders() {
+        assert!(is_work_folder("dQw4w9WgXcQ.lofi"));
+        assert!(is_work_folder("a-b_c1234XY.my-source_2"));
+        for other in [
+            "lofi",
+            "dQw4w9WgXcQ",
+            "short.lofi",
+            "dQw4w9WgXcQ.",
+            "dQw4w9WgXcQ.Lofi",
+            ".git",
+        ] {
+            assert!(!is_work_folder(other), "{other:?}");
+        }
+    }
+
+    #[test]
+    fn commit_moves_into_place_and_replaces() {
+        let dir = tempfile::tempdir().unwrap();
+        let tmp = dir.path().join("work/dQw4w9WgXcQ.lofi");
+        std::fs::create_dir_all(tmp.join("sub")).unwrap();
+        std::fs::write(tmp.join("sub/a.txt"), "new").unwrap();
+        let target = dir.path().join("media/lofi/video [dQw4w9WgXcQ]");
+        std::fs::create_dir_all(&target).unwrap();
+        std::fs::write(target.join("old.txt"), "old").unwrap();
+        commit(&tmp, &target).unwrap();
+        assert!(!tmp.exists());
+        assert_eq!(
+            std::fs::read_to_string(target.join("sub/a.txt")).unwrap(),
+            "new"
+        );
+        assert!(!target.join("old.txt").exists());
+        let names: Vec<_> = std::fs::read_dir(target.parent().unwrap())
+            .unwrap()
+            .map(|e| e.unwrap().file_name())
+            .collect();
+        assert_eq!(
+            names.len(),
+            1,
+            "no staging or replaced folders left: {names:?}"
+        );
+
+        let copied = dir.path().join("copy");
+        copy_dir(&target, &copied).unwrap();
+        assert_eq!(
+            std::fs::read_to_string(copied.join("sub/a.txt")).unwrap(),
+            "new"
+        );
+    }
 }
