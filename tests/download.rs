@@ -358,3 +358,69 @@ async fn recurring_failures_become_problems_until_work_succeeds_again() {
             .and(contains("The playlist does not exist")),
     );
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn verbose_shows_config_and_progress() {
+    let env = Env::new().await;
+    let config = env.config("");
+    let text = fs::read_to_string(&config).unwrap().replace(
+        "ytdlp_args = [\"--write-subs\"]",
+        "ytdlp_args = [\"--write-subs\"]\nmin_duration = \"250s\"",
+    );
+    fs::write(&config, text).unwrap();
+
+    let assert = env
+        .cmd(&["run", "-v", "--config", &config])
+        .assert()
+        .code(3);
+    let stderr = String::from_utf8(assert.get_output().stderr.clone()).unwrap();
+    for expected in [
+        "library default: config revision 1, imported from",
+        &format!(
+            "media in {}, work area {}",
+            env.media().display(),
+            env.media().join(".tidepool-tmp").display()
+        ),
+        "yt-dlp 2026.10.01 at ",
+        "dl: https://www.youtube.com/playlist?list=PLdownloads → dl/, format bv*+ba/b, output {source_dir}/{upload_date} - {title} [{id}]",
+        "dl: filters: min_duration 250s",
+        "dl: listing https://www.youtube.com/playlist?list=PLdownloads",
+        "dl: listed 4 videos in ",
+        "dl: new: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” [dQw4w9WgXcQ]: drop (too short: 213s < 250s)",
+        "dl: new: “Video okvideo01” [okvideo01]: keep (no include rules)",
+        "dl: downloading “Video okvideo01” [okvideo01]",
+        "dl: “Video okvideo01”: 50% of 20 B",
+        "dl: “Video okvideo01”: 100% of 20 B",
+        "dl: “Video okvideo01”: cover 1280×720 from ",
+        "dl: “Video okvideo01”: moved into dl/2026-09-01 - Video okvideo01 [okvideo01] (",
+    ] {
+        assert!(
+            stderr.contains(expected),
+            "missing {expected:?} in:\n{stderr}"
+        );
+    }
+    assert!(
+        !stderr.contains('\u{1b}'),
+        "no terminal colours when stderr isn't a terminal:\n{stderr}"
+    );
+    assert!(!stderr.contains("yt-dlp command:"), "commands only at -vv");
+
+    // -vv adds the commands and the full effective config.
+    env.cmd(&["reset", "okvideo01"]).assert().success();
+    let assert = env.cmd(&["run", "-vv"]).assert().success();
+    let stderr = String::from_utf8(assert.get_output().stderr.clone()).unwrap();
+    assert!(stderr.contains("yt-dlp command: "), "{stderr}");
+    assert!(
+        stderr.contains(
+            "dl: effective config:\nurl = \"https://www.youtube.com/playlist?list=PLdownloads\""
+        ),
+        "{stderr}"
+    );
+
+    // Quiet by default.
+    env.cmd(&["reset", "okvideo01"]).assert().success();
+    env.cmd(&["run"])
+        .assert()
+        .success()
+        .stderr(contains("downloading “").not().and(contains("DEBUG").not()));
+}

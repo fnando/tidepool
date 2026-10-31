@@ -13,14 +13,25 @@ fn init_tracing(cli: &Cli) {
         (false, 1) => "debug",
         (false, _) => "trace",
     };
-    let filter = EnvFilter::try_from_env("TIDEPOOL_LOG")
-        .unwrap_or_else(|_| EnvFilter::new(format!("{level},rusqlite_migration=warn")));
+    let filter = EnvFilter::try_from_env("TIDEPOOL_LOG").unwrap_or_else(|_| {
+        // Verbosity is about tidepool's own output; libraries only warn.
+        let directives = if cli.quiet {
+            "error".to_string()
+        } else {
+            format!("warn,tidepool={level}")
+        };
+        EnvFilter::new(directives)
+    });
     let builder = tracing_subscriber::fmt()
         .with_env_filter(filter)
         .with_writer(std::io::stderr);
     match cli.log_format {
         LogFormat::Json => builder.json().init(),
-        LogFormat::Pretty => builder.without_time().with_target(false).init(),
+        LogFormat::Pretty => builder
+            .without_time()
+            .with_target(false)
+            .with_ansi(std::io::IsTerminal::is_terminal(&std::io::stderr()))
+            .init(),
     }
 }
 

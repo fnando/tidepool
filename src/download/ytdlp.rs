@@ -93,6 +93,52 @@ pub fn classify(stderr: &str) -> Failure {
     }
 }
 
+/// Reports yt-dlp's progress every 10%, per file (video and audio are
+/// separate downloads before merging).
+#[derive(Default)]
+struct Progress {
+    file: Option<String>,
+    step: Option<u64>,
+}
+
+impl Progress {
+    fn update(&mut self, line: &str, label: &str) {
+        let Ok(p) = serde_json::from_str::<serde_json::Value>(line) else {
+            return;
+        };
+        let downloaded = p["downloaded_bytes"].as_f64().unwrap_or(0.0);
+        let Some(total) = p["total_bytes"]
+            .as_f64()
+            .or_else(|| p["total_bytes_estimate"].as_f64())
+            .filter(|t| *t > 0.0)
+        else {
+            return;
+        };
+        let file = p["filename"].as_str().map(String::from);
+        if file != self.file {
+            self.file = file;
+            self.step = None;
+        }
+        let percent = ((downloaded / total) * 100.0).clamp(0.0, 100.0) as u64;
+        let step = percent / 10;
+        if self.step.is_some_and(|s| step <= s) {
+            return;
+        }
+        self.step = Some(step);
+        let mut line = format!(
+            "{label}: {percent}% of {}",
+            super::human_bytes(total as u64)
+        );
+        if let Some(speed) = p["speed"].as_f64().filter(|s| *s > 0.0) {
+            line.push_str(&format!(" at {}/s", super::human_bytes(speed as u64)));
+        }
+        if let Some(eta) = p["eta"].as_u64().filter(|_| percent < 100) {
+            line.push_str(&format!(", {}:{:02} left", eta / 60, eta % 60));
+        }
+        tracing::debug!("{line}");
+    }
+}
+
 /// Stop a child: SIGTERM, then SIGKILL after `grace`; returns once it exited.
 async fn stop(child: &mut tokio::process::Child, grace: Duration) {
     if let Some(pid) = child.id() {
@@ -120,9 +166,11 @@ fn cancelled() -> Failure {
 pub async fn download(
     ytdlp: &Path,
     args: &[String],
+    label: &str,
     cancel: &CancellationToken,
     grace: Duration,
 ) -> Result<PathBuf, Failure> {
+    tracing::trace!("yt-dlp command: {} {}", ytdlp.display(), args.join(" "));
     let mut child = tokio::process::Command::new(ytdlp)
         .args(args)
         .stdout(Stdio::piped())
@@ -143,6 +191,7 @@ pub async fn download(
     });
 
     let mut lines = BufReader::new(stdout).lines();
+    let mut progress = Progress::default();
     let mut final_path = None;
     loop {
         let line = tokio::select! {
@@ -156,6 +205,7 @@ pub async fn download(
         let line = line.trim();
         if line.starts_with('{') {
             tracing::trace!("yt-dlp progress: {line}");
+            progress.update(line, label);
         } else if !line.is_empty() {
             final_path = Some(PathBuf::from(line));
         }
@@ -168,6 +218,9 @@ pub async fn download(
         }
     };
     let stderr = stderr_task.await.unwrap_or_default();
+    for line in stderr.lines().filter(|l| !l.trim().is_empty()) {
+        tracing::trace!("yt-dlp: {line}");
+    }
     if !status.success() {
         return Err(classify(&stderr));
     }

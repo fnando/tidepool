@@ -133,6 +133,108 @@ impl App<'_> {
         Ok(picked)
     }
 
+    /// `-v`: what a run is working with.
+    fn log_context(
+        &self,
+        state: &State,
+        config: &crate::config::Config,
+        sources: &[EffectiveSource],
+    ) {
+        use crate::config::store::Source;
+        if !tracing::enabled!(tracing::Level::DEBUG) {
+            return;
+        }
+        let library = &self.cli.library;
+        let current = ConfigStore::new(&state.conn).current().ok().flatten();
+        match (&self.cli.config, self.cli.dry_run, current) {
+            (Some(path), true, _) => {
+                tracing::debug!(
+                    "library {library}: using {} without storing it (dry run)",
+                    path.display()
+                )
+            }
+            (_, _, Some(rev)) => {
+                let when = rev
+                    .created_at
+                    .parse::<jiff::Timestamp>()
+                    .map(|t| t.strftime("%Y-%m-%d %H:%M UTC").to_string())
+                    .unwrap_or_default();
+                let origin = match (rev.source, &rev.source_path) {
+                    (Source::Import, Some(path)) => format!("imported from {path}"),
+                    (Source::Rollback, Some(from)) => {
+                        format!("a rollback to {}", from.replace("rev:", "revision "))
+                    }
+                    (source, _) => format!("from {source}"),
+                };
+                tracing::debug!(
+                    "library {library}: config revision {}, {origin} on {when}",
+                    rev.rev
+                );
+            }
+            _ => {}
+        }
+        if let Ok(root) = media_root(config, &self.dirs) {
+            tracing::debug!(
+                "media in {}, work area {}",
+                root.display(),
+                root.join(&config.library.tmp_dir).display()
+            );
+        }
+        tracing::debug!("state in {}", self.library.state_db.display());
+        for source in sources {
+            tracing::debug!(
+                "{}: {} → {}/, format {}, output {}",
+                source.key,
+                source.url,
+                source.dir,
+                source.format,
+                source.output
+            );
+            let rules = |rules: &[crate::config::Rule]| {
+                rules
+                    .iter()
+                    .map(|r| match r {
+                        crate::config::Rule::Pattern(p) => format!("{p:?}"),
+                        crate::config::Rule::Field(f) => {
+                            format!("{:?} on {:?}", f.pattern, f.field).to_lowercase()
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            };
+            let mut filters = Vec::new();
+            if !source.include.is_empty() {
+                filters.push(format!("include [{}]", rules(&source.include)));
+            }
+            if !source.exclude.is_empty() {
+                filters.push(format!("exclude [{}]", rules(&source.exclude)));
+            }
+            if let Some(d) = source.min_duration.0 {
+                filters.push(format!(
+                    "min_duration {}",
+                    crate::config::types::format_duration(d)
+                ));
+            }
+            if let Some(d) = source.max_duration.0 {
+                filters.push(format!(
+                    "max_duration {}",
+                    crate::config::types::format_duration(d)
+                ));
+            }
+            if source.cutoff.text != "none" {
+                filters.push(format!("cutoff {}", source.cutoff.text));
+            }
+            if !filters.is_empty() {
+                tracing::debug!("{}: filters: {}", source.key, filters.join(", "));
+            }
+            if tracing::enabled!(tracing::Level::TRACE)
+                && let Ok(toml) = toml::to_string(source)
+            {
+                tracing::trace!("{}: effective config:\n{}", source.key, toml.trim_end());
+            }
+        }
+    }
+
     /// The yt-dlp to run: the managed one (downloaded or updated if needed)
     /// or `ytdlp.path`. Failed update checks become a problem.
     async fn ytdlp_binary(
@@ -145,7 +247,9 @@ impl App<'_> {
 
         let ytdlp = &config.ytdlp;
         if !ytdlp.managed {
-            return Ok(PathBuf::from(&ytdlp.path));
+            let path = PathBuf::from(&ytdlp.path);
+            log_ytdlp(&path, "your own; tidepool doesn't update it");
+            return Ok(path);
         }
         let now = jiff::Timestamp::now();
         let manager = Manager::new(&self.dirs);
@@ -194,6 +298,10 @@ impl App<'_> {
                 _ => tracing::debug!("{outcome}"),
             }
         }
+        log_ytdlp(
+            &ensured.path,
+            &format!("managed, {} channel", ytdlp.channel.as_str()),
+        );
         Ok(ensured.path)
     }
 
@@ -238,6 +346,7 @@ impl App<'_> {
         let mut state = self.open_state()?;
         let loaded = self.current_config(&state)?;
         let sources = self.scoped_sources(&loaded.config, &scope.sources)?;
+        self.log_context(&state, &loaded.config, &sources);
         if sources.is_empty() {
             writeln!(
                 out,
@@ -395,6 +504,7 @@ impl App<'_> {
         let mut state = self.open_state()?;
         let loaded = self.current_config(&state)?;
         let sources = self.scoped_sources(&loaded.config, &args.scope.sources)?;
+        self.log_context(&state, &loaded.config, &sources);
         let _lock = self.lock()?;
         let ytdlp = self.ytdlp_binary(&state, &loaded.config).await?;
         let limit = args.limit.map(|l| l as usize);
@@ -423,6 +533,7 @@ impl App<'_> {
         let mut state = self.open_state()?;
         let loaded = self.current_config(&state)?;
         let sources = self.scoped_sources(&loaded.config, &args.sources)?;
+        self.log_context(&state, &loaded.config, &sources);
         if sources.is_empty() {
             writeln!(
                 out,
@@ -1193,4 +1304,13 @@ fn write_private_file(path: &Path, text: &str, replace: bool) -> anyhow::Result<
         .with_context(|| format!("cannot create {}", path.display()))?;
     file.write_all(text.as_bytes())?;
     Ok(())
+}
+
+/// `-v`: which yt-dlp runs.
+fn log_ytdlp(path: &Path, how: &str) {
+    if tracing::enabled!(tracing::Level::DEBUG) {
+        let version = crate::ytdlp::manager::tool_version(path)
+            .unwrap_or_else(|e| format!("(not runnable: {e})"));
+        tracing::debug!("yt-dlp {version} at {} ({how})", path.display());
+    }
 }

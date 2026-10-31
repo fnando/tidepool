@@ -50,6 +50,21 @@ pub struct IndexSummary {
     pub by_status: BTreeMap<String, usize>,
     /// Why videos were filtered, by [`Decision::label`].
     pub filtered: BTreeMap<String, usize>,
+    /// Every decision made in this index, for verbose output.
+    pub decisions: Vec<DecisionChange>,
+}
+
+/// One video's decision in an index.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DecisionChange {
+    pub video_id: String,
+    pub title: String,
+    /// First time this source saw the video.
+    pub new: bool,
+    /// The decision differs from the stored one.
+    pub changed: bool,
+    /// Human-readable decision, e.g. `drop (too short: 30s < 60s)`.
+    pub decision: String,
 }
 
 impl IndexSummary {
@@ -96,13 +111,15 @@ pub fn record_index(
         }
         upsert_video(&tx, item, &now)?;
 
-        let existing: Option<String> = tx
+        let existing: Option<(String, Option<String>)> = tx
             .query_row(
-                "SELECT status FROM items WHERE source_key = ?1 AND video_id = ?2",
+                "SELECT status, decision FROM items WHERE source_key = ?1 AND video_id = ?2",
                 params![source.key, item.video_id],
-                |r| r.get(0),
+                |r| Ok((r.get(0)?, r.get(1)?)),
             )
             .optional()?;
+        let previous_decision = existing.as_ref().and_then(|(_, d)| d.clone());
+        let existing = existing.map(|(status, _)| status);
         let decide_now = existing
             .as_deref()
             .is_none_or(|s| status::UNDECIDED.contains(&s));
@@ -111,6 +128,14 @@ pub fn record_index(
         }
         if decide_now {
             let decision = decide(item);
+            summary.decisions.push(DecisionChange {
+                video_id: item.video_id.clone(),
+                title: item.title.clone(),
+                new: existing.is_none(),
+                changed: existing.is_some()
+                    && previous_decision.as_deref() != Some(decision.to_json().as_str()),
+                decision: decision.to_string(),
+            });
             tx.execute(
                 "INSERT INTO items (source_key, video_id, position, in_remote, status, decision)
                  VALUES (?1, ?2, ?3, 1, ?4, ?5)

@@ -48,9 +48,17 @@ pub async fn index_source(
     now: Timestamp,
 ) -> Result<IndexSummary, String> {
     let cookies = cookies_file(source, dirs)?;
+    tracing::debug!("{}: listing {}", source.key, source.url);
+    let started = std::time::Instant::now();
     let list = ytdlp::list(ytdlp_path, &source.url, cookies.as_deref())
         .await
         .map_err(|e| e.to_string())?;
+    tracing::debug!(
+        "{}: listed {} in {:.1}s",
+        source.key,
+        plural(list.items.len(), "video", "videos"),
+        started.elapsed().as_secs_f64()
+    );
     let limit = usize::try_from(config.library.regex_backtrack_limit).unwrap_or(usize::MAX);
     let rules = RuleSet::compile(source, limit, now)?;
     let hash = rules_hash(source);
@@ -59,14 +67,25 @@ pub async fn index_source(
         rules_hash: &hash,
         index_source: "ytdlp",
     };
-    record_index(
+    let summary = record_index(
         &mut state.conn,
         &record,
         &list,
         |item| rules.decide(&Fields::from_item(item)),
         now,
     )
-    .map_err(|e| format!("cannot record the index: {e}"))
+    .map_err(|e| format!("cannot record the index: {e}"))?;
+    for d in &summary.decisions {
+        let line = format!("“{}” [{}]: {}", d.title, d.video_id, d.decision);
+        if d.new {
+            tracing::debug!("{}: new: {line}", source.key);
+        } else if d.changed {
+            tracing::debug!("{}: changed: {line}", source.key);
+        } else {
+            tracing::trace!("{}: {line}", source.key);
+        }
+    }
+    Ok(summary)
 }
 
 fn plural(n: usize, one: &str, many: &str) -> String {

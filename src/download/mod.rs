@@ -180,6 +180,15 @@ async fn process(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
     let item = &job.queued.item;
     let video_id = &job.queued.video_id;
     let mut details = None;
+    let started = std::time::Instant::now();
+    let label = format!("{}: “{}”", source.key, item.title);
+    tracing::debug!("{}: downloading “{}” [{video_id}]", source.key, item.title);
+    if job.queued.status == status::PENDING_CHECK {
+        tracing::debug!("{label}: checking its details before deciding");
+    }
+    if let Some(dir) = &job.copy_from {
+        tracing::debug!("{label}: already downloaded in {dir}; linking its files");
+    }
 
     // A decision that needed fields the index didn't have.
     let mut info = None;
@@ -213,7 +222,7 @@ async fn process(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
             details,
         );
     }
-    let result = assemble(job, ctx, &tmp, info, &mut details).await;
+    let result = assemble(job, ctx, &tmp, info, &mut details, &label, started).await;
     if result.is_err() {
         let _ = std::fs::remove_dir_all(&tmp);
     }
@@ -230,6 +239,8 @@ async fn assemble(
     tmp: &Path,
     info: Option<VideoInfo>,
     details: &mut Option<RemoteItem>,
+    label: &str,
+    started: std::time::Instant,
 ) -> Result<Outcome, Failure> {
     let source = &job.source;
     let video_id = &job.queued.video_id;
@@ -265,7 +276,8 @@ async fn assemble(
         _ => {
             let args = ytdlp::download_args(source, video_id, tmp, job.cookies.as_deref());
             let media =
-                ytdlp::download(&ctx.ytdlp, &args, &ctx.cancel, ctx.shutdown_timeout).await?;
+                ytdlp::download(&ctx.ytdlp, &args, label, &ctx.cancel, ctx.shutdown_timeout)
+                    .await?;
             let info_path = tmp.join("ytdlp.info.json");
             let text = std::fs::read_to_string(&info_path)
                 .map_err(|e| io_fail("cannot read", &info_path, e))?;
@@ -309,6 +321,7 @@ async fn assemble(
         let name = layout::cover_file_name(source, &values, &ext).map_err(fail)?;
         link(&other_cover, &tmp.join(&name), ctx.duplicates)
             .map_err(|e| io_fail("cannot link", &other_cover, e))?;
+        tracing::debug!("{label}: cover linked from {}", other_cover.display());
         cover_name = Some(name);
     } else {
         let thumbs = details
@@ -323,6 +336,12 @@ async fn assemble(
         );
         match thumbnail::fetch_largest(&ctx.http, &urls, source.thumbnail_format).await {
             Some(found) => {
+                tracing::debug!(
+                    "{label}: cover {}×{} from {}",
+                    found.width,
+                    found.height,
+                    found.source_url
+                );
                 let name =
                     layout::cover_file_name(source, &values, found.extension).map_err(fail)?;
                 let path = tmp.join(&name);
@@ -380,6 +399,11 @@ async fn assemble(
 
     let target = ctx.root.join(&dir);
     commit(tmp, &target).map_err(|e| io_fail("cannot move the download into", &target, e))?;
+    tracing::debug!(
+        "{label}: moved into {} ({:.1}s)",
+        dir.display(),
+        started.elapsed().as_secs_f64()
+    );
     Ok(Outcome::Done {
         dir: dir.to_string_lossy().into_owned(),
         media_bytes,

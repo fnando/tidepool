@@ -129,8 +129,10 @@ pub async fn list(
     url: &str,
     cookies_file: Option<&Path>,
 ) -> Result<RemoteList, IndexError> {
+    let args = list_args(url, cookies_file);
+    tracing::trace!("yt-dlp command: {} {}", ytdlp.display(), args.join(" "));
     let output = tokio::process::Command::new(ytdlp)
-        .args(list_args(url, cookies_file))
+        .args(&args)
         .kill_on_drop(true)
         .output()
         .await

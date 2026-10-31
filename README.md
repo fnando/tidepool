@@ -376,6 +376,35 @@ tidepool init --library music --config ~/.config/tidepool/music.toml
 tidepool config history --library music
 ```
 
+## Seeing more (or less)
+
+Add `-v` (`--verbose`) to any command to see what tidepool is doing: which
+config revision it uses, where videos go, which yt-dlp runs, each source's
+settings and filters, why each new video is kept or skipped, and each
+download's progress, cover and destination:
+
+```
+$ tidepool run -v
+DEBUG library default: config revision 2, imported from ~/.config/tidepool/config.toml on 2026-10-31 20:48 UTC
+DEBUG media in ~/.local/share/tidepool/media, work area ~/.local/share/tidepool/media/.tidepool-tmp
+DEBUG sample: https://www.youtube.com/playlist?list=PLXLpuA-bwY4s → sample/, format bv*[height<=360]+ba/b, output {source_dir}/{upload_date} - {title} [{id}]
+DEBUG yt-dlp 2026.10.29.232701 at ~/.local/share/tidepool/bin/yt-dlp-nightly (managed, nightly channel)
+DEBUG sample: listed 1 video in 2.9s
+DEBUG sample: new: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” [dQw4w9WgXcQ]: keep (no include rules)
+sample: 1 video (1 new): 1 to download
+DEBUG sample: downloading “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” [dQw4w9WgXcQ]
+DEBUG sample: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”: 36% of 5.7 MB at 38.2 MB/s, 0:00 left
+DEBUG sample: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”: cover 1280×720 from https://i.ytimg.com/vi_webp/dQw4w9WgXcQ/maxresdefault.webp
+DEBUG sample: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”: moved into sample/2009-10-25 - Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster) [dQw4w9WgXcQ] (12.3s)
+sample: downloaded “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” (9.1 MB)
+```
+
+`-vv` shows even more: each source's complete settings, every video's decision
+(not just new and changed ones), and the exact yt-dlp commands and output.
+`-q` (`--quiet`) shows errors only. Messages go to the terminal's error output,
+so `tidepool run -v > out.txt` keeps the summary lines separate. With
+`--log-format json`, messages are JSON lines, one per message.
+
 ## Where things are
 
 | What | Where |
