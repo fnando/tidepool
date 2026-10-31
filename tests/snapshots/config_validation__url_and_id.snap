@@ -1,0 +1,7 @@
+---
+source: tests/config_validation.rs
+expression: err
+---
+url_and_id.toml:1:1 playlists.both: set either "url" or "id", not both
+url_and_id.toml:5:1 playlists.neither: missing "url" or "id": set exactly one
+url_and_id.toml:9:7 playlists.no_list.url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" is not a playlist URL: it must contain list=<playlist id>

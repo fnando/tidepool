@@ -1,0 +1,711 @@
+{
+  "$defs": {
+    "CleanupKeep": {
+      "oneOf": [
+        {
+          "const": "nothing",
+          "description": "Remove the whole video directory.",
+          "type": "string"
+        },
+        {
+          "const": "metadata",
+          "description": "Keep metadata.json and the cover, drop media and subtitles.",
+          "type": "string"
+        }
+      ]
+    },
+    "CleanupOptions": {
+      "additionalProperties": false,
+      "description": "`cleanup`: limits that keep a mirror bounded.",
+      "properties": {
+        "keep": {
+          "$ref": "#/$defs/CleanupKeep",
+          "description": "What to keep of a removed item."
+        },
+        "keep_latest": {
+          "description": "Protect the newest N items from every other policy.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "marker_file": {
+          "description": "Remove items whose video dir contains this file; \"\" = off.",
+          "type": "string"
+        },
+        "max_age": {
+          "description": "Remove items older than this; \"\" = no limit.",
+          "examples": [
+            "30d"
+          ],
+          "format": "optional-duration",
+          "type": "string"
+        },
+        "max_items": {
+          "description": "Keep at most this many items; 0 = unlimited.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_size": {
+          "description": "Remove oldest items until media fits; \"\" = no limit.",
+          "examples": [
+            "20GiB"
+          ],
+          "format": "optional-byte-size",
+          "type": "string"
+        },
+        "order": {
+          "$ref": "#/$defs/CleanupOrder",
+          "description": "Who goes first for count, size and age limits."
+        },
+        "removed_from_playlist": {
+          "$ref": "#/$defs/RemovedFromPlaylist",
+          "description": "Items no longer in the remote playlist (or no longer passing the rules)."
+        }
+      },
+      "type": "object"
+    },
+    "CleanupOrder": {
+      "enum": [
+        "oldest_downloaded",
+        "oldest_published",
+        "playlist_position"
+      ],
+      "type": "string"
+    },
+    "Defaults": {
+      "additionalProperties": false,
+      "description": "`[defaults]`: options every playlist inherits.",
+      "properties": {
+        "cleanup": {
+          "$ref": "#/$defs/CleanupOptions",
+          "description": "Cleanup policies."
+        },
+        "cookies_file": {
+          "description": "Netscape cookies file, for private playlists. \"\" = none.",
+          "type": "string"
+        },
+        "cover_name": {
+          "description": "Poster file name without extension; same placeholders as `output`.",
+          "format": "file-name-template",
+          "type": "string"
+        },
+        "cutoff": {
+          "description": "Skip videos published before this: \"30d\", \"2024-01-01\" or \"none\".",
+          "examples": [
+            "30d"
+          ],
+          "format": "cutoff",
+          "type": "string"
+        },
+        "embed": {
+          "$ref": "#/$defs/EmbedOptions",
+          "description": "Metadata embedded in the media file."
+        },
+        "exclude": {
+          "description": "Drop an item if any rule matches. Wins over include.",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "type": "array"
+        },
+        "format": {
+          "description": "yt-dlp format selector (`-f`).",
+          "type": "string"
+        },
+        "hooks": {
+          "description": "Hook names, run in order after each download.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "include": {
+          "description": "Keep an item if any rule matches (empty = keep all).",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "type": "array"
+        },
+        "keep_raw_info": {
+          "description": "Keep yt-dlp's raw info.json next to metadata.json.",
+          "type": "boolean"
+        },
+        "match_fields": {
+          "description": "Field(s) plain-string rules are tested against.",
+          "items": {
+            "$ref": "#/$defs/RuleField"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "max_duration": {
+          "description": "Skip videos longer than this.",
+          "examples": [
+            "30d"
+          ],
+          "format": "optional-duration",
+          "type": "string"
+        },
+        "merge_output_format": {
+          "description": "Container for merged formats (`--merge-output-format`).",
+          "type": "string"
+        },
+        "min_duration": {
+          "description": "Skip videos shorter than this.",
+          "examples": [
+            "30d"
+          ],
+          "format": "optional-duration",
+          "type": "string"
+        },
+        "output": {
+          "description": "Each video's directory, relative to `root`. Must contain {id}.",
+          "format": "output-template",
+          "type": "string"
+        },
+        "redownload_missing": {
+          "description": "Download again when a downloaded item's media file is gone.",
+          "type": "boolean"
+        },
+        "thumbnail_format": {
+          "$ref": "#/$defs/ThumbnailFormat",
+          "description": "Cover image format."
+        },
+        "ytdlp_args": {
+          "description": "Extra yt-dlp arguments, passed through.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "Duplicates": {
+      "description": "Same video in several playlists.",
+      "enum": [
+        "hardlink",
+        "symlink",
+        "copy",
+        "download"
+      ],
+      "type": "string"
+    },
+    "EmbedOptions": {
+      "additionalProperties": false,
+      "description": "`embed`: what goes into the media file. Everything is off by default.",
+      "properties": {
+        "after_hooks": {
+          "description": "Re-embed if a hook replaced the media file.",
+          "type": "boolean"
+        },
+        "chapters": {
+          "description": "Chapter markers.",
+          "type": "boolean"
+        },
+        "cover": {
+          "description": "The poster image.",
+          "type": "boolean"
+        },
+        "info_json": {
+          "description": "Attach metadata.json (mkv/mka only).",
+          "type": "boolean"
+        },
+        "metadata": {
+          "description": "Title, channel, date, description, URL, album/track.",
+          "type": "boolean"
+        },
+        "subtitles": {
+          "description": "Languages from --sub-langs.",
+          "type": "boolean"
+        },
+        "tags": {
+          "additionalProperties": {
+            "format": "tag-template",
+            "type": "string"
+          },
+          "description": "Extra tags, literal or templated, e.g. `album_artist = \"{channel}\"`.",
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "FieldRule": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "$ref": "#/$defs/RuleField",
+          "description": "The field to test."
+        },
+        "pattern": {
+          "description": "Regex (fancy-regex syntax).",
+          "format": "fancy-regex",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "pattern"
+      ],
+      "type": "object"
+    },
+    "HookConfig": {
+      "additionalProperties": false,
+      "description": "A hook: a command run after a video is downloaded or before it is cleaned up.",
+      "properties": {
+        "command": {
+          "description": "argv array; `{placeholder}`s are expanded inside each element, no shell.",
+          "items": {
+            "format": "hook-template",
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "cwd": {
+          "description": "Working directory. Defaults to the video's directory.",
+          "type": "string"
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "description": "Extra environment variables.",
+          "type": "object"
+        },
+        "event": {
+          "$ref": "#/$defs/HookEvent",
+          "default": "downloaded",
+          "description": "When the hook runs."
+        },
+        "on_failure": {
+          "$ref": "#/$defs/OnFailure",
+          "default": "fail",
+          "description": "What a non-zero exit does."
+        },
+        "retries": {
+          "default": 0,
+          "description": "Retries when `on_failure = \"retry\"`.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "timeout": {
+          "default": "10m",
+          "description": "SIGTERM to the process group after this long, SIGKILL 10 s later.",
+          "examples": [
+            "30d"
+          ],
+          "format": "duration",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command"
+      ],
+      "type": "object"
+    },
+    "HookEvent": {
+      "oneOf": [
+        {
+          "const": "downloaded",
+          "description": "After a video is committed to the library.",
+          "type": "string"
+        },
+        {
+          "const": "before_cleanup",
+          "description": "Before files are deleted; a non-zero exit vetoes the cleanup.",
+          "type": "string"
+        }
+      ]
+    },
+    "LibraryConfig": {
+      "additionalProperties": false,
+      "description": "`[library]`",
+      "properties": {
+        "concurrency": {
+          "default": 2,
+          "description": "Parallel yt-dlp downloads.",
+          "format": "uint32",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "duplicates": {
+          "$ref": "#/$defs/Duplicates",
+          "default": "hardlink",
+          "description": "What to do when the same video is in several playlists."
+        },
+        "regex_backtrack_limit": {
+          "default": 1000000,
+          "description": "fancy-regex backtracking step limit per match.",
+          "format": "uint64",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "root": {
+          "description": "Media root. Defaults to ~/.local/share/tidepool/media.",
+          "type": "string"
+        },
+        "shutdown_timeout": {
+          "default": "10s",
+          "description": "Grace period for child processes after SIGINT/SIGTERM.",
+          "examples": [
+            "30d"
+          ],
+          "format": "duration",
+          "type": "string"
+        },
+        "tmp_dir": {
+          "default": ".tidepool-tmp",
+          "description": "Work area, relative to `root` (same filesystem, so the final rename is atomic).",
+          "type": "string"
+        },
+        "ytdlp_path": {
+          "default": "yt-dlp",
+          "description": "yt-dlp executable.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "OnFailure": {
+      "oneOf": [
+        {
+          "const": "fail",
+          "description": "Stop the chain; the item becomes `hook_failed`.",
+          "type": "string"
+        },
+        {
+          "const": "warn",
+          "description": "Log and continue.",
+          "type": "string"
+        },
+        {
+          "const": "retry",
+          "description": "Retry up to `retries` times, then fail.",
+          "type": "string"
+        }
+      ]
+    },
+    "PlaylistConfig": {
+      "additionalProperties": false,
+      "description": "One playlist to mirror. Exactly one of `url` or `id` is required.",
+      "oneOf": [
+        {
+          "required": [
+            "url"
+          ]
+        },
+        {
+          "required": [
+            "id"
+          ]
+        }
+      ],
+      "properties": {
+        "cleanup": {
+          "$ref": "#/$defs/CleanupOptions",
+          "description": "Cleanup policies."
+        },
+        "cookies_file": {
+          "description": "Netscape cookies file, for private playlists. \"\" = none.",
+          "type": "string"
+        },
+        "cover_name": {
+          "description": "Poster file name without extension; same placeholders as `output`.",
+          "format": "file-name-template",
+          "type": "string"
+        },
+        "cutoff": {
+          "description": "Skip videos published before this: \"30d\", \"2024-01-01\" or \"none\".",
+          "examples": [
+            "30d"
+          ],
+          "format": "cutoff",
+          "type": "string"
+        },
+        "dir": {
+          "description": "Directory under `root`. Defaults to the playlist key.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "embed": {
+          "$ref": "#/$defs/EmbedOptions",
+          "description": "Metadata embedded in the media file."
+        },
+        "enabled": {
+          "description": "Disabled playlists are skipped.",
+          "type": "boolean"
+        },
+        "exclude": {
+          "description": "Drop an item if any rule matches. Wins over include.",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "type": "array"
+        },
+        "format": {
+          "description": "yt-dlp format selector (`-f`).",
+          "type": "string"
+        },
+        "hooks": {
+          "description": "Hook names, run in order after each download.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "description": "Bare playlist id, e.g. `PLxxxxxxxx`. Mutually exclusive with `url`.",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "type": "string"
+        },
+        "include": {
+          "description": "Keep an item if any rule matches (empty = keep all).",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "type": "array"
+        },
+        "inherit_hooks": {
+          "description": "Concatenate `[defaults]` hooks instead of replacing them.",
+          "type": "boolean"
+        },
+        "inherit_rules": {
+          "description": "Concatenate `[defaults]` include/exclude instead of replacing them.",
+          "type": "boolean"
+        },
+        "keep_raw_info": {
+          "description": "Keep yt-dlp's raw info.json next to metadata.json.",
+          "type": "boolean"
+        },
+        "match_fields": {
+          "description": "Field(s) plain-string rules are tested against.",
+          "items": {
+            "$ref": "#/$defs/RuleField"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "max_duration": {
+          "description": "Skip videos longer than this.",
+          "examples": [
+            "30d"
+          ],
+          "format": "optional-duration",
+          "type": "string"
+        },
+        "merge_output_format": {
+          "description": "Container for merged formats (`--merge-output-format`).",
+          "type": "string"
+        },
+        "min_duration": {
+          "description": "Skip videos shorter than this.",
+          "examples": [
+            "30d"
+          ],
+          "format": "optional-duration",
+          "type": "string"
+        },
+        "output": {
+          "description": "Each video's directory, relative to `root`. Must contain {id}.",
+          "format": "output-template",
+          "type": "string"
+        },
+        "redownload_missing": {
+          "description": "Download again when a downloaded item's media file is gone.",
+          "type": "boolean"
+        },
+        "thumbnail_format": {
+          "$ref": "#/$defs/ThumbnailFormat",
+          "description": "Cover image format."
+        },
+        "url": {
+          "description": "Playlist URL (must contain `list=`). Mutually exclusive with `id`.",
+          "pattern": "list=[A-Za-z0-9_-]+",
+          "type": "string"
+        },
+        "ytdlp_args": {
+          "description": "Extra yt-dlp arguments, passed through.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RemovedFromPlaylist": {
+      "enum": [
+        "keep",
+        "remove"
+      ],
+      "type": "string"
+    },
+    "Rule": {
+      "anyOf": [
+        {
+          "description": "Regex (fancy-regex syntax) tested against every field in `match_fields`.",
+          "format": "fancy-regex",
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/FieldRule",
+          "description": "Regex tested against one field."
+        }
+      ],
+      "description": "An include/exclude rule: a regex tested against `match_fields`, or a\n`{ field, pattern }` table targeting one field."
+    },
+    "RuleField": {
+      "description": "A field rules can match against.",
+      "enum": [
+        "title",
+        "description",
+        "channel",
+        "tags",
+        "id"
+      ],
+      "type": "string"
+    },
+    "ScheduleConfig": {
+      "additionalProperties": false,
+      "description": "`[schedule]`",
+      "properties": {
+        "interval": {
+          "default": "",
+          "description": "Run sync + cleanup this often; \"\" = off.",
+          "examples": [
+            "30d"
+          ],
+          "format": "optional-duration",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ThumbnailFormat": {
+      "enum": [
+        "jpg",
+        "webp",
+        "original"
+      ],
+      "type": "string"
+    },
+    "YoutubeConfig": {
+      "additionalProperties": false,
+      "description": "`[youtube]`",
+      "properties": {
+        "api_keys": {
+          "default": [],
+          "description": "API keys, tried in order only when a key is invalid or revoked. Empty = index with yt-dlp.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "daily_quota": {
+          "default": 10000,
+          "description": "Daily quota of the Google Cloud project.",
+          "format": "uint32",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "fallback_to_ytdlp": {
+          "default": true,
+          "description": "With API keys: use yt-dlp on quota exhaustion or repeated 5xx.",
+          "type": "boolean"
+        },
+        "quota_warn_at": {
+          "default": 0.8,
+          "description": "Warn when this fraction of `daily_quota` is used.",
+          "format": "double",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "requests_per_second": {
+          "default": 5,
+          "description": "API request rate limit.",
+          "format": "uint32",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/fnando/tidepool/v0.1.0/schema/tidepool.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A tidepool config file.",
+  "properties": {
+    "defaults": {
+      "$ref": "#/$defs/Defaults",
+      "default": {},
+      "description": "Options every playlist inherits."
+    },
+    "hooks": {
+      "additionalProperties": {
+        "$ref": "#/$defs/HookConfig"
+      },
+      "default": {},
+      "description": "Named post-download hooks, attached to playlists by name.",
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9_-]*$"
+      },
+      "type": "object"
+    },
+    "library": {
+      "$ref": "#/$defs/LibraryConfig",
+      "default": {
+        "concurrency": 2,
+        "duplicates": "hardlink",
+        "regex_backtrack_limit": 1000000,
+        "shutdown_timeout": "10s",
+        "tmp_dir": ".tidepool-tmp",
+        "ytdlp_path": "yt-dlp"
+      },
+      "description": "Where media goes and how downloads run."
+    },
+    "playlists": {
+      "additionalProperties": {
+        "$ref": "#/$defs/PlaylistConfig"
+      },
+      "default": {},
+      "description": "Playlists to mirror, by key.",
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9_-]*$"
+      },
+      "type": "object"
+    },
+    "schedule": {
+      "$ref": "#/$defs/ScheduleConfig",
+      "default": {
+        "interval": ""
+      },
+      "description": "Scheduling for `tidepool run` and `tidepool server`."
+    },
+    "version": {
+      "description": "Config format version. Optional; when set, must be 1.",
+      "format": "uint32",
+      "maximum": 1,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "youtube": {
+      "$ref": "#/$defs/YoutubeConfig",
+      "default": {
+        "api_keys": [],
+        "daily_quota": 10000,
+        "fallback_to_ytdlp": true,
+        "quota_warn_at": 0.8,
+        "requests_per_second": 5
+      },
+      "description": "YouTube Data API settings."
+    }
+  },
+  "title": "tidepool config",
+  "type": "object"
+}

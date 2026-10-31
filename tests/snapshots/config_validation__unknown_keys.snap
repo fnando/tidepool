@@ -1,0 +1,7 @@
+---
+source: tests/config_validation.rs
+expression: err
+---
+unknown_keys.toml:2:1 library.concurency: unknown key "concurency"
+unknown_keys.toml:5:1 playlists.lofi.urll: unknown key "urll"
+unknown_keys.toml:9:1 playlists.lofi.cleanup.max_itms: unknown key "max_itms"

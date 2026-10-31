@@ -1,0 +1,5 @@
+[hooks."Bad Hook"]
+command = ["true"]
+
+[playlists.Lofi]
+id = "PLxxxxxxxx"

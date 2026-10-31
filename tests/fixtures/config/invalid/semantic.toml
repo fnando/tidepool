@@ -1,0 +1,22 @@
+[defaults]
+hooks = ["notify"]
+min_duration = "10m"
+max_duration = "5m"
+
+[hooks.transcode]
+command = ["to-h265.sh", "{media_path}"]
+
+[playlists.one]
+id = "PLsamesame"
+dir = "music"
+hooks = ["transcode", "upload"]
+
+[playlists.two]
+url = "https://www.youtube.com/playlist?list=PLsamesame"
+dir = "./music"
+
+[playlists.three]
+id = "PLthree"
+dir = "../outside"
+max_duration = "1m"
+min_duration = "2m"

@@ -1,0 +1,96 @@
+#:schema https://raw.githubusercontent.com/fnando/tidepool/v0.1.0/schema/tidepool.v1.schema.json
+#
+# Example tidepool config. Import it with:
+#
+#   tidepool config import examples/config.toml
+#
+# or pass it on every run (imported only when it changed):
+#
+#   tidepool sync --config ~/.config/tidepool/config.toml
+
+version = 1
+
+[library]
+root = "~/Videos/youtube"           # media; default ~/.local/share/tidepool/media
+concurrency = 2                     # parallel yt-dlp downloads
+duplicates = "hardlink"             # same video in several playlists: hardlink | symlink | copy | download
+regex_backtrack_limit = 1000000     # fancy-regex step limit per match
+shutdown_timeout = "10s"            # grace period for child processes after SIGINT/SIGTERM
+ytdlp_path = "yt-dlp"
+tmp_dir = ".tidepool-tmp"           # relative to root: same filesystem, atomic rename
+
+[youtube]
+api_keys = []                       # e.g. ["AIza..."]; empty = index with yt-dlp
+daily_quota = 10000                 # raise only if Google granted your project an extension
+quota_warn_at = 0.8                 # warn at 80% of daily_quota
+fallback_to_ytdlp = true            # with keys: use yt-dlp on quota/5xx
+requests_per_second = 5
+
+[schedule]
+interval = "6h"                     # tidepool run / server: sync + cleanup this often; "" = off
+
+[defaults]
+format = "bv*[height<=1080]+ba/b"
+merge_output_format = "mkv"
+output = "{playlist_dir}/{upload_date} - {title} [{id}]"  # directory per video
+ytdlp_args = ["--write-subs", "--sub-langs", "en.*"]
+cookies_file = ""                   # optional, for private playlists
+thumbnail_format = "jpg"            # jpg | webp | original
+cover_name = "{title}-poster"       # poster file name, no extension
+match_fields = ["title"]            # default field(s) for plain-string rules
+include = []
+exclude = ['(?i)#shorts']
+min_duration = "60s"
+max_duration = "4h"
+cutoff = "30d"                      # skip videos published more than 30d ago; "2024-01-01" also works
+hooks = []
+redownload_missing = false          # once downloaded, never fetch again even if the file is gone
+
+[defaults.embed]                    # everything is off unless turned on here or per playlist
+metadata = true                     # title, channel, date, description, URL, album/track
+cover = true                        # same image as the poster file
+chapters = true
+subtitles = true                    # languages from --sub-langs
+info_json = false                   # attach metadata.json (mkv/mka only)
+after_hooks = true                  # re-embed if a hook replaced the media file
+tags = { genre = "Music", album_artist = "{channel}" }
+
+[defaults.cleanup]
+max_items = 0                       # 0 = unlimited
+max_age = ""                        # e.g. "30d"
+max_size = ""                       # e.g. "20GiB"
+order = "oldest_downloaded"         # oldest_downloaded | oldest_published | playlist_position
+removed_from_playlist = "keep"      # keep | remove
+keep = "metadata"                   # nothing | metadata (keep json + cover, drop media)
+
+[hooks.transcode]
+command = ["/usr/local/bin/to-h265.sh", "{media_path}"]
+timeout = "30m"
+on_failure = "fail"                 # fail | warn | retry
+retries = 2
+env = { CRF = "26" }
+
+[hooks.notify]
+command = ["ntfy", "publish", "videos", "New: {title}"]
+timeout = "30s"
+on_failure = "warn"
+
+[playlists.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # or id = "PLxxxxxxxx"
+dir = "lofi"                        # defaults to the key
+enabled = true
+include = ['(?i)\blive\b', { field = "channel", pattern = '^Lofi Girl$' }]
+exclude = ['(?i)\b(trailer|teaser)\b']
+hooks = ["transcode", "notify"]
+
+[playlists.lofi.cleanup]
+max_items = 50
+max_age = "30d"
+removed_from_playlist = "remove"
+
+[playlists.talks]
+id = "PLyyyyyyyy"
+cutoff = "none"                     # overrides the global 30d: keep the whole back catalogue
+format = "ba/b"                     # audio only
+ytdlp_args = ["-x", "--audio-format", "opus"]
+inherit_rules = true                # concat defaults.include/exclude instead of replacing

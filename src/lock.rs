@@ -1,0 +1,83 @@
+//! Per-library advisory lock, so overlapping runs never touch the same library.
+
+use std::fs::{File, OpenOptions, TryLockError};
+use std::io::{Read, Seek, SeekFrom, Write};
+use std::path::{Path, PathBuf};
+
+/// Held until dropped.
+#[derive(Debug)]
+pub struct LibraryLock {
+    _file: File,
+    pub path: PathBuf,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum LockError {
+    #[error("library is locked by another tidepool process{}", .pid.map(|p| format!(" (pid {p})")).unwrap_or_default())]
+    Held { pid: Option<u32> },
+    #[error("cannot lock {path}: {source}")]
+    Io {
+        path: PathBuf,
+        source: std::io::Error,
+    },
+}
+
+/// Take the lock at `path` without blocking, recording our PID in it.
+pub fn acquire(path: &Path) -> Result<LibraryLock, LockError> {
+    let io = |source| LockError::Io {
+        path: path.to_path_buf(),
+        source,
+    };
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent).map_err(io)?;
+    }
+    // Don't truncate before locking: the holder's PID must stay readable.
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .open(path)
+        .map_err(io)?;
+    match file.try_lock() {
+        Ok(()) => {}
+        Err(TryLockError::WouldBlock) => {
+            let mut text = String::new();
+            let _ = file.read_to_string(&mut text);
+            return Err(LockError::Held {
+                pid: text.trim().parse().ok(),
+            });
+        }
+        Err(TryLockError::Error(e)) => return Err(io(e)),
+    }
+    file.set_len(0).map_err(io)?;
+    file.seek(SeekFrom::Start(0)).map_err(io)?;
+    write!(file, "{}", std::process::id()).map_err(io)?;
+    file.flush().map_err(io)?;
+    Ok(LibraryLock {
+        _file: file,
+        path: path.to_path_buf(),
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn second_acquire_reports_the_holder() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("lib/lock");
+        let held = acquire(&path).unwrap();
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            std::process::id().to_string()
+        );
+        match acquire(&path) {
+            Err(LockError::Held { pid }) => assert_eq!(pid, Some(std::process::id())),
+            other => panic!("expected Held, got {other:?}"),
+        }
+        drop(held);
+        assert!(acquire(&path).is_ok(), "released on drop");
+    }
+}

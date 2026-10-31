@@ -1,0 +1,21 @@
+[defaults]
+output = "{title}"
+cover_name = "covers/{title}"
+min_duration = "1 hour"
+cutoff = "yesterday"
+include = ['(unclosed']
+
+[defaults.embed]
+tags = { album = "{media_path}" }
+
+[hooks.notify]
+command = ["ntfy", "{nope}"]
+timeout = "soon"
+
+[playlists.lofi]
+id = "PLxxxxxxxx"
+exclude = [{ field = "channel", pattern = '[z-a]' }]
+
+[playlists.lofi.cleanup]
+max_size = "20 gigs"
+max_age = "a month"

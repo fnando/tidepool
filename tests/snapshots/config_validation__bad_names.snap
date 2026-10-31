@@ -1,0 +1,6 @@
+---
+source: tests/config_validation.rs
+expression: err
+---
+bad_names.toml:1:8 hooks."Bad Hook": invalid name "Bad Hook": must match ^[a-z0-9][a-z0-9_-]*$ (lowercase letters, digits, '-' and '_')
+bad_names.toml:4:12 playlists.Lofi: invalid name "Lofi": must match ^[a-z0-9][a-z0-9_-]*$ (lowercase letters, digits, '-' and '_')

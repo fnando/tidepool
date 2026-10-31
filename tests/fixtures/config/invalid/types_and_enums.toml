@@ -1,0 +1,27 @@
+[library]
+concurrency = 0
+duplicates = "move"
+
+[youtube]
+quota_warn_at = 1.5
+api_keys = "AIza"
+
+[defaults]
+thumbnail_format = "png"
+match_fields = []
+include = [1, { field = "comments", pattern = "x" }, { pattern = "y" }]
+
+[defaults.cleanup]
+order = "random"
+max_items = -1
+
+[hooks.empty]
+command = []
+on_failure = "explode"
+
+[hooks.missing]
+timeout = "1m"
+
+[playlists.lofi]
+id = "PLxxxxxxxx"
+enabled = "yes"

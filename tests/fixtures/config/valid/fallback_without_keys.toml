@@ -1,0 +1,5 @@
+[youtube]
+fallback_to_ytdlp = false
+
+[playlists.lofi]
+id = "PLxxxxxxxx"

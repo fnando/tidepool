@@ -1,0 +1,9 @@
+[library]
+concurency = 2
+
+[playlists.lofi]
+urll = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+id = "PLxxxxxxxx"
+
+[playlists.lofi.cleanup]
+max_itms = 3

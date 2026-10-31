@@ -1,0 +1,5 @@
+---
+source: tests/config_validation.rs
+expression: err
+---
+syntax.toml:1:9 TOML syntax error: unclosed table, expected `]`
