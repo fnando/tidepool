@@ -31,10 +31,10 @@ pub struct Config {
     /// YouTube Data API settings.
     #[serde(default)]
     pub youtube: YoutubeConfig,
-    /// Scheduling for `tidepool run`.
+    /// Scheduling for `tidepool run --daemon`.
     #[serde(default)]
     pub schedule: ScheduleConfig,
-    /// The web UI served by `tidepool run`.
+    /// The web UI served by `tidepool run --daemon`.
     #[serde(default)]
     pub server: ServerConfig,
     /// Options every source inherits.
@@ -172,7 +172,7 @@ pub struct ScheduleConfig {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields, default)]
 pub struct ServerConfig {
-    /// Serve the web UI from `tidepool run`; false = sync daemon only.
+    /// Serve the web UI from `tidepool run --daemon`; false = sync daemon only.
     pub enabled: bool,
     /// Address the web UI listens on, e.g. "127.0.0.1:8787".
     #[schemars(extend("format" = "socket-address"))]

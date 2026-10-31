@@ -438,7 +438,7 @@
       "properties": {
         "enabled": {
           "default": true,
-          "description": "Serve the web UI from `tidepool run`; false = sync daemon only.",
+          "description": "Serve the web UI from `tidepool run --daemon`; false = sync daemon only.",
           "type": "boolean"
         },
         "listen": {
@@ -720,7 +720,7 @@
       "default": {
         "interval": ""
       },
-      "description": "Scheduling for `tidepool run`."
+      "description": "Scheduling for `tidepool run --daemon`."
     },
     "server": {
       "$ref": "#/$defs/ServerConfig",
@@ -730,7 +730,7 @@
         "read_only_config": false,
         "token": ""
       },
-      "description": "The web UI served by `tidepool run`."
+      "description": "The web UI served by `tidepool run --daemon`."
     },
     "sources": {
       "additionalProperties": {

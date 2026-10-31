@@ -51,9 +51,9 @@ version = 1
 # requests_per_second = 5           # API request rate limit
 
 [schedule]
-interval = "6h"                     # tidepool run: sync + cleanup this often; "" = off
+interval = "6h"                     # tidepool run --daemon: sync + cleanup this often; "" = off
 
-[server]                            # web UI inside tidepool run
+[server]                            # web UI served by tidepool run --daemon
 # enabled = true                    # false = sync daemon only, no UI
 # listen = "127.0.0.1:8787"         # UI address
 # token = ""                        # required for a non-loopback listen address

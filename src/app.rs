@@ -202,8 +202,8 @@ impl App<'_> {
             "\nThe config includes a sample source with one short video. Next steps:\n\
              \x20 1. Edit {name}: replace the sample with your sources, set where videos go.\n\
              \x20 2. Apply your changes: tidepool config import {name}{library}\n\
-             \x20 3. Sync once: tidepool sync{library}\n\
-             \x20    Or keep syncing every {interval} with the web UI at http://{listen}: tidepool run{library}",
+             \x20 3. Sync once: tidepool run{library}\n\
+             \x20    Or keep syncing every {interval} with the web UI at http://{listen}: tidepool run --daemon{library}",
             interval = crate::config::types::format_duration(
                 config.schedule.interval.0.unwrap_or_default()
             ),
@@ -217,7 +217,7 @@ impl App<'_> {
             "\nTo run it as a service, save this as ~/.config/systemd/user/tidepool.service\n\
              and run `systemctl --user enable --now tidepool`:\n\n\
              [Unit]\nDescription=tidepool\n\n\
-             [Service]\nExecStart={exe} run{library} --config {name} --on-config-mismatch import\n\
+             [Service]\nExecStart={exe} run --daemon{library} --config {name} --on-config-mismatch import\n\
              Restart=on-failure\n\n\
              [Install]\nWantedBy=default.target"
         )?;

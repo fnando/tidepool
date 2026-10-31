@@ -67,8 +67,6 @@ pub enum LogFormat {
 pub enum Command {
     /// Create a commented config file and the library behind it
     Init(InitArgs),
-    /// Full pipeline: index, filter, download, run hooks, clean up
-    Sync(ScopeArgs),
     /// Index only: update the DB with remote items and filter results
     Index(ScopeArgs),
     /// Download items already indexed and pending; no re-index
@@ -107,7 +105,7 @@ pub enum Command {
         #[command(subcommand)]
         cmd: YtdlpCmd,
     },
-    /// Daemon: sync + cleanup every schedule.interval, plus the web UI ([server])
+    /// Sync every source once; --daemon keeps syncing and serves the web UI
     Run(RunArgs),
 }
 
@@ -116,7 +114,7 @@ impl Command {
     pub fn milestone(&self) -> Option<&'static str> {
         match self {
             Command::Init(_) | Command::Config(_) | Command::Filter { .. } => None,
-            Command::Sync(_)
+            Command::Run(RunArgs { daemon: false, .. })
             | Command::Index(_)
             | Command::Download(_)
             | Command::Reset(_)
@@ -125,7 +123,7 @@ impl Command {
             Command::Hooks { .. } | Command::Embed(_) => Some("M4"),
             Command::Cleanup(_) | Command::Pin(_) | Command::Unpin(_) => Some("M5"),
             Command::List(_) => Some("M6"),
-            Command::Run(_) => Some("M7"),
+            Command::Run(RunArgs { daemon: true, .. }) => Some("M7"),
         }
     }
 }
@@ -275,11 +273,27 @@ pub enum ConfigMismatch {
     Fail,
 }
 
+/// `tidepool run`: sync once and exit; with `--daemon`, keep syncing every
+/// `schedule.interval` and serve the web UI (unless `server.enabled = false`).
 #[derive(Debug, Args)]
 pub struct RunArgs {
-    /// What to do when the config file differs from the stored config. Without
-    /// it: ask in a terminal, resolve in the web UI, or fail when the UI is off.
-    #[arg(long, value_enum)]
+    /// Keep running: sync every schedule.interval, and serve the web UI
+    #[arg(long)]
+    pub daemon: bool,
+
+    /// Only sync these sources: name, playlist id or URL; repeatable
+    #[arg(
+        long = "source",
+        short = 's',
+        value_name = "NAME|ID|URL",
+        conflicts_with = "daemon"
+    )]
+    pub sources: Vec<SourceRef>,
+
+    /// With --daemon: what to do when the config file differs from the stored
+    /// config. Without it: ask in a terminal, resolve in the web UI, or fail
+    /// when the UI is off.
+    #[arg(long, value_enum, requires = "daemon")]
     pub on_config_mismatch: Option<ConfigMismatch>,
 }
 
@@ -457,7 +471,7 @@ mod tests {
 
     #[test]
     fn config_flag_is_global() {
-        let cli = Cli::try_parse_from(["tidepool", "sync", "--config", "a.toml"]).unwrap();
+        let cli = Cli::try_parse_from(["tidepool", "run", "--config", "a.toml"]).unwrap();
         assert_eq!(cli.config, Some(PathBuf::from("a.toml")));
     }
 }

@@ -310,13 +310,23 @@ fn schema_command_prints_the_committed_schema() {
 #[test]
 fn exit_codes() {
     let env = Env::new();
-    env.cmd(&["sync"])
+    env.cmd(&["run"])
         .assert()
         .code(1)
         .stderr(contains("not implemented yet (planned for M2)"));
+    env.cmd(&["run", "--daemon"])
+        .assert()
+        .code(1)
+        .stderr(contains("not implemented yet (planned for M7)"));
     env.cmd(&["--bogus"]).assert().code(2);
-    env.cmd(&["sync", "-s", "Not A Key"]).assert().code(2);
-    env.cmd(&["sync", "--playlist", "lofi"]).assert().code(2);
+    env.cmd(&["sync"]).assert().code(2);
+    env.cmd(&["run", "-s", "Not A Key"]).assert().code(2);
+    env.cmd(&["run", "--playlist", "lofi"]).assert().code(2);
+    // --source is for one-shot runs; --on-config-mismatch only applies to the daemon.
+    env.cmd(&["run", "--daemon", "-s", "lofi"]).assert().code(2);
+    env.cmd(&["run", "--on-config-mismatch", "import"])
+        .assert()
+        .code(2);
     env.cmd(&["--library", "../escape", "config"])
         .assert()
         .code(2);
@@ -364,7 +374,7 @@ fn init_creates_config_and_library() {
                 .and(contains("sample source"))
                 .and(contains("tidepool config import"))
                 .and(contains(
-                    "every 6h with the web UI at http://127.0.0.1:8787: tidepool run",
+                    "every 6h with the web UI at http://127.0.0.1:8787: tidepool run --daemon",
                 ))
                 .and(contains("--on-config-mismatch import")),
         )
@@ -418,7 +428,7 @@ fn init_never_overwrites() {
     env.cmd(&["init", "-l", "work", "--force"])
         .assert()
         .success()
-        .stdout(contains("tidepool sync --library work"));
+        .stdout(contains("Sync once: tidepool run --library work"));
     assert_eq!(
         fs::read_to_string(env.path("config/tidepool/config.toml.bak")).unwrap(),
         "# my edits\n"

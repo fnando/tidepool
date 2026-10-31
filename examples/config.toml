@@ -6,7 +6,7 @@
 #
 # or pass it on every run (imported only when it changed):
 #
-#   tidepool sync --config ~/.config/tidepool/config.toml
+#   tidepool run --config ~/.config/tidepool/config.toml
 
 version = 1
 
@@ -32,9 +32,9 @@ fallback_to_ytdlp = true            # with a key: use yt-dlp on quota/5xx; alway
 requests_per_second = 5
 
 [schedule]
-interval = "6h"                     # tidepool run: sync + cleanup this often; "" = off
+interval = "6h"                     # tidepool run --daemon: sync + cleanup this often; "" = off
 
-[server]                            # web UI inside tidepool run
+[server]                            # web UI served by tidepool run --daemon
 enabled = true                      # false = sync daemon only, no UI
 listen = "127.0.0.1:8787"
 token = ""                          # required for a non-loopback listen address
