@@ -6,14 +6,16 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context as _, bail};
 use serde_json::Value;
 
-use crate::cli::{Cli, Command, ConfigArgs, ConfigCmd, FilterCmd, InitArgs, SourceRef, YtdlpCmd};
+use crate::cli::{
+    Cli, Command, ConfigArgs, ConfigCmd, FilterCmd, InitArgs, ScopeArgs, SourceRef, YtdlpCmd,
+};
 use crate::config::check::{EffectiveConfig, Finding, check_environment, media_root};
 use crate::config::diff::{key_changes, mask_json, mask_toml, text_diff};
 use crate::config::merge::{EffectiveSource, effective_sources};
 use crate::config::schema::schema_json;
 use crate::config::store::{ConfigStore, Imported, Revision};
 use crate::config::{Loaded, load_file, load_str};
-use crate::filter::{Decision, Fields, List, Match, RuleSet};
+use crate::filter::{Fields, Match, RuleSet};
 use crate::init;
 use crate::lock::{self, LibraryLock};
 use crate::paths::{Dirs, LibraryPaths};
@@ -24,6 +26,8 @@ pub mod exit {
     pub const OK: i32 = 0;
     pub const FATAL: i32 = 1;
     pub const USAGE: i32 = 2;
+    /// The run finished, but at least one source, video or hook failed.
+    pub const PARTIAL: i32 = 3;
 }
 
 /// A command-line usage problem found after parsing (exit 2).
@@ -52,6 +56,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
             cmd: FilterCmd::Test { title, source },
         } => app.filter_test(title, source, out),
         Command::Ytdlp { cmd } => app.ytdlp(cmd, out).await,
+        Command::Index(scope) => app.index(scope, out).await,
         other => {
             let milestone = other.milestone().unwrap_or("a later milestone");
             bail!("this command is not implemented yet (planned for {milestone})")
@@ -71,7 +76,7 @@ fn uses_stored_config(command: &Command) -> bool {
                 | Some(ConfigCmd::Diff { .. })
                 | Some(ConfigCmd::Check { path: None, .. })
         ),
-        Command::Filter { .. } | Command::Ytdlp { .. } => true,
+        Command::Filter { .. } | Command::Ytdlp { .. } | Command::Index(_) => true,
         _ => false,
     }
 }
@@ -92,6 +97,92 @@ impl App<'_> {
             Err(crate::config::store::StoreError::Empty(_)) => Ok(crate::config::Config::default()),
             Err(err) => Err(err.into()),
         }
+    }
+
+    /// The sources a command works on: the ones named with `--source`, or
+    /// every enabled one.
+    fn scoped_sources(
+        &self,
+        config: &crate::config::Config,
+        refs: &[SourceRef],
+    ) -> anyhow::Result<Vec<EffectiveSource>> {
+        let all = effective_sources(config);
+        if refs.is_empty() {
+            return Ok(all.into_iter().filter(|s| s.enabled).collect());
+        }
+        let mut picked: Vec<EffectiveSource> = Vec::new();
+        for r in refs {
+            let source = resolve_source(r, &all)?;
+            if !picked.iter().any(|p| p.key == source.key) {
+                picked.push(source.clone());
+            }
+        }
+        Ok(picked)
+    }
+
+    /// The yt-dlp to run: the managed one (downloaded or updated if needed)
+    /// or `ytdlp.path`.
+    async fn ytdlp_binary(&self, config: &crate::config::Config) -> anyhow::Result<PathBuf> {
+        let ytdlp = &config.ytdlp;
+        if !ytdlp.managed {
+            return Ok(PathBuf::from(&ytdlp.path));
+        }
+        let manager = crate::ytdlp::manager::Manager::new(&self.dirs);
+        let ensured = manager
+            .ensure(ytdlp.channel, ytdlp.update_check.0, jiff::Timestamp::now())
+            .await?;
+        if let Some(warning) = ensured.warning {
+            tracing::warn!("{warning}");
+        }
+        match ensured.outcome {
+            Some(outcome @ crate::ytdlp::manager::UpdateOutcome::Installed { .. })
+            | Some(outcome @ crate::ytdlp::manager::UpdateOutcome::Updated { .. }) => {
+                tracing::info!("{outcome}")
+            }
+            Some(outcome) => tracing::debug!("{outcome}"),
+            None => {}
+        }
+        Ok(ensured.path)
+    }
+
+    async fn index(&self, scope: &ScopeArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
+        let mut state = self.open_state()?;
+        let loaded = self.current_config(&state)?;
+        let sources = self.scoped_sources(&loaded.config, &scope.sources)?;
+        if sources.is_empty() {
+            writeln!(
+                out,
+                "no enabled sources; add one under [sources.<name>] in your config"
+            )?;
+            return Ok(exit::OK);
+        }
+        let _lock = self.lock()?;
+        let ytdlp = self.ytdlp_binary(&loaded.config).await?;
+        let now = jiff::Timestamp::now();
+        let mut failed = 0;
+        for source in &sources {
+            match crate::pipeline::index_source(
+                &mut state,
+                &loaded.config,
+                source,
+                &self.dirs,
+                &ytdlp,
+                now,
+            )
+            .await
+            {
+                Ok(summary) => writeln!(
+                    out,
+                    "{}",
+                    crate::pipeline::describe_index(&source.key, &summary)
+                )?,
+                Err(err) => {
+                    failed += 1;
+                    tracing::error!("{}: {err}", source.key);
+                }
+            }
+        }
+        Ok(if failed > 0 { exit::PARTIAL } else { exit::OK })
     }
 
     async fn ytdlp(&self, cmd: &YtdlpCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
@@ -622,7 +713,15 @@ impl App<'_> {
         let source = resolve_source(source, &sources)?;
         let limit =
             usize::try_from(loaded.config.library.regex_backtrack_limit).unwrap_or(usize::MAX);
-        let rules = RuleSet::compile(source, limit).map_err(anyhow::Error::msg)?;
+        let rules =
+            RuleSet::compile(source, limit, jiff::Timestamp::now()).map_err(anyhow::Error::msg)?;
+        // A bare title has no duration or date: test only the include/exclude rules.
+        let rules = RuleSet {
+            min_duration: None,
+            max_duration: None,
+            cutoff: None,
+            ..rules
+        };
         let item = Fields {
             title: Some(title),
             ..Fields::default()
@@ -656,30 +755,7 @@ impl App<'_> {
                 fields.join(", ")
             )?;
         }
-        let decision = match rules.decide(&item) {
-            Decision::Keep { include: Some(i) } => format!("keep (matches include[{i}])"),
-            Decision::Keep { include: None } => "keep (no include rules)".to_string(),
-            Decision::Excluded { rule } => format!("drop (matches exclude[{rule}])"),
-            Decision::NotIncluded => "drop (matches no include rule)".to_string(),
-            Decision::Deferred(field) => {
-                format!(
-                    "deferred: needs {} (checked before download)",
-                    format!("{field:?}").to_lowercase()
-                )
-            }
-            Decision::FilterError {
-                list,
-                rule,
-                message,
-            } => {
-                let list = if list == List::Include {
-                    "include"
-                } else {
-                    "exclude"
-                };
-                format!("held: {list}[{rule}] failed: {message}")
-            }
-        };
+        let decision = rules.decide(&item);
         writeln!(out, "decision: {decision}")?;
         Ok(exit::OK)
     }

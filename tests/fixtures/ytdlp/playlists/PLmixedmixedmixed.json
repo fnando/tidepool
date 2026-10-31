@@ -1,0 +1,251 @@
+{
+ "id": "PLmixedmixedmixed",
+ "title": "Mixed bag",
+ "availability": "public",
+ "channel": "Lofi Girl",
+ "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+ "_type": "playlist",
+ "webpage_url": "https://www.youtube.com/playlist?list=PLmixedmixedmixed",
+ "entries": [
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000001",
+   "url": "https://www.youtube.com/watch?v=vid00000001",
+   "title": "Lofi live radio 24/7",
+   "duration": 300,
+   "timestamp": 1790000000,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000001/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000002",
+   "url": "https://www.youtube.com/watch?v=vid00000002",
+   "title": "Studio session",
+   "duration": 1200,
+   "timestamp": 1790000000,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000002/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000003",
+   "url": "https://www.youtube.com/watch?v=vid00000003",
+   "title": "Quick teaser #shorts",
+   "duration": 30,
+   "timestamp": 1790000000,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000003/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000004",
+   "url": "https://www.youtube.com/watch?v=vid00000004",
+   "title": "Four hour mix",
+   "duration": 18000,
+   "timestamp": 1790000000,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000004/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000005",
+   "url": "https://www.youtube.com/watch?v=vid00000005",
+   "title": "Old upload",
+   "duration": 300,
+   "timestamp": 1500000000,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000005/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000006",
+   "url": "https://www.youtube.com/watch?v=vid00000006",
+   "title": "No date yet",
+   "duration": 300,
+   "timestamp": null,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000006/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000007",
+   "url": "https://www.youtube.com/watch?v=vid00000007",
+   "title": "[Private video]",
+   "duration": null,
+   "timestamp": null,
+   "live_status": null,
+   "availability": null,
+   "channel": null,
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000007/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000008",
+   "url": "https://www.youtube.com/watch?v=vid00000008",
+   "title": "[Deleted video]",
+   "duration": null,
+   "timestamp": null,
+   "live_status": null,
+   "availability": null,
+   "channel": null,
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000008/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000009",
+   "url": "https://www.youtube.com/watch?v=vid00000009",
+   "title": "Premiere tomorrow",
+   "duration": null,
+   "timestamp": 1790000000,
+   "live_status": "is_upcoming",
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000009/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000010",
+   "url": "https://www.youtube.com/watch?v=vid00000010",
+   "title": "Streaming now",
+   "duration": null,
+   "timestamp": 1790000000,
+   "live_status": "is_live",
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000010/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000011",
+   "url": "https://www.youtube.com/watch?v=vid00000011",
+   "title": "Members only",
+   "duration": 300,
+   "timestamp": 1790000000,
+   "live_status": null,
+   "availability": "subscriber_only",
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000011/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "vid00000012",
+   "url": "https://www.youtube.com/watch?v=vid00000012",
+   "title": "Official trailer",
+   "duration": 120,
+   "timestamp": 1790000000,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/vid00000012/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    }
+   ]
+  }
+ ]
+}

@@ -1,2 +1,17 @@
 #!/bin/sh
-echo 2026.10.01
+# Fake yt-dlp for tests. `--version` prints a version; `--flat-playlist ... <url>`
+# prints tests/fixtures/ytdlp/playlists/<list id>.json, or fails like yt-dlp.
+# With TIDEPOOL_FAKE_YTDLP_LOG set, every call's arguments are appended to it.
+fixtures="$(cd "$(dirname "$0")/.." && pwd)/fixtures/ytdlp/playlists"
+[ -n "${TIDEPOOL_FAKE_YTDLP_LOG:-}" ] && echo "$*" >> "$TIDEPOOL_FAKE_YTDLP_LOG"
+case " $* " in
+  *" --version "*) echo 2026.10.01; exit 0 ;;
+  *" --flat-playlist "*)
+    for arg; do url="$arg"; done
+    id="${url##*list=}"; id="${id%%&*}"
+    if [ -f "$fixtures/$id.json" ]; then cat "$fixtures/$id.json"; exit 0; fi
+    echo "ERROR: [youtube:tab] $id: The playlist does not exist." >&2
+    exit 1 ;;
+esac
+echo "fake yt-dlp: unsupported arguments: $*" >&2
+exit 2

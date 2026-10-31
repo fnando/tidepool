@@ -533,3 +533,104 @@ fn init_next_steps_omit_the_default_path() {
         .success()
         .stdout(contains("Apply your changes: tidepool config import\n"));
 }
+
+#[test]
+fn filter_test_ignores_duration_and_cutoff_limits() {
+    let env = Env::new();
+    let file = env.write_config("c.toml", "min_duration = \"60s\"\ncutoff = \"30d\"\n");
+    env.cmd(&[
+        "filter", "test", "Live set", "-s", "lofi", "--config", &file,
+    ])
+    .assert()
+    .success()
+    .stdout(contains("decision: keep (matches include[0])"));
+}
+
+fn write_index_config(env: &Env, extra_mixed: &str) -> String {
+    let ytdlp = test_bin().join("yt-dlp");
+    let text = format!(
+        "[library]\nroot = \"{root}\"\n\n[ytdlp]\nmanaged = false\npath = \"{ytdlp}\"\n\n\
+         [sources.sample]\nurl = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"\n\n\
+         [sources.mixed]\nurl = \"https://www.youtube.com/playlist?list=PLmixedmixedmixed\"\n\
+         min_duration = \"60s\"\nmax_duration = \"4h\"\ncutoff = \"2026-01-01\"\n{extra_mixed}\n\
+         [sources.broken]\nurl = \"https://www.youtube.com/playlist?list=PLdoesnotexist\"\n",
+        root = env.path("media").display(),
+        ytdlp = ytdlp.display()
+    );
+    let path = env.path("index.toml");
+    fs::write(&path, text).unwrap();
+    path.display().to_string()
+}
+
+fn item_statuses(env: &Env, source: &str) -> Vec<(String, String)> {
+    let conn =
+        rusqlite::Connection::open(env.path("data/tidepool/libraries/default/state.db")).unwrap();
+    let mut stmt = conn
+        .prepare("SELECT v.title, i.status FROM items i JOIN videos v ON v.id = i.video_id WHERE i.source_key = ?1 ORDER BY i.position")
+        .unwrap();
+    stmt.query_map([source], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect()
+}
+
+#[test]
+fn index_records_each_source_and_explains_what_it_skipped() {
+    let env = Env::new();
+    let log = env.path("ytdlp.log");
+    let file = write_index_config(&env, "exclude = ['(?i)trailer']");
+    env.cmd(&["index", "--config", &file])
+        .env("TIDEPOOL_FAKE_YTDLP_LOG", &log)
+        .assert()
+        .code(3)
+        .stdout(
+            contains("sample: 1 video (1 new): 1 to download")
+                .and(contains(
+                    "mixed: 12 videos (12 new): 2 to download, 1 to check before download, 9 skipped \
+                     (5 unavailable, 1 excluded by a rule, 1 published before the cutoff, 1 too long, 1 too short)",
+                )),
+        )
+        .stderr(contains("broken: yt-dlp failed: ERROR: [youtube:tab] PLdoesnotexist: The playlist does not exist."));
+
+    let calls = fs::read_to_string(&log).unwrap();
+    assert!(calls.contains("--flat-playlist -J --no-update"), "{calls}");
+
+    let mixed = item_statuses(&env, "mixed");
+    assert_eq!(mixed[0], ("Lofi live radio 24/7".into(), "pending".into()));
+    assert_eq!(mixed[5], ("No date yet".into(), "pending_check".into()));
+    assert_eq!(mixed[11], ("Official trailer".into(), "filtered".into()));
+
+    // Scoped, and nothing new the second time.
+    env.cmd(&["index", "-s", "sample"])
+        .assert()
+        .success()
+        .stdout("sample: 1 video: 1 to download\n");
+
+    // Relaxed rules apply to videos not downloaded yet.
+    let file = write_index_config(&env, "");
+    env.cmd(&["index", "-s", "mixed", "--config", &file])
+        .assert()
+        .success()
+        .stdout(contains("mixed: 12 videos: 3 to download"));
+    assert_eq!(
+        item_statuses(&env, "mixed")[11],
+        ("Official trailer".into(), "pending".into())
+    );
+}
+
+#[test]
+fn index_needs_a_working_ytdlp() {
+    let env = Env::new();
+    let file = env.path("c.toml");
+    fs::write(
+        &file,
+        "[ytdlp]\nmanaged = false\npath = \"/nonexistent/yt-dlp\"\n[sources.sample]\nurl = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"\n",
+    )
+    .unwrap();
+    env.cmd(&["index", "--config", &file.display().to_string()])
+        .assert()
+        .code(3)
+        .stderr(contains(
+            "sample: yt-dlp failed: cannot run /nonexistent/yt-dlp",
+        ));
+}

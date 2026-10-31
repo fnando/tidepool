@@ -2,14 +2,14 @@
 
 CREATE TABLE sources (
   key TEXT PRIMARY KEY,            -- config key
-  youtube_id TEXT NOT NULL UNIQUE,
+  youtube_id TEXT NOT NULL,       -- unique among configured sources (config validation)
   title TEXT, etag TEXT, rules_hash TEXT,
   last_indexed_at TEXT, last_index_source TEXT
 );
 
 CREATE TABLE videos (              -- shared across sources
   id TEXT PRIMARY KEY,
-  title TEXT, channel TEXT, description TEXT, tags_json TEXT,
+  title TEXT, channel TEXT, channel_id TEXT, description TEXT, tags_json TEXT,
   duration_s INTEGER, published_at TEXT, availability TEXT,
   thumbs_json TEXT, updated_at TEXT
 );

@@ -7,6 +7,8 @@ use std::path::Path;
 use rusqlite::Connection;
 use rusqlite_migration::{M, Migrations};
 
+pub mod items;
+
 const MIGRATION_LIST: &[M<'static>] = &[M::up(include_str!("schema.sql"))];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_LIST);
 

@@ -1,0 +1,46 @@
+{
+ "id": "PLXLpuA-bwY4s",
+ "title": "Rick Astley",
+ "availability": "unlisted",
+ "channel": "Nando Vieira",
+ "channel_id": "UC8ZZtZOqA-QkJad9VwVuNjw",
+ "_type": "playlist",
+ "webpage_url": "https://www.youtube.com/playlist?list=PLXLpuA-bwY4s",
+ "entries": [
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "dQw4w9WgXcQ",
+   "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+   "title": "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)",
+   "duration": 214,
+   "timestamp": 1257033600,
+   "live_status": null,
+   "availability": null,
+   "channel": "Rick Astley",
+   "channel_id": "UCuAXFkgsw1L7xaCfnd5JJOw",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDd2KtelLHaNSXrI9_5K-NvTscKNw",
+     "height": 94,
+     "width": 168
+    },
+    {
+     "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg?sqp=-oaymwEbCMQBEG5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBUpEOOWUXWkNyijQuZ4UPzp2BE-w",
+     "height": 110,
+     "width": 196
+    },
+    {
+     "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg?sqp=-oaymwEcCPYBEIoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBCyhr8AqpJ1SxKVU6SyK5ODJ_IpA",
+     "height": 138,
+     "width": 246
+    },
+    {
+     "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLB_p0PncTtkrhaNDZtntrE3gKkoYw",
+     "height": 188,
+     "width": 336
+    }
+   ]
+  }
+ ]
+}

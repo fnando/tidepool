@@ -6,7 +6,8 @@ largest available cover image. Rules decide which videos to keep, and limits
 keep each folder from growing forever.
 
 > **Early days.** You can set up tidepool, write and check your configuration,
-> and test your filters. Downloading isn't available yet.
+> and see what each source contains and which videos would be downloaded.
+> Downloading isn't available yet.
 
 Works on Linux and macOS.
 
@@ -140,6 +141,32 @@ current settings, tidepool stops instead of silently undoing your rollback. Use
 `tidepool config diff` to compare, and `--force-config` if you do want the file
 applied.
 
+### Checking your sources
+
+To see what each source contains and what tidepool would do with it:
+
+```sh
+tidepool index
+```
+
+```
+sample: 1 video (1 new): 1 to download
+lofi: 12 videos (12 new): 2 to download, 1 to check before download, 9 skipped (5 unavailable, 1 excluded by a rule, 1 published before the cutoff, 1 too long, 1 too short)
+```
+
+Add `--source <name>` (or `-s`) to check only some sources. Videos are skipped
+when they're private, deleted, members-only or not out yet (premieres and live
+streams are picked up once they're over), when they're outside `min_duration`
+and `max_duration`, when they were published before `cutoff`, or because of
+your `include` and `exclude` rules. "To check before download" means a rule
+needs a detail YouTube didn't list (often the publish date or description);
+it's looked up right before downloading.
+
+After you change your rules, run `tidepool index` again: videos that haven't
+been downloaded yet are re-checked against the new rules. If a source can't
+be read (for example, a wrong or private playlist), the others are still
+checked, and the command ends with exit code 3.
+
 ### Testing your filters
 
 `include` and `exclude` rules decide which videos are kept. They're regular
@@ -261,3 +288,4 @@ For scripts:
 | 0 | Success |
 | 1 | Something went wrong (e.g. a config mistake); the message says what |
 | 2 | The command was used incorrectly (unknown option, unknown source) |
+| 3 | Some sources couldn't be checked; the others were |
