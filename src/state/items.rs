@@ -680,6 +680,92 @@ pub fn find_copy(
         .and_then(VideoFiles::from_column))
 }
 
+/// One hook run, as stored in `hook_runs`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct HookRun {
+    pub source_key: String,
+    pub video_id: String,
+    pub hook: String,
+    pub kind: String,
+    pub ok: bool,
+    pub exit_code: Option<i32>,
+    pub attempts: u32,
+    pub started_at: String,
+    pub finished_at: String,
+    pub error: Option<String>,
+    pub values: BTreeMap<String, String>,
+}
+
+/// Store the latest run of a hook for a video.
+pub fn record_hook_run(conn: &Connection, run: &HookRun) -> rusqlite::Result<()> {
+    conn.execute(
+        "INSERT INTO hook_runs (source_key, video_id, hook, type, status, exit_code, attempts,
+           started_at, finished_at, error, input_values)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+         ON CONFLICT (source_key, video_id, hook, type) DO UPDATE SET
+           status = excluded.status, exit_code = excluded.exit_code, attempts = excluded.attempts,
+           started_at = excluded.started_at, finished_at = excluded.finished_at,
+           error = excluded.error, input_values = excluded.input_values",
+        params![
+            run.source_key,
+            run.video_id,
+            run.hook,
+            run.kind,
+            if run.ok { "ok" } else { "failed" },
+            run.exit_code,
+            run.attempts,
+            run.started_at,
+            run.finished_at,
+            run.error,
+            serde_json::to_string(&run.values).expect("values serialize"),
+        ],
+    )?;
+    Ok(())
+}
+
+/// How many hook runs are failing, across every video.
+pub fn failed_hook_runs(conn: &Connection) -> rusqlite::Result<i64> {
+    conn.query_row(
+        "SELECT COUNT(*) FROM hook_runs WHERE status = 'failed'",
+        [],
+        |r| r.get(0),
+    )
+}
+
+/// A video's stored hook runs of one type, failed ones only unless `all`.
+pub fn hook_runs(
+    conn: &Connection,
+    video_id: &str,
+    kind: &str,
+    all: bool,
+) -> rusqlite::Result<Vec<HookRun>> {
+    let mut stmt = conn.prepare(
+        "SELECT source_key, video_id, hook, type, status, exit_code, attempts, started_at,
+           finished_at, error, input_values
+         FROM hook_runs WHERE video_id = ?1 AND type = ?2 AND (?3 OR status = 'failed')
+         ORDER BY source_key, hook",
+    )?;
+    stmt.query_map(params![video_id, kind, all], |r| {
+        let values: Option<String> = r.get(10)?;
+        Ok(HookRun {
+            source_key: r.get(0)?,
+            video_id: r.get(1)?,
+            hook: r.get(2)?,
+            kind: r.get(3)?,
+            ok: r.get::<_, String>(4)? == "ok",
+            exit_code: r.get(5)?,
+            attempts: r.get(6)?,
+            started_at: r.get(7)?,
+            finished_at: r.get(8)?,
+            error: r.get(9)?,
+            values: values
+                .and_then(|v| serde_json::from_str(&v).ok())
+                .unwrap_or_default(),
+        })
+    })?
+    .collect()
+}
+
 /// After a crash or an interrupt: downloads that didn't finish go back to
 /// `pending`. Returns how many.
 pub fn reset_interrupted(conn: &Connection) -> rusqlite::Result<usize> {

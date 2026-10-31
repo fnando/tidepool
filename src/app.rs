@@ -7,8 +7,8 @@ use anyhow::{Context as _, bail};
 use serde_json::Value;
 
 use crate::cli::{
-    Cli, Command, ConfigArgs, ConfigCmd, DownloadArgs, FilterCmd, InitArgs, ResetArgs, RunArgs,
-    ScopeArgs, SourceRef, YtdlpCmd,
+    Cli, Command, ConfigArgs, ConfigCmd, DownloadArgs, FilterCmd, HooksCmd, InitArgs, ResetArgs,
+    RunArgs, ScopeArgs, SourceRef, YtdlpCmd,
 };
 use crate::config::check::{EffectiveConfig, Finding, check_environment, media_dir, tmp_dir};
 use crate::config::diff::{key_changes, mask_json, mask_toml, text_diff};
@@ -68,6 +68,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Run(args) if !args.daemon => app.run_once(args, out).await,
         Command::Reset(args) => app.reset(args, out),
         Command::Problems { cmd } => app.problems(cmd, out),
+        Command::Hooks { cmd } => app.hooks(cmd, out).await,
         other => {
             let milestone = other.milestone().unwrap_or("a later milestone");
             bail!("this command is not implemented yet (planned for {milestone})")
@@ -80,9 +81,11 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
 fn checks_config_drift(command: &Command) -> bool {
     match command {
         Command::Run(args) => !args.daemon,
-        Command::Index(_) | Command::Download(_) | Command::Reset(_) | Command::Filter { .. } => {
-            true
-        }
+        Command::Index(_)
+        | Command::Download(_)
+        | Command::Reset(_)
+        | Command::Filter { .. }
+        | Command::Hooks { .. } => true,
         _ => false,
     }
 }
@@ -103,7 +106,8 @@ fn uses_stored_config(command: &Command) -> bool {
         | Command::Ytdlp { .. }
         | Command::Index(_)
         | Command::Download(_)
-        | Command::Reset(_) => true,
+        | Command::Reset(_)
+        | Command::Hooks { .. } => true,
         Command::Run(args) => !args.daemon,
         _ => false,
     }
@@ -448,6 +452,8 @@ impl App<'_> {
             thumbnail_base = base;
         }
         let ctx = Context {
+            hooks: config.hooks.clone(),
+            hook_logs: self.paths.hook_logs.clone(),
             ffmpeg: "ffmpeg".into(),
             ffprobe: "ffprobe".into(),
             dirs: self.dirs.clone(),
@@ -507,6 +513,13 @@ impl App<'_> {
             if summary.failed > 0 {
                 parts.push(format!("{} failed", summary.failed));
             }
+            if summary.hooks_failed > 0 {
+                parts.push(format!(
+                    "{} hook{} failed",
+                    summary.hooks_failed,
+                    if summary.hooks_failed == 1 { "" } else { "s" }
+                ));
+            }
             writeln!(out, "{}", parts.join("; "))?;
         }
         Ok(summary)
@@ -515,7 +528,9 @@ impl App<'_> {
     fn exit_code(summary: &crate::download::Summary, index_failures: usize) -> i32 {
         match summary.interrupted {
             Some(code) => code,
-            None if summary.failed > 0 || index_failures > 0 => exit::PARTIAL,
+            None if summary.failed > 0 || summary.hooks_failed > 0 || index_failures > 0 => {
+                exit::PARTIAL
+            }
             None => exit::OK,
         }
     }
@@ -773,6 +788,88 @@ impl App<'_> {
             sources.join(", ")
         )?;
         Ok(exit::OK)
+    }
+
+    /// `tidepool hooks run <video>`: run its failed `finished` hooks again.
+    async fn hooks(&self, cmd: &HooksCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
+        let HooksCmd::Run {
+            video_id,
+            hook,
+            force,
+        } = cmd;
+        let state = self.open_state()?;
+        let config = self.current_config(&state)?.config;
+        let _lock = self.lock()?;
+        let runs: Vec<_> =
+            crate::state::items::hook_runs(&state.conn, video_id, "finished", *force)?
+                .into_iter()
+                .filter(|r| hook.as_ref().is_none_or(|h| *h == r.hook))
+                .collect();
+        if runs.is_empty() {
+            let which = hook.as_deref().map(|h| format!("{h} ")).unwrap_or_default();
+            if *force {
+                bail!("no finished hook {which}ran for {video_id}");
+            }
+            writeln!(out, "no failed finished hook {which}for {video_id}")?;
+            return Ok(exit::OK);
+        }
+        let cancel = tokio_util::sync::CancellationToken::new();
+        let mut failed = 0;
+        for run in runs {
+            let Some(hook) = config
+                .hooks
+                .get(&run.hook)
+                .filter(|h| h.kind == crate::config::HookType::Finished)
+            else {
+                writeln!(
+                    out,
+                    "{}: hook {} isn't a finished hook in the config anymore; skipped",
+                    run.source_key, run.hook
+                )?;
+                continue;
+            };
+            let work_dir = run
+                .values
+                .get("output_dir")
+                .map(PathBuf::from)
+                .filter(|d| d.is_dir())
+                .or_else(|| {
+                    run.values
+                        .get("output_file")
+                        .and_then(|f| Path::new(f).parent().map(Path::to_path_buf))
+                })
+                .unwrap_or_else(|| self.dirs.home.clone());
+            let report = crate::hooks::run(&crate::hooks::Run {
+                name: &run.hook,
+                hook,
+                values: &run.values,
+                default_work_dir: &work_dir,
+                home: &self.dirs.home,
+                input: b"",
+                log: &self.paths.hook_logs.join(format!("{video_id}.log")),
+                cancel: &cancel,
+            })
+            .await;
+            crate::state::items::record_hook_run(
+                &state.conn,
+                &crate::download::hook_run(&run.source_key, video_id, &report),
+            )?;
+            match &report.result {
+                Ok(_) => writeln!(out, "{}: hook {} succeeded", run.source_key, run.hook)?,
+                Err(e) => {
+                    failed += 1;
+                    writeln!(out, "{}: hook {} failed: {e}", run.source_key, run.hook)?;
+                }
+            }
+        }
+        if crate::state::items::failed_hook_runs(&state.conn)? == 0 {
+            crate::problems::resolve(
+                &state.conn,
+                crate::problems::Kind::HookFailing,
+                jiff::Timestamp::now(),
+            )?;
+        }
+        Ok(if failed > 0 { exit::PARTIAL } else { exit::OK })
     }
 
     async fn ytdlp(&self, cmd: &YtdlpCmd, out: &mut dyn Write) -> anyhow::Result<i32> {

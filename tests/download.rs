@@ -699,3 +699,219 @@ async fn failed_embedding_keeps_the_download() {
             .contains("Invalid data")
     );
 }
+
+/// Write an executable shell script into the test's temp dir.
+fn script(env: &Env, name: &str, body: &str) -> PathBuf {
+    use std::os::unix::fs::PermissionsExt;
+    let path = env.path(name);
+    fs::write(&path, format!("#!/bin/sh\n{body}\n")).unwrap();
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o755)).unwrap();
+    path
+}
+
+/// A config with `hooks = [...]` on the default category, plus hook tables.
+fn hooks_config(env: &Env, category_extra: &str, hooks: &str) -> String {
+    let config = env.config(category_extra);
+    let text = fs::read_to_string(&config).unwrap() + "\n" + hooks;
+    fs::write(&config, text).unwrap();
+    config
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn embed_hooks_rewrite_what_gets_embedded() {
+    let env = Env::new().await;
+    let Some(bin) = real_ffmpeg_bin(&env) else {
+        eprintln!("skipped: ffmpeg not installed");
+        return;
+    };
+    let sample = env.path("sample.mkv");
+    assert!(
+        std::process::Command::new(bin.join("ffmpeg"))
+            .args(["-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i"])
+            .arg("testsrc=size=64x36:rate=10:duration=1")
+            .arg(&sample)
+            .status()
+            .unwrap()
+            .success()
+    );
+    // "Artist - Title" → artist + title; then a second hook, chained, sees
+    // the first one's output.
+    let split = script(
+        &env,
+        "split.sh",
+        r#"cat > /dev/null
+artist="${TIDEPOOL_TITLE%% - *}"; title="${TIDEPOOL_TITLE#* - }"
+printf '{"tags": {"title": "%s", "artist": "%s", "genre": null}}' "$title" "$artist""#,
+    );
+    let shout = script(
+        &env,
+        "shout.sh",
+        r#"input=$(cat)
+case "$input" in *'"artist":"Rick Astley"'*) printf '{"tags": {"album_artist": "RICK"}}' ;; esac"#,
+    );
+    let config = hooks_config(
+        &env,
+        "hooks = [\"split\", \"shout\"]\n[category.default.embed]\nmetadata = true",
+        &format!(
+            "[hooks.split]\ntype = \"embed\"\ncommand = [\"{}\"]\n\n[hooks.shout]\ntype = \"embed\"\ncommand = [\"{}\"]\n",
+            split.display(),
+            shout.display()
+        ),
+    );
+    let mut cmd = env.cmd(&["run", "-s", "dl", "--config", &config]);
+    cmd.env("PATH", format!("{}:/usr/bin:/bin", bin.display()))
+        .env("TIDEPOOL_FAKE_MEDIA", &sample);
+    cmd.assert().code(3);
+
+    let rick = env.media().join(RICK_DIR);
+    let media =
+        rick.join("Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mkv");
+    let tags = &ffprobe_json(&media)["format"]["tags"];
+    assert_eq!(
+        tags["title"],
+        "Never Gonna Give You Up (Official Video) (4K Remaster)"
+    );
+    assert_eq!(tags["ARTIST"], "Rick Astley");
+    assert_eq!(
+        tags["ALBUM_ARTIST"], "RICK",
+        "the second hook saw the first one's output"
+    );
+    assert!(tags.get("GENRE").is_none(), "null removed the tag");
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(rick.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(meta["embedded_tags"]["artist"], "Rick Astley");
+    assert_eq!(
+        meta["title"],
+        "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn downloaded_hooks_can_replace_the_media() {
+    let env = Env::new().await;
+    let remux = script(
+        &env,
+        "remux.sh",
+        r#"cat > /dev/null
+new="${TIDEPOOL_OUTPUT_FILE%.mkv}.mp4"
+mv "$TIDEPOOL_OUTPUT_FILE" "$new"
+printf '{"files": {"media": "%s"}}' "$new""#,
+    );
+    let config = hooks_config(
+        &env,
+        "hooks = [\"remux\"]",
+        &format!(
+            "[hooks.remux]\ntype = \"downloaded\"\ncommand = [\"{}\"]\n",
+            remux.display()
+        ),
+    );
+    env.cmd(&["run", "--config", &config]).assert().code(3);
+    let rick = env.media().join(RICK_DIR);
+    let title = "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)";
+    assert!(
+        rick.join(format!("{title}.mp4")).is_file(),
+        "{{ext}} follows the new file"
+    );
+    assert!(!rick.join(format!("{title}.mkv")).exists());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn failing_embed_hooks_fail_the_download_unless_warn() {
+    let env = Env::new().await;
+    let broken = script(&env, "broken.sh", "echo 'no such tag database' >&2; exit 2");
+    let hooks = |on_failure: &str| {
+        format!(
+            "[hooks.broken]\ntype = \"embed\"\non_failure = \"{on_failure}\"\ncommand = [\"{}\"]\n",
+            broken.display()
+        )
+    };
+    let config = hooks_config(
+        &env,
+        "hooks = [\"broken\"]\n[category.default.embed]\nmetadata = true",
+        &hooks("fail"),
+    );
+    env.cmd(&["run", "--config", &config])
+        .assert()
+        .code(3)
+        .stderr(contains(
+            "hook broken failed: exited with exit status: 2: no such tag database",
+        ));
+    assert_eq!(
+        env.statuses("dl")[0],
+        ("dQw4w9WgXcQ".into(), "failed".into(), 1)
+    );
+    assert!(!env.media().join(RICK_DIR).exists(), "nothing placed");
+    let log = fs::read_to_string(env.path("data/tidepool/logs/hooks/dQw4w9WgXcQ.log")).unwrap();
+    assert!(
+        log.contains("hook broken (embed) ==\nno such tag database"),
+        "{log}"
+    );
+
+    // warn: downloaded anyway, without the hook's changes.
+    let text = fs::read_to_string(&config)
+        .unwrap()
+        .replace("\"fail\"", "\"warn\"");
+    fs::write(&config, text).unwrap();
+    env.cmd(&["reset", "dQw4w9WgXcQ", "--config", &config])
+        .assert()
+        .success();
+    env.cmd(&["download"])
+        .assert()
+        .stderr(contains("hook broken failed").and(contains("continuing without it")));
+    assert_eq!(env.statuses("dl")[0].1, "done");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn failing_finished_hooks_keep_the_video_and_run_again() {
+    let env = Env::new().await;
+    let flag = env.path("fixed");
+    let notify = script(
+        &env,
+        "notify.sh",
+        &format!(
+            "[ -f '{}' ] || {{ echo 'server down' >&2; exit 1; }}\necho \"$TIDEPOOL_OUTPUT_FILE\" >> '{}'",
+            flag.display(),
+            env.path("notified").display()
+        ),
+    );
+    let config = hooks_config(
+        &env,
+        "hooks = [\"notify\"]",
+        &format!("[hooks.notify]\ncommand = [\"{}\"]\n", notify.display()),
+    );
+    env.cmd(&["run", "--config", &config])
+        .assert()
+        .code(3)
+        .stdout(contains("2 hooks failed"))
+        .stderr(contains(
+            "hook notify failed: exited with exit status: 1: server down",
+        ));
+    assert_eq!(
+        env.statuses("dl")[0].1,
+        "done",
+        "the video stays downloaded"
+    );
+    env.cmd(&["problems"])
+        .assert()
+        .stdout(contains("a hook is failing").and(contains("tidepool hooks run")));
+
+    fs::write(&flag, "").unwrap();
+    env.cmd(&["hooks", "run", "dQw4w9WgXcQ"])
+        .assert()
+        .success()
+        .stdout(contains("dl: hook notify succeeded"));
+    let notified = fs::read_to_string(env.path("notified")).unwrap();
+    assert!(
+        notified
+            .contains("Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mkv"),
+        "{notified}"
+    );
+    env.cmd(&["hooks", "run", "dQw4w9WgXcQ"])
+        .assert()
+        .success()
+        .stdout(contains("no failed finished hook for dQw4w9WgXcQ"));
+    env.cmd(&["hooks", "run", "okvideo01"]).assert().success();
+    env.cmd(&["problems"])
+        .assert()
+        .stdout(contains("no open problems").and(contains("a hook is failing (resolved")));
+}

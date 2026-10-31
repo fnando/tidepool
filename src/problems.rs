@@ -30,10 +30,12 @@ pub enum Kind {
     UpdateFailed,
     /// A rule hit the regex backtrack limit.
     RegexLimit,
+    /// A hook failed.
+    HookFailing,
 }
 
 impl Kind {
-    pub const ALL: [Kind; 10] = [
+    pub const ALL: [Kind; 11] = [
         Kind::Extraction,
         Kind::BotCheck,
         Kind::RateLimited,
@@ -44,6 +46,7 @@ impl Kind {
         Kind::SourceFailed,
         Kind::UpdateFailed,
         Kind::RegexLimit,
+        Kind::HookFailing,
     ];
 
     pub fn as_str(self) -> &'static str {
@@ -58,6 +61,7 @@ impl Kind {
             Kind::SourceFailed => "source_failed",
             Kind::UpdateFailed => "ytdlp_update_failed",
             Kind::RegexLimit => "regex_limit",
+            Kind::HookFailing => "hook_failing",
         }
     }
 
@@ -77,6 +81,7 @@ impl Kind {
             Kind::SourceFailed => "a source can't be read",
             Kind::UpdateFailed => "yt-dlp couldn't be updated",
             Kind::RegexLimit => "a rule is too slow (regex limit reached)",
+            Kind::HookFailing => "a hook is failing",
         }
     }
 
@@ -84,7 +89,11 @@ impl Kind {
     fn immediate(self) -> bool {
         matches!(
             self,
-            Kind::Missing | Kind::SourceFailed | Kind::UpdateFailed | Kind::RegexLimit
+            Kind::Missing
+                | Kind::SourceFailed
+                | Kind::UpdateFailed
+                | Kind::RegexLimit
+                | Kind::HookFailing
         )
     }
 
@@ -130,6 +139,7 @@ impl Kind {
             Kind::SourceFailed => "check the source's url: the playlist may have been deleted or made private (private playlists need cookies_file)".into(),
             Kind::UpdateFailed => format!("tidepool keeps using {version}; check your network, or run `tidepool ytdlp update`"),
             Kind::RegexLimit => "simplify the rule, or raise general.regex_backtrack_limit; affected videos are held until then".into(),
+            Kind::HookFailing => "see the hook's log in ~/.local/share/tidepool/logs/hooks/<video_id>.log; after fixing it, run `tidepool hooks run <video_id>` (videos whose download failed are retried on later runs)".into(),
         }
     }
 }
@@ -375,6 +385,7 @@ pub fn describe(problem: &Problem) -> String {
 pub struct Tracker {
     failures: BTreeMap<Kind, Seen>,
     downloads_succeeded: bool,
+    hooks_succeeded: bool,
     sources_ok: BTreeSet<String>,
     regex_ok: BTreeSet<String>,
 }
@@ -405,6 +416,21 @@ impl Tracker {
 
     pub fn download_succeeded(&mut self) {
         self.downloads_succeeded = true;
+    }
+
+    /// A hook failed for a video of `source`.
+    pub fn hook_failed(&mut self, source: &str, hook: &str, message: &str) {
+        self.seen(
+            Kind::HookFailing,
+            &format!("{hook}: {message}"),
+            source,
+            true,
+        );
+    }
+
+    /// A hook ran fine.
+    pub fn hook_succeeded(&mut self) {
+        self.hooks_succeeded = true;
     }
 
     /// A source couldn't be indexed.
@@ -477,6 +503,9 @@ impl Tracker {
         }
         for source in &self.regex_ok {
             resolve_source(conn, Kind::RegexLimit, source, now)?;
+        }
+        if self.hooks_succeeded && !self.failures.contains_key(&Kind::HookFailing) {
+            resolve(conn, Kind::HookFailing, now)?;
         }
         Ok(recorded)
     }

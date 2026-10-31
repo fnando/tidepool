@@ -8,6 +8,7 @@ pub mod metadata;
 pub mod thumbnail;
 pub mod ytdlp;
 
+use std::collections::BTreeMap;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -17,9 +18,10 @@ use tokio::sync::Semaphore;
 use tokio::task::JoinSet;
 use tokio_util::sync::CancellationToken;
 
-use crate::config::Duplicates;
 use crate::config::merge::EffectiveSource;
+use crate::config::{Duplicates, HookConfig, HookType, OnFailure};
 use crate::filter::{Decision, Fields, RuleSet};
+use crate::hooks;
 use crate::index::RemoteItem;
 use crate::state::State;
 use crate::state::items::{self, QueuedItem, status};
@@ -44,6 +46,10 @@ pub struct SourcePaths {
 
 /// What every download shares.
 pub struct Context {
+    /// Every `[hooks.<name>]`.
+    pub hooks: BTreeMap<String, HookConfig>,
+    /// Where hook logs go (`<video_id>.log`).
+    pub hook_logs: PathBuf,
     pub ffmpeg: PathBuf,
     pub ffprobe: PathBuf,
     /// For `~` and `{data_dir}` in `output`.
@@ -73,6 +79,8 @@ pub struct Summary {
     pub bytes: u64,
     pub skipped: usize,
     pub failed: usize,
+    /// `finished` hooks that failed (the videos are downloaded).
+    pub hooks_failed: usize,
     /// Exit code when a signal stopped the run (130 for SIGINT, 143 for SIGTERM).
     pub interrupted: Option<i32>,
 }
@@ -107,6 +115,25 @@ struct Finished {
     outcome: Outcome,
     /// Details learned from yt-dlp, to store on the video.
     details: Option<RemoteItem>,
+    /// Every hook that ran.
+    hook_runs: Vec<hooks::Report>,
+}
+
+/// A hook report as stored in `hook_runs`.
+pub fn hook_run(source_key: &str, video_id: &str, report: &hooks::Report) -> items::HookRun {
+    items::HookRun {
+        source_key: source_key.to_string(),
+        video_id: video_id.to_string(),
+        hook: report.name.clone(),
+        kind: report.kind.as_str().to_string(),
+        ok: report.ok(),
+        exit_code: report.exit_code,
+        attempts: report.attempts,
+        started_at: report.started_at.to_string(),
+        finished_at: report.finished_at.to_string(),
+        error: report.result.as_ref().err().cloned(),
+        values: report.values.clone(),
+    }
 }
 
 /// Human-readable size: `48.2 MB`.
@@ -236,7 +263,11 @@ fn is_work_folder(name: &str) -> bool {
             .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '_')
 }
 
-async fn process(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
+async fn process(
+    job: &Job,
+    ctx: &Context,
+    hook_runs: &mut Vec<hooks::Report>,
+) -> (Outcome, Option<RemoteItem>) {
     let source = &job.source;
     let item = &job.queued.item;
     let video_id = &job.queued.video_id;
@@ -289,7 +320,7 @@ async fn process(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
             details,
         );
     }
-    let result = assemble(job, ctx, &tmp, info, &mut details, &label, started).await;
+    let result = assemble(job, ctx, &tmp, info, &mut details, started, hook_runs).await;
     if result.is_err() {
         let _ = std::fs::remove_dir_all(&tmp);
     }
@@ -307,10 +338,11 @@ async fn assemble(
     tmp: &Path,
     info: Option<VideoInfo>,
     details: &mut Option<RemoteItem>,
-    label: &str,
     started: std::time::Instant,
+    hook_runs: &mut Vec<hooks::Report>,
 ) -> Result<Outcome, Failure> {
     let source = &job.source;
+    let label = &format!("{}: “{}”", source.key, job.queued.item.title);
     let video_id = &job.queued.video_id;
 
     // Media and subtitles: linked from another source, or downloaded. In the
@@ -357,8 +389,8 @@ async fn assemble(
     };
 
     // What's in the work area now.
-    let mut media_name = None;
-    let mut subtitles: Vec<(String, String)> = Vec::new(); // (lang, ext)
+    let mut media = None;
+    let mut subtitles: Vec<hooks::Subtitle> = Vec::new();
     for entry in std::fs::read_dir(tmp)
         .map_err(|e| io_fail("cannot read", tmp, e))?
         .flatten()
@@ -366,16 +398,18 @@ async fn assemble(
         let name = entry.file_name().to_string_lossy().into_owned();
         let parts: Vec<&str> = name.split('.').collect();
         match parts.as_slice() {
-            ["media", ext] => media_name = Some((name.clone(), ext.to_string())),
+            ["media", _] => media = Some(entry.path()),
             ["media", lang @ .., ext] if SUBTITLE_EXTENSIONS.contains(ext) && !lang.is_empty() => {
-                subtitles.push((lang.join("."), ext.to_string()));
+                subtitles.push(hooks::Subtitle {
+                    lang: lang.join("."),
+                    path: entry.path(),
+                });
             }
             _ => {}
         }
     }
-    subtitles.sort();
-    let (media_name, media_ext) =
-        media_name.ok_or_else(|| fail("no media file in the work area"))?;
+    subtitles.sort_by(|a, b| a.lang.cmp(&b.lang));
+    let media = media.ok_or_else(|| fail("no media file in the work area"))?;
 
     let values = Values::new(
         &info,
@@ -384,29 +418,14 @@ async fn assemble(
         job.queued.position,
     );
     let layout = Layout::new(source, &values, &job.paths.media_dir, &ctx.dirs).map_err(fail)?;
-    let media_dest = layout.output_file(&media_ext).map_err(fail)?;
     let (cover_dest, cover_format) = layout.cover_file().map_err(fail)?;
     let metadata_dest = layout.metadata_file().map_err(fail)?;
-    let mut moves: Vec<(PathBuf, PathBuf)> = vec![(tmp.join(&media_name), media_dest.clone())];
-    let mut files = items::VideoFiles {
-        dir: layout.output_dir().display().to_string(),
-        media: media_dest.display().to_string(),
-        metadata: metadata_dest.display().to_string(),
-        ..items::VideoFiles::default()
-    };
-    for (lang, ext) in &subtitles {
-        let dest = layout.subtitle_file(lang, ext).map_err(fail)?;
-        moves.push((tmp.join(format!("media.{lang}.{ext}")), dest.clone()));
-        files.subtitles.push(items::Subtitle {
-            lang: lang.clone(),
-            path: dest.display().to_string(),
-        });
-    }
 
     // Cover: reuse the other source's when it's already in the wanted
     // format, or fetch the biggest.
     let cover_tmp = tmp.join(format!("cover.{}", cover_format.extension()));
     let mut cover: Option<Cover> = None;
+    let mut cover_file = None;
     let reusable = other_cover.filter(|c| {
         c.is_file()
             && c.extension()
@@ -417,8 +436,7 @@ async fn assemble(
         link(&other_cover, &cover_tmp, ctx.duplicates)
             .map_err(|e| io_fail("cannot link", &other_cover, e))?;
         tracing::debug!("{label}: cover linked from {}", other_cover.display());
-        moves.push((cover_tmp, cover_dest.clone()));
-        files.cover = Some(cover_dest.display().to_string());
+        cover_file = Some(cover_tmp);
     } else {
         let thumbs = details
             .as_ref()
@@ -435,12 +453,75 @@ async fn assemble(
                 );
                 std::fs::write(&cover_tmp, &found.bytes)
                     .map_err(|e| io_fail("cannot write", &cover_tmp, e))?;
-                moves.push((cover_tmp, cover_dest.clone()));
-                files.cover = Some(cover_dest.display().to_string());
+                cover_file = Some(cover_tmp);
                 cover = Some(found);
             }
             None => tracing::warn!("{}: no cover image found for {video_id}", source.key),
         }
+    }
+
+    // `downloaded` hooks: on the raw files; they may replace them.
+    let context = hook_context(&info, job);
+    let mut raw = hooks::Files {
+        media,
+        cover: cover_file,
+        subtitles,
+    };
+    for (name, hook) in hooks::of_type(&source.hooks, &ctx.hooks, HookType::Downloaded) {
+        let input = serde_json::to_vec(&raw.to_json(&context)).expect("JSON");
+        let hook_values = stage_values(&values, tmp, Some(&raw.media), raw.cover.as_deref(), None);
+        let report = run_hook(ctx, job, name, hook, &hook_values, tmp, &input).await;
+        let mut changed = raw.clone();
+        let applied = match &report.result {
+            Ok(out) => changed
+                .apply(name, out)
+                .and_then(|()| check_in_work_area(name, tmp, &changed))
+                .and_then(|()| check_cover(name, &changed, cover_format)),
+            Err(e) => Err(format!("hook {name} failed: {e}")),
+        };
+        if hook_failure(label, hook, report, applied, hook_runs)? {
+            if changed.media != raw.media {
+                let _ = std::fs::remove_file(&raw.media);
+                tracing::debug!(
+                    "{label}: hook {name} replaced the media with {}",
+                    changed.media.display()
+                );
+            }
+            raw = changed;
+        }
+    }
+
+    let media_ext = raw
+        .media
+        .extension()
+        .map(|e| e.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let media_dest = layout.output_file(&media_ext).map_err(fail)?;
+    let mut moves: Vec<(PathBuf, PathBuf)> = vec![(raw.media.clone(), media_dest.clone())];
+    let mut files = items::VideoFiles {
+        dir: layout.output_dir().display().to_string(),
+        media: media_dest.display().to_string(),
+        metadata: metadata_dest.display().to_string(),
+        ..items::VideoFiles::default()
+    };
+    for sub in &raw.subtitles {
+        let ext = sub
+            .path
+            .extension()
+            .map(|e| e.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        let dest = layout.subtitle_file(&sub.lang, &ext).map_err(fail)?;
+        moves.push((sub.path.clone(), dest.clone()));
+        files.subtitles.push(items::Subtitle {
+            lang: sub.lang.clone(),
+            path: dest.display().to_string(),
+        });
+    }
+    if let Some(cover_tmp) = &raw.cover {
+        moves.push((cover_tmp.clone(), cover_dest.clone()));
+        files.cover = Some(cover_dest.display().to_string());
+    } else {
+        cover = None;
     }
 
     let raw_info = tmp.join("ytdlp.info.json");
@@ -452,27 +533,41 @@ async fn assemble(
         files.raw_info = Some(dest.display().to_string());
     }
 
-    let media_path = tmp.join(&media_name);
-    let embedding = embed_media(
-        job,
-        ctx,
-        &info,
-        &media_path,
-        files.cover.is_some().then(|| {
-            (
-                tmp.join(format!("cover.{}", cover_format.extension())),
-                cover_format,
-            )
-        }),
-        &subtitles
-            .iter()
-            .map(|(lang, ext)| (tmp.join(format!("media.{lang}.{ext}")), lang.clone()))
-            .collect::<Vec<_>>(),
-        label,
-    )
-    .await;
-    let media_bytes = std::fs::metadata(&media_path)
-        .map_err(|e| io_fail("cannot read", &media_path, e))?
+    // What gets embedded: processed by `embed` hooks, then embedded.
+    let mut data = hooks::EmbedData {
+        tags: embed_tags(
+            &info,
+            job.queued.source_title.as_deref(),
+            job.queued.position,
+        ),
+        cover: raw.cover.clone(),
+        chapters: info.chapters.clone().unwrap_or_default(),
+        subtitles: raw.subtitles.clone(),
+    };
+    let settings = &source.embed;
+    let embedding_on =
+        settings.metadata || settings.cover || settings.chapters || settings.subtitles;
+    for (name, hook) in hooks::of_type(&source.hooks, &ctx.hooks, HookType::Embed) {
+        if !embedding_on {
+            tracing::debug!("{label}: skipping hook {name}: nothing is embedded (see embed)");
+            continue;
+        }
+        let input = serde_json::to_vec(&data.to_json(&context)).expect("JSON");
+        let hook_values = stage_values(&values, tmp, Some(&raw.media), raw.cover.as_deref(), None);
+        let report = run_hook(ctx, job, name, hook, &hook_values, tmp, &input).await;
+        let mut processed = data.clone();
+        let applied = match &report.result {
+            Ok(out) => processed.apply(name, out),
+            Err(e) => Err(format!("hook {name} failed: {e}")),
+        };
+        if hook_failure(label, hook, report, applied, hook_runs)? {
+            data = processed;
+        }
+    }
+    let embedding = embed_media(job, ctx, &raw.media, &data, label).await;
+
+    let media_bytes = std::fs::metadata(&raw.media)
+        .map_err(|e| io_fail("cannot read", &raw.media, e))?
         .len();
     let metadata = Metadata {
         info: &info,
@@ -483,6 +578,7 @@ async fn assemble(
         media_bytes,
         cover: cover.as_ref(),
         embedded: &embedding.embedded,
+        embedded_tags: embedding.embedded.metadata.then_some(&data.tags),
         embed_error: embedding.error.as_deref(),
         downloaded_at: job.now,
         ytdlp_version: ctx.ytdlp_version.as_deref(),
@@ -495,7 +591,7 @@ async fn assemble(
     file.write_all(json.as_bytes())
         .and_then(|_| file.sync_all())
         .map_err(|e| io_fail("cannot write", &metadata_path, e))?;
-    moves.push((metadata_path, metadata_dest));
+    moves.push((metadata_path, metadata_dest.clone()));
 
     place_all(&moves)?;
     let _ = std::fs::remove_dir_all(tmp);
@@ -515,10 +611,176 @@ async fn assemble(
         media_dest.display(),
         started.elapsed().as_secs_f64()
     );
+
+    // `finished` hooks: on the placed files. A failure doesn't undo the
+    // download; it's recorded so the hook can be run again.
+    let output_dir = layout.output_dir();
+    let work_dir = if output_dir.is_dir() {
+        output_dir.to_path_buf()
+    } else {
+        media_dest.parent().unwrap_or(Path::new("/")).to_path_buf()
+    };
+    let cover_placed = files.cover.as_ref().map(PathBuf::from);
+    for (name, hook) in hooks::of_type(&source.hooks, &ctx.hooks, HookType::Finished) {
+        let hook_values = stage_values(
+            &values,
+            output_dir,
+            Some(&media_dest),
+            cover_placed.as_deref(),
+            Some(&metadata_dest),
+        );
+        let report = run_hook(ctx, job, name, hook, &hook_values, &work_dir, b"").await;
+        if let Err(e) = &report.result {
+            tracing::warn!("{label}: hook {name} failed: {e}");
+        }
+        hook_runs.push(report);
+    }
+
     Ok(Outcome::Done {
         files,
         media_bytes,
         linked: job.copy_from.is_some(),
+    })
+}
+
+/// Run one hook for a download.
+async fn run_hook(
+    ctx: &Context,
+    job: &Job,
+    name: &str,
+    hook: &HookConfig,
+    values: &BTreeMap<String, String>,
+    work_dir: &Path,
+    input: &[u8],
+) -> hooks::Report {
+    tracing::debug!(
+        "{}: running hook {name} ({})",
+        job.source.key,
+        hook.kind.as_str()
+    );
+    hooks::run(&hooks::Run {
+        name,
+        hook,
+        values,
+        default_work_dir: work_dir,
+        home: &ctx.dirs.home,
+        input,
+        log: &ctx.hook_logs.join(format!("{}.log", job.queued.video_id)),
+        cancel: &ctx.cancel,
+    })
+    .await
+}
+
+/// Record a `downloaded`/`embed` hook run and decide what its failure means
+/// (`applied` covers both the run and its output). `Ok(true)`: use its
+/// output; `Ok(false)`: continue without it (`warn`); `Err`: fail the download.
+fn hook_failure(
+    label: &str,
+    hook: &HookConfig,
+    mut report: hooks::Report,
+    applied: Result<(), String>,
+    hook_runs: &mut Vec<hooks::Report>,
+) -> Result<bool, Failure> {
+    if let Err(e) = &applied
+        && report.result.is_ok()
+    {
+        report.result = Err(e.clone());
+    }
+    hook_runs.push(report);
+    match applied {
+        Ok(()) => Ok(true),
+        Err(e) if hook.on_failure == OnFailure::Warn => {
+            tracing::warn!("{label}: {e}; continuing without it");
+            Ok(false)
+        }
+        Err(e) => Err(fail(e)),
+    }
+}
+
+/// Files a `downloaded` hook returns must stay in the video's work area.
+fn check_in_work_area(name: &str, tmp: &Path, files: &hooks::Files) -> Result<(), String> {
+    let paths = std::iter::once(&files.media)
+        .chain(files.cover.iter())
+        .chain(files.subtitles.iter().map(|s| &s.path));
+    for path in paths {
+        if !path.starts_with(tmp) {
+            return Err(format!(
+                "hook {name} returned {}, which isn't in the work area {}",
+                path.display(),
+                tmp.display()
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// A replaced cover must be in the format `cover_file` asks for.
+fn check_cover(name: &str, files: &hooks::Files, format: CoverFormat) -> Result<(), String> {
+    match &files.cover {
+        Some(cover)
+            if cover
+                .extension()
+                .and_then(|e| CoverFormat::from_extension(&e.to_string_lossy()))
+                != Some(format) =>
+        {
+            Err(format!(
+                "hook {name} returned a cover that isn't a .{} like cover_file",
+                format.extension()
+            ))
+        }
+        _ => Ok(()),
+    }
+}
+
+/// Placeholder values for a hook: the video's, plus where its files are at
+/// this stage.
+fn stage_values(
+    values: &Values,
+    output_dir: &Path,
+    output_file: Option<&Path>,
+    cover_file: Option<&Path>,
+    metadata_file: Option<&Path>,
+) -> BTreeMap<String, String> {
+    let mut out: BTreeMap<String, String> = values
+        .0
+        .iter()
+        .map(|(k, v)| (k.to_string(), v.clone()))
+        .collect();
+    out.insert("output_dir".into(), output_dir.display().to_string());
+    for (key, path) in [
+        ("output_file", output_file),
+        ("cover_file", cover_file),
+        ("metadata_file", metadata_file),
+    ] {
+        if let Some(path) = path {
+            out.insert(key.into(), path.display().to_string());
+        }
+    }
+    out
+}
+
+/// What hooks get as read-only `context`.
+fn hook_context(info: &VideoInfo, job: &Job) -> serde_json::Value {
+    serde_json::json!({
+        "video": {
+            "id": info.id,
+            "url": format!("https://www.youtube.com/watch?v={}", info.id),
+            "title": info.title,
+            "description": info.description,
+            "channel": { "id": info.channel_id, "name": info.channel, "url": info.channel_url },
+            "upload_date": info.upload_date_iso(),
+            "duration_seconds": info.duration_seconds(),
+            "tags": info.tags.clone().unwrap_or_default(),
+            "categories": info.categories.clone().unwrap_or_default(),
+        },
+        "source": {
+            "name": job.source.key,
+            "url": job.source.url,
+            "id": job.source.id,
+            "title": job.queued.source_title,
+            "position": job.queued.position,
+            "category": job.source.category,
+        },
     })
 }
 
@@ -533,41 +795,43 @@ struct Embedding {
 }
 
 /// Embed what the source's `embed` settings ask for into `media` (in the
-/// work area). Never fails the download: problems become a warning and
-/// `embed_error` in metadata.json.
-#[allow(clippy::too_many_arguments)]
+/// work area), from `data`. Never fails the download: problems become a
+/// warning and `embed_error` in metadata.json.
 async fn embed_media(
     job: &Job,
     ctx: &Context,
-    info: &VideoInfo,
     media: &Path,
-    cover: Option<(PathBuf, CoverFormat)>,
-    subtitles: &[(PathBuf, String)],
+    data: &hooks::EmbedData,
     label: &str,
 ) -> Embedding {
     let settings = &job.source.embed;
     if !(settings.metadata || settings.cover || settings.chapters || settings.subtitles) {
         return Embedding::default();
     }
-    let chapters = info.chapters.clone().unwrap_or_default();
+    let cover = data.cover.as_ref().and_then(|path| {
+        let format = path
+            .extension()
+            .and_then(|e| CoverFormat::from_extension(&e.to_string_lossy()))?;
+        Some((path.as_path(), format))
+    });
     let request = embed::Request {
         media,
         tags: if settings.metadata {
-            embed_tags(
-                info,
-                job.queued.source_title.as_deref(),
-                job.queued.position,
-            )
+            data.tags.clone()
         } else {
-            Vec::new()
+            BTreeMap::new()
         },
-        cover: cover
-            .as_ref()
-            .filter(|_| settings.cover)
-            .map(|(path, format)| (path.as_path(), *format)),
-        chapters: if settings.chapters { &chapters } else { &[] },
+        cover: cover.filter(|_| settings.cover),
+        chapters: if settings.chapters {
+            &data.chapters
+        } else {
+            &[]
+        },
         subtitles: if settings.subtitles {
-            subtitles.to_vec()
+            data.subtitles
+                .iter()
+                .map(|s| (s.path.clone(), s.lang.clone()))
+                .collect()
         } else {
             Vec::new()
         },
@@ -621,7 +885,7 @@ fn embed_tags(
     info: &VideoInfo,
     source_title: Option<&str>,
     position: u32,
-) -> Vec<(&'static str, String)> {
+) -> BTreeMap<String, String> {
     let url = info
         .webpage_url
         .clone()
@@ -643,7 +907,7 @@ fn embed_tags(
         ("track", Some(position.to_string())),
     ]
     .into_iter()
-    .filter_map(|(key, value)| value.map(|v| (key, v)))
+    .filter_map(|(key, value)| value.map(|v| (key.to_string(), v)))
     .collect()
 }
 
@@ -773,7 +1037,8 @@ pub async fn download_all(
             if ctx.cancel.is_cancelled() {
                 return None;
             }
-            let (outcome, details) = process(&job, &ctx).await;
+            let mut hook_runs = Vec::new();
+            let (outcome, details) = process(&job, &ctx, &mut hook_runs).await;
             let title = details
                 .as_ref()
                 .map(|d| d.title.clone())
@@ -786,6 +1051,7 @@ pub async fn download_all(
                 title,
                 outcome,
                 details,
+                hook_runs,
             })
         });
     }
@@ -823,6 +1089,18 @@ fn record(
 ) -> rusqlite::Result<()> {
     if let Some(details) = &f.details {
         items::update_video_details(&state.conn, details, now)?;
+    }
+    for report in &f.hook_runs {
+        items::record_hook_run(&state.conn, &hook_run(&f.source_key, &f.video_id, report))?;
+        match &report.result {
+            Ok(_) => tracker.hook_succeeded(),
+            Err(e) => {
+                tracker.hook_failed(&f.source_key, &report.name, e);
+                if report.kind == HookType::Finished {
+                    summary.hooks_failed += 1;
+                }
+            }
+        }
     }
     match &f.outcome {
         Outcome::Done {

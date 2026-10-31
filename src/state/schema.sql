@@ -28,9 +28,11 @@ CREATE TABLE items (               -- a video's membership in a source
 );
 
 CREATE TABLE hook_runs (
-  source_key TEXT, video_id TEXT, hook TEXT, event TEXT,
+  source_key TEXT, video_id TEXT, hook TEXT, type TEXT,
   status TEXT, exit_code INTEGER, attempts INTEGER, started_at TEXT, finished_at TEXT,
-  PRIMARY KEY (source_key, video_id, hook, event)
+  error TEXT,                       -- why it failed
+  input_values TEXT,                -- JSON: the placeholder values it ran with, to run it again
+  PRIMARY KEY (source_key, video_id, hook, type)
 );
 
 CREATE TABLE runs (

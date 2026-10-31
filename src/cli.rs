@@ -69,7 +69,7 @@ pub enum Command {
     Cleanup(ScopeArgs),
     /// List known items
     List(ListArgs),
-    /// Post-download hooks
+    /// Run hooks again
     Hooks {
         #[command(subcommand)]
         cmd: HooksCmd,
@@ -114,7 +114,8 @@ impl Command {
             | Command::Run(RunArgs { daemon: false, .. }) => None,
             Command::Problems { .. } => None,
             Command::Ytdlp { .. } => None,
-            Command::Hooks { .. } | Command::Embed(_) => Some("M4"),
+            Command::Hooks { .. } => None,
+            Command::Embed(_) => Some("M4"),
             Command::Cleanup(_) | Command::Pin(_) | Command::Unpin(_) => Some("M5"),
             Command::List(_) => Some("M6"),
             Command::Run(RunArgs { daemon: true, .. }) => Some("M7"),
@@ -168,13 +169,13 @@ pub struct ListArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum HooksCmd {
-    /// Re-run post-processing for one video
+    /// Run a video's failed `finished` hooks again
     Run {
         video_id: String,
         /// Only this hook
         #[arg(long)]
         hook: Option<String>,
-        /// Re-run hooks that already succeeded
+        /// Also run the ones that succeeded
         #[arg(long)]
         force: bool,
     },

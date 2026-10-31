@@ -5,6 +5,7 @@ pub mod cli;
 pub mod config;
 pub mod download;
 pub mod filter;
+pub mod hooks;
 pub mod index;
 pub mod init;
 pub mod lock;

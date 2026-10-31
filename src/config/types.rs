@@ -238,9 +238,11 @@ pub struct HookConfig {
     /// argv array; `{placeholder}`s are expanded inside each element, no shell.
     #[schemars(schema_with = "hook_command_schema")]
     pub command: Vec<String>,
-    /// When the hook runs.
-    #[serde(default)]
-    pub event: HookEvent,
+    /// When the hook runs: `downloaded` (raw files, before embedding; may
+    /// replace them), `embed` (rewrites what gets embedded), `finished`
+    /// (after the files are in place) or `before_cleanup`.
+    #[serde(default, rename = "type")]
+    pub kind: HookType,
     /// SIGTERM to the process group after this long, SIGKILL 10 s later.
     #[serde(default = "default_hook_timeout")]
     pub timeout: HumanDuration,
@@ -279,12 +281,27 @@ fn default_hook_timeout() -> HumanDuration {
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum HookEvent {
-    /// After a video is moved into its folder.
-    #[default]
+pub enum HookType {
+    /// On the raw files in the work area, before embedding; may replace them.
     Downloaded,
+    /// Receives the data about to be embedded as JSON; returns it processed.
+    Embed,
+    /// After the video's files are in place.
+    #[default]
+    Finished,
     /// Before files are deleted; a non-zero exit vetoes the cleanup.
     BeforeCleanup,
+}
+
+impl HookType {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Downloaded => "downloaded",
+            Self::Embed => "embed",
+            Self::Finished => "finished",
+            Self::BeforeCleanup => "before_cleanup",
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -517,9 +534,6 @@ pub struct EmbedOptions {
     /// Attach metadata.json (mkv/mka only).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub info_json: Option<bool>,
-    /// Re-embed if a hook replaced the media file.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub after_hooks: Option<bool>,
     /// Extra tags, literal or templated, e.g. `album_artist = "{channel}"`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(schema_with = "tags_schema")]

@@ -1,6 +1,7 @@
 //! Embedding tags, the cover, chapters and subtitles into the media file with
 //! one ffmpeg stream-copy pass (no re-encoding).
 
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use serde::Serialize;
@@ -50,8 +51,8 @@ impl Container {
 /// What to put into the media file.
 pub struct Request<'a> {
     pub media: &'a Path,
-    /// Tags, in order (`metadata`).
-    pub tags: Vec<(&'static str, String)>,
+    /// Tags (`metadata`).
+    pub tags: BTreeMap<String, String>,
     /// The poster (`cover`).
     pub cover: Option<(&'a Path, CoverFormat)>,
     /// Chapter markers (`chapters`).
@@ -408,8 +409,8 @@ mod tests {
         serde_json::from_slice(&out.stdout).unwrap()
     }
 
-    fn tags() -> Vec<(&'static str, String)> {
-        vec![
+    fn tags() -> BTreeMap<String, String> {
+        [
             ("title", "AFI - 17 Crimes".into()),
             ("artist", "AFI".into()),
             ("album_artist", "AFI".into()),
@@ -424,6 +425,9 @@ mod tests {
             ("album", "Music videos".into()),
             ("track", "3".into()),
         ]
+        .into_iter()
+        .map(|(k, v): (&str, String)| (k.to_string(), v))
+        .collect()
     }
 
     fn chapters() -> Vec<Chapter> {
@@ -570,7 +574,7 @@ mod tests {
         // Nothing to do.
         let request = Request {
             media: &media,
-            tags: vec![],
+            tags: BTreeMap::new(),
             cover: None,
             chapters: &[],
             subtitles: vec![],

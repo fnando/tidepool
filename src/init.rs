@@ -73,7 +73,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # min_duration = ""                 # skip shorter videos, e.g. "60s"
 # max_duration = ""                 # skip longer videos, e.g. "4h"
 # cutoff = "none"                   # skip videos published before: "30d", "2024-01-01" or "none"
-# hooks = []                        # hook names, run in order after each download
+# hooks = []                        # hook names; each runs at its type's stage, in this order
 # inherit_hooks = false             # elsewhere: true = add to the hooks inherited instead of replacing them
 # redownload_missing = false        # download again when a downloaded file is gone
 # keep_raw_info = false             # keep yt-dlp's raw info.json
@@ -91,7 +91,6 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # chapters = false                  # chapter markers
 # subtitles = false                 # subtitles from --write-subs; the subtitle files are kept too
 # info_json = false                 # attach metadata.json (mkv/mka only)
-# after_hooks = true                # re-embed if a hook replaced the media file
 # tags = {}                         # extra tags, e.g. { genre = "Music", album_artist = "{channel}" }
 
 [category.default.cleanup]          # limits that keep each source bounded
@@ -111,11 +110,16 @@ ytdlp_args = ["-x", "--audio-format", "opus"]
 output_dir = "{media_dir}/{source}/{title} [{id}]"
 cover_file = "{output_dir}/cover.jpg"
 
-# Hooks: commands run after each download (or before cleanup). Example:
+# Hooks: your own commands, run at each stage of a download for the sources
+# that list them in `hooks`. Examples:
+#
+# [hooks.clean-tags]
+# type = "embed"                    # gets the tags, cover, chapters and subtitles about to be embedded as JSON on stdin; prints them back changed
+# command = ["~/bin/clean-tags"]
 #
 # [hooks.notify]
 # command = ["ntfy", "publish", "videos", "New: {title}"]   # argv, no shell; {placeholders} expanded
-# event = "downloaded"              # downloaded | before_cleanup
+# type = "finished"                 # downloaded (raw files, before embedding) | embed | finished (files in place) | before_cleanup
 # timeout = "10m"                   # killed after this long
 # on_failure = "fail"               # fail | warn | retry
 # retries = 0                       # used by on_failure = "retry"
@@ -129,7 +133,7 @@ cover_file = "{output_dir}/cover.jpg"
 url = "@SAMPLE_SOURCE_URL@"   # the playlist's URL
 # category = "default"              # which category's settings to use, e.g. "music"
 # enabled = true                    # disabled sources are skipped
-# hooks = ["notify"]                # hook names, run in order after each download
+# hooks = ["notify"]                # hook names; each runs at its type's stage, in this order
 "#;
 
 #[cfg(test)]

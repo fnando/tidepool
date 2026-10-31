@@ -105,7 +105,7 @@ any text editor. Its sections:
 | `[schedule]` | How often to sync in the background |
 | `[server]` | The web interface |
 | `[category.<name>]` | Where videos go and how they're downloaded, named and filtered; see [Categories](#categories) |
-| `[hooks.<name>]` | Your own scripts to run after each download |
+| `[hooks.<name>]` | Your own commands, run at each stage of a download |
 | `[sources.<name>]` | What to keep in sync |
 
 A *source* is something to keep in sync: for now, a YouTube playlist. A
@@ -392,6 +392,79 @@ If embedding fails, you keep the file as downloaded, with a warning.
 
 When the same video is in two sources and shares one file (see `duplicates`),
 the file carries the album and track of the source that downloaded it last.
+
+### Hooks
+
+Hooks run your own commands at each stage of a download: to fix tags, convert
+files, or send a notification. Define a hook once, then list it in `hooks` for
+every source, a category or a single source:
+
+```toml
+[hooks.notify]
+command = ["ntfy", "publish", "videos", "New: {title}"]
+
+[category.default]
+hooks = ["notify"]
+```
+
+`command` is the program and its arguments, run directly (no shell). Any
+`{placeholder}` works in it (`{title}`, `{channel}`, `{output_file}`, …), and
+the same values are in the environment too (`TIDEPOOL_TITLE`,
+`TIDEPOOL_OUTPUT_FILE`, …). What a hook prints to its error output goes to
+`~/.local/share/tidepool/logs/hooks/<video id>.log`.
+
+A hook's `type` says when it runs:
+
+| `type` | When | What it gets and returns |
+| --- | --- | --- |
+| `downloaded` | right after the download, before anything is embedded | the raw files, as JSON on its input; it may print new ones, e.g. after converting the video |
+| `embed` | before tags and the cover go into the file (see `embed`) | the tags, cover, chapters and subtitles about to be embedded, as JSON; it prints them back, changed |
+| `finished` (the default) | once the video's files are in place | nothing; what it prints is ignored |
+
+Hooks of the same type run in the order you list them, each getting what the
+previous one printed. Printing nothing means "no changes".
+
+For example, to turn YouTube's `"Artist - Title"` titles into separate artist
+and title tags (this one uses [`jq`](https://jqlang.org)):
+
+```toml
+[hooks.split-title]
+type = "embed"
+command = ["~/bin/split-title"]
+```
+
+```sh
+#!/bin/sh
+# ~/bin/split-title
+jq '(.tags.title | capture("^(?<artist>.+?) - (?<title>.+)$")) as $m
+    | .tags.artist = $m.artist | .tags.album_artist = $m.artist | .tags.title = $m.title'
+```
+
+In what an `embed` hook prints, a missing key keeps its value and `null`
+removes it (a tag, the cover, all chapters). The `embed` settings still decide
+what goes into the file: a hook can change the tags, but they're only written
+with `metadata = true`.
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `type` | `"finished"` | `downloaded`, `embed` or `finished` |
+| `timeout` | `"10m"` | stop the hook after this long |
+| `on_failure` | `"fail"` | `fail`, `warn` or `retry` |
+| `retries` | `0` | extra tries with `on_failure = "retry"` |
+| `env` | `{}` | extra environment variables |
+| `work_dir` | the video's folder | where the hook runs |
+
+When a `downloaded` or `embed` hook fails, the download fails too and is tried
+again on a later run; with `on_failure = "warn"`, tidepool carries on without
+the hook's changes. When a `finished` hook fails, the video stays downloaded:
+fix the problem, then run the hook again with
+
+```sh
+tidepool hooks run <video id>
+```
+
+(`--hook <name>` runs only that hook; `--force` also runs the ones that
+worked.)
 
 ### Problems
 

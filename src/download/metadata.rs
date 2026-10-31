@@ -17,6 +17,8 @@ pub struct Metadata<'a> {
     pub media_bytes: u64,
     pub cover: Option<&'a Cover>,
     pub embedded: &'a super::embed::Embedded,
+    /// The tags written into the media file, after `embed` hooks.
+    pub embedded_tags: Option<&'a std::collections::BTreeMap<String, String>>,
     pub embed_error: Option<&'a str>,
     pub downloaded_at: Timestamp,
     pub ytdlp_version: Option<&'a str>,
@@ -91,6 +93,7 @@ impl Metadata<'_> {
             },
             "cover": self.cover.map(|c| json!({ "source_url": c.source_url, "width": c.width, "height": c.height })),
             "embedded": self.embedded,
+            "embedded_tags": self.embedded_tags,
             "embed_error": self.embed_error,
             "downloaded_at": self.downloaded_at.to_string(),
             "tool": { "tidepool": env!("CARGO_PKG_VERSION"), "yt_dlp": self.ytdlp_version },
@@ -149,6 +152,7 @@ mod tests {
                 metadata: true,
                 ..Default::default()
             },
+            embedded_tags: None,
             embed_error: None,
             downloaded_at: "2026-10-31T12:00:00Z".parse().unwrap(),
             ytdlp_version: Some("2026.10.29"),

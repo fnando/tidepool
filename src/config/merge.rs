@@ -76,7 +76,6 @@ pub struct Embed {
     pub chapters: bool,
     pub subtitles: bool,
     pub info_json: bool,
-    pub after_hooks: bool,
     pub tags: BTreeMap<String, String>,
 }
 
@@ -212,7 +211,6 @@ fn resolve(
             chapters: table!(embed, chapters, false),
             subtitles: table!(embed, subtitles, false),
             info_json: table!(embed, info_json, false),
-            after_hooks: table!(embed, after_hooks, true),
             tags: table!(embed, tags, BTreeMap::new()),
         },
         cleanup: Cleanup {
@@ -309,7 +307,7 @@ mod tests {
         assert_eq!(p.metadata_file, "{output_dir}/metadata.json");
         assert_eq!(p.match_fields, vec![RuleField::Title]);
         assert_eq!(p.cutoff.value, Cutoff::None);
-        assert!(!p.embed.metadata && p.embed.after_hooks);
+        assert!(!p.embed.metadata);
         assert_eq!(p.cleanup.keep, CleanupKeep::Metadata);
         assert_eq!(p.cleanup.order, CleanupOrder::OldestDownloaded);
         assert_eq!(p.youtube, YoutubeConfig::default());

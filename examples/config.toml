@@ -68,7 +68,6 @@ cover = true                        # same image as the poster file
 chapters = true
 subtitles = true                    # languages from --sub-langs
 info_json = false                   # attach metadata.json (mkv/mka only)
-after_hooks = true                  # re-embed if a hook replaced the media file
 tags = { genre = "Music", album_artist = "{channel}" }
 
 [category.default.cleanup]
@@ -87,7 +86,13 @@ cover_file = "{output_dir}/cover.jpg"
 cutoff = "none"                     # keep the whole back catalogue
 inherit_rules = true                # add to default's include/exclude instead of replacing them
 
-[hooks.transcode]
+[hooks.clean-tags]                  # "Artist - Title" → artist + title, before embedding
+type = "embed"
+command = ["/usr/local/bin/clean-tags"]
+timeout = "30s"
+
+[hooks.transcode]                   # on the raw download; prints {"files": {"media": "<new file>"}}
+type = "downloaded"
 command = ["/usr/local/bin/to-h265.sh", "{output_file}"]
 timeout = "30m"
 on_failure = "fail"                 # fail | warn | retry
@@ -95,6 +100,7 @@ retries = 2
 env = { CRF = "26" }
 
 [hooks.notify]
+type = "finished"                   # after the files are in place (the default)
 command = ["ntfy", "publish", "videos", "New: {title}"]
 timeout = "30s"
 on_failure = "warn"

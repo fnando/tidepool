@@ -229,10 +229,6 @@
       "additionalProperties": false,
       "description": "`embed`: what goes into the media file. Everything is off by default.",
       "properties": {
-        "after_hooks": {
-          "description": "Re-embed if a hook replaced the media file.",
-          "type": "boolean"
-        },
         "chapters": {
           "description": "Chapter markers.",
           "type": "boolean"
@@ -339,11 +335,6 @@
           "description": "Extra environment variables.",
           "type": "object"
         },
-        "event": {
-          "$ref": "#/$defs/HookEvent",
-          "default": "downloaded",
-          "description": "When the hook runs."
-        },
         "on_failure": {
           "$ref": "#/$defs/OnFailure",
           "default": "fail",
@@ -365,6 +356,11 @@
           "format": "duration",
           "type": "string"
         },
+        "type": {
+          "$ref": "#/$defs/HookType",
+          "default": "finished",
+          "description": "When the hook runs: `downloaded` (raw files, before embedding; may\nreplace them), `embed` (rewrites what gets embedded), `finished`\n(after the files are in place) or `before_cleanup`."
+        },
         "work_dir": {
           "description": "Working directory. Defaults to the video's directory.",
           "type": "string"
@@ -375,11 +371,21 @@
       ],
       "type": "object"
     },
-    "HookEvent": {
+    "HookType": {
       "oneOf": [
         {
           "const": "downloaded",
-          "description": "After a video is moved into its folder.",
+          "description": "On the raw files in the work area, before embedding; may replace them.",
+          "type": "string"
+        },
+        {
+          "const": "embed",
+          "description": "Receives the data about to be embedded as JSON; returns it processed.",
+          "type": "string"
+        },
+        {
+          "const": "finished",
+          "description": "After the video's files are in place.",
           "type": "string"
         },
         {
