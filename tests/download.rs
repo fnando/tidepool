@@ -366,7 +366,7 @@ async fn verbose_shows_config_and_progress() {
     let text = fs::read_to_string(&config).unwrap().replace(
         "ytdlp_args = [\"--write-subs\"]",
         "ytdlp_args = [\"--write-subs\"]\nmin_duration = \"250s\"",
-    );
+    ) + "\n[youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n\n[server]\ntoken = \"my-long-secret-token\"\n";
     fs::write(&config, text).unwrap();
 
     let assert = env
@@ -411,10 +411,23 @@ async fn verbose_shows_config_and_progress() {
     let stderr = String::from_utf8(assert.get_output().stderr.clone()).unwrap();
     assert!(stderr.contains("yt-dlp command: "), "{stderr}");
     assert!(
-        stderr.contains(
-            "dl: effective config:\nurl = \"https://www.youtube.com/playlist?list=PLdownloads\""
-        ),
+        stderr.contains("effective config (secrets redacted):\n[library]"),
         "{stderr}"
+    );
+    assert!(
+        stderr
+            .contains("[sources.dl]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads\""),
+        "{stderr}"
+    );
+    assert!(stderr.contains("api_key = \"AIza…x1Qw\""), "{stderr}");
+    assert!(stderr.contains("token = \"my-l…oken\""), "{stderr}");
+    assert!(
+        !stderr.contains("AIzaSyD-1234567890x1Qw") && !stderr.contains("my-long-secret-token"),
+        "secrets never appear in full:\n{stderr}"
+    );
+    assert!(
+        !stderr.contains("connecting to"),
+        "only tidepool's own logs, not its libraries':\n{stderr}"
     );
 
     // Quiet by default.

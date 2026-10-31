@@ -399,8 +399,10 @@ DEBUG sample: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Rema
 sample: downloaded “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” (9.1 MB)
 ```
 
-`-vv` shows even more: each source's complete settings, every video's decision
-(not just new and changed ones), and the exact yt-dlp commands and output.
+`-vv` shows even more: your complete settings with every default filled in (as
+`tidepool config check` prints them, with your API key and web interface token
+hidden), every video's decision (not just new and changed ones), and the exact
+yt-dlp commands and output.
 `-q` (`--quiet`) shows errors only. Messages go to the terminal's error output,
 so `tidepool run -v > out.txt` keeps the summary lines separate. With
 `--log-format json`, messages are JSON lines, one per message.

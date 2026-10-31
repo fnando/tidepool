@@ -181,6 +181,14 @@ impl App<'_> {
             );
         }
         tracing::debug!("state in {}", self.library.state_db.display());
+        if tracing::enabled!(tracing::Level::TRACE) {
+            // Everything the run uses, as `config check` prints it.
+            let effective = EffectiveConfig::new(config, &self.dirs, false).to_toml();
+            tracing::trace!(
+                "effective config (secrets redacted):\n{}",
+                effective.trim_end()
+            );
+        }
         for source in sources {
             tracing::debug!(
                 "{}: {} → {}/, format {}, output {}",
@@ -226,11 +234,6 @@ impl App<'_> {
             }
             if !filters.is_empty() {
                 tracing::debug!("{}: filters: {}", source.key, filters.join(", "));
-            }
-            if tracing::enabled!(tracing::Level::TRACE)
-                && let Ok(toml) = toml::to_string(source)
-            {
-                tracing::trace!("{}: effective config:\n{}", source.key, toml.trim_end());
             }
         }
     }
