@@ -16,6 +16,8 @@ pub struct Metadata<'a> {
     pub files: &'a VideoFiles,
     pub media_bytes: u64,
     pub cover: Option<&'a Cover>,
+    pub embedded: &'a super::embed::Embedded,
+    pub embed_error: Option<&'a str>,
     pub downloaded_at: Timestamp,
     pub ytdlp_version: Option<&'a str>,
 }
@@ -88,6 +90,8 @@ impl Metadata<'_> {
                 "size_bytes": self.media_bytes,
             },
             "cover": self.cover.map(|c| json!({ "source_url": c.source_url, "width": c.width, "height": c.height })),
+            "embedded": self.embedded,
+            "embed_error": self.embed_error,
             "downloaded_at": self.downloaded_at.to_string(),
             "tool": { "tidepool": env!("CARGO_PKG_VERSION"), "yt_dlp": self.ytdlp_version },
             "index_source": "ytdlp",
@@ -141,6 +145,11 @@ mod tests {
             files: &files,
             media_bytes: 1234,
             cover: Some(&cover),
+            embedded: &crate::download::embed::Embedded {
+                metadata: true,
+                ..Default::default()
+            },
+            embed_error: None,
             downloaded_at: "2026-10-31T12:00:00Z".parse().unwrap(),
             ytdlp_version: Some("2026.10.29"),
         }
@@ -171,5 +180,10 @@ mod tests {
         assert_eq!(json["media"]["acodec"], Value::Null);
         assert_eq!(json["cover"]["width"], 1920);
         assert_eq!(json["tool"]["yt_dlp"], "2026.10.29");
+        assert_eq!(
+            json["embedded"],
+            json!({ "metadata": true, "cover": false, "chapters": false, "subtitles": false })
+        );
+        assert_eq!(json["embed_error"], Value::Null);
     }
 }

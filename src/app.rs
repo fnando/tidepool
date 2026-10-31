@@ -448,6 +448,8 @@ impl App<'_> {
             thumbnail_base = base;
         }
         let ctx = Context {
+            ffmpeg: "ffmpeg".into(),
+            ffprobe: "ffprobe".into(),
             dirs: self.dirs.clone(),
             ytdlp_version: crate::ytdlp::manager::tool_version(&ytdlp).ok(),
             ytdlp,

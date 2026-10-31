@@ -86,10 +86,10 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # requests_per_second = 5           # API request rate limit
 
 [category.default.embed]            # what goes into the media file
-# metadata = false                  # title, channel, date, description, URL, album/track
-# cover = false                     # the poster image (needs ffmpeg)
+# metadata = false                  # title, artist/album artist (channel), genre, date, description, URL, album (source title), track
+# cover = false                     # the poster, as in cover_file (not for webm, opus or ogg)
 # chapters = false                  # chapter markers
-# subtitles = false                 # subtitle tracks for --sub-langs
+# subtitles = false                 # subtitles from --write-subs; the subtitle files are kept too
 # info_json = false                 # attach metadata.json (mkv/mka only)
 # after_hooks = true                # re-embed if a hook replaced the media file
 # tags = {}                         # extra tags, e.g. { genre = "Music", album_artist = "{channel}" }

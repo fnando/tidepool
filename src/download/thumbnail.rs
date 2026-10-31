@@ -25,6 +25,14 @@ impl CoverFormat {
             _ => None,
         }
     }
+
+    pub fn extension(self) -> &'static str {
+        match self {
+            Self::Jpg => "jpg",
+            Self::Png => "png",
+            Self::Webp => "webp",
+        }
+    }
 }
 
 /// Where YouTube serves thumbnails.

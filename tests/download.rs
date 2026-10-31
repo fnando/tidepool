@@ -542,3 +542,160 @@ async fn files_go_anywhere_and_folders_can_be_shared() {
     assert!(!dir.join("okvideo01.json").exists() && !dir.join("okvideo01.ytdlp.json").exists());
     assert!(dir.join("dQw4w9WgXcQ.json").is_file());
 }
+
+/// A directory whose `ffmpeg`/`ffprobe` are the real ones and whose `yt-dlp`
+/// is the fake; `None` when ffmpeg isn't installed.
+fn real_ffmpeg_bin(env: &Env) -> Option<PathBuf> {
+    let find = |tool: &str| {
+        let out = std::process::Command::new("sh")
+            .args(["-c", &format!("command -v {tool}")])
+            .output()
+            .ok()?;
+        let path = String::from_utf8(out.stdout).ok()?.trim().to_string();
+        (!path.is_empty()).then(|| PathBuf::from(path))
+    };
+    let (ffmpeg, ffprobe) = (find("ffmpeg")?, find("ffprobe")?);
+    let bin = env.path("real-bin");
+    fs::create_dir_all(&bin).unwrap();
+    std::os::unix::fs::symlink(ffmpeg, bin.join("ffmpeg")).unwrap();
+    std::os::unix::fs::symlink(ffprobe, bin.join("ffprobe")).unwrap();
+    std::os::unix::fs::symlink(test_bin().join("yt-dlp"), bin.join("yt-dlp")).unwrap();
+    Some(bin)
+}
+
+fn ffprobe_json(file: &Path) -> serde_json::Value {
+    let out = std::process::Command::new("ffprobe")
+        .args([
+            "-v",
+            "error",
+            "-show_format",
+            "-show_streams",
+            "-show_chapters",
+            "-of",
+            "json",
+        ])
+        .arg(file)
+        .output()
+        .unwrap();
+    serde_json::from_slice(&out.stdout).unwrap()
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn embeds_tags_cover_chapters_and_subtitles() {
+    let env = Env::new().await;
+    let Some(bin) = real_ffmpeg_bin(&env) else {
+        eprintln!("skipped: ffmpeg not installed");
+        return;
+    };
+    let sample = env.path("sample.mkv");
+    assert!(
+        std::process::Command::new(bin.join("ffmpeg"))
+            .args(["-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i"])
+            .arg("testsrc=size=64x36:rate=10:duration=1")
+            .args(["-f", "lavfi", "-i", "sine=duration=1"])
+            .arg(&sample)
+            .status()
+            .unwrap()
+            .success()
+    );
+    let config = env.config(
+        "[category.default.embed]\nmetadata = true\ncover = true\nchapters = true\nsubtitles = true",
+    );
+    let config_text = fs::read_to_string(&config).unwrap()
+        + "\n[sources.dl2]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\nytdlp_args = [\"--write-subs\"]\n";
+    fs::write(&config, config_text).unwrap();
+    let path = format!("{}:/usr/bin:/bin", bin.display());
+    let run = |args: &[&str]| {
+        let mut cmd = env.cmd(args);
+        cmd.env("PATH", &path).env("TIDEPOOL_FAKE_MEDIA", &sample);
+        cmd
+    };
+    run(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+
+    let rick = env.media().join(RICK_DIR);
+    let title = "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)";
+    let json = ffprobe_json(&rick.join(format!("{title}.mkv")));
+    let tags = &json["format"]["tags"];
+    assert_eq!(tags["title"], title);
+    assert_eq!(tags["ARTIST"], "Rick Astley");
+    assert_eq!(tags["ALBUM_ARTIST"], "Rick Astley");
+    assert_eq!(tags["DATE"], "2009-10-25");
+    assert_eq!(
+        tags["COMMENT"],
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    );
+    assert_eq!(tags["ALBUM"], "Downloads");
+    assert_eq!(tags["track"], "1");
+    let streams = json["streams"].as_array().unwrap();
+    assert!(
+        streams
+            .iter()
+            .any(|s| s["tags"]["mimetype"] == "image/jpeg"),
+        "cover attached"
+    );
+    assert!(
+        streams.iter().any(|s| s["codec_type"] == "subtitle"),
+        "subtitles embedded"
+    );
+    assert!(
+        !json["chapters"].as_array().unwrap().is_empty(),
+        "chapters embedded"
+    );
+    assert!(
+        rick.join(format!("{title}.en.vtt")).is_file(),
+        "subtitle files are kept too"
+    );
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(rick.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(
+        meta["embedded"],
+        serde_json::json!({ "metadata": true, "cover": true, "chapters": true, "subtitles": true })
+    );
+    assert_eq!(meta["embed_error"], serde_json::Value::Null);
+
+    // The same video in another source: still one hardlinked file, carrying
+    // the tags of the source that embedded last.
+    run(&["run", "-s", "dl2"])
+        .assert()
+        .success()
+        .stdout(contains(
+            "dl2: linked from another source “Video okvideo01”",
+        ));
+    let a = env
+        .media()
+        .join("dl/2026-09-01 - Video okvideo01 [okvideo01]/Video okvideo01.mkv");
+    let b = env
+        .media()
+        .join("dl2/2026-09-01 - Video okvideo01 [okvideo01]/Video okvideo01.mkv");
+    assert_eq!(
+        fs::metadata(&a).unwrap().ino(),
+        fs::metadata(&b).unwrap().ino()
+    );
+    assert_eq!(ffprobe_json(&a)["format"]["tags"]["ALBUM"], "Downloads 2");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn failed_embedding_keeps_the_download() {
+    let env = Env::new().await;
+    // The fake media isn't a real video, so ffprobe rejects it.
+    let config = env.config("[category.default.embed]\nmetadata = true");
+    env.cmd(&["run", "--config", &config])
+        .assert()
+        .code(3)
+        .stderr(contains(
+            "embedding failed, keeping the file as downloaded: ffprobe can't read",
+        ));
+    let meta: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(env.media().join(RICK_DIR).join("metadata.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(meta["embedded"]["metadata"], false);
+    assert!(
+        meta["embed_error"]
+            .as_str()
+            .unwrap()
+            .contains("Invalid data")
+    );
+}

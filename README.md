@@ -363,6 +363,36 @@ reuses that file instead of downloading it again (`general.duplicates`):
 | `"copy"` | A full copy |
 | `"download"` | Download it again |
 
+### Tags, cover and chapters inside the file
+
+tidepool can also write what it knows into the video file itself, so it stays
+self-describing when you copy it elsewhere or add it to a media player. Turn on
+what you want in the `embed` table, for every source or per category or source:
+
+```toml
+[category.default.embed]
+metadata = true     # title, artist, date, description, …
+cover = true        # the poster
+chapters = true     # chapter markers
+subtitles = true    # subtitles you asked yt-dlp for (with --write-subs)
+```
+
+| Option | What goes into the file |
+| --- | --- |
+| `metadata` | title, artist and album artist (the channel), genre (YouTube's category), date, description, the video's address, album (the source's title on YouTube) and track (its position in the source) |
+| `cover` | the poster, the same image as `cover_file` |
+| `chapters` | the video's chapters |
+| `subtitles` | the subtitles; the separate subtitle files are kept too |
+
+Embedding needs `ffmpeg` and never re-encodes: the video and audio are copied
+as they are. Some file types can't hold everything: webm, opus and ogg files
+get no cover, and only mkv, mp4 and webm files get subtitles. tidepool says
+what it left out, and the poster and subtitle files are always saved anyway.
+If embedding fails, you keep the file as downloaded, with a warning.
+
+When the same video is in two sources and shares one file (see `duplicates`),
+the file carries the album and track of the source that downloaded it last.
+
 ### Problems
 
 Some failures aren't about one video: an outdated yt-dlp that can't read

@@ -1,6 +1,7 @@
 //! Downloading: run yt-dlp into a temp dir, add the cover and metadata.json,
 //! and move the result into its media folder in one rename.
 
+pub mod embed;
 pub mod info;
 pub mod layout;
 pub mod metadata;
@@ -43,6 +44,8 @@ pub struct SourcePaths {
 
 /// What every download shares.
 pub struct Context {
+    pub ffmpeg: PathBuf,
+    pub ffprobe: PathBuf,
     /// For `~` and `{data_dir}` in `output`.
     pub dirs: crate::paths::Dirs,
     pub ytdlp: PathBuf,
@@ -402,7 +405,7 @@ async fn assemble(
 
     // Cover: reuse the other source's when it's already in the wanted
     // format, or fetch the biggest.
-    let cover_tmp = tmp.join("cover");
+    let cover_tmp = tmp.join(format!("cover.{}", cover_format.extension()));
     let mut cover: Option<Cover> = None;
     let reusable = other_cover.filter(|c| {
         c.is_file()
@@ -450,6 +453,24 @@ async fn assemble(
     }
 
     let media_path = tmp.join(&media_name);
+    let embedding = embed_media(
+        job,
+        ctx,
+        &info,
+        &media_path,
+        files.cover.is_some().then(|| {
+            (
+                tmp.join(format!("cover.{}", cover_format.extension())),
+                cover_format,
+            )
+        }),
+        &subtitles
+            .iter()
+            .map(|(lang, ext)| (tmp.join(format!("media.{lang}.{ext}")), lang.clone()))
+            .collect::<Vec<_>>(),
+        label,
+    )
+    .await;
     let media_bytes = std::fs::metadata(&media_path)
         .map_err(|e| io_fail("cannot read", &media_path, e))?
         .len();
@@ -461,6 +482,8 @@ async fn assemble(
         files: &files,
         media_bytes,
         cover: cover.as_ref(),
+        embedded: &embedding.embedded,
+        embed_error: embedding.error.as_deref(),
         downloaded_at: job.now,
         ytdlp_version: ctx.ytdlp_version.as_deref(),
     };
@@ -476,6 +499,17 @@ async fn assemble(
 
     place_all(&moves)?;
     let _ = std::fs::remove_dir_all(tmp);
+    if embedding.relink
+        && let Some(other) = &job.copy_from
+    {
+        // Linked duplicates share one file: the latest tags win for both.
+        if let Err(e) = relink(&media_dest, Path::new(&other.media)) {
+            tracing::warn!(
+                "{label}: cannot update the linked copy at {}: {e}",
+                other.media
+            );
+        }
+    }
     tracing::debug!(
         "{label}: saved as {} ({:.1}s)",
         media_dest.display(),
@@ -485,6 +519,146 @@ async fn assemble(
         files,
         media_bytes,
         linked: job.copy_from.is_some(),
+    })
+}
+
+/// What embedding did for one download.
+#[derive(Default)]
+struct Embedding {
+    embedded: embed::Embedded,
+    error: Option<String>,
+    /// The media was a hardlinked duplicate and got new tags: point the
+    /// other source's path at the new file once it's placed.
+    relink: bool,
+}
+
+/// Embed what the source's `embed` settings ask for into `media` (in the
+/// work area). Never fails the download: problems become a warning and
+/// `embed_error` in metadata.json.
+#[allow(clippy::too_many_arguments)]
+async fn embed_media(
+    job: &Job,
+    ctx: &Context,
+    info: &VideoInfo,
+    media: &Path,
+    cover: Option<(PathBuf, CoverFormat)>,
+    subtitles: &[(PathBuf, String)],
+    label: &str,
+) -> Embedding {
+    let settings = &job.source.embed;
+    if !(settings.metadata || settings.cover || settings.chapters || settings.subtitles) {
+        return Embedding::default();
+    }
+    let chapters = info.chapters.clone().unwrap_or_default();
+    let request = embed::Request {
+        media,
+        tags: if settings.metadata {
+            embed_tags(
+                info,
+                job.queued.source_title.as_deref(),
+                job.queued.position,
+            )
+        } else {
+            Vec::new()
+        },
+        cover: cover
+            .as_ref()
+            .filter(|_| settings.cover)
+            .map(|(path, format)| (path.as_path(), *format)),
+        chapters: if settings.chapters { &chapters } else { &[] },
+        subtitles: if settings.subtitles {
+            subtitles.to_vec()
+        } else {
+            Vec::new()
+        },
+    };
+    if settings.cover && cover.is_none() {
+        tracing::warn!("{label}: no cover to embed");
+    }
+    match embed::embed(&ctx.ffmpeg, &ctx.ffprobe, &request).await {
+        Ok(None) => Embedding::default(),
+        Ok(Some(out)) => {
+            for what in &out.skipped {
+                tracing::warn!("{label}: not embedded: {what}");
+            }
+            let shared = job.copy_from.as_ref().filter(|_| media.is_symlink());
+            let result = match shared {
+                // A symlinked duplicate: update the file it points to.
+                Some(other) => place(&out.path, Path::new(&other.media)),
+                None => std::fs::rename(&out.path, media),
+            };
+            match result {
+                Ok(()) => {
+                    tracing::debug!("{label}: embedded {:?}", out.embedded);
+                    Embedding {
+                        embedded: out.embedded,
+                        error: None,
+                        relink: job.copy_from.is_some()
+                            && shared.is_none()
+                            && ctx.duplicates == Duplicates::Hardlink,
+                    }
+                }
+                Err(e) => {
+                    let _ = std::fs::remove_file(&out.path);
+                    embed_failed(label, e.to_string())
+                }
+            }
+        }
+        Err(e) => embed_failed(label, e),
+    }
+}
+
+fn embed_failed(label: &str, error: String) -> Embedding {
+    tracing::warn!("{label}: embedding failed, keeping the file as downloaded: {error}");
+    Embedding {
+        error: Some(error),
+        ..Embedding::default()
+    }
+}
+
+/// The tags `embed.metadata` writes.
+fn embed_tags(
+    info: &VideoInfo,
+    source_title: Option<&str>,
+    position: u32,
+) -> Vec<(&'static str, String)> {
+    let url = info
+        .webpage_url
+        .clone()
+        .unwrap_or_else(|| format!("https://www.youtube.com/watch?v={}", info.id));
+    let description = info.description.clone().filter(|d| !d.is_empty());
+    [
+        ("title", Some(info.title.clone())),
+        ("artist", info.channel.clone()),
+        ("album_artist", info.channel.clone()),
+        (
+            "genre",
+            info.categories.as_ref().and_then(|c| c.first().cloned()),
+        ),
+        ("date", info.upload_date_iso()),
+        ("comment", Some(url)),
+        ("description", description.clone()),
+        ("synopsis", description),
+        ("album", source_title.map(str::to_string)),
+        ("track", Some(position.to_string())),
+    ]
+    .into_iter()
+    .filter_map(|(key, value)| value.map(|v| (key, v)))
+    .collect()
+}
+
+/// Point `other` at the same file as `ours` (a hardlink, or a copy across
+/// filesystems), replacing it in one rename.
+fn relink(ours: &Path, other: &Path) -> std::io::Result<()> {
+    let name = other
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let staged = other.with_file_name(format!(".{name}.tidepool-partial"));
+    let _ = std::fs::remove_file(&staged);
+    std::fs::hard_link(ours, &staged).or_else(|_| std::fs::copy(ours, &staged).map(drop))?;
+    std::fs::rename(&staged, other).inspect_err(|_| {
+        let _ = std::fs::remove_file(&staged);
     })
 }
 

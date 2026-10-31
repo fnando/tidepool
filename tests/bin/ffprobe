@@ -1,2 +1,7 @@
 #!/bin/sh
-echo "ffprobe version 9.0.2-fake Copyright (c) fake"
+# Fake ffprobe: reports its version; anything else is the fake media
+# downloads, which aren't real videos.
+case "$1" in
+  -version) echo "ffprobe version 9.0.2-fake Copyright (c) fake" ;;
+  *) echo "Invalid data found when processing input" >&2; exit 1 ;;
+esac

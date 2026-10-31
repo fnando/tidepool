@@ -10,6 +10,7 @@
 # TIDEPOOL_FAKE_YTDLP_SLEEP: seconds to wait before finishing a download.
 # TIDEPOOL_FAKE_THUMB_BASE: replaces https://i.ytimg.com in info JSON.
 # TIDEPOOL_FAKE_YTDLP_FAIL: every download and -J lookup fails with this message.
+# TIDEPOOL_FAKE_MEDIA: a real media file to copy instead of writing fake bytes.
 fixtures="$(cd "$(dirname "$0")/.." && pwd)/fixtures/ytdlp"
 [ -n "${TIDEPOOL_FAKE_YTDLP_LOG:-}" ] && echo "$*" >> "$TIDEPOOL_FAKE_YTDLP_LOG"
 
@@ -48,9 +49,13 @@ case " $* " in
     mkdir -p "$dir"
     echo '{"status": "downloading", "downloaded_bytes": 10, "total_bytes": 20}'
     [ -n "${TIDEPOOL_FAKE_YTDLP_SLEEP:-}" ] && sleep "$TIDEPOOL_FAKE_YTDLP_SLEEP"
-    printf 'fake media for %s\n' "$id" > "$dir/media.mkv"
+    if [ -n "${TIDEPOOL_FAKE_MEDIA:-}" ]; then
+      cp "$TIDEPOOL_FAKE_MEDIA" "$dir/media.mkv"
+    else
+      printf 'fake media for %s\n' "$id" > "$dir/media.mkv"
+    fi
     info "$id" > "$infojson.info.json"
-    case " $* " in *" --write-subs "*) printf 'WEBVTT\n' > "$dir/media.en.vtt" ;; esac
+    case " $* " in *" --write-subs "*) printf 'WEBVTT\n\n00:00.000 --> 00:00.500\nHello\n' > "$dir/media.en.vtt" ;; esac
     echo '{"status": "finished", "downloaded_bytes": 20, "total_bytes": 20}'
     echo "$dir/media.mkv"
     exit 0 ;;
