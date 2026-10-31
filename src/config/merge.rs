@@ -23,8 +23,11 @@ pub const DEFAULT_CATEGORY: &str = "default";
 pub mod builtin {
     pub const FORMAT: &str = "bv*+ba/b/bv*/ba";
     pub const MERGE_OUTPUT_FORMAT: &str = "mkv";
-    pub const OUTPUT: &str = "{media_dir}/{source}/{upload_date} - {title} [{id}]";
-    pub const COVER_NAME: &str = "{title}-poster";
+    pub const OUTPUT_DIR: &str = "{media_dir}/{source}/{upload_date} - {title} [{id}]";
+    pub const OUTPUT_FILE: &str = "{output_dir}/{normalized_title}.{ext}";
+    pub const COVER_FILE: &str = "{output_dir}/{normalized_title}-poster.jpg";
+    pub const SUBTITLE_FILE: &str = "{output_dir}/{normalized_title}.{lang}.{ext}";
+    pub const METADATA_FILE: &str = "{output_dir}/metadata.json";
     pub const TMP_DIR: &str = "{data_dir}/tmp";
 }
 
@@ -45,11 +48,13 @@ pub struct EffectiveSource {
     pub tmp_dir: String,
     pub format: String,
     pub merge_output_format: String,
-    pub output: String,
+    pub output_dir: String,
+    pub output_file: String,
+    pub cover_file: String,
+    pub subtitle_file: String,
+    pub metadata_file: String,
     pub ytdlp_args: Vec<String>,
     pub cookies_file: String,
-    pub thumbnail_format: ThumbnailFormat,
-    pub cover_name: String,
     pub match_fields: Vec<RuleField>,
     pub include: Vec<Rule>,
     pub exclude: Vec<Rule>,
@@ -179,11 +184,13 @@ fn resolve(
         tmp_dir: pick!(tmp_dir, builtin::TMP_DIR.into()),
         format: pick!(format, builtin::FORMAT.into()),
         merge_output_format: pick!(merge_output_format, builtin::MERGE_OUTPUT_FORMAT.into()),
-        output: pick!(output, builtin::OUTPUT.into()),
+        output_dir: pick!(output_dir, builtin::OUTPUT_DIR.into()),
+        output_file: pick!(output_file, builtin::OUTPUT_FILE.into()),
+        cover_file: pick!(cover_file, builtin::COVER_FILE.into()),
+        subtitle_file: pick!(subtitle_file, builtin::SUBTITLE_FILE.into()),
+        metadata_file: pick!(metadata_file, builtin::METADATA_FILE.into()),
         ytdlp_args: pick!(ytdlp_args, Vec::new()),
         cookies_file: pick!(cookies_file, String::new()),
-        thumbnail_format: pick!(thumbnail_format, ThumbnailFormat::Jpg),
-        cover_name: pick!(cover_name, builtin::COVER_NAME.into()),
         match_fields: pick!(match_fields, vec![RuleField::Title]),
         include: list(layers, |l| &l.include, inherit_rules),
         exclude: list(layers, |l| &l.exclude, inherit_rules),
@@ -295,8 +302,11 @@ mod tests {
             p.format, "bv*+ba/b/bv*/ba",
             "best video + audio, then the best single file, then video or audio alone"
         );
-        assert_eq!(p.output, builtin::OUTPUT);
-        assert_eq!(p.cover_name, builtin::COVER_NAME);
+        assert_eq!(p.output_dir, builtin::OUTPUT_DIR);
+        assert_eq!(p.output_file, "{output_dir}/{normalized_title}.{ext}");
+        assert_eq!(p.cover_file, "{output_dir}/{normalized_title}-poster.jpg");
+        assert_eq!(p.subtitle_file, builtin::SUBTITLE_FILE);
+        assert_eq!(p.metadata_file, "{output_dir}/metadata.json");
         assert_eq!(p.match_fields, vec![RuleField::Title]);
         assert_eq!(p.cutoff.value, Cutoff::None);
         assert!(!p.embed.metadata && p.embed.after_hooks);
@@ -314,7 +324,7 @@ mod tests {
     #[test]
     fn layers_stack_default_then_category_then_source() {
         let c = config(&format!(
-            "[category.default]\nmedia_dir = '~/Videos'\nformat = 'a'\ncutoff = '30d'\nthumbnail_format = 'webp'\n\
+            "[category.default]\nmedia_dir = '~/Videos'\nformat = 'a'\ncutoff = '30d'\ncover_file = '{{output_dir}}/cover.webp'\n\
              [category.music]\nmedia_dir = '/nas/music'\nformat = 'ba/b'\n\
              [sources.lofi]\n{URL}\ncategory = 'music'\ncutoff = 'none'\n\
              [sources.talks]\nurl = 'https://www.youtube.com/playlist?list=PLy'"
@@ -331,8 +341,7 @@ mod tests {
         );
         assert_eq!(lofi.cutoff.value, Cutoff::None, "the source wins");
         assert_eq!(
-            lofi.thumbnail_format,
-            ThumbnailFormat::Webp,
+            lofi.cover_file, "{output_dir}/cover.webp",
             "from category.default"
         );
         assert_eq!(

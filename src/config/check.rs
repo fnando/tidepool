@@ -305,7 +305,8 @@ mod tests {
         assert!(text.contains("media_dir = \"/d/tidepool/media\""), "{text}");
         assert!(text.contains("[sources.lofi]"), "{text}");
         assert!(
-            text.contains("output = \"{media_dir}/{source}/{upload_date} - {title} [{id}]\""),
+            text.contains("output_dir = \"{media_dir}/{source}/{upload_date} - {title} [{id}]\"")
+                && text.contains("cover_file = \"{output_dir}/{normalized_title}-poster.jpg\""),
             "{text}"
         );
         let shown = EffectiveConfig::new(&config, &dirs(), true).to_toml();

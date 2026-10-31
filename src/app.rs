@@ -204,12 +204,12 @@ impl App<'_> {
         }
         for source in sources {
             tracing::debug!(
-                "{}: {} (category {}), format {}, output {}",
+                "{}: {} (category {}), format {}, output_dir {}",
                 source.key,
                 source.url,
                 source.category,
                 source.format,
-                source.output
+                source.output_dir
             );
             let rules = |rules: &[crate::config::Rule]| {
                 rules
@@ -748,13 +748,18 @@ impl App<'_> {
             bail!("no video {} in any source", args.video_id);
         }
         if args.delete_files {
-            for dir in reset.iter().filter_map(|(_, dir)| dir.as_ref()) {
-                // Only folders tidepool made: they hold its metadata.json.
-                let path = PathBuf::from(dir);
-                if path.is_absolute() && path.join("metadata.json").is_file() {
-                    std::fs::remove_dir_all(&path)
-                        .with_context(|| format!("cannot delete {}", path.display()))?;
-                    writeln!(out, "deleted {}", path.display())?;
+            // Only the files tidepool placed, then their folder if it's empty.
+            for files in reset.iter().filter_map(|(_, files)| files.as_ref()) {
+                for path in files.paths().into_iter().map(Path::new) {
+                    if path.is_absolute() && (path.is_file() || path.is_symlink()) {
+                        std::fs::remove_file(path)
+                            .with_context(|| format!("cannot delete {}", path.display()))?;
+                        writeln!(out, "deleted {}", path.display())?;
+                    }
+                }
+                let dir = Path::new(&files.dir);
+                if dir.is_absolute() && std::fs::remove_dir(dir).is_ok() {
+                    writeln!(out, "deleted {}", dir.display())?;
                 }
             }
         }

@@ -112,7 +112,7 @@ async fn run_indexes_and_downloads_into_the_library() {
                 .and(contains("“Members only stream” is unavailable: Join this channel")),
         );
 
-    // The video's directory, assembled and moved into place.
+    // The video's files, assembled and moved into place.
     let rick = env.media().join(RICK_DIR);
     let mut names: Vec<String> = fs::read_dir(&rick)
         .unwrap()
@@ -123,8 +123,8 @@ async fn run_indexes_and_downloads_into_the_library() {
         names,
         vec![
             "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)-poster.jpg",
-            "media.en.vtt",
-            "media.mkv",
+            "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).en.vtt",
+            "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mkv",
             "metadata.json"
         ]
     );
@@ -135,20 +135,23 @@ async fn run_indexes_and_downloads_into_the_library() {
     assert_eq!(metadata["source"]["position"], 1);
     assert_eq!(
         metadata["files"]["subtitles"],
-        serde_json::json!(["media.en.vtt"])
+        serde_json::json!([{
+            "lang": "en",
+            "path": "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).en.vtt"
+        }])
     );
     assert_eq!(metadata["cover"]["width"], 1280);
     assert_eq!(metadata["tool"]["yt_dlp"], "2026.10.01");
     assert_eq!(metadata["channel"]["name"], "Rick Astley");
     assert!(
         env.media()
-            .join("dl/2026-09-01 - Video okvideo01 [okvideo01]/media.mkv")
+            .join("dl/2026-09-01 - Video okvideo01 [okvideo01]/Video okvideo01.mkv")
             .is_file()
     );
     // Nothing left in the work area, and no raw info JSON kept by default.
     let tmp = env.path("data/tidepool/tmp");
     assert!(!tmp.exists() || fs::read_dir(&tmp).unwrap().next().is_none());
-    assert!(!rick.join("ytdlp.info.json").exists());
+    assert!(!rick.join("metadata.ytdlp.json").exists());
 
     assert_eq!(
         env.statuses("dl"),
@@ -186,12 +189,12 @@ async fn duplicates_are_linked_and_reset_downloads_again() {
         ));
     let a = fs::metadata(
         env.media()
-            .join("dl/2026-09-01 - Video okvideo01 [okvideo01]/media.mkv"),
+            .join("dl/2026-09-01 - Video okvideo01 [okvideo01]/Video okvideo01.mkv"),
     )
     .unwrap();
     let b = fs::metadata(
         env.media()
-            .join("dl2/2026-09-01 - Video okvideo01 [okvideo01]/media.mkv"),
+            .join("dl2/2026-09-01 - Video okvideo01 [okvideo01]/Video okvideo01.mkv"),
     )
     .unwrap();
     assert_eq!(a.ino(), b.ino(), "hardlinked");
@@ -378,7 +381,7 @@ async fn verbose_shows_config_and_progress() {
             env.path("data/tidepool/tmp").display()
         ),
         "yt-dlp 2026.10.01 at ",
-        "dl: https://www.youtube.com/playlist?list=PLdownloads (category default), format bv*+ba/b/bv*/ba, output {media_dir}/{source}/{upload_date} - {title} [{id}]",
+        "dl: https://www.youtube.com/playlist?list=PLdownloads (category default), format bv*+ba/b/bv*/ba, output_dir {media_dir}/{source}/{upload_date} - {title} [{id}]",
         "dl: filters: min_duration 250s",
         "dl: listing https://www.youtube.com/playlist?list=PLdownloads",
         "dl: listed 4 videos in ",
@@ -389,9 +392,9 @@ async fn verbose_shows_config_and_progress() {
         "dl: “Video okvideo01”: 100% of 20 B",
         "dl: “Video okvideo01”: cover 1280×720 from ",
         &format!(
-            "dl: “Video okvideo01”: moved into {} (",
+            "dl: “Video okvideo01”: saved as {} (",
             env.media()
-                .join("dl/2026-09-01 - Video okvideo01 [okvideo01]")
+                .join("dl/2026-09-01 - Video okvideo01 [okvideo01]/Video okvideo01.mkv")
                 .display()
         ),
     ] {
@@ -446,7 +449,7 @@ async fn categories_send_sources_to_their_own_folders() {
     let music = env.path("music");
     let text = fs::read_to_string(&config).unwrap()
         + &format!(
-            "\n[category.music]\nmedia_dir = \"{}\"\noutput = \"{{media_dir}}/{{category}}/{{title}} [{{id}}]\"\n\
+            "\n[category.music]\nmedia_dir = \"{}\"\noutput_dir = \"{{media_dir}}/{{category}}/{{title}} [{{id}}]\"\n\
              \n[sources.tunes]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\ncategory = \"music\"\n",
             music.display()
         );
@@ -458,8 +461,8 @@ async fn categories_send_sources_to_their_own_folders() {
         .stdout(contains("tunes: downloaded “Video okvideo01”"));
     let tune = music.join("music/Video okvideo01 [okvideo01]");
     assert!(
-        tune.join("media.mkv").is_file(),
-        "in the music category's root, with its output template"
+        tune.join("Video okvideo01.mkv").is_file(),
+        "in the music category's media_dir, with its output_dir template"
     );
     assert!(!env.media().join("tunes").exists());
     let meta: serde_json::Value =
@@ -474,17 +477,68 @@ async fn categories_send_sources_to_their_own_folders() {
         .stdout(contains("dl: linked from another source “Video okvideo01”"));
     let linked = env
         .media()
-        .join("dl/2026-09-01 - Video okvideo01 [okvideo01]/media.mkv");
+        .join("dl/2026-09-01 - Video okvideo01 [okvideo01]/Video okvideo01.mkv");
     assert_eq!(
         fs::metadata(&linked).unwrap().ino(),
-        fs::metadata(tune.join("media.mkv")).unwrap().ino(),
+        fs::metadata(tune.join("Video okvideo01.mkv"))
+            .unwrap()
+            .ino(),
         "hardlinked"
     );
 
-    // reset --delete-files finds folders in any root.
+    // reset --delete-files finds files in any media_dir.
     env.cmd(&["reset", "okvideo01", "--delete-files"])
         .assert()
         .success()
         .stdout(contains(format!("deleted {}", tune.display())));
     assert!(!tune.exists());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn files_go_anywhere_and_folders_can_be_shared() {
+    let env = Env::new().await;
+    let config = env.config(
+        "output_dir = \"{media_dir}/{source}\"\n\
+         cover_file = \"{data_dir}/covers/{id}.webp\"\n\
+         metadata_file = \"{output_dir}/{id}.json\"\n\
+         keep_raw_info = true",
+    );
+    env.cmd(&["run", "--config", &config]).assert().code(3);
+
+    let dir = env.media().join("dl");
+    let mut names: Vec<String> = fs::read_dir(&dir)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
+    names.sort();
+    assert_eq!(
+        names,
+        vec![
+            "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).en.vtt",
+            "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mkv",
+            "Video okvideo01.en.vtt",
+            "Video okvideo01.mkv",
+            "dQw4w9WgXcQ.json",
+            "dQw4w9WgXcQ.ytdlp.json",
+            "okvideo01.json",
+            "okvideo01.ytdlp.json",
+        ],
+        "two videos side by side in one folder"
+    );
+    let cover = env.path("data/tidepool/covers/okvideo01.webp");
+    let bytes = fs::read(&cover).unwrap();
+    assert_eq!(&bytes[8..12], b"WEBP", "the extension picks the format");
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(dir.join("okvideo01.json")).unwrap()).unwrap();
+    assert_eq!(meta["files"]["media"], "Video okvideo01.mkv");
+    assert_eq!(meta["files"]["cover"], cover.display().to_string());
+
+    // Deleting one video's files leaves the other, and the shared folder.
+    env.cmd(&["reset", "okvideo01", "--delete-files"])
+        .assert()
+        .success()
+        .stdout(contains(format!("deleted {}", cover.display())));
+    assert!(!cover.exists() && !dir.join("Video okvideo01.mkv").exists());
+    assert!(!dir.join("okvideo01.json").exists() && !dir.join("okvideo01.ytdlp.json").exists());
+    assert!(dir.join("dQw4w9WgXcQ.json").is_file());
 }

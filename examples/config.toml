@@ -39,11 +39,13 @@ media_dir = "~/Videos/youtube"      # {media_dir}; default ~/.local/share/tidepo
 tmp_dir = "{data_dir}/tmp"          # downloads in progress; default {data_dir}/tmp
 format = "bv*[height<=1080]+ba/b"
 merge_output_format = "mkv"
-output = "{media_dir}/{source}/{upload_date} - {title} [{id}]"  # each video's directory, a full path
+output_dir = "{media_dir}/{source}/{upload_date} - {title} [{id}]"  # each video's folder, a full path
+output_file = "{output_dir}/{normalized_title}.{ext}"            # the media file
+cover_file = "{output_dir}/{normalized_title}-poster.jpg"        # .jpg, .png or .webp
+subtitle_file = "{output_dir}/{normalized_title}.{lang}.{ext}"   # each subtitle
+metadata_file = "{output_dir}/metadata.json"
 ytdlp_args = ["--write-subs", "--sub-langs", "en.*"]
 cookies_file = ""                   # optional, for private playlists
-thumbnail_format = "jpg"            # jpg | webp | original
-cover_name = "{title}-poster"       # poster file name, no extension
 match_fields = ["title"]            # default field(s) for plain-string rules
 include = []
 exclude = ['(?i)#shorts']
@@ -81,7 +83,7 @@ keep = "metadata"                   # nothing | metadata (keep json + cover, dro
 media_dir = "~/Music/youtube"       # audio goes somewhere else
 format = "ba/b"                     # audio only
 ytdlp_args = ["-x", "--audio-format", "opus"]
-cover_name = "cover"
+cover_file = "{output_dir}/cover.jpg"
 cutoff = "none"                     # keep the whole back catalogue
 inherit_rules = true                # add to default's include/exclude instead of replacing them
 

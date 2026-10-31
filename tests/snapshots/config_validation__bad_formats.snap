@@ -2,8 +2,8 @@
 source: tests/config_validation.rs
 expression: err
 ---
-bad_formats.toml:2:10 category.default.output: "{title}": must contain {id}
-bad_formats.toml:3:14 category.default.cover_name: "covers/{title}": must not contain path separators
+bad_formats.toml:2:14 category.default.output_dir: "{title}": must be a full path: start with /, ~, $VAR, {media_dir} or {data_dir}
+bad_formats.toml:3:14 category.default.cover_file: "{output_dir}/{title}.gif": must end with .jpg, .jpeg, .png or .webp
 bad_formats.toml:4:16 category.default.min_duration: "1 hour" is not a valid duration (e.g. "30d", "12h", "1h30m")
 bad_formats.toml:5:10 category.default.cutoff: "yesterday" is not a valid cutoff (e.g. "30d", "2024-01-01" or "none")
 bad_formats.toml:6:12 category.default.include[0]: "(unclosed" is not a valid regex: Parsing error at position 9: Opening parenthesis without closing parenthesis

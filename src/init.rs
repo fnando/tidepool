@@ -59,11 +59,13 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # tmp_dir = "{data_dir}/tmp"        # work area for downloads in progress
 # format = "bv*+ba/b/bv*/ba"        # best video + audio, else best single file, else video or audio alone
 # merge_output_format = "mkv"       # container for merged formats
-# output = "{media_dir}/{source}/{upload_date} - {title} [{id}]"   # each video's directory, a full path; must contain {id}
+# output_dir = "{media_dir}/{source}/{upload_date} - {title} [{id}]" # each video's folder; {output_dir} below
+# output_file = "{output_dir}/{normalized_title}.{ext}"          # the media file; must contain {ext}
+# cover_file = "{output_dir}/{normalized_title}-poster.jpg"      # the poster; .jpg, .png or .webp picks the format
+# subtitle_file = "{output_dir}/{normalized_title}.{lang}.{ext}" # each subtitle; must contain {lang} and {ext}
+# metadata_file = "{output_dir}/metadata.json"                   # tidepool's metadata
 # ytdlp_args = []                   # extra yt-dlp arguments, e.g. ["--write-subs", "--sub-langs", "en.*"]
 # cookies_file = ""                 # Netscape cookies file, for private playlists
-# thumbnail_format = "jpg"          # jpg | webp | original
-# cover_name = "{title}-poster"     # poster file name, no extension
 # match_fields = ["title"]          # title | description | channel | tags | id
 # include = []                      # keep a video if any regex matches (empty = keep all)
 # exclude = []                      # drop a video if any regex matches, e.g. ['(?i)#shorts']
@@ -106,8 +108,8 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # media_dir = "~/Music/tidepool"    # e.g. keep music somewhere else
 format = "ba/b"                     # best audio
 ytdlp_args = ["-x", "--audio-format", "opus"]
-output = "{media_dir}/{source}/{title} [{id}]"
-cover_name = "cover"
+output_dir = "{media_dir}/{source}/{title} [{id}]"
+cover_file = "{output_dir}/cover.jpg"
 
 # Hooks: commands run after each download (or before cleanup). Example:
 #

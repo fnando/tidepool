@@ -6,7 +6,7 @@ types_and_enums.toml:2:15 general.concurrency: 0 is less than the minimum of 1
 types_and_enums.toml:3:14 general.duplicates: "move" is not one of "hardlink", "symlink", "copy", "download"
 types_and_enums.toml:6:17 category.default.youtube.quota_warn_at: 1.5 is greater than the maximum of 1.0
 types_and_enums.toml:7:11 category.default.youtube.api_key: 42 is not of type "string"
-types_and_enums.toml:10:20 category.default.thumbnail_format: "png" is not one of "jpg", "webp", "original"
+types_and_enums.toml:10:14 category.default.cover_file: 42 is not of type "string"
 types_and_enums.toml:11:16 category.default.match_fields: [] has less than 1 item
 types_and_enums.toml:12:12 category.default.include[0]: must be a regex string or a { field, pattern } table
 types_and_enums.toml:12:25 category.default.include[1].field: "comments" is not one of "title", "description", "channel", "tags", "id"

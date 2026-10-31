@@ -1,6 +1,6 @@
 [category.default]
-output = "{title}"
-cover_name = "covers/{title}"
+output_dir = "{title}"
+cover_file = "{output_dir}/{title}.gif"
 min_duration = "1 hour"
 cutoff = "yesterday"
 include = ['(unclosed']

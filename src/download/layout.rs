@@ -1,5 +1,6 @@
-//! Where a video goes: placeholder values, the video's directory (`output`)
-//! and the poster file name (`cover_name`).
+//! Where a video goes: placeholder values and the full paths of its
+//! directory (`output_dir`) and files (`output_file`, `cover_file`,
+//! `subtitle_file`, `metadata_file`).
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -9,6 +10,7 @@ use crate::config::placeholders::{self, PLACEHOLDERS, Setting};
 use crate::paths::Dirs;
 
 use super::info::VideoInfo;
+use super::thumbnail::CoverFormat;
 
 /// Everything a video's placeholders can resolve to, unsanitized. Missing
 /// values are absent.
@@ -31,6 +33,10 @@ impl Values {
         put("id", Some(info.id.clone()));
         put("video_id", Some(info.id.clone()));
         put("title", Some(info.title.clone()));
+        put(
+            "normalized_title",
+            Some(placeholders::normalize_title(&info.title)),
+        );
         put("channel", info.channel.clone());
         put("channel_id", info.channel_id.clone());
         put("upload_date", info.upload_date_iso());
@@ -73,47 +79,100 @@ impl Values {
     }
 }
 
-fn render_file_name(template: &str, setting: Setting, values: &Values) -> Result<String, String> {
-    let segments =
-        placeholders::validate(template, setting).map_err(|e| format!("{template:?}: {e}"))?;
-    let values = values.for_file_names();
-    // Values are already sanitized.
-    Ok(placeholders::render(&segments, Setting::Tags, |name| {
-        values.get(name).cloned()
-    }))
+/// Every destination of one video.
+#[derive(Debug, Clone)]
+pub struct Layout {
+    values: BTreeMap<&'static str, String>,
+    dirs: Dirs,
+    media_dir: PathBuf,
+    output_dir: PathBuf,
+    output_file: String,
+    cover_file: String,
+    subtitle_file: String,
+    metadata_file: String,
 }
 
-/// The video's directory (`output`), a full path.
-pub fn video_dir(
-    source: &EffectiveSource,
-    values: &Values,
-    media_dir: &Path,
-    dirs: &Dirs,
-) -> Result<PathBuf, String> {
-    let values = values.for_file_names();
-    placeholders::render_path(
-        &source.output,
-        Setting::Output,
-        &dirs.home,
-        |name| match name {
-            "media_dir" => Some(media_dir.display().to_string()),
-            "data_dir" => Some(dirs.data_dir.display().to_string()),
-            _ => values.get(name).cloned(),
-        },
-    )
-    .map_err(|e| format!("output {e}"))
-}
+impl Layout {
+    pub fn new(
+        source: &EffectiveSource,
+        values: &Values,
+        media_dir: &Path,
+        dirs: &Dirs,
+    ) -> Result<Self, String> {
+        let mut layout = Self {
+            values: values.for_file_names(),
+            dirs: dirs.clone(),
+            media_dir: media_dir.to_path_buf(),
+            output_dir: PathBuf::new(),
+            output_file: source.output_file.clone(),
+            cover_file: source.cover_file.clone(),
+            subtitle_file: source.subtitle_file.clone(),
+            metadata_file: source.metadata_file.clone(),
+        };
+        layout.output_dir = layout.render(&source.output_dir, Setting::OutputDir, &[])?;
+        Ok(layout)
+    }
 
-/// The poster file name, e.g. `Some title-poster.jpg`.
-pub fn cover_file_name(
-    source: &EffectiveSource,
-    values: &Values,
-    extension: &str,
-) -> Result<String, String> {
-    let rendered = render_file_name(&source.cover_name, Setting::CoverName, values)?;
-    let stem = rendered.trim().trim_matches('.');
-    let stem = if stem.is_empty() { "poster" } else { stem };
-    Ok(format!("{stem}.{extension}"))
+    fn render(
+        &self,
+        template: &str,
+        setting: Setting,
+        extra: &[(&str, &str)],
+    ) -> Result<PathBuf, String> {
+        placeholders::render_path(template, setting, &self.dirs.home, |name| match name {
+            "media_dir" => Some(self.media_dir.display().to_string()),
+            "data_dir" => Some(self.dirs.data_dir.display().to_string()),
+            "output_dir" => Some(self.output_dir.display().to_string()),
+            _ => extra
+                .iter()
+                .find(|(k, _)| *k == name)
+                .map(|(_, v)| match placeholders::sanitize(v) {
+                    s if s.is_empty() => "NA".into(),
+                    s => s,
+                })
+                .or_else(|| self.values.get(name).cloned()),
+        })
+        .map_err(|e| format!("{setting} {e}"))
+    }
+
+    /// The video's directory (`output_dir`).
+    pub fn output_dir(&self) -> &Path {
+        &self.output_dir
+    }
+
+    /// The media file (`output_file`) for yt-dlp's extension.
+    pub fn output_file(&self, ext: &str) -> Result<PathBuf, String> {
+        self.render(&self.output_file, Setting::OutputFile, &[("ext", ext)])
+    }
+
+    /// The poster (`cover_file`) and the image format its extension asks for.
+    pub fn cover_file(&self) -> Result<(PathBuf, CoverFormat), String> {
+        let path = self.render(&self.cover_file, Setting::CoverFile, &[])?;
+        let format = path
+            .extension()
+            .and_then(|e| CoverFormat::from_extension(&e.to_string_lossy()))
+            .ok_or_else(|| {
+                format!(
+                    "cover_file {:?} must end with .jpg, .png or .webp",
+                    self.cover_file
+                )
+            })?;
+        Ok((path, format))
+    }
+
+    /// One subtitle (`subtitle_file`).
+    pub fn subtitle_file(&self, lang: &str, ext: &str) -> Result<PathBuf, String> {
+        self.render(
+            &self.subtitle_file,
+            Setting::SubtitleFile,
+            &[("lang", lang), ("ext", ext)],
+        )
+    }
+
+    /// tidepool's metadata.json (`metadata_file`).
+    pub fn metadata_file(&self) -> Result<PathBuf, String> {
+        self.render(&self.metadata_file, Setting::MetadataFile, &[])
+    }
 }
 
 #[cfg(test)]
@@ -150,52 +209,73 @@ mod tests {
         }
     }
 
-    fn dir_of(s: &EffectiveSource, v: &Values) -> Result<PathBuf, String> {
-        video_dir(s, v, Path::new("/media"), &dirs())
+    fn layout(s: &EffectiveSource, v: &Values) -> Result<Layout, String> {
+        Layout::new(s, v, Path::new("/media"), &dirs())
     }
 
     #[test]
     fn renders_the_default_layout() {
         let s = source("");
-        let v = values(&s, "Never: Gonna/Give You Up?");
+        let v = values(&s, "Never: Gonna/Give You Up? 東京");
+        let l = layout(&s, &v).unwrap();
+        let dir = "/media/lofi/2009-10-25 - Never GonnaGive You Up 東京 [dQw4w9WgXcQ]";
+        assert_eq!(l.output_dir(), Path::new(dir));
         assert_eq!(
-            dir_of(&s, &v).unwrap(),
-            PathBuf::from("/media/lofi/2009-10-25 - Never GonnaGive You Up [dQw4w9WgXcQ]")
+            l.output_file("mkv").unwrap(),
+            PathBuf::from(format!("{dir}/Never GonnaGive You Up Dong Jing.mkv"))
         );
         assert_eq!(
-            cover_file_name(&s, &v, "jpg").unwrap(),
-            "Never GonnaGive You Up-poster.jpg"
+            l.cover_file().unwrap(),
+            (
+                PathBuf::from(format!("{dir}/Never GonnaGive You Up Dong Jing-poster.jpg")),
+                CoverFormat::Jpg
+            )
+        );
+        assert_eq!(
+            l.subtitle_file("en-US", "vtt").unwrap(),
+            PathBuf::from(format!("{dir}/Never GonnaGive You Up Dong Jing.en-US.vtt"))
+        );
+        assert_eq!(
+            l.metadata_file().unwrap(),
+            PathBuf::from(format!("{dir}/metadata.json"))
         );
     }
 
     #[test]
-    fn full_paths_padding_and_missing_values() {
+    fn full_paths_anywhere_padding_and_missing_values() {
         let s = source(
-            "output = '~/Music/./{source}/{upload_year}/{position:03} {channel_id} [{id}]'\ncover_name = 'cover'",
+            "output_dir = '~/Music/./{source}/{upload_year}'\n\
+             output_file = '{output_dir}/{position:03} {channel_id} [{id}].{ext}'\n\
+             cover_file = '/covers/{id}.WEBP'\n\
+             metadata_file = '{data_dir}/meta/{id}.json'",
         );
         let v = values(&s, "x");
+        let l = layout(&s, &v).unwrap();
+        assert_eq!(l.output_dir(), Path::new("/home/me/Music/lofi/2009"));
         assert_eq!(
-            dir_of(&s, &v).unwrap(),
-            PathBuf::from("/home/me/Music/lofi/2009/007 NA [dQw4w9WgXcQ]")
+            l.output_file("opus").unwrap(),
+            PathBuf::from("/home/me/Music/lofi/2009/007 NA [dQw4w9WgXcQ].opus")
         );
-        assert_eq!(cover_file_name(&s, &v, "webp").unwrap(), "cover.webp");
+        assert_eq!(
+            l.cover_file().unwrap(),
+            (PathBuf::from("/covers/dQw4w9WgXcQ.WEBP"), CoverFormat::Webp)
+        );
+        assert_eq!(
+            l.metadata_file().unwrap(),
+            PathBuf::from("/d/tidepool/meta/dQw4w9WgXcQ.json")
+        );
         assert_eq!(v.get("source_title"), Some("Rick's hits"));
         assert_eq!(
             v.get("url"),
             Some("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
         );
-        let s = source("output = '{data_dir}/{category}/{id}'");
-        assert_eq!(
-            dir_of(&s, &values(&s, "x")).unwrap(),
-            PathBuf::from("/d/tidepool/default/dQw4w9WgXcQ")
-        );
     }
 
     #[test]
     fn rejects_parent_dirs() {
-        let s = source("output = '{media_dir}/../{id}'");
+        let s = source("output_dir = '{media_dir}/../{id}'");
         assert!(
-            dir_of(&s, &values(&s, "x"))
+            layout(&s, &values(&s, "x"))
                 .unwrap_err()
                 .contains("uses \"..\"")
         );

@@ -6,21 +6,14 @@ use serde_json::{Value, json};
 use super::info::VideoInfo;
 use super::thumbnail::Cover;
 use crate::config::merge::EffectiveSource;
-
-/// Files in the video's directory, relative to it.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct Files {
-    pub media: String,
-    pub cover: Option<String>,
-    pub subtitles: Vec<String>,
-}
+use crate::state::items::VideoFiles;
 
 pub struct Metadata<'a> {
     pub info: &'a VideoInfo,
     pub source: &'a EffectiveSource,
     pub source_title: Option<&'a str>,
     pub position: u32,
-    pub files: &'a Files,
+    pub files: &'a VideoFiles,
     pub media_bytes: u64,
     pub cover: Option<&'a Cover>,
     pub downloaded_at: Timestamp,
@@ -28,6 +21,31 @@ pub struct Metadata<'a> {
 }
 
 impl Metadata<'_> {
+    /// Where the files are: relative to the metadata file's folder when
+    /// they're under it, absolute otherwise.
+    fn files_json(&self) -> Value {
+        let base = std::path::Path::new(&self.files.metadata)
+            .parent()
+            .unwrap_or(std::path::Path::new("/"));
+        let show = |path: &str| {
+            std::path::Path::new(path)
+                .strip_prefix(base)
+                .map(|p| p.display().to_string())
+                .unwrap_or_else(|_| path.to_string())
+        };
+        let subtitles: Vec<Value> = self
+            .files
+            .subtitles
+            .iter()
+            .map(|s| json!({ "lang": s.lang, "path": show(&s.path) }))
+            .collect();
+        json!({
+            "media": show(&self.files.media),
+            "cover": self.files.cover.as_deref().map(show),
+            "subtitles": subtitles,
+        })
+    }
+
     pub fn to_json(&self) -> Value {
         let info = self.info;
         let chapters: Vec<Value> = info
@@ -59,11 +77,7 @@ impl Metadata<'_> {
                 "title": self.source_title,
                 "position": self.position,
             },
-            "files": {
-                "media": self.files.media,
-                "cover": self.files.cover,
-                "subtitles": self.files.subtitles,
-            },
+            "files": self.files_json(),
             "media": {
                 "format_id": info.format_id,
                 "width": info.width,
@@ -101,10 +115,16 @@ mod tests {
             .unwrap(),
         )
         .unwrap();
-        let files = Files {
-            media: "media.mkv".into(),
-            cover: Some("x-poster.jpg".into()),
-            subtitles: vec!["media.en.vtt".into()],
+        let files = VideoFiles {
+            dir: "/m/lofi/x".into(),
+            media: "/m/lofi/x/x.mkv".into(),
+            cover: Some("/covers/x-poster.jpg".into()),
+            subtitles: vec![crate::state::items::Subtitle {
+                lang: "en".into(),
+                path: "/m/lofi/x/subs/x.en.vtt".into(),
+            }],
+            metadata: "/m/lofi/x/metadata.json".into(),
+            raw_info: None,
         };
         let cover = Cover {
             bytes: vec![],
@@ -138,7 +158,15 @@ mod tests {
             json["source"],
             json!({ "name": "lofi", "url": "https://www.youtube.com/playlist?list=PLabc", "id": "PLabc", "title": "Mix", "position": 3 })
         );
-        assert_eq!(json["files"]["subtitles"], json!(["media.en.vtt"]));
+        assert_eq!(
+            json["files"],
+            json!({
+                "media": "x.mkv",
+                "cover": "/covers/x-poster.jpg",
+                "subtitles": [{ "lang": "en", "path": "subs/x.en.vtt" }],
+            }),
+            "relative under the metadata file's folder, absolute elsewhere"
+        );
         assert_eq!(json["media"]["size_bytes"], 1234);
         assert_eq!(json["media"]["acodec"], Value::Null);
         assert_eq!(json["cover"]["width"], 1920);

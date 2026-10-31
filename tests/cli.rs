@@ -197,7 +197,9 @@ fn check_prints_the_effective_config() {
         .success()
         .stdout(
             contains("[sources.lofi]")
-                .and(contains("cover_name = \"{title}-poster\""))
+                .and(contains(
+                    "cover_file = \"{output_dir}/{normalized_title}-poster.jpg\"",
+                ))
                 .and(contains("AIza…x1Qw")),
         )
         .stderr(contains("yt-dlp 2026.10.01").and(contains("is valid (1 sources)")));

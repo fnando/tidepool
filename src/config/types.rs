@@ -313,7 +313,7 @@ macro_rules! options_struct {
         $(#[$meta])*
         pub struct $name {
             $($extra)*
-            /// The media folder, a full path; `output` refers to it as {media_dir}.
+            /// The media folder, a full path; path settings refer to it as {media_dir}.
             /// Defaults to ~/.local/share/tidepool/media.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "full-path"))]
@@ -329,24 +329,36 @@ macro_rules! options_struct {
             /// Container for merged formats (`--merge-output-format`).
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub merge_output_format: Option<String>,
-            /// Each video's directory, a full path. Must contain {id}.
-            /// Defaults to "{media_dir}/{source}/{upload_date} - {title} [{id}]".
+            /// Each video's directory, a full path; the file settings refer to it
+            /// as {output_dir}. Defaults to "{media_dir}/{source}/{upload_date} - {title} [{id}]".
             #[serde(default, skip_serializing_if = "Option::is_none")]
-            #[schemars(extend("format" = "output-template"))]
-            pub output: Option<String>,
+            #[schemars(extend("format" = "output-dir-template"))]
+            pub output_dir: Option<String>,
+            /// The media file, a full path; must contain {ext}.
+            /// Defaults to "{output_dir}/{normalized_title}.{ext}".
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            #[schemars(extend("format" = "output-file-template"))]
+            pub output_file: Option<String>,
+            /// The poster, a full path ending in .jpg, .png or .webp (which picks
+            /// the image format). Defaults to "{output_dir}/{normalized_title}-poster.jpg".
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            #[schemars(extend("format" = "cover-file-template"))]
+            pub cover_file: Option<String>,
+            /// Each subtitle file, a full path; must contain {lang} and {ext}.
+            /// Defaults to "{output_dir}/{normalized_title}.{lang}.{ext}".
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            #[schemars(extend("format" = "subtitle-file-template"))]
+            pub subtitle_file: Option<String>,
+            /// tidepool's metadata.json, a full path. Defaults to "{output_dir}/metadata.json".
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            #[schemars(extend("format" = "metadata-file-template"))]
+            pub metadata_file: Option<String>,
             /// Extra yt-dlp arguments, passed through.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub ytdlp_args: Option<Vec<String>>,
             /// Netscape cookies file, for private sources. "" = none.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub cookies_file: Option<String>,
-            /// Cover image format.
-            #[serde(default, skip_serializing_if = "Option::is_none")]
-            pub thumbnail_format: Option<ThumbnailFormat>,
-            /// Poster file name without extension; same placeholders as `output`.
-            #[serde(default, skip_serializing_if = "Option::is_none")]
-            #[schemars(extend("format" = "file-name-template"))]
-            pub cover_name: Option<String>,
             /// Field(s) plain-string rules are tested against.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(length(min = 1))]
@@ -378,7 +390,7 @@ macro_rules! options_struct {
             /// Download again when a downloaded item's media file is gone.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub redownload_missing: Option<bool>,
-            /// Keep yt-dlp's raw info.json next to metadata.json.
+            /// Keep yt-dlp's raw info JSON next to the metadata file (as `<metadata file name>.ytdlp.json`).
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub keep_raw_info: Option<bool>,
             /// Metadata embedded in the media file.
@@ -400,11 +412,13 @@ macro_rules! options_struct {
                     tmp_dir: self.tmp_dir.clone(),
                     format: self.format.clone(),
                     merge_output_format: self.merge_output_format.clone(),
-                    output: self.output.clone(),
+                    output_dir: self.output_dir.clone(),
+                    output_file: self.output_file.clone(),
+                    cover_file: self.cover_file.clone(),
+                    subtitle_file: self.subtitle_file.clone(),
+                    metadata_file: self.metadata_file.clone(),
                     ytdlp_args: self.ytdlp_args.clone(),
                     cookies_file: self.cookies_file.clone(),
-                    thumbnail_format: self.thumbnail_format.clone(),
-                    cover_name: self.cover_name.clone(),
                     match_fields: self.match_fields.clone(),
                     include: self.include.clone(),
                     exclude: self.exclude.clone(),
@@ -450,14 +464,6 @@ options_struct! {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         pub enabled: Option<bool>,
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum ThumbnailFormat {
-    Jpg,
-    Webp,
-    Original,
 }
 
 /// A field rules can match against.

@@ -1,5 +1,6 @@
-//! `{placeholder}` templates shared by `output`, `cover_name`, `embed.tags`
-//! and hook `command` arrays.
+//! `{placeholder}` templates shared by the path settings (`output_dir`,
+//! `output_file`, `cover_file`, `subtitle_file`, `metadata_file`, `tmp_dir`),
+//! `embed.tags` and hook `command` arrays.
 
 use std::fmt;
 use std::path::{Component, Path, PathBuf};
@@ -7,12 +8,18 @@ use std::path::{Component, Path, PathBuf};
 /// Which setting a template belongs to; decides which placeholders are allowed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Setting {
-    /// `output`: the video's directory, a full path.
-    Output,
+    /// `output_dir`: the video's directory, a full path.
+    OutputDir,
+    /// `output_file`: the media file, a full path.
+    OutputFile,
+    /// `cover_file`: the poster, a full path ending in .jpg, .png or .webp.
+    CoverFile,
+    /// `subtitle_file`: each subtitle, a full path.
+    SubtitleFile,
+    /// `metadata_file`: metadata.json, a full path.
+    MetadataFile,
     /// `tmp_dir`: the work area, a full path.
     TmpDir,
-    /// `cover_name`: the poster file name, no extension.
-    CoverName,
     /// `embed.tags` values.
     Tags,
     /// Hook `command` elements.
@@ -22,9 +29,12 @@ pub enum Setting {
 impl Setting {
     fn bit(self) -> u8 {
         match self {
-            Setting::Output => OUT,
+            Setting::OutputDir => OUT_DIR,
+            Setting::OutputFile => OUT_FILE,
+            Setting::CoverFile => COV,
+            Setting::SubtitleFile => SUB,
+            Setting::MetadataFile => META,
             Setting::TmpDir => TMP,
-            Setting::CoverName => COV,
             Setting::Tags => TAG,
             Setting::Hook => HOOK,
         }
@@ -32,28 +42,51 @@ impl Setting {
 
     /// Whether rendered values are sanitized for use in file names.
     pub fn sanitizes(self) -> bool {
-        matches!(self, Setting::Output | Setting::CoverName)
+        self.bit() & PATHS != 0
+    }
+
+    /// Settings that are full paths.
+    fn is_path(self) -> bool {
+        self.bit() & (PATHS | TMP) != 0
+    }
+
+    /// The setting's name in the config.
+    pub fn name(self) -> &'static str {
+        match self {
+            Setting::OutputDir => "output_dir",
+            Setting::OutputFile => "output_file",
+            Setting::CoverFile => "cover_file",
+            Setting::SubtitleFile => "subtitle_file",
+            Setting::MetadataFile => "metadata_file",
+            Setting::TmpDir => "tmp_dir",
+            Setting::Tags => "embed.tags",
+            Setting::Hook => "hook command",
+        }
     }
 }
 
 impl fmt::Display for Setting {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            Setting::Output => "output",
-            Setting::TmpDir => "tmp_dir",
-            Setting::CoverName => "cover_name",
-            Setting::Tags => "embed.tags",
-            Setting::Hook => "hook command",
-        })
+        f.write_str(self.name())
     }
 }
 
-const OUT: u8 = 1;
-const COV: u8 = 2;
+const OUT_DIR: u8 = 1;
+const OUT_FILE: u8 = 2;
 const TAG: u8 = 4;
-const TMP: u8 = 16;
 const HOOK: u8 = 8;
-const ALL: u8 = OUT | COV | TAG | HOOK;
+const TMP: u8 = 16;
+const COV: u8 = 32;
+const SUB: u8 = 64;
+const META: u8 = 128;
+/// The per-video path settings.
+const PATHS: u8 = OUT_DIR | OUT_FILE | COV | SUB | META;
+/// The files inside (or relative to) `output_dir`.
+const FILES: u8 = OUT_FILE | COV | SUB | META;
+const ALL: u8 = PATHS | TAG | HOOK;
+
+/// Poster extensions `cover_file` may end with.
+pub const COVER_EXTENSIONS: [&str; 4] = ["jpg", "jpeg", "png", "webp"];
 
 /// One known placeholder.
 #[derive(Debug)]
@@ -88,6 +121,7 @@ pub const PLACEHOLDERS: &[Placeholder] = &[
     ph!("id", false, ALL, Some("TIDEPOOL_VIDEO_ID")),
     ph!("video_id", false, ALL, Some("TIDEPOOL_VIDEO_ID")),
     ph!("title", false, ALL, Some("TIDEPOOL_TITLE")),
+    ph!("normalized_title", false, ALL, None),
     ph!("channel", false, ALL, Some("TIDEPOOL_CHANNEL")),
     ph!("channel_id", false, ALL, Some("TIDEPOOL_CHANNEL_ID")),
     ph!("upload_date", false, ALL, Some("TIDEPOOL_UPLOAD_DATE")),
@@ -99,8 +133,11 @@ pub const PLACEHOLDERS: &[Placeholder] = &[
     ph!("source_title", false, ALL, Some("TIDEPOOL_SOURCE_TITLE")),
     ph!("url", false, TAG | HOOK, Some("TIDEPOOL_URL")),
     ph!("category", false, ALL, Some("TIDEPOOL_CATEGORY")),
-    ph!("media_dir", false, OUT | TMP, None),
-    ph!("data_dir", false, OUT | TMP, None),
+    ph!("media_dir", false, PATHS | TMP, None),
+    ph!("data_dir", false, PATHS | TMP, None),
+    ph!("output_dir", false, FILES, None),
+    ph!("ext", false, OUT_FILE | SUB, None),
+    ph!("lang", false, SUB, None),
     ph!("video_dir", false, HOOK, Some("TIDEPOOL_VIDEO_DIR")),
     ph!("media_path", false, HOOK, Some("TIDEPOOL_MEDIA_PATH")),
     ph!("cover_path", false, HOOK, Some("TIDEPOOL_COVER_PATH")),
@@ -126,9 +163,9 @@ pub enum TemplateError {
     Unknown(String),
     NotAllowed { name: String, setting: Setting },
     BadFormatSpec(String),
-    MissingId,
-    PathSeparator,
-    NotFullPath,
+    Missing(&'static str),
+    CoverExtension,
+    NotFullPath(Setting),
 }
 
 impl fmt::Display for TemplateError {
@@ -145,9 +182,12 @@ impl fmt::Display for TemplateError {
                 f,
                 "invalid format in {{{name}}} (only numeric placeholders take zero padding, e.g. {{position:03}})"
             ),
-            TemplateError::MissingId => f.write_str("must contain {id}"),
-            TemplateError::PathSeparator => f.write_str("must not contain path separators"),
-            TemplateError::NotFullPath => {
+            TemplateError::Missing(name) => write!(f, "must contain {{{name}}}"),
+            TemplateError::CoverExtension => f.write_str("must end with .jpg, .jpeg, .png or .webp"),
+            TemplateError::NotFullPath(setting) if setting.bit() & FILES != 0 => f.write_str(
+                "must be a full path: start with /, ~, $VAR, {media_dir}, {data_dir} or {output_dir}",
+            ),
+            TemplateError::NotFullPath(_) => {
                 f.write_str("must be a full path: start with /, ~, $VAR, {media_dir} or {data_dir}")
             }
         }
@@ -214,56 +254,72 @@ pub fn parse(template: &str) -> Result<Vec<Segment>, TemplateError> {
 /// Parse and check a template for a setting.
 pub fn validate(template: &str, setting: Setting) -> Result<Vec<Segment>, TemplateError> {
     let segments = parse(template)?;
-    let mut has_id = false;
+    let mut used: Vec<&str> = Vec::new();
     for segment in &segments {
-        match segment {
-            Segment::Literal(text) => {
-                if setting == Setting::CoverName && text.contains(['/', '\\']) {
-                    return Err(TemplateError::PathSeparator);
-                }
+        if let Segment::Placeholder { name, pad } = segment {
+            let placeholder = lookup(name).ok_or_else(|| TemplateError::Unknown(name.clone()))?;
+            if !placeholder.allowed_in(setting) {
+                return Err(TemplateError::NotAllowed {
+                    name: name.clone(),
+                    setting,
+                });
             }
-            Segment::Placeholder { name, pad } => {
-                let placeholder =
-                    lookup(name).ok_or_else(|| TemplateError::Unknown(name.clone()))?;
-                if !placeholder.allowed_in(setting) {
-                    return Err(TemplateError::NotAllowed {
-                        name: name.clone(),
-                        setting,
-                    });
-                }
-                if pad.is_some() && !placeholder.numeric {
-                    return Err(TemplateError::BadFormatSpec(name.clone()));
-                }
-                has_id |= matches!(placeholder.name, "id" | "video_id");
+            if pad.is_some() && !placeholder.numeric {
+                return Err(TemplateError::BadFormatSpec(name.clone()));
             }
+            used.push(placeholder.name);
         }
     }
-    if setting == Setting::Output && !has_id {
-        return Err(TemplateError::MissingId);
-    }
-    if matches!(setting, Setting::Output | Setting::TmpDir) {
+    if setting.is_path() {
         let starts_full = match segments.first() {
-            Some(Segment::Literal(text)) => check_full_path(text).is_ok(),
+            Some(Segment::Literal(text)) => is_full_path(text),
             Some(Segment::Placeholder { name, .. }) => {
-                matches!(name.as_str(), "media_dir" | "data_dir")
+                matches!(name.as_str(), "media_dir" | "data_dir" | "output_dir")
             }
             None => false,
         };
         if !starts_full {
-            return Err(TemplateError::NotFullPath);
+            return Err(TemplateError::NotFullPath(setting));
+        }
+    }
+    let required: &[&'static str] = match setting {
+        Setting::OutputFile => &["ext"],
+        Setting::SubtitleFile => &["lang", "ext"],
+        _ => &[],
+    };
+    if let Some(missing) = required.iter().find(|r| !used.contains(r)) {
+        return Err(TemplateError::Missing(missing));
+    }
+    if setting == Setting::CoverFile {
+        let extension = match segments.last() {
+            Some(Segment::Literal(text)) => cover_extension(text),
+            _ => None,
+        };
+        if extension.is_none() {
+            return Err(TemplateError::CoverExtension);
         }
     }
     Ok(segments)
 }
 
+/// The poster extension a `cover_file` ends with, lowercased.
+pub fn cover_extension(path: &str) -> Option<String> {
+    let (_, extension) = path.rsplit_once('.')?;
+    let extension = extension.to_ascii_lowercase();
+    COVER_EXTENSIONS
+        .contains(&extension.as_str())
+        .then_some(extension)
+}
+
+/// A title for file names: transliterated to ASCII, then sanitized.
+pub fn normalize_title(title: &str) -> String {
+    sanitize(&deunicode::deunicode(title))
+}
+
 /// A path that doesn't depend on the current directory: `/…`, `~`, `~/…` or
 /// `$VAR…`.
-pub fn check_full_path(path: &str) -> Result<(), TemplateError> {
-    if path.starts_with('/') || path == "~" || path.starts_with("~/") || path.starts_with('$') {
-        Ok(())
-    } else {
-        Err(TemplateError::NotFullPath)
-    }
+pub fn is_full_path(path: &str) -> bool {
+    path.starts_with('/') || path == "~" || path.starts_with("~/") || path.starts_with('$')
 }
 
 /// Strip characters that are unsafe in file names, collapse whitespace and cap
@@ -400,66 +456,138 @@ mod tests {
 
     #[test]
     fn validates_per_setting() {
-        assert!(
-            validate(
+        use Setting::*;
+        let ok = [
+            (
                 "{media_dir}/{source}/{upload_date} - {title} [{id}]",
-                Setting::Output
-            )
-            .is_ok()
-        );
-        for full in [
-            "/nas/{id}",
-            "~/Videos/{id}",
-            "$MEDIA/{id}",
-            "{data_dir}/x/{id}",
-        ] {
-            assert!(validate(full, Setting::Output).is_ok(), "{full:?}");
-        }
-        for relative in ["{source}/{id}", "videos/{id}", "./{id}", "~me/{id}"] {
-            assert_eq!(
-                validate(relative, Setting::Output),
-                Err(TemplateError::NotFullPath),
-                "{relative:?}"
+                OutputDir,
+            ),
+            ("{media_dir}/{source}", OutputDir),
+            ("/nas/{id}", OutputDir),
+            ("~/Videos/{id}", OutputDir),
+            ("$MEDIA/{id}", OutputDir),
+            ("{data_dir}/x/{id}", OutputDir),
+            ("{output_dir}/{normalized_title}.{ext}", OutputFile),
+            ("/elsewhere/{id}.{ext}", OutputFile),
+            ("{output_dir}/{normalized_title}-poster.jpg", CoverFile),
+            ("{output_dir}/cover.WEBP", CoverFile),
+            ("{output_dir}/{normalized_title}.{lang}.{ext}", SubtitleFile),
+            ("{output_dir}/metadata.json", MetadataFile),
+            ("{data_dir}/tmp", TmpDir),
+            ("{channel}", Tags),
+            ("{media_path}", Hook),
+        ];
+        for (template, setting) in ok {
+            assert!(
+                validate(template, setting).is_ok(),
+                "{template:?} in {setting}"
             );
         }
-        assert!(validate("{data_dir}/tmp", Setting::TmpDir).is_ok());
+        let bad = [
+            (
+                "{source}/{id}",
+                OutputDir,
+                TemplateError::NotFullPath(OutputDir),
+            ),
+            (
+                "videos/{id}",
+                OutputDir,
+                TemplateError::NotFullPath(OutputDir),
+            ),
+            ("./{id}", OutputDir, TemplateError::NotFullPath(OutputDir)),
+            ("~me/{id}", OutputDir, TemplateError::NotFullPath(OutputDir)),
+            ("tmp", TmpDir, TemplateError::NotFullPath(TmpDir)),
+            (
+                "{title}.{ext}",
+                OutputFile,
+                TemplateError::NotFullPath(OutputFile),
+            ),
+            (
+                "{output_dir}/video.mkv",
+                OutputFile,
+                TemplateError::Missing("ext"),
+            ),
+            (
+                "{output_dir}/sub.{ext}",
+                SubtitleFile,
+                TemplateError::Missing("lang"),
+            ),
+            (
+                "{output_dir}/poster",
+                CoverFile,
+                TemplateError::CoverExtension,
+            ),
+            (
+                "{output_dir}/poster.gif",
+                CoverFile,
+                TemplateError::CoverExtension,
+            ),
+            (
+                "{output_dir}/poster.{ext}",
+                CoverFile,
+                TemplateError::NotAllowed {
+                    name: "ext".into(),
+                    setting: CoverFile,
+                },
+            ),
+            (
+                "{output_dir}/x",
+                OutputDir,
+                TemplateError::NotAllowed {
+                    name: "output_dir".into(),
+                    setting: OutputDir,
+                },
+            ),
+            (
+                "{data_dir}/{title}",
+                TmpDir,
+                TemplateError::NotAllowed {
+                    name: "title".into(),
+                    setting: TmpDir,
+                },
+            ),
+            (
+                "{nope} {id}",
+                OutputDir,
+                TemplateError::Unknown("nope".into()),
+            ),
+            (
+                "{media_path} {id}",
+                OutputDir,
+                TemplateError::NotAllowed {
+                    name: "media_path".into(),
+                    setting: OutputDir,
+                },
+            ),
+            (
+                "{title:03}",
+                Hook,
+                TemplateError::BadFormatSpec("title".into()),
+            ),
+            (
+                "{position:x}",
+                Hook,
+                TemplateError::BadFormatSpec("position".into()),
+            ),
+        ];
+        for (template, setting, error) in bad {
+            assert_eq!(
+                validate(template, setting),
+                Err(error),
+                "{template:?} in {setting}"
+            );
+        }
+    }
+
+    #[test]
+    fn normalizes_titles() {
         assert_eq!(
-            validate("tmp", Setting::TmpDir),
-            Err(TemplateError::NotFullPath)
+            normalize_title("Café Ñoño: Live at 東京 / 2024 (Official)?"),
+            "Cafe Nono Live at Dong Jing 2024 (Official)"
         );
-        assert!(matches!(
-            validate("{data_dir}/{title}", Setting::TmpDir),
-            Err(TemplateError::NotAllowed { .. })
-        ));
         assert_eq!(
-            validate("{title}", Setting::Output),
-            Err(TemplateError::MissingId)
-        );
-        assert_eq!(
-            validate("{nope} {id}", Setting::Output),
-            Err(TemplateError::Unknown("nope".into()))
-        );
-        assert_eq!(
-            validate("{media_path} {id}", Setting::Output),
-            Err(TemplateError::NotAllowed {
-                name: "media_path".into(),
-                setting: Setting::Output
-            })
-        );
-        assert_eq!(
-            validate("a/{title}", Setting::CoverName),
-            Err(TemplateError::PathSeparator)
-        );
-        assert!(validate("{title}-poster", Setting::CoverName).is_ok());
-        assert!(validate("{channel}", Setting::Tags).is_ok());
-        assert!(validate("{media_path}", Setting::Hook).is_ok());
-        assert_eq!(
-            validate("{title:03}", Setting::Hook),
-            Err(TemplateError::BadFormatSpec("title".into()))
-        );
-        assert_eq!(
-            validate("{position:x}", Setting::Hook),
-            Err(TemplateError::BadFormatSpec("position".into()))
+            normalize_title("Ölçü — “quotes”"),
+            "Olcu -- \"quotes\"".replace('"', "")
         );
     }
 
@@ -476,17 +604,17 @@ mod tests {
     #[test]
     fn renders_with_padding_sanitizing_and_missing_values() {
         let segs = validate(
-            "{position:03} - {title} [{id}] {channel}",
-            Setting::CoverName,
+            "/x/{position:03} - {title} [{id}] {channel}",
+            Setting::OutputDir,
         )
         .unwrap();
-        let out = render(&segs, Setting::Output, |name| match name {
+        let out = render(&segs, Setting::OutputDir, |name| match name {
             "position" => Some("7".into()),
             "title" => Some("a/b: c".into()),
             "id" => Some("dQw4w9WgXcQ".into()),
             _ => None,
         });
-        assert_eq!(out, "007 - ab c [dQw4w9WgXcQ] NA");
+        assert_eq!(out, "/x/007 - ab c [dQw4w9WgXcQ] NA");
 
         let segs = validate("New: {title} {channel}", Setting::Hook).unwrap();
         let out = render(&segs, Setting::Hook, |name| {

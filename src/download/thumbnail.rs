@@ -1,12 +1,31 @@
 //! The biggest cover image: gather candidates, fetch them largest first,
-//! check real dimensions, convert to `thumbnail_format`.
+//! check real dimensions, convert to the format `cover_file`'s extension asks for.
 
 use std::io::Cursor;
 
 use image::{ImageFormat, ImageReader};
 
-use crate::config::ThumbnailFormat;
 use crate::index::Thumbnail;
+
+/// The poster's image format, picked by `cover_file`'s extension.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CoverFormat {
+    Jpg,
+    Png,
+    Webp,
+}
+
+impl CoverFormat {
+    /// `jpg`/`jpeg`, `png` or `webp`, any case.
+    pub fn from_extension(extension: &str) -> Option<Self> {
+        match extension.to_ascii_lowercase().as_str() {
+            "jpg" | "jpeg" => Some(Self::Jpg),
+            "png" => Some(Self::Png),
+            "webp" => Some(Self::Webp),
+            _ => None,
+        }
+    }
+}
 
 /// Where YouTube serves thumbnails.
 pub const YTIMG: &str = "https://i.ytimg.com";
@@ -27,7 +46,7 @@ pub fn candidates(
     video_id: &str,
     thumbnails: &[Thumbnail],
     base: &str,
-    format: ThumbnailFormat,
+    format: CoverFormat,
 ) -> Vec<String> {
     let mut all: Vec<(String, Option<u64>)> = thumbnails
         .iter()
@@ -49,7 +68,7 @@ pub fn candidates(
         }
     }
     let prefers = |url: &str| match format {
-        ThumbnailFormat::Webp => url.contains(".webp"),
+        CoverFormat::Webp => url.contains(".webp"),
         _ => !url.contains(".webp"),
     };
     all.sort_by(|(a, x), (b, y)| {
@@ -69,16 +88,16 @@ fn extension(format: ImageFormat) -> &'static str {
     }
 }
 
-/// Convert fetched bytes to the wanted format (`original` keeps them).
+/// Convert fetched bytes to the wanted format.
 pub fn convert(
     bytes: Vec<u8>,
     found: ImageFormat,
-    want: ThumbnailFormat,
+    want: CoverFormat,
 ) -> Result<(Vec<u8>, &'static str), String> {
     let target = match want {
-        ThumbnailFormat::Original => return Ok((bytes, extension(found))),
-        ThumbnailFormat::Jpg => ImageFormat::Jpeg,
-        ThumbnailFormat::Webp => ImageFormat::WebP,
+        CoverFormat::Jpg => ImageFormat::Jpeg,
+        CoverFormat::Png => ImageFormat::Png,
+        CoverFormat::Webp => ImageFormat::WebP,
     };
     if found == target {
         return Ok((bytes, extension(found)));
@@ -100,7 +119,7 @@ pub fn convert(
 pub async fn fetch_largest(
     client: &reqwest::Client,
     urls: &[String],
-    want: ThumbnailFormat,
+    want: CoverFormat,
 ) -> Option<Cover> {
     for url in urls {
         let Ok(response) = client
@@ -193,7 +212,7 @@ mod tests {
             ),
         ];
         assert_eq!(
-            candidates("x", &thumbs, YTIMG, ThumbnailFormat::Jpg),
+            candidates("x", &thumbs, YTIMG, CoverFormat::Jpg),
             vec![
                 "https://i.ytimg.com/vi/x/maxresdefault.jpg",
                 "https://i.ytimg.com/vi_webp/x/maxresdefault.webp",
@@ -201,13 +220,13 @@ mod tests {
                 "https://i.ytimg.com/vi/x/hqdefault.jpg",
             ]
         );
-        let webp_first = candidates("x", &thumbs, YTIMG, ThumbnailFormat::Webp);
+        let webp_first = candidates("x", &thumbs, YTIMG, CoverFormat::Webp);
         assert_eq!(
             webp_first[0],
             "https://i.ytimg.com/vi_webp/x/maxresdefault.webp"
         );
         // The well-known URLs are added when the indexer didn't list them.
-        let few = candidates("x", &[], "http://test", ThumbnailFormat::Jpg);
+        let few = candidates("x", &[], "http://test", CoverFormat::Jpg);
         assert_eq!(
             few,
             vec![
@@ -220,13 +239,16 @@ mod tests {
     #[test]
     fn converts_formats() {
         let webp = image_bytes(64, 36, ImageFormat::WebP);
-        let (jpg, ext) = convert(webp.clone(), ImageFormat::WebP, ThumbnailFormat::Jpg).unwrap();
+        let (jpg, ext) = convert(webp.clone(), ImageFormat::WebP, CoverFormat::Jpg).unwrap();
         assert_eq!((ext, dims(&jpg)), ("jpg", (ImageFormat::Jpeg, (64, 36))));
-        let (same, ext) =
-            convert(webp.clone(), ImageFormat::WebP, ThumbnailFormat::Original).unwrap();
-        assert_eq!((ext, same), ("webp", webp));
+        let (same, ext) = convert(webp.clone(), ImageFormat::WebP, CoverFormat::Webp).unwrap();
+        assert_eq!((ext, same), ("webp", webp.clone()));
+        let (png, ext) = convert(webp, ImageFormat::WebP, CoverFormat::Png).unwrap();
+        assert_eq!((ext, dims(&png).0), ("png", ImageFormat::Png));
+        assert_eq!(CoverFormat::from_extension("JPEG"), Some(CoverFormat::Jpg));
+        assert_eq!(CoverFormat::from_extension("gif"), None);
         let png = image_bytes(8, 8, ImageFormat::Png);
-        let (webp, ext) = convert(png, ImageFormat::Png, ThumbnailFormat::Webp).unwrap();
+        let (webp, ext) = convert(png, ImageFormat::Png, CoverFormat::Webp).unwrap();
         assert_eq!((ext, dims(&webp).0), ("webp", ImageFormat::WebP));
     }
 
@@ -268,8 +290,8 @@ mod tests {
                 Some((1920, 1080)),
             ),
         ];
-        let urls = candidates("x", &thumbs, &base, ThumbnailFormat::Jpg);
-        let cover = fetch_largest(&reqwest::Client::new(), &urls, ThumbnailFormat::Jpg)
+        let urls = candidates("x", &thumbs, &base, CoverFormat::Jpg);
+        let cover = fetch_largest(&reqwest::Client::new(), &urls, CoverFormat::Jpg)
             .await
             .unwrap();
         assert_eq!(
@@ -287,7 +309,7 @@ mod tests {
             fetch_largest(
                 &reqwest::Client::new(),
                 &[format!("{base}/nope")],
-                ThumbnailFormat::Jpg
+                CoverFormat::Jpg
             )
             .await,
             None

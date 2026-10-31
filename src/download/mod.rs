@@ -23,9 +23,9 @@ use crate::index::RemoteItem;
 use crate::state::State;
 use crate::state::items::{self, QueuedItem, status};
 use info::VideoInfo;
-use layout::Values;
-use metadata::{Files, Metadata};
-use thumbnail::Cover;
+use layout::{Layout, Values};
+use metadata::Metadata;
+use thumbnail::{Cover, CoverFormat};
 use ytdlp::Failure;
 
 /// Subtitle files yt-dlp may write next to the media.
@@ -78,14 +78,14 @@ struct Job {
     source: Arc<EffectiveSource>,
     queued: QueuedItem,
     paths: SourcePaths,
-    /// Another source's directory (absolute) holding the same video in the same format.
-    copy_from: Option<String>,
+    /// Another source's files for the same video in the same format.
+    copy_from: Option<items::VideoFiles>,
     now: Timestamp,
 }
 
 enum Outcome {
     Done {
-        dir: String,
+        files: items::VideoFiles,
         media_bytes: u64,
         linked: bool,
     },
@@ -163,62 +163,55 @@ fn link(from: &Path, to: &Path, mode: Duplicates) -> std::io::Result<()> {
     }
 }
 
-/// Move the finished temp dir into place; an existing directory is moved
-/// aside first and removed after the rename succeeds.
-fn commit(tmp: &Path, target: &Path) -> std::io::Result<()> {
-    if let Some(parent) = target.parent() {
+/// Move one finished file from the work area to `dest`, replacing what's
+/// there. Across filesystems it's copied to a hidden name next to `dest`
+/// first, so `dest` still appears in one rename.
+fn place(src: &Path, dest: &Path) -> std::io::Result<()> {
+    if let Some(parent) = dest.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    // A work area on another filesystem can't be renamed into place: copy it
-    // next to the target first, so the target still appears in one rename.
-    let staged = staging_path(target);
-    match std::fs::rename(tmp, &staged) {
-        Ok(()) => {}
-        Err(e) if e.raw_os_error() == Some(libc::EXDEV) => {
-            let _ = std::fs::remove_dir_all(&staged);
-            if let Err(e) = copy_dir(tmp, &staged) {
-                let _ = std::fs::remove_dir_all(&staged);
-                return Err(e);
-            }
-            std::fs::remove_dir_all(tmp)?;
-        }
-        Err(e) => return Err(e),
+    match std::fs::rename(src, dest) {
+        Err(e) if e.raw_os_error() == Some(libc::EXDEV) => {}
+        other => return other,
     }
-    let aside = target.exists().then(|| {
-        let mut name = target.as_os_str().to_owned();
-        name.push(format!(".replaced-{}", std::process::id()));
-        PathBuf::from(name)
-    });
-    if let Some(aside) = &aside {
-        std::fs::rename(target, aside)?;
-    }
-    std::fs::rename(&staged, target)?;
-    if let Some(aside) = &aside {
-        let _ = std::fs::remove_dir_all(aside);
-    }
-    Ok(())
-}
-
-/// The hidden folder next to `target` a download is staged in before its
-/// final rename.
-fn staging_path(target: &Path) -> PathBuf {
-    let name = target
+    let name = dest
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_default();
-    target.with_file_name(format!(".{name}.tidepool-partial"))
+    let staged = dest.with_file_name(format!(".{name}.tidepool-partial"));
+    let copied = match std::fs::read_link(src) {
+        // A symlinked duplicate stays a symlink.
+        Ok(target) => {
+            let _ = std::fs::remove_file(&staged);
+            std::os::unix::fs::symlink(target, &staged)
+        }
+        Err(_) => std::fs::copy(src, &staged).map(drop),
+    };
+    if let Err(e) = copied.and_then(|_| std::fs::rename(&staged, dest)) {
+        let _ = std::fs::remove_file(&staged);
+        return Err(e);
+    }
+    std::fs::remove_file(src)
 }
 
-/// Copy a directory tree (files and folders only).
-fn copy_dir(from: &Path, to: &Path) -> std::io::Result<()> {
-    std::fs::create_dir_all(to)?;
-    for entry in std::fs::read_dir(from)? {
-        let entry = entry?;
-        let dest = to.join(entry.file_name());
-        if entry.file_type()?.is_dir() {
-            copy_dir(&entry.path(), &dest)?;
-        } else {
-            std::fs::copy(entry.path(), &dest)?;
+/// Place every file, the metadata file last (a video counts as present
+/// once it's there). On failure, files already placed are removed.
+fn place_all(moves: &[(PathBuf, PathBuf)]) -> Result<(), Failure> {
+    let mut seen = std::collections::HashSet::new();
+    for (_, dest) in moves {
+        if !seen.insert(dest) {
+            return Err(fail(format!(
+                "two files would go to {}; make the path settings differ",
+                dest.display()
+            )));
+        }
+    }
+    for (i, (src, dest)) in moves.iter().enumerate() {
+        if let Err(e) = place(src, dest) {
+            for (_, placed) in &moves[..i] {
+                let _ = std::fs::remove_file(placed);
+            }
+            return Err(io_fail("cannot move the download to", dest, e));
         }
     }
     Ok(())
@@ -251,8 +244,11 @@ async fn process(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
     if job.queued.status == status::PENDING_CHECK {
         tracing::debug!("{label}: checking its details before deciding");
     }
-    if let Some(dir) = &job.copy_from {
-        tracing::debug!("{label}: already downloaded in {dir}; linking its files");
+    if let Some(files) = &job.copy_from {
+        tracing::debug!(
+            "{label}: already downloaded as {}; linking its files",
+            files.media
+        );
     }
 
     // A decision that needed fields the index didn't have.
@@ -300,7 +296,8 @@ async fn process(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
     }
 }
 
-/// Fill `tmp` with the media, cover and metadata.json, then commit it.
+/// Fill `tmp` with the media, subtitles, cover and metadata, then place
+/// each file at its destination.
 async fn assemble(
     job: &Job,
     ctx: &Context,
@@ -313,33 +310,21 @@ async fn assemble(
     let source = &job.source;
     let video_id = &job.queued.video_id;
 
-    // Media: linked from another source, or downloaded.
-    let (info, media_name, other) = match (&job.copy_from, info) {
-        (Some(other_dir), Some(info)) => {
-            let other = PathBuf::from(other_dir);
-            let previous: serde_json::Value = std::fs::read_to_string(other.join("metadata.json"))
-                .ok()
-                .and_then(|t| serde_json::from_str(&t).ok())
-                .ok_or_else(|| fail(format!("cannot read {}/metadata.json", other.display())))?;
-            let media = previous["files"]["media"]
-                .as_str()
-                .unwrap_or("")
-                .to_string();
-            let mut names = vec![media.clone()];
-            names.extend(
-                previous["files"]["subtitles"]
-                    .as_array()
-                    .into_iter()
-                    .flatten()
-                    .filter_map(|v| v.as_str())
-                    .map(String::from),
-            );
-            for name in names.iter().filter(|n| !n.is_empty()) {
-                link(&other.join(name), &tmp.join(name), ctx.duplicates)
-                    .map_err(|e| io_fail("cannot link", &other.join(name), e))?;
+    // Media and subtitles: linked from another source, or downloaded. In the
+    // work area they're named `media.<ext>` and `media.<lang>.<ext>`.
+    let (info, other_cover) = match (&job.copy_from, info) {
+        (Some(other), Some(info)) => {
+            let ext = extension_of(&other.media);
+            let media = PathBuf::from(&other.media);
+            link(&media, &tmp.join(format!("media.{ext}")), ctx.duplicates)
+                .map_err(|e| io_fail("cannot link", &media, e))?;
+            for sub in &other.subtitles {
+                let path = PathBuf::from(&sub.path);
+                let name = format!("media.{}.{}", sub.lang, extension_of(&sub.path));
+                link(&path, &tmp.join(name), ctx.duplicates)
+                    .map_err(|e| io_fail("cannot link", &path, e))?;
             }
-            let cover = previous["files"]["cover"].as_str().map(|c| other.join(c));
-            (info, media, cover)
+            (info, other.cover.clone().map(PathBuf::from))
         }
         _ => {
             let args = ytdlp::download_args(source, video_id, tmp, job.paths.cookies.as_deref());
@@ -364,9 +349,30 @@ async fn assemble(
                     media.display()
                 )));
             }
-            (info, name, None)
+            (info, None)
         }
     };
+
+    // What's in the work area now.
+    let mut media_name = None;
+    let mut subtitles: Vec<(String, String)> = Vec::new(); // (lang, ext)
+    for entry in std::fs::read_dir(tmp)
+        .map_err(|e| io_fail("cannot read", tmp, e))?
+        .flatten()
+    {
+        let name = entry.file_name().to_string_lossy().into_owned();
+        let parts: Vec<&str> = name.split('.').collect();
+        match parts.as_slice() {
+            ["media", ext] => media_name = Some((name.clone(), ext.to_string())),
+            ["media", lang @ .., ext] if SUBTITLE_EXTENSIONS.contains(ext) && !lang.is_empty() => {
+                subtitles.push((lang.join("."), ext.to_string()));
+            }
+            _ => {}
+        }
+    }
+    subtitles.sort();
+    let (media_name, media_ext) =
+        media_name.ok_or_else(|| fail("no media file in the work area"))?;
 
     let values = Values::new(
         &info,
@@ -374,35 +380,49 @@ async fn assemble(
         job.queued.source_title.as_deref(),
         job.queued.position,
     );
-    let target =
-        layout::video_dir(source, &values, &job.paths.media_dir, &ctx.dirs).map_err(fail)?;
+    let layout = Layout::new(source, &values, &job.paths.media_dir, &ctx.dirs).map_err(fail)?;
+    let media_dest = layout.output_file(&media_ext).map_err(fail)?;
+    let (cover_dest, cover_format) = layout.cover_file().map_err(fail)?;
+    let metadata_dest = layout.metadata_file().map_err(fail)?;
+    let mut moves: Vec<(PathBuf, PathBuf)> = vec![(tmp.join(&media_name), media_dest.clone())];
+    let mut files = items::VideoFiles {
+        dir: layout.output_dir().display().to_string(),
+        media: media_dest.display().to_string(),
+        metadata: metadata_dest.display().to_string(),
+        ..items::VideoFiles::default()
+    };
+    for (lang, ext) in &subtitles {
+        let dest = layout.subtitle_file(lang, ext).map_err(fail)?;
+        moves.push((tmp.join(format!("media.{lang}.{ext}")), dest.clone()));
+        files.subtitles.push(items::Subtitle {
+            lang: lang.clone(),
+            path: dest.display().to_string(),
+        });
+    }
 
-    // Cover: reuse the other source's, or fetch the biggest.
+    // Cover: reuse the other source's when it's already in the wanted
+    // format, or fetch the biggest.
+    let cover_tmp = tmp.join("cover");
     let mut cover: Option<Cover> = None;
-    let mut cover_name = None;
-    if let Some(other_cover) = other.filter(|c| c.is_file()) {
-        let ext = other_cover
-            .extension()
-            .and_then(|e| e.to_str())
-            .unwrap_or("jpg")
-            .to_string();
-        let name = layout::cover_file_name(source, &values, &ext).map_err(fail)?;
-        link(&other_cover, &tmp.join(&name), ctx.duplicates)
+    let reusable = other_cover.filter(|c| {
+        c.is_file()
+            && c.extension()
+                .and_then(|e| CoverFormat::from_extension(&e.to_string_lossy()))
+                == Some(cover_format)
+    });
+    if let Some(other_cover) = reusable {
+        link(&other_cover, &cover_tmp, ctx.duplicates)
             .map_err(|e| io_fail("cannot link", &other_cover, e))?;
         tracing::debug!("{label}: cover linked from {}", other_cover.display());
-        cover_name = Some(name);
+        moves.push((cover_tmp, cover_dest.clone()));
+        files.cover = Some(cover_dest.display().to_string());
     } else {
         let thumbs = details
             .as_ref()
             .map(|d| d.thumbnails.clone())
             .unwrap_or_default();
-        let urls = thumbnail::candidates(
-            video_id,
-            &thumbs,
-            &ctx.thumbnail_base,
-            source.thumbnail_format,
-        );
-        match thumbnail::fetch_largest(&ctx.http, &urls, source.thumbnail_format).await {
+        let urls = thumbnail::candidates(video_id, &thumbs, &ctx.thumbnail_base, cover_format);
+        match thumbnail::fetch_largest(&ctx.http, &urls, cover_format).await {
             Some(found) => {
                 tracing::debug!(
                     "{label}: cover {}×{} from {}",
@@ -410,41 +430,29 @@ async fn assemble(
                     found.height,
                     found.source_url
                 );
-                let name =
-                    layout::cover_file_name(source, &values, found.extension).map_err(fail)?;
-                let path = tmp.join(&name);
-                std::fs::write(&path, &found.bytes)
-                    .map_err(|e| io_fail("cannot write", &path, e))?;
-                cover_name = Some(name);
+                std::fs::write(&cover_tmp, &found.bytes)
+                    .map_err(|e| io_fail("cannot write", &cover_tmp, e))?;
+                moves.push((cover_tmp, cover_dest.clone()));
+                files.cover = Some(cover_dest.display().to_string());
                 cover = Some(found);
             }
             None => tracing::warn!("{}: no cover image found for {video_id}", source.key),
         }
     }
 
-    let mut subtitles: Vec<String> = std::fs::read_dir(tmp)
-        .map_err(|e| io_fail("cannot read", tmp, e))?
-        .flatten()
-        .map(|e| e.file_name().to_string_lossy().into_owned())
-        .filter(|name| {
-            name.starts_with("media.")
-                && name
-                    .rsplit('.')
-                    .next()
-                    .is_some_and(|ext| SUBTITLE_EXTENSIONS.contains(&ext))
-        })
-        .collect();
-    subtitles.sort();
+    let raw_info = tmp.join("ytdlp.info.json");
+    if source.keep_raw_info && raw_info.is_file() {
+        let mut name = metadata_dest.file_stem().unwrap_or_default().to_owned();
+        name.push(".ytdlp.json");
+        let dest = metadata_dest.with_file_name(name);
+        moves.push((raw_info, dest.clone()));
+        files.raw_info = Some(dest.display().to_string());
+    }
 
     let media_path = tmp.join(&media_name);
     let media_bytes = std::fs::metadata(&media_path)
         .map_err(|e| io_fail("cannot read", &media_path, e))?
         .len();
-    let files = Files {
-        media: media_name,
-        cover: cover_name,
-        subtitles,
-    };
     let metadata = Metadata {
         info: &info,
         source,
@@ -464,18 +472,28 @@ async fn assemble(
     file.write_all(json.as_bytes())
         .and_then(|_| file.sync_all())
         .map_err(|e| io_fail("cannot write", &metadata_path, e))?;
+    moves.push((metadata_path, metadata_dest));
 
-    commit(tmp, &target).map_err(|e| io_fail("cannot move the download into", &target, e))?;
+    place_all(&moves)?;
+    let _ = std::fs::remove_dir_all(tmp);
     tracing::debug!(
-        "{label}: moved into {} ({:.1}s)",
-        target.display(),
+        "{label}: saved as {} ({:.1}s)",
+        media_dest.display(),
         started.elapsed().as_secs_f64()
     );
     Ok(Outcome::Done {
-        dir: target.to_string_lossy().into_owned(),
+        files,
         media_bytes,
         linked: job.copy_from.is_some(),
     })
+}
+
+/// A file name's extension, `""` if none.
+fn extension_of(path: &str) -> String {
+    Path::new(path)
+        .extension()
+        .map(|e| e.to_string_lossy().into_owned())
+        .unwrap_or_default()
 }
 
 /// Wait for SIGINT or SIGTERM; returns the exit code to use.
@@ -556,7 +574,7 @@ pub async fn download_all(
             Duplicates::Download => None,
             _ => items::find_copy(&state.conn, &queued.video_id, &source.format, &source.key)
                 .map_err(db)?
-                .filter(|dir| Path::new(dir).join("metadata.json").is_file()),
+                .filter(|files| Path::new(&files.metadata).is_file()),
         };
         items::set_status(
             &state.conn,
@@ -634,7 +652,7 @@ fn record(
     }
     match &f.outcome {
         Outcome::Done {
-            dir,
+            files,
             media_bytes,
             linked,
         } => {
@@ -642,7 +660,7 @@ fn record(
                 &state.conn,
                 &f.source_key,
                 &f.video_id,
-                dir,
+                files,
                 &f.format,
                 *media_bytes,
                 now,
@@ -720,36 +738,62 @@ mod tests {
     }
 
     #[test]
-    fn commit_moves_into_place_and_replaces() {
+    fn places_files_metadata_last_and_rolls_back() {
         let dir = tempfile::tempdir().unwrap();
-        let tmp = dir.path().join("work/dQw4w9WgXcQ.lofi");
-        std::fs::create_dir_all(tmp.join("sub")).unwrap();
-        std::fs::write(tmp.join("sub/a.txt"), "new").unwrap();
-        let target = dir.path().join("media/lofi/video [dQw4w9WgXcQ]");
-        std::fs::create_dir_all(&target).unwrap();
-        std::fs::write(target.join("old.txt"), "old").unwrap();
-        commit(&tmp, &target).unwrap();
-        assert!(!tmp.exists());
+        let tmp = dir.path().join("work");
+        std::fs::create_dir_all(&tmp).unwrap();
+        for name in ["media.mkv", "cover", "metadata.json"] {
+            std::fs::write(tmp.join(name), name).unwrap();
+        }
+        let shared = dir.path().join("media/lofi");
+        std::fs::create_dir_all(&shared).unwrap();
+        std::fs::write(shared.join("other video.mkv"), "keep").unwrap();
+        std::fs::write(shared.join("x.mkv"), "old").unwrap();
+        let moves = vec![
+            (tmp.join("media.mkv"), shared.join("x.mkv")),
+            (tmp.join("cover"), dir.path().join("covers/x.jpg")),
+            (tmp.join("metadata.json"), shared.join("x.json")),
+        ];
+        place_all(&moves).unwrap();
         assert_eq!(
-            std::fs::read_to_string(target.join("sub/a.txt")).unwrap(),
-            "new"
+            std::fs::read_to_string(shared.join("x.mkv")).unwrap(),
+            "media.mkv"
         );
-        assert!(!target.join("old.txt").exists());
-        let names: Vec<_> = std::fs::read_dir(target.parent().unwrap())
-            .unwrap()
-            .map(|e| e.unwrap().file_name())
-            .collect();
         assert_eq!(
-            names.len(),
-            1,
-            "no staging or replaced folders left: {names:?}"
+            std::fs::read_to_string(dir.path().join("covers/x.jpg")).unwrap(),
+            "cover"
+        );
+        assert_eq!(
+            std::fs::read_to_string(shared.join("x.json")).unwrap(),
+            "metadata.json"
+        );
+        assert_eq!(
+            std::fs::read_to_string(shared.join("other video.mkv")).unwrap(),
+            "keep",
+            "a shared folder keeps other videos"
         );
 
-        let copied = dir.path().join("copy");
-        copy_dir(&target, &copied).unwrap();
-        assert_eq!(
-            std::fs::read_to_string(copied.join("sub/a.txt")).unwrap(),
-            "new"
+        // A file that can't be placed: the ones already placed are removed.
+        std::fs::write(tmp.join("media.mkv"), "again").unwrap();
+        let blocked = dir.path().join("blocked");
+        std::fs::write(&blocked, "a file, not a folder").unwrap();
+        let moves = vec![
+            (tmp.join("media.mkv"), shared.join("y.mkv")),
+            (tmp.join("missing"), blocked.join("y.jpg")),
+        ];
+        assert!(place_all(&moves).is_err());
+        assert!(!shared.join("y.mkv").exists());
+
+        // Two files can't share a destination.
+        let same = vec![
+            (tmp.join("a"), shared.join("z")),
+            (tmp.join("b"), shared.join("z")),
+        ];
+        assert!(
+            place_all(&same)
+                .unwrap_err()
+                .message
+                .contains("two files would go to")
         );
     }
 }

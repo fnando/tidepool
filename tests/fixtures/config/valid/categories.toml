@@ -10,7 +10,9 @@ api_key = "AIzaSyD-1234567890x1Qw"
 
 [category.music]
 media_dir = "~/Music/youtube"
-output = "{media_dir}/{title} [{id}]"
+output_dir = "{media_dir}/{title} [{id}]"
+output_file = "{output_dir}/{normalized_title}.{ext}"
+cover_file = "/covers/{id}.webp"
 tmp_dir = "{media_dir}/.tmp"
 format = "ba/b"
 inherit_rules = true

@@ -12,9 +12,9 @@
           "description": "Netscape cookies file, for private sources. \"\" = none.",
           "type": "string"
         },
-        "cover_name": {
-          "description": "Poster file name without extension; same placeholders as `output`.",
-          "format": "file-name-template",
+        "cover_file": {
+          "description": "The poster, a full path ending in .jpg, .png or .webp (which picks\nthe image format). Defaults to \"{output_dir}/{normalized_title}-poster.jpg\".",
+          "format": "cover-file-template",
           "type": "string"
         },
         "cutoff": {
@@ -63,7 +63,7 @@
           "type": "boolean"
         },
         "keep_raw_info": {
-          "description": "Keep yt-dlp's raw info.json next to metadata.json.",
+          "description": "Keep yt-dlp's raw info JSON next to the metadata file (as `<metadata file name>.ytdlp.json`).",
           "type": "boolean"
         },
         "match_fields": {
@@ -83,12 +83,17 @@
           "type": "string"
         },
         "media_dir": {
-          "description": "The media folder, a full path; `output` refers to it as {media_dir}.\nDefaults to ~/.local/share/tidepool/media.",
+          "description": "The media folder, a full path; path settings refer to it as {media_dir}.\nDefaults to ~/.local/share/tidepool/media.",
           "format": "full-path",
           "type": "string"
         },
         "merge_output_format": {
           "description": "Container for merged formats (`--merge-output-format`).",
+          "type": "string"
+        },
+        "metadata_file": {
+          "description": "tidepool's metadata.json, a full path. Defaults to \"{output_dir}/metadata.json\".",
+          "format": "metadata-file-template",
           "type": "string"
         },
         "min_duration": {
@@ -99,18 +104,24 @@
           "format": "optional-duration",
           "type": "string"
         },
-        "output": {
-          "description": "Each video's directory, a full path. Must contain {id}.\nDefaults to \"{media_dir}/{source}/{upload_date} - {title} [{id}]\".",
-          "format": "output-template",
+        "output_dir": {
+          "description": "Each video's directory, a full path; the file settings refer to it\nas {output_dir}. Defaults to \"{media_dir}/{source}/{upload_date} - {title} [{id}]\".",
+          "format": "output-dir-template",
+          "type": "string"
+        },
+        "output_file": {
+          "description": "The media file, a full path; must contain {ext}.\nDefaults to \"{output_dir}/{normalized_title}.{ext}\".",
+          "format": "output-file-template",
           "type": "string"
         },
         "redownload_missing": {
           "description": "Download again when a downloaded item's media file is gone.",
           "type": "boolean"
         },
-        "thumbnail_format": {
-          "$ref": "#/$defs/ThumbnailFormat",
-          "description": "Cover image format."
+        "subtitle_file": {
+          "description": "Each subtitle file, a full path; must contain {lang} and {ext}.\nDefaults to \"{output_dir}/{normalized_title}.{lang}.{ext}\".",
+          "format": "subtitle-file-template",
+          "type": "string"
         },
         "tmp_dir": {
           "description": "Work area for downloads in progress, a full path ({data_dir} and\n{media_dir} allowed). Defaults to {data_dir}/tmp.",
@@ -490,9 +501,9 @@
           "description": "Netscape cookies file, for private sources. \"\" = none.",
           "type": "string"
         },
-        "cover_name": {
-          "description": "Poster file name without extension; same placeholders as `output`.",
-          "format": "file-name-template",
+        "cover_file": {
+          "description": "The poster, a full path ending in .jpg, .png or .webp (which picks\nthe image format). Defaults to \"{output_dir}/{normalized_title}-poster.jpg\".",
+          "format": "cover-file-template",
           "type": "string"
         },
         "cutoff": {
@@ -545,7 +556,7 @@
           "type": "boolean"
         },
         "keep_raw_info": {
-          "description": "Keep yt-dlp's raw info.json next to metadata.json.",
+          "description": "Keep yt-dlp's raw info JSON next to the metadata file (as `<metadata file name>.ytdlp.json`).",
           "type": "boolean"
         },
         "match_fields": {
@@ -565,12 +576,17 @@
           "type": "string"
         },
         "media_dir": {
-          "description": "The media folder, a full path; `output` refers to it as {media_dir}.\nDefaults to ~/.local/share/tidepool/media.",
+          "description": "The media folder, a full path; path settings refer to it as {media_dir}.\nDefaults to ~/.local/share/tidepool/media.",
           "format": "full-path",
           "type": "string"
         },
         "merge_output_format": {
           "description": "Container for merged formats (`--merge-output-format`).",
+          "type": "string"
+        },
+        "metadata_file": {
+          "description": "tidepool's metadata.json, a full path. Defaults to \"{output_dir}/metadata.json\".",
+          "format": "metadata-file-template",
           "type": "string"
         },
         "min_duration": {
@@ -581,18 +597,24 @@
           "format": "optional-duration",
           "type": "string"
         },
-        "output": {
-          "description": "Each video's directory, a full path. Must contain {id}.\nDefaults to \"{media_dir}/{source}/{upload_date} - {title} [{id}]\".",
-          "format": "output-template",
+        "output_dir": {
+          "description": "Each video's directory, a full path; the file settings refer to it\nas {output_dir}. Defaults to \"{media_dir}/{source}/{upload_date} - {title} [{id}]\".",
+          "format": "output-dir-template",
+          "type": "string"
+        },
+        "output_file": {
+          "description": "The media file, a full path; must contain {ext}.\nDefaults to \"{output_dir}/{normalized_title}.{ext}\".",
+          "format": "output-file-template",
           "type": "string"
         },
         "redownload_missing": {
           "description": "Download again when a downloaded item's media file is gone.",
           "type": "boolean"
         },
-        "thumbnail_format": {
-          "$ref": "#/$defs/ThumbnailFormat",
-          "description": "Cover image format."
+        "subtitle_file": {
+          "description": "Each subtitle file, a full path; must contain {lang} and {ext}.\nDefaults to \"{output_dir}/{normalized_title}.{lang}.{ext}\".",
+          "format": "subtitle-file-template",
+          "type": "string"
         },
         "tmp_dir": {
           "description": "Work area for downloads in progress, a full path ({data_dir} and\n{media_dir} allowed). Defaults to {data_dir}/tmp.",
@@ -620,14 +642,6 @@
         "url"
       ],
       "type": "object"
-    },
-    "ThumbnailFormat": {
-      "enum": [
-        "jpg",
-        "webp",
-        "original"
-      ],
-      "type": "string"
     },
     "YoutubeOptions": {
       "additionalProperties": false,

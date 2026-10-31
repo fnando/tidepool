@@ -1,16 +1,22 @@
 [category.default]
 media_dir = "Videos"                # not a full path
 tmp_dir = "tmp"                     # not a full path
-output = "{source}/{title} [{id}]"  # not a full path
+output_dir = "{source}/{title}"     # not a full path
 
 [category.music]
-output = "{media_dir}/{title}"      # no {id}
+output_file = "{output_dir}/{normalized_title}.mkv"     # no {ext}
+subtitle_file = "{output_dir}/{normalized_title}.{ext}" # no {lang}
+cover_file = "{output_dir}/cover"                       # no image extension
+metadata_file = "metadata.json"                         # not a full path
 tmp_dir = "{data_dir}/{source}"     # only {media_dir} and {data_dir}
 
 [sources.lofi]
 url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
-dir = "lofi"                        # removed: use output
+dir = "lofi"                        # removed: use output_dir
 root = "/nas"                       # renamed to media_dir
+output = "/nas/{id}"                # renamed to output_dir
+cover_name = "cover"                # replaced by cover_file
+thumbnail_format = "webp"           # the cover_file extension picks the format
 
 [hooks.notify]
 command = ["notify-send", "{title}"]

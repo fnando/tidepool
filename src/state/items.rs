@@ -6,6 +6,8 @@ use std::collections::{BTreeMap, HashSet};
 use jiff::Timestamp;
 use rusqlite::{Connection, OptionalExtension, params};
 
+use serde::{Deserialize, Serialize};
+
 use crate::filter::Decision;
 use crate::index::{RemoteItem, RemoteList};
 
@@ -565,20 +567,59 @@ pub fn update_video_details(
     upsert_video(conn, item, &now.to_string())
 }
 
+/// Every file placed for a downloaded video, as absolute paths.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct VideoFiles {
+    /// `output_dir`.
+    pub dir: String,
+    pub media: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cover: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub subtitles: Vec<Subtitle>,
+    pub metadata: String,
+    /// yt-dlp's raw info JSON, with `keep_raw_info`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub raw_info: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Subtitle {
+    pub lang: String,
+    pub path: String,
+}
+
+impl VideoFiles {
+    /// Every file, metadata last.
+    pub fn paths(&self) -> Vec<&str> {
+        let mut out = vec![self.media.as_str()];
+        out.extend(self.cover.as_deref());
+        out.extend(self.subtitles.iter().map(|s| s.path.as_str()));
+        out.extend(self.raw_info.as_deref());
+        out.push(&self.metadata);
+        out
+    }
+
+    fn from_column(text: Option<String>) -> Option<Self> {
+        text.and_then(|t| serde_json::from_str(&t).ok())
+    }
+}
+
 pub fn mark_done(
     conn: &Connection,
     source_key: &str,
     video_id: &str,
-    dir: &str,
+    files: &VideoFiles,
     format: &str,
     media_bytes: u64,
     now: Timestamp,
 ) -> rusqlite::Result<()> {
+    let json = serde_json::to_string(files).expect("files serialize");
     conn.execute(
-        "UPDATE items SET status = 'done', dir = ?3, format = ?4, media_bytes = ?5, media_present = 1,
-           downloaded_at = ?6, attempts = 0, next_attempt_at = NULL, last_error = NULL
+        "UPDATE items SET status = 'done', dir = ?3, files = ?4, format = ?5, media_bytes = ?6, media_present = 1,
+           downloaded_at = ?7, attempts = 0, next_attempt_at = NULL, last_error = NULL
          WHERE source_key = ?1 AND video_id = ?2",
-        params![source_key, video_id, dir, format, media_bytes as i64, now.to_string()],
+        params![source_key, video_id, files.dir, json, format, media_bytes as i64, now.to_string()],
     )?;
     Ok(())
 }
@@ -619,22 +660,24 @@ pub fn mark_failed(
     Ok(())
 }
 
-/// The directory of a finished download of the same video and format in
+/// The files of a finished download of the same video and format in
 /// another source, if any.
 pub fn find_copy(
     conn: &Connection,
     video_id: &str,
     format: &str,
     except_source: &str,
-) -> rusqlite::Result<Option<String>> {
-    conn.query_row(
-        "SELECT dir FROM items WHERE video_id = ?1 AND format = ?2 AND source_key != ?3
-           AND status IN ('done', 'downloaded') AND dir IS NOT NULL AND media_present = 1
-         ORDER BY downloaded_at LIMIT 1",
-        params![video_id, format, except_source],
-        |r| r.get(0),
-    )
-    .optional()
+) -> rusqlite::Result<Option<VideoFiles>> {
+    Ok(conn
+        .query_row(
+            "SELECT files FROM items WHERE video_id = ?1 AND format = ?2 AND source_key != ?3
+               AND status IN ('done', 'downloaded') AND files IS NOT NULL AND media_present = 1
+             ORDER BY downloaded_at LIMIT 1",
+            params![video_id, format, except_source],
+            |r| r.get(0),
+        )
+        .optional()?
+        .and_then(VideoFiles::from_column))
 }
 
 /// After a crash or an interrupt: downloads that didn't finish go back to
@@ -647,18 +690,20 @@ pub fn reset_interrupted(conn: &Connection) -> rusqlite::Result<usize> {
 }
 
 /// Forget a video's download state in every source so it's downloaded
-/// again. Returns `(source, dir)` for each item reset.
+/// again. Returns `(source, files)` for each item reset.
 pub fn reset_video(
     conn: &Connection,
     video_id: &str,
-) -> rusqlite::Result<Vec<(String, Option<String>)>> {
-    let mut stmt =
-        conn.prepare("SELECT source_key, dir FROM items WHERE video_id = ?1 ORDER BY source_key")?;
-    let items: Vec<(String, Option<String>)> = stmt
-        .query_map([video_id], |r| Ok((r.get(0)?, r.get(1)?)))?
+) -> rusqlite::Result<Vec<(String, Option<VideoFiles>)>> {
+    let mut stmt = conn
+        .prepare("SELECT source_key, files FROM items WHERE video_id = ?1 ORDER BY source_key")?;
+    let items: Vec<(String, Option<VideoFiles>)> = stmt
+        .query_map([video_id], |r| {
+            Ok((r.get(0)?, VideoFiles::from_column(r.get(1)?)))
+        })?
         .collect::<Result<_, _>>()?;
     conn.execute(
-        "UPDATE items SET status = 'pending', dir = NULL, format = NULL, media_bytes = NULL, downloaded_at = NULL,
+        "UPDATE items SET status = 'pending', dir = NULL, files = NULL, format = NULL, media_bytes = NULL, downloaded_at = NULL,
            attempts = 0, next_attempt_at = NULL, last_error = NULL, cleaned_up_at = NULL, cleanup_reason = NULL
          WHERE video_id = ?1",
         [video_id],
@@ -824,23 +869,20 @@ mod download_tests {
         assert_eq!(reset_interrupted(&state.conn).unwrap(), 1);
         assert_eq!(row(&state, "b", "x").0, "pending");
 
-        mark_done(
-            &state.conn,
-            "a",
-            "x",
-            "a/2026 - x [x]",
-            "bv*+ba/b",
-            1234,
-            now(),
-        )
-        .unwrap();
+        let files = VideoFiles {
+            dir: "/media/a/x".into(),
+            media: "/media/a/x/x.mkv".into(),
+            metadata: "/media/a/x/metadata.json".into(),
+            ..VideoFiles::default()
+        };
+        mark_done(&state.conn, "a", "x", &files, "bv*+ba/b", 1234, now()).unwrap();
         assert_eq!(
             row(&state, "a", "x"),
-            ("done".into(), 0, None, Some("a/2026 - x [x]".into()))
+            ("done".into(), 0, None, Some("/media/a/x".into()))
         );
         assert_eq!(
             find_copy(&state.conn, "x", "bv*+ba/b", "b").unwrap(),
-            Some("a/2026 - x [x]".into())
+            Some(files.clone())
         );
         assert_eq!(
             find_copy(&state.conn, "x", "ba/b", "b").unwrap(),
@@ -854,13 +896,7 @@ mod download_tests {
         );
 
         let reset = reset_video(&state.conn, "x").unwrap();
-        assert_eq!(
-            reset,
-            vec![
-                ("a".into(), Some("a/2026 - x [x]".into())),
-                ("b".into(), None)
-            ]
-        );
+        assert_eq!(reset, vec![("a".into(), Some(files)), ("b".into(), None)]);
         assert_eq!(row(&state, "a", "x"), ("pending".into(), 0, None, None));
         assert!(reset_video(&state.conn, "nope").unwrap().is_empty());
     }
