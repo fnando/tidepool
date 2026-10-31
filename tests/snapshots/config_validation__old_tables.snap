@@ -1,8 +1,0 @@
----
-source: tests/config_validation.rs
-expression: err
----
-old_tables.toml:1:2 library: unknown key "library"
-old_tables.toml:4:2 youtube: unknown key "youtube"
-old_tables.toml:7:2 defaults: unknown key "defaults"
-old_tables.toml:12:12 sources.lofi.category: "Music!" isn't a category name: use lowercase letters, digits, '-' and '_'

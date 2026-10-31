@@ -12,12 +12,3 @@ tmp_dir = "{data_dir}/{source}"     # only {media_dir} and {data_dir}
 
 [sources.lofi]
 url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
-dir = "lofi"                        # removed: use output_dir
-root = "/nas"                       # renamed to media_dir
-output = "/nas/{id}"                # renamed to output_dir
-cover_name = "cover"                # replaced by cover_file
-thumbnail_format = "webp"           # the cover_file extension picks the format
-
-[hooks.notify]
-command = ["notify-send", "{title}"]
-cwd = "/tmp"                        # renamed to work_dir

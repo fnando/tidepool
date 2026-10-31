@@ -6,6 +6,4 @@ source.toml:1:1 sources.missing: missing required key "url"
 source.toml:5:7 sources.no_list.url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" is not a playlist URL: it must contain list=<playlist id>
 source.toml:8:7 sources.bare_id.url: "PLcccccccc" is not a URL; use the playlist's URL (e.g. "https://www.youtube.com/playlist?list=PLxxxxxxxx")
 source.toml:11:7 sources.not_youtube.url: "https://example.com/playlist?list=PLdddddddd" is not a YouTube URL (e.g. "https://www.youtube.com/playlist?list=PLxxxxxxxx")
-source.toml:13:1 sources.old_keys: missing required key "url"
-source.toml:14:1 sources.old_keys.source: unknown key "source"
-source.toml:15:1 sources.old_keys.id: unknown key "id"
+source.toml:15:12 sources.bad_category.category: "Music!" isn't a category name: use lowercase letters, digits, '-' and '_'

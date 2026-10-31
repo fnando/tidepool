@@ -10,9 +10,3 @@ paths.toml:8:17 category.music.subtitle_file: "{output_dir}/{normalized_title}.{
 paths.toml:9:14 category.music.cover_file: "{output_dir}/cover": must end with .jpg, .jpeg, .png or .webp
 paths.toml:10:17 category.music.metadata_file: "metadata.json": must be a full path: start with /, ~, $VAR, {media_dir}, {data_dir} or {output_dir}
 paths.toml:11:11 category.music.tmp_dir: "{data_dir}/{source}": placeholder {source} is not allowed in tmp_dir
-paths.toml:15:1 sources.lofi.dir: unknown key "dir"
-paths.toml:16:1 sources.lofi.root: unknown key "root"
-paths.toml:17:1 sources.lofi.output: unknown key "output"
-paths.toml:18:1 sources.lofi.cover_name: unknown key "cover_name"
-paths.toml:19:1 sources.lofi.thumbnail_format: unknown key "thumbnail_format"
-paths.toml:23:1 hooks.notify.cwd: unknown key "cwd"

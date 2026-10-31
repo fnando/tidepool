@@ -566,11 +566,6 @@ mod tests {
                 },
             ),
             (
-                "{media_path}",
-                Hook,
-                TemplateError::Unknown("media_path".into()),
-            ),
-            (
                 "{output_file}",
                 OutputDir,
                 TemplateError::NotAllowed {

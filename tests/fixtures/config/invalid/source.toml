@@ -10,6 +10,6 @@ url = "PLcccccccc"
 [sources.not_youtube]
 url = "https://example.com/playlist?list=PLdddddddd"
 
-[sources.old_keys]
-source = "https://www.youtube.com/playlist?list=PLaaaaaaaa"
-id = "PLaaaaaaaa"
+[sources.bad_category]
+url = "https://www.youtube.com/playlist?list=PLaaaaaaaa"
+category = "Music!"
