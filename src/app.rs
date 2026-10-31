@@ -171,6 +171,22 @@ impl App<'_> {
         Ok(())
     }
 
+    /// The file `config import` reads: the given path, else `--config`, else
+    /// the conventional config file. It must exist.
+    fn import_path(&self, path: Option<&Path>) -> anyhow::Result<PathBuf> {
+        let path = path
+            .map(Path::to_path_buf)
+            .or_else(|| self.cli.config.clone())
+            .unwrap_or_else(|| self.dirs.default_config_file());
+        if !path.exists() {
+            bail!(
+                "no config file at {}; create one with `tidepool init`, or pass the path to import",
+                Self::display_path(&path)
+            );
+        }
+        Ok(path)
+    }
+
     fn print_next_steps(
         &self,
         name: &str,
@@ -201,9 +217,14 @@ impl App<'_> {
             out,
             "\nThe config includes a sample source with one short video. Next steps:\n\
              \x20 1. Edit {name}: replace the sample with your sources, set where videos go.\n\
-             \x20 2. Apply your changes: tidepool config import {name}{library}\n\
+             \x20 2. Apply your changes: tidepool config import{import_path}{library}\n\
              \x20 3. Sync once: tidepool run{library}\n\
              \x20    Or keep syncing every {interval} with the web UI at http://{listen}: tidepool run --daemon{library}",
+            import_path = if Path::new(name) == self.dirs.default_config_file() {
+                String::new()
+            } else {
+                format!(" {name}")
+            },
             interval = crate::config::types::format_duration(
                 config.schedule.interval.0.unwrap_or_default()
             ),
@@ -283,6 +304,7 @@ impl App<'_> {
                 return self.config_check(path.as_deref(), args.show_secrets, out);
             }
             Some(ConfigCmd::Import { path }) => {
+                let path = &self.import_path(path.as_deref())?;
                 let loaded = load_file(path)?;
                 self.warn(&loaded.warnings);
                 let name = Self::display_path(path);

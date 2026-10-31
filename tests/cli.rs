@@ -491,3 +491,45 @@ fn check_requires_ffmpeg() {
         .code(1)
         .stderr(contains("ffmpeg is required").and(contains("ffprobe is required")));
 }
+
+#[test]
+fn import_defaults_to_the_config_dir() {
+    let env = Env::new();
+    let default = env.path("config/tidepool/config.toml");
+
+    env.cmd(&["config", "import"]).assert().code(1).stderr(
+        contains(format!("no config file at {}", default.display())).and(contains("tidepool init")),
+    );
+
+    env.cmd(&["init"]).assert().success();
+    let text = fs::read_to_string(&default).unwrap();
+    fs::write(
+        &default,
+        text.replace("interval = \"6h\"", "interval = \"12h\""),
+    )
+    .unwrap();
+    env.cmd(&["config", "import"])
+        .assert()
+        .success()
+        .stdout(contains(format!(
+            "imported {} as revision 2",
+            default.display()
+        )));
+
+    // --config / TIDEPOOL_CONFIG pick the file when no path is given.
+    let other = env.write_config("other.toml", "");
+    env.cmd(&["config", "import"])
+        .env("TIDEPOOL_CONFIG", &other)
+        .assert()
+        .success()
+        .stdout(contains(format!("imported {other} as revision 3")));
+}
+
+#[test]
+fn init_next_steps_omit_the_default_path() {
+    let env = Env::new();
+    env.cmd(&["init"])
+        .assert()
+        .success()
+        .stdout(contains("Apply your changes: tidepool config import\n"));
+}

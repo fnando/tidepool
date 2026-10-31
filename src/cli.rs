@@ -208,8 +208,9 @@ pub enum ConfigCmd {
     },
     /// Print the JSON Schema for the config file
     Schema,
-    /// Validate a file and store it as a new revision
-    Import { path: PathBuf },
+    /// Validate a file and store it as a new revision. Without a path: the
+    /// --config file, or ~/.config/tidepool/config.toml
+    Import { path: Option<PathBuf> },
     /// Write a revision as TOML to stdout
     Export {
         #[arg(long, value_name = "N")]

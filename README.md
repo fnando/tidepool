@@ -87,8 +87,11 @@ tidepool keeps its own copy of your settings, so a half-edited file never
 affects anything. After editing the file, apply it:
 
 ```sh
-tidepool config import ~/.config/tidepool/config.toml
+tidepool config import
 ```
+
+This reads `~/.config/tidepool/config.toml`. If your file lives somewhere else,
+pass its path: `tidepool config import ~/dotfiles/tidepool.toml`.
 
 Or add `--config <path>` to any command; the file is applied first if it
 changed. This is handy when you keep the file in a dotfiles repository:
