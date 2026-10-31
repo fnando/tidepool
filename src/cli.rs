@@ -118,7 +118,7 @@ impl Command {
             | Command::Download(_)
             | Command::Reset(_)
             | Command::Run(RunArgs { daemon: false, .. }) => None,
-            Command::Problems { .. } => Some("M2"),
+            Command::Problems { .. } => None,
             Command::Ytdlp { .. } => None,
             Command::Hooks { .. } | Command::Embed(_) => Some("M4"),
             Command::Cleanup(_) | Command::Pin(_) | Command::Unpin(_) => Some("M5"),

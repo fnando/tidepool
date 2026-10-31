@@ -50,6 +50,9 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
     if cli.config.is_some() && !cli.dry_run && uses_stored_config(&cli.command) {
         app.import_config_flag()?;
     }
+    if !matches!(cli.command, Command::Problems { .. } | Command::Init(_)) {
+        app.show_problem_notices()?;
+    }
     match &cli.command {
         Command::Init(args) => app.init(args, out),
         Command::Config(args) => app.config(args, out),
@@ -61,6 +64,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Download(args) => app.download(args, out).await,
         Command::Run(args) if !args.daemon => app.run_once(args, out).await,
         Command::Reset(args) => app.reset(args, out),
+        Command::Problems { cmd } => app.problems(cmd, out),
         other => {
             let milestone = other.milestone().unwrap_or("a later milestone");
             bail!("this command is not implemented yet (planned for {milestone})")
@@ -130,28 +134,104 @@ impl App<'_> {
     }
 
     /// The yt-dlp to run: the managed one (downloaded or updated if needed)
-    /// or `ytdlp.path`.
-    async fn ytdlp_binary(&self, config: &crate::config::Config) -> anyhow::Result<PathBuf> {
+    /// or `ytdlp.path`. Failed update checks become a problem.
+    async fn ytdlp_binary(
+        &self,
+        state: &State,
+        config: &crate::config::Config,
+    ) -> anyhow::Result<PathBuf> {
+        use crate::problems::{Kind, record, resolve};
+        use crate::ytdlp::manager::{Manager, UpdateOutcome};
+
         let ytdlp = &config.ytdlp;
         if !ytdlp.managed {
             return Ok(PathBuf::from(&ytdlp.path));
         }
-        let manager = crate::ytdlp::manager::Manager::new(&self.dirs);
-        let ensured = manager
-            .ensure(ytdlp.channel, ytdlp.update_check.0, jiff::Timestamp::now())
-            .await?;
-        if let Some(warning) = ensured.warning {
-            tracing::warn!("{warning}");
-        }
-        match ensured.outcome {
-            Some(outcome @ crate::ytdlp::manager::UpdateOutcome::Installed { .. })
-            | Some(outcome @ crate::ytdlp::manager::UpdateOutcome::Updated { .. }) => {
-                tracing::info!("{outcome}")
+        let now = jiff::Timestamp::now();
+        let manager = Manager::new(&self.dirs);
+        let version = manager.state(ytdlp.channel).map(|s| s.version);
+        let ensured = match manager
+            .ensure(ytdlp.channel, ytdlp.update_check.0, now)
+            .await
+        {
+            Ok(ensured) => ensured,
+            Err(err) => {
+                let message = err.to_string();
+                let hint = Kind::UpdateFailed.hint(version.as_deref(), true);
+                record(
+                    &state.conn,
+                    Kind::UpdateFailed,
+                    1,
+                    &message,
+                    version.as_deref(),
+                    &Default::default(),
+                    &hint,
+                    now,
+                )?;
+                return Err(err.into());
             }
-            Some(outcome) => tracing::debug!("{outcome}"),
-            None => {}
+        };
+        if let Some(warning) = &ensured.warning {
+            tracing::warn!("{warning}");
+            let hint = Kind::UpdateFailed.hint(version.as_deref(), true);
+            record(
+                &state.conn,
+                Kind::UpdateFailed,
+                1,
+                warning,
+                version.as_deref(),
+                &Default::default(),
+                &hint,
+                now,
+            )?;
+        }
+        if let Some(outcome) = ensured.outcome {
+            resolve(&state.conn, Kind::UpdateFailed, now)?;
+            match outcome {
+                UpdateOutcome::Installed { .. } | UpdateOutcome::Updated { .. } => {
+                    tracing::info!("{outcome}")
+                }
+                _ => tracing::debug!("{outcome}"),
+            }
         }
         Ok(ensured.path)
+    }
+
+    /// End of a run: if it hit something a newer yt-dlp usually fixes, check
+    /// for one right away (at most hourly); then record and resolve problems.
+    async fn finish_problems(
+        &self,
+        state: &State,
+        config: &crate::config::Config,
+        tracker: crate::problems::Tracker,
+        ytdlp: &Path,
+    ) -> anyhow::Result<()> {
+        let managed = config.ytdlp.managed;
+        if managed && tracker.wants_update() {
+            let manager = crate::ytdlp::manager::Manager::new(&self.dirs);
+            let hour = std::time::Duration::from_secs(3600);
+            match manager
+                .ensure(config.ytdlp.channel, hour, jiff::Timestamp::now())
+                .await
+            {
+                Ok(ensured) => {
+                    if let Some(outcome @ crate::ytdlp::manager::UpdateOutcome::Updated { .. }) =
+                        ensured.outcome
+                    {
+                        tracing::info!("{outcome}; failed videos are retried on the next run");
+                    }
+                }
+                Err(err) => tracing::warn!("could not check for a yt-dlp update: {err}"),
+            }
+        }
+        let version = crate::ytdlp::manager::tool_version(ytdlp).ok();
+        tracker.finish(
+            &state.conn,
+            version.as_deref(),
+            managed,
+            jiff::Timestamp::now(),
+        )?;
+        Ok(())
     }
 
     async fn index(&self, scope: &ScopeArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
@@ -166,9 +246,19 @@ impl App<'_> {
             return Ok(exit::OK);
         }
         let _lock = self.lock()?;
-        let ytdlp = self.ytdlp_binary(&loaded.config).await?;
+        let ytdlp = self.ytdlp_binary(&state, &loaded.config).await?;
+        let mut tracker = crate::problems::Tracker::default();
         let failed = self
-            .index_sources(&mut state, &loaded.config, &sources, &ytdlp, out)
+            .index_sources(
+                &mut state,
+                &loaded.config,
+                &sources,
+                &ytdlp,
+                &mut tracker,
+                out,
+            )
+            .await?;
+        self.finish_problems(&state, &loaded.config, tracker, &ytdlp)
             .await?;
         Ok(if failed > 0 { exit::PARTIAL } else { exit::OK })
     }
@@ -180,6 +270,7 @@ impl App<'_> {
         config: &crate::config::Config,
         sources: &[EffectiveSource],
         ytdlp: &Path,
+        tracker: &mut crate::problems::Tracker,
         out: &mut dyn Write,
     ) -> anyhow::Result<usize> {
         let now = jiff::Timestamp::now();
@@ -187,13 +278,21 @@ impl App<'_> {
         for source in sources {
             match crate::pipeline::index_source(state, config, source, &self.dirs, ytdlp, now).await
             {
-                Ok(summary) => writeln!(
-                    out,
-                    "{}",
-                    crate::pipeline::describe_index(&source.key, &summary)
-                )?,
+                Ok(summary) => {
+                    tracker.index_succeeded(&source.key);
+                    tracker.regex_limit(
+                        &source.key,
+                        summary.count(crate::state::items::status::FILTER_ERROR),
+                    );
+                    writeln!(
+                        out,
+                        "{}",
+                        crate::pipeline::describe_index(&source.key, &summary)
+                    )?;
+                }
                 Err(err) => {
                     failed += 1;
+                    tracker.index_failed(&source.key, &err);
                     tracing::error!("{}: {err}", source.key);
                 }
             }
@@ -211,6 +310,7 @@ impl App<'_> {
         ytdlp: PathBuf,
         limit: Option<usize>,
         concurrency: Option<u32>,
+        tracker: &mut crate::problems::Tracker,
         out: &mut dyn Write,
     ) -> anyhow::Result<crate::download::Summary> {
         use crate::download::{Context, Options, human_bytes};
@@ -244,21 +344,15 @@ impl App<'_> {
         let options = Options {
             limit,
             concurrency: concurrency.unwrap_or(config.library.concurrency) as usize,
+            now: jiff::Timestamp::now(),
         };
         let dirs = &self.dirs;
         let cookies =
             |source: &EffectiveSource| crate::pipeline::cookies_file(source, dirs).ok().flatten();
-        let summary = crate::download::download_all(
-            state,
-            sources,
-            cookies,
-            ctx,
-            options,
-            out,
-            jiff::Timestamp::now(),
-        )
-        .await
-        .map_err(anyhow::Error::msg)?;
+        let summary =
+            crate::download::download_all(state, sources, cookies, ctx, options, tracker, out)
+                .await
+                .map_err(anyhow::Error::msg)?;
 
         if summary.interrupted.is_some() {
             writeln!(
@@ -302,19 +396,25 @@ impl App<'_> {
         let loaded = self.current_config(&state)?;
         let sources = self.scoped_sources(&loaded.config, &args.scope.sources)?;
         let _lock = self.lock()?;
-        let ytdlp = self.ytdlp_binary(&loaded.config).await?;
+        let ytdlp = self.ytdlp_binary(&state, &loaded.config).await?;
         let limit = args.limit.map(|l| l as usize);
+        let mut tracker = crate::problems::Tracker::default();
         let summary = self
             .download_sources(
                 &mut state,
                 &loaded.config,
                 &sources,
-                ytdlp,
+                ytdlp.clone(),
                 limit,
                 args.concurrency,
+                &mut tracker,
                 out,
             )
             .await?;
+        if summary.interrupted.is_none() {
+            self.finish_problems(&state, &loaded.config, tracker, &ytdlp)
+                .await?;
+        }
         Ok(Self::exit_code(&summary, 0))
     }
 
@@ -331,14 +431,118 @@ impl App<'_> {
             return Ok(exit::OK);
         }
         let _lock = self.lock()?;
-        let ytdlp = self.ytdlp_binary(&loaded.config).await?;
+        let ytdlp = self.ytdlp_binary(&state, &loaded.config).await?;
+        let mut tracker = crate::problems::Tracker::default();
         let failed = self
-            .index_sources(&mut state, &loaded.config, &sources, &ytdlp, out)
+            .index_sources(
+                &mut state,
+                &loaded.config,
+                &sources,
+                &ytdlp,
+                &mut tracker,
+                out,
+            )
             .await?;
         let summary = self
-            .download_sources(&mut state, &loaded.config, &sources, ytdlp, None, None, out)
+            .download_sources(
+                &mut state,
+                &loaded.config,
+                &sources,
+                ytdlp.clone(),
+                None,
+                None,
+                &mut tracker,
+                out,
+            )
             .await?;
+        if summary.interrupted.is_none() {
+            self.finish_problems(&state, &loaded.config, tracker, &ytdlp)
+                .await?;
+        }
         Ok(Self::exit_code(&summary, failed))
+    }
+
+    /// `tidepool problems [ack <id>]`.
+    fn problems(
+        &self,
+        cmd: &Option<crate::cli::ProblemsCmd>,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<i32> {
+        use crate::problems::{acknowledge, describe, open, recently_resolved};
+
+        if !self.library.state_db.exists() {
+            writeln!(out, "no open problems")?;
+            return Ok(exit::OK);
+        }
+        let state = self.open_state()?;
+        if let Some(crate::cli::ProblemsCmd::Ack { id }) = cmd {
+            if !acknowledge(&state.conn, *id, jiff::Timestamp::now())? {
+                bail!("no open problem #{id} (see `tidepool problems`)");
+            }
+            writeln!(out, "problem #{id} is hidden until it happens again")?;
+            return Ok(exit::OK);
+        }
+        let problems = open(&state.conn)?;
+        if problems.is_empty() {
+            writeln!(out, "no open problems")?;
+        }
+        for (i, problem) in problems.iter().enumerate() {
+            if i > 0 {
+                writeln!(out)?;
+            }
+            writeln!(out, "{}", describe(problem))?;
+        }
+        let resolved = recently_resolved(&state.conn, 5)?;
+        if !resolved.is_empty() {
+            writeln!(out, "\nrecently resolved:")?;
+            for problem in resolved {
+                let when = problem
+                    .resolved_at
+                    .as_deref()
+                    .and_then(|t| t.parse::<jiff::Timestamp>().ok())
+                    .map(|t| t.strftime("%Y-%m-%d %H:%M UTC").to_string())
+                    .unwrap_or_default();
+                writeln!(
+                    out,
+                    "  #{} {} (resolved {when})",
+                    problem.id,
+                    problem.kind.title()
+                )?;
+            }
+        }
+        let ids: Vec<i64> = problems.iter().map(|p| p.id).collect();
+        crate::problems::mark_shown(&state.conn, &ids, jiff::Timestamp::now())?;
+        Ok(exit::OK)
+    }
+
+    /// Before a command: new problems in full, a reminder for known ones.
+    fn show_problem_notices(&self) -> anyhow::Result<()> {
+        if !self.library.state_db.exists() {
+            return Ok(());
+        }
+        let state = self.open_state()?;
+        let open: Vec<_> = crate::problems::open(&state.conn)?
+            .into_iter()
+            .filter(|p| p.acknowledged_at.is_none())
+            .collect();
+        let (new, known): (Vec<_>, Vec<_>) = open.iter().partition(|p| p.shown_cli_at.is_none());
+        for problem in &new {
+            eprintln!(
+                "tidepool problem {}\n   (`tidepool problems` lists them; `tidepool problems ack {}` hides this one)",
+                crate::problems::describe(problem),
+                problem.id
+            );
+        }
+        if !known.is_empty() {
+            let n = known.len();
+            eprintln!(
+                "{n} open {} (see `tidepool problems`)",
+                if n == 1 { "problem" } else { "problems" }
+            );
+        }
+        let ids: Vec<i64> = new.iter().map(|p| p.id).collect();
+        crate::problems::mark_shown(&state.conn, &ids, jiff::Timestamp::now())?;
+        Ok(())
     }
 
     /// `tidepool reset <video>`: download it again on the next run.

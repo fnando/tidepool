@@ -280,3 +280,81 @@ async fn interrupting_a_download_puts_it_back_in_the_queue() {
     );
     assert!(!env.media().join(RICK_DIR).exists());
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn recurring_failures_become_problems_until_work_succeeds_again() {
+    let env = Env::new().await;
+    let config = env.config("");
+    let text = fs::read_to_string(&config).unwrap()
+        + "\n[sources.dl2]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\n";
+    fs::write(&config, text).unwrap();
+
+    // Every download fails the same way: a systemic yt-dlp problem.
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .env(
+            "TIDEPOOL_FAKE_YTDLP_FAIL",
+            "ERROR: [youtube] x: Signature extraction failed: Some formats may be missing",
+        )
+        .assert()
+        .code(3);
+
+    // The next command shows it in full, once; then a one-line reminder.
+    env.cmd(&["index", "-s", "dl"]).assert().success().stderr(
+        contains("tidepool problem #1 yt-dlp can't extract videos")
+            .and(contains("seen 4 times"))
+            .and(contains("sources: dl"))
+            .and(contains(
+                "last error: Signature extraction failed: Some formats may be missing",
+            ))
+            .and(contains(
+                "hint: yt-dlp 2026.10.01 may be outdated; update it (`yt-dlp -U`, pip or brew)",
+            ))
+            .and(contains("`tidepool problems ack 1` hides this one")),
+    );
+    env.cmd(&["index", "-s", "dl"]).assert().success().stderr(
+        contains("1 open problem (see `tidepool problems`)")
+            .and(contains("tidepool problem #1").not()),
+    );
+
+    env.cmd(&["problems"])
+        .assert()
+        .success()
+        .stdout(contains("#1 yt-dlp can't extract videos").and(contains("sources: dl")));
+    env.cmd(&["problems", "ack", "1"])
+        .assert()
+        .success()
+        .stdout(contains("problem #1 is hidden until it happens again"));
+    env.cmd(&["problems", "ack", "7"])
+        .assert()
+        .code(1)
+        .stderr(contains("no open problem #7"));
+    env.cmd(&["index", "-s", "dl"])
+        .assert()
+        .success()
+        .stderr(contains("open problem").not());
+    env.cmd(&["problems"])
+        .assert()
+        .success()
+        .stdout(contains("(acknowledged)"));
+
+    // A download that works again resolves it.
+    env.cmd(&["run", "-s", "dl2"]).assert().success();
+    env.cmd(&["problems"]).assert().success().stdout(
+        contains("no open problems")
+            .and(contains("recently resolved:"))
+            .and(contains("#1 yt-dlp can't extract videos (resolved")),
+    );
+
+    // A source that can't be read is a problem right away.
+    let text = fs::read_to_string(&config).unwrap()
+        + "\n[sources.broken]\nurl = \"https://www.youtube.com/playlist?list=PLdoesnotexist\"\n";
+    fs::write(&config, text).unwrap();
+    env.cmd(&["index", "-s", "broken", "--config", &config])
+        .assert()
+        .code(3);
+    env.cmd(&["problems"]).assert().success().stdout(
+        contains("#2 a source can't be read")
+            .and(contains("sources: broken"))
+            .and(contains("The playlist does not exist")),
+    );
+}

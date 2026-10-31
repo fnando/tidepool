@@ -310,10 +310,10 @@ fn schema_command_prints_the_committed_schema() {
 #[test]
 fn exit_codes() {
     let env = Env::new();
-    env.cmd(&["problems"])
+    env.cmd(&["cleanup"])
         .assert()
         .code(1)
-        .stderr(contains("not implemented yet (planned for M2)"));
+        .stderr(contains("not implemented yet (planned for M5)"));
     env.cmd(&["run"])
         .assert()
         .code(1)

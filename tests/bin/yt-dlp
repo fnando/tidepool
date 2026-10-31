@@ -9,6 +9,7 @@
 # TIDEPOOL_FAKE_YTDLP_LOG: append each call's arguments to this file.
 # TIDEPOOL_FAKE_YTDLP_SLEEP: seconds to wait before finishing a download.
 # TIDEPOOL_FAKE_THUMB_BASE: replaces https://i.ytimg.com in info JSON.
+# TIDEPOOL_FAKE_YTDLP_FAIL: every download and -J lookup fails with this message.
 fixtures="$(cd "$(dirname "$0")/.." && pwd)/fixtures/ytdlp"
 [ -n "${TIDEPOOL_FAKE_YTDLP_LOG:-}" ] && echo "$*" >> "$TIDEPOOL_FAKE_YTDLP_LOG"
 
@@ -22,6 +23,7 @@ info() { # print the info JSON for a video id
   fi
 }
 fail_if_error() {
+  if [ -n "${TIDEPOOL_FAKE_YTDLP_FAIL:-}" ]; then echo "$TIDEPOOL_FAKE_YTDLP_FAIL" >&2; exit 1; fi
   if [ -f "$fixtures/videos/$1.error" ]; then cat "$fixtures/videos/$1.error" >&2; exit 1; fi
 }
 

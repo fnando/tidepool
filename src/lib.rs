@@ -10,5 +10,6 @@ pub mod init;
 pub mod lock;
 pub mod paths;
 pub mod pipeline;
+pub mod problems;
 pub mod state;
 pub mod ytdlp;

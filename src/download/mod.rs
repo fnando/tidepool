@@ -50,6 +50,8 @@ pub struct Context {
 pub struct Options {
     pub limit: Option<usize>,
     pub concurrency: usize,
+    /// The run's clock: retry times, cutoffs, timestamps.
+    pub now: Timestamp,
 }
 
 /// What a run of downloads did.
@@ -84,6 +86,8 @@ enum Outcome {
 
 struct Finished {
     source_key: String,
+    /// How often this video failed before this attempt.
+    previous_attempts: i64,
     /// The source's format string, recorded for duplicate detection.
     format: String,
     video_id: String,
@@ -411,9 +415,10 @@ pub async fn download_all(
     cookies: impl Fn(&EffectiveSource) -> Option<PathBuf>,
     ctx: Context,
     options: Options,
+    tracker: &mut crate::problems::Tracker,
     out: &mut dyn Write,
-    now: Timestamp,
 ) -> Result<Summary, String> {
+    let now = options.now;
     let db = |e: rusqlite::Error| format!("state database: {e}");
     recover(state, &ctx.tmp_root)?;
 
@@ -472,6 +477,7 @@ pub async fn download_all(
                 .map(|d| d.title.clone())
                 .unwrap_or_else(|| job.queued.item.title.clone());
             Some(Finished {
+                previous_attempts: job.queued.attempts,
                 source_key: job.queued.source_key,
                 format: job.source.format.clone(),
                 video_id: job.queued.video_id,
@@ -489,7 +495,7 @@ pub async fn download_all(
             finished = tasks.join_next() => {
                 let Some(finished) = finished else { break };
                 let Ok(Some(f)) = finished else { continue };
-                record(state, &f, now, &mut summary, out).map_err(db)?;
+                record(state, &f, now, &mut summary, tracker, out).map_err(db)?;
             }
             code = &mut signal => {
                 // Stop yt-dlp gracefully and wait for every task, so nothing
@@ -510,6 +516,7 @@ fn record(
     f: &Finished,
     now: Timestamp,
     summary: &mut Summary,
+    tracker: &mut crate::problems::Tracker,
     out: &mut dyn Write,
 ) -> rusqlite::Result<()> {
     if let Some(details) = &f.details {
@@ -531,6 +538,7 @@ fn record(
                 now,
             )?;
             summary.downloaded += 1;
+            tracker.download_succeeded();
             summary.bytes += media_bytes;
             let how = if *linked {
                 "linked from another source"
@@ -560,6 +568,7 @@ fn record(
                 now,
             )?;
             summary.failed += 1;
+            tracker.download_failed(&f.source_key, &failure.message, f.previous_attempts);
             if failure.permanent {
                 tracing::warn!(
                     "{}: “{}” is unavailable: {}",

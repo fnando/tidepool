@@ -249,6 +249,32 @@ reuses that file instead of downloading it again (`library.duplicates`):
 | `"copy"` | A full copy |
 | `"download"` | Download it again |
 
+### Problems
+
+Some failures aren't about one video: an outdated yt-dlp that can't read
+YouTube anymore, YouTube asking to confirm you're not a bot, a playlist that
+was deleted. When tidepool runs into one of these repeatedly, it keeps a note
+and shows it the next time you use tidepool, even if the failure happened in
+a cron job:
+
+```
+tidepool problem #1 yt-dlp can't extract videos
+   seen 4 times, 2026-10-31 12:00 UTC → 2026-10-31 18:00 UTC, yt-dlp 2026.10.01
+   sources: lofi
+   last error: Signature extraction failed: Some formats may be missing
+   hint: yt-dlp 2026.10.01 may be outdated; tidepool checks for a newer yt-dlp right away; failed videos are retried on later runs
+   (`tidepool problems` lists them; `tidepool problems ack 1` hides this one)
+```
+
+After that, commands only remind you with one line ("1 open problem"). A
+problem goes away by itself once the same kind of work succeeds again, for
+example after yt-dlp is updated.
+
+| Command | What it does |
+| --- | --- |
+| `tidepool problems` | List open problems, with hints, and recently resolved ones |
+| `tidepool problems ack <id>` | Hide a problem until it happens again |
+
 ### Testing your filters
 
 `include` and `exclude` rules decide which videos are kept. They're regular
