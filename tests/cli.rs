@@ -392,48 +392,147 @@ fn init_creates_config_and_state() {
 }
 
 #[test]
-fn init_never_overwrites() {
+fn init_never_overwrites_without_force() {
     let env = Env::new();
     env.cmd(&["init"]).assert().success();
     let file = env.path("config/tidepool/config.toml");
     fs::write(&file, "# my edits\n").unwrap();
 
-    // A stored config is never replaced, even with --force or another file.
-    let elsewhere = env.path("elsewhere.toml").display().to_string();
-    for args in [
-        &["init"][..],
-        &["init", "--force"],
-        &["init", "--config", &elsewhere],
-    ] {
-        env.cmd(args)
-            .assert()
-            .code(1)
-            .stderr(contains("tidepool already has a config (revision 1)"));
-    }
-    assert!(!env.path("elsewhere.toml").exists());
+    // Stored config and a file: nothing is replaced without --force.
+    env.cmd(&["init"]).assert().code(1).stderr(
+        contains("tidepool already has a config (revision 1)").and(contains("pass --force")),
+    );
+    assert_eq!(fs::read_to_string(&file).unwrap(), "# my edits\n");
 
-    // Without a stored config, an existing file still needs --force.
+    // No stored config, but a file: still not replaced.
     fs::remove_dir_all(env.path("data")).unwrap();
+    env.cmd(&["init"]).assert().code(1).stderr(
+        contains("already exists")
+            .and(contains(format!(
+                "tidepool config import {}",
+                file.display()
+            )))
+            .and(contains("pass --force")),
+    );
+    assert!(!env.path("data/tidepool/state.db").exists());
+    assert_eq!(fs::read_to_string(&file).unwrap(), "# my edits\n");
+}
+
+#[test]
+fn init_writes_the_stored_config_when_the_file_is_missing() {
+    let env = Env::new();
+    let file = env.write_config("c.toml", "");
+    env.cmd(&["config", "import", &file]).assert().success();
+    let stored = fs::read_to_string(&file).unwrap();
+    let target = env.path("config/tidepool/config.toml");
     env.cmd(&["init"])
         .assert()
-        .code(1)
-        .stderr(contains("already exists").and(contains("pass --force to replace it")));
-    assert!(!env.path("data/tidepool/state.db").exists());
-
-    // --force keeps the old file as .bak.
-    env.cmd(&["init", "--force"])
+        .success()
+        .stdout(contains(format!(
+            "Wrote the stored config (revision 1) to {}",
+            target.display()
+        )));
+    assert_eq!(
+        fs::read_to_string(&target).unwrap(),
+        stored,
+        "secrets included: it's your own file"
+    );
+    let mode = fs::metadata(&target).unwrap().permissions().mode() & 0o777;
+    assert_eq!(mode, 0o600);
+    env.cmd(&["config", "history"])
         .assert()
         .success()
-        .stdout(contains("Sync once: tidepool run\n"));
-    assert_eq!(
-        fs::read_to_string(env.path("config/tidepool/config.toml.bak")).unwrap(),
-        "# my edits\n"
+        .stdout(contains("*    1  ").and(contains("     2  ").not()));
+}
+
+fn backups(dir: &Path) -> Vec<(String, String)> {
+    let mut found: Vec<(String, String)> = fs::read_dir(dir)
+        .unwrap()
+        .map(|e| e.unwrap().path())
+        .filter(|p| p.extension().is_some_and(|e| e == "bak"))
+        .map(|p| {
+            (
+                p.file_name().unwrap().to_string_lossy().into_owned(),
+                fs::read_to_string(&p).unwrap(),
+            )
+        })
+        .collect();
+    found.sort();
+    found
+}
+
+#[test]
+fn init_force_backs_up_and_replaces_the_file() {
+    let env = Env::new();
+    env.cmd(&["init"]).assert().success();
+    let dir = env.path("config/tidepool");
+    let file = dir.join("config.toml");
+    fs::write(
+        &file,
+        "# my edits\n[category.default.youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n",
+    )
+    .unwrap();
+    env.cmd(&["config", "import"]).assert().success();
+
+    let assert = env.cmd(&["init", "--force"]).assert().success();
+    let stdout = String::from_utf8(assert.get_output().stdout.clone()).unwrap();
+    let found = backups(&dir);
+    assert_eq!(found.len(), 1, "{found:?}");
+    let (name, content) = &found[0];
+    assert!(content.starts_with("# my edits"));
+    // config.<UTC timestamp>.bak, e.g. config.20261031T213045Z.bak
+    let stamp = name
+        .strip_prefix("config.")
+        .and_then(|n| n.strip_suffix(".bak"))
+        .unwrap();
+    assert!(
+        stamp.len() == 16 && stamp.as_bytes()[8] == b'T' && stamp.ends_with('Z'),
+        "{name}"
+    );
+    for expected in [
+        format!("Backed up {} to {}", file.display(), dir.join(name).display()),
+        format!("Wrote a fresh config to {}", file.display()),
+        "-# my edits".to_string(),
+        "+version = 1".to_string(),
+        "-api_key = \"AIza…x1Qw\"".to_string(),
+        "The stored config (revision 2) is unchanged; apply the new file with `tidepool config import`".to_string(),
+    ] {
+        assert!(stdout.contains(&expected), "missing {expected:?} in:\n{stdout}");
+    }
+    assert!(!stdout.contains("1234567890"), "secrets masked in the diff");
+    assert!(
+        !stdout.contains('\u{1b}'),
+        "no colours when stdout isn't a terminal"
     );
     assert!(
         fs::read_to_string(&file)
             .unwrap()
             .contains("[sources.sample]")
     );
+    env.cmd(&["config", "history"])
+        .assert()
+        .success()
+        .stdout(contains("*    2  ").and(contains("     3  ").not()));
+    // Until it's imported, runs stop at the drift check.
+    env.cmd(&["filter", "test", "x", "-s", "sample"])
+        .assert()
+        .code(1)
+        .stderr(contains("aren't applied yet"));
+
+    // Again in the same second: a numbered backup, never overwriting the first.
+    fs::write(&file, "# more edits\n").unwrap();
+    env.cmd(&["init", "--force"]).assert().success();
+    let found = backups(&dir);
+    assert_eq!(found.len(), 2, "{found:?}");
+    assert!(found.iter().any(|(_, c)| c == "# more edits\n"));
+
+    // With no stored config, --force also stores the new file as revision 1.
+    fs::remove_dir_all(env.path("data")).unwrap();
+    env.cmd(&["init", "--force"])
+        .assert()
+        .success()
+        .stdout(contains("Stored it as config revision 1\n"));
+    assert_eq!(backups(&dir).len(), 3);
 }
 
 #[test]

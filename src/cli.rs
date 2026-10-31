@@ -312,7 +312,9 @@ pub enum YtdlpCmd {
 /// (default ~/.config/tidepool/config.toml).
 #[derive(Debug, Args)]
 pub struct InitArgs {
-    /// Replace an existing config file (kept as <file>.bak)
+    /// Replace an existing config file with a fresh one, backing it up first
+    /// (as <name>.<UTC timestamp>.bak). A stored config stays as it is until
+    /// you run `tidepool config import`
     #[arg(long)]
     pub force: bool,
     /// Print the config file it would write; create nothing

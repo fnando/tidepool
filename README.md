@@ -59,10 +59,39 @@ the best quality available by default, which for this video is 4K (about
 | --- | --- |
 | `--config <path>` | Write the config file somewhere else |
 | `--print` | Only show the config file it would write; create nothing |
-| `--force` | Replace an existing config file (the old one is kept as `config.toml.bak`) |
+| `--force` | Replace an existing config file with a fresh one, keeping a backup |
 
 `init` never overwrites anything by accident: if the config file already
 exists, it stops and suggests what to do instead.
+
+With `--force`, the old file is first saved next to it as
+`config.<time>.bak` (for example `config.20261031T213045Z.bak`, in UTC; an
+earlier backup is never overwritten). tidepool then shows both paths and what
+changed, with API keys hidden:
+
+```console
+$ tidepool init --force
+Backed up ~/.config/tidepool/config.toml to ~/.config/tidepool/config.20261031T213045Z.bak
+Wrote a fresh config to ~/.config/tidepool/config.toml
+
+--- ~/.config/tidepool/config.20261031T213045Z.bak
++++ ~/.config/tidepool/config.toml
+@@ -9,7 +9,7 @@
+ version = 1
+ 
+ [general]                           # settings for the whole run
+-concurrency = 4                    # parallel yt-dlp downloads
++# concurrency = 2                   # parallel yt-dlp downloads
+ ...
+
+The stored config (revision 2) is unchanged; apply the new file with `tidepool config import` (until then, runs stop at the config check)
+```
+
+The settings tidepool uses don't change until you run `tidepool config import`.
+If tidepool has no settings stored yet, the fresh file is applied right away.
+
+If you deleted your config file, `tidepool init` writes back the settings
+tidepool is using, so you can keep editing them.
 
 ## Configuration
 

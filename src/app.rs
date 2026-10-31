@@ -911,15 +911,63 @@ impl App<'_> {
             return Ok(exit::OK);
         }
 
-        self.ensure_no_config_yet()?;
+        let stored = self.stored_config()?;
         if path.exists() && !args.force {
-            bail!(
-                "{name} already exists; import it with `tidepool config import {name}`, \
-                 or pass --force to replace it (the old file is kept as {name}.bak)"
-            );
+            match &stored {
+                Some(current) => bail!(
+                    "tidepool already has a config (revision {}) and {name} exists; \
+                     to replace the file with a fresh one (keeping a backup), pass --force",
+                    current.rev
+                ),
+                None => bail!(
+                    "{name} already exists; import it with `tidepool config import {name}`, \
+                     or pass --force to replace it with a fresh one (keeping a backup)"
+                ),
+            }
         }
 
-        write_private_file(&path, &text, args.force)?;
+        if !path.exists()
+            && let Some(current) = &stored
+        {
+            write_private_file(&path, &current.toml)?;
+            writeln!(
+                out,
+                "Wrote the stored config (revision {rev}) to {name}\n\
+                 It's the config tidepool already uses; edit it and apply your changes with \
+                 `tidepool config import{import_arg}`",
+                rev = current.rev,
+                import_arg = self.import_arg(&path),
+            )?;
+            return Ok(exit::OK);
+        }
+
+        let replaced = if path.exists() {
+            let old =
+                std::fs::read_to_string(&path).with_context(|| format!("cannot read {name}"))?;
+            let backup = write_backup(&path, &old, jiff::Timestamp::now())?;
+            replace_private_file(&path, &text)?;
+            let backup_name = Self::display_path(&backup);
+            writeln!(out, "Backed up {name} to {backup_name}")?;
+            writeln!(out, "Wrote a fresh config to {name}\n")?;
+            let diff = text_diff(&mask_toml(&old), &mask_toml(&text), &backup_name, &name);
+            write!(out, "{}", colorize_diff(&diff))?;
+            true
+        } else {
+            write_private_file(&path, &text)?;
+            false
+        };
+
+        if let Some(current) = &stored {
+            writeln!(
+                out,
+                "\nThe stored config (revision {rev}) is unchanged; apply the new file with \
+                 `tidepool config import{import_arg}` (until then, runs stop at the config check)",
+                rev = current.rev,
+                import_arg = self.import_arg(&path),
+            )?;
+            return Ok(exit::OK);
+        }
+
         let state = self.open_state()?;
         let _lock = self.lock()?;
         let rev = ConfigStore::new(&state.conn)
@@ -927,23 +975,31 @@ impl App<'_> {
             .rev();
         let errors = self.report(check_environment(&loaded.config, &self.dirs, Some(&path)));
 
+        if replaced {
+            writeln!(out)?;
+        } else {
+            writeln!(out, "Created {name}")?;
+        }
         self.print_next_steps(&name, rev, &loaded, errors, out)?;
         Ok(exit::OK)
     }
 
-    /// `init` never touches a config that's already stored.
-    fn ensure_no_config_yet(&self) -> anyhow::Result<()> {
+    /// The config revision in use, if any.
+    fn stored_config(&self) -> anyhow::Result<Option<Revision>> {
         if !self.paths.state_db.exists() {
-            return Ok(());
+            return Ok(None);
         }
         let state = self.open_state()?;
-        if let Some(current) = ConfigStore::new(&state.conn).current()? {
-            bail!(
-                "tidepool already has a config (revision {}); change it with `tidepool config import <path>`",
-                current.rev
-            );
+        Ok(ConfigStore::new(&state.conn).current()?)
+    }
+
+    /// The path argument `config import` needs for `path` (none for the default file).
+    fn import_arg(&self, path: &Path) -> String {
+        if path == self.dirs.default_config_file() {
+            String::new()
+        } else {
+            format!(" {}", Self::display_path(path))
         }
-        Ok(())
     }
 
     /// The file `config import` reads: the given path, else `--config`, else
@@ -971,7 +1027,6 @@ impl App<'_> {
         out: &mut dyn Write,
     ) -> anyhow::Result<()> {
         let config = &loaded.config;
-        writeln!(out, "Created {name}")?;
         writeln!(out, "Stored it as config revision {rev}")?;
         let default =
             crate::config::merge::category_settings(config, crate::config::merge::DEFAULT_CATEGORY);
@@ -988,11 +1043,7 @@ impl App<'_> {
              \x20 2. Apply your changes: tidepool config import{import_path}\n\
              \x20 3. Sync once: tidepool run\n\
              \x20    Or keep syncing every {interval} with the web UI at http://{listen}: tidepool run --daemon",
-            import_path = if Path::new(name) == self.dirs.default_config_file() {
-                String::new()
-            } else {
-                format!(" {name}")
-            },
+            import_path = self.import_arg(Path::new(name)),
             interval = crate::config::types::format_duration(
                 config.schedule.interval.0.unwrap_or_default()
             ),
@@ -1352,19 +1403,12 @@ pub fn resolve_source<'a>(
     })
 }
 
-/// Write `text` to `path` with owner-only permissions. With `replace`, an
-/// existing file is moved to `<path>.bak` first.
-fn write_private_file(path: &Path, text: &str, replace: bool) -> anyhow::Result<()> {
+/// Write `text` to a new file at `path` with owner-only permissions.
+fn write_private_file(path: &Path, text: &str) -> anyhow::Result<()> {
     use std::os::unix::fs::OpenOptionsExt;
 
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir).with_context(|| format!("cannot create {}", dir.display()))?;
-    }
-    if replace && path.exists() {
-        let mut backup = path.as_os_str().to_owned();
-        backup.push(".bak");
-        std::fs::rename(path, &backup)
-            .with_context(|| format!("cannot move {} aside", path.display()))?;
     }
     let mut file = std::fs::OpenOptions::new()
         .write(true)
@@ -1374,6 +1418,70 @@ fn write_private_file(path: &Path, text: &str, replace: bool) -> anyhow::Result<
         .with_context(|| format!("cannot create {}", path.display()))?;
     file.write_all(text.as_bytes())?;
     Ok(())
+}
+
+/// Replace the file at `path` with `text` (owner-only), through a rename.
+fn replace_private_file(path: &Path, text: &str) -> anyhow::Result<()> {
+    let mut tmp = path.as_os_str().to_owned();
+    tmp.push(".tmp");
+    let tmp = PathBuf::from(tmp);
+    let _ = std::fs::remove_file(&tmp);
+    write_private_file(&tmp, text)?;
+    std::fs::rename(&tmp, path).with_context(|| format!("cannot replace {}", path.display()))?;
+    Ok(())
+}
+
+/// Save `text` next to `path` as `<stem>.<UTC timestamp>.bak`, numbering it
+/// (`-2`, `-3`, …) rather than overwriting an earlier backup.
+fn write_backup(path: &Path, text: &str, now: jiff::Timestamp) -> anyhow::Result<PathBuf> {
+    let stem = path
+        .file_stem()
+        .map(|s| s.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "config".into());
+    let stamp = now.strftime("%Y%m%dT%H%M%SZ").to_string();
+    for n in 1.. {
+        let suffix = if n == 1 {
+            String::new()
+        } else {
+            format!("-{n}")
+        };
+        let backup = path.with_file_name(format!("{stem}.{stamp}{suffix}.bak"));
+        match write_private_file(&backup, text) {
+            Ok(()) => return Ok(backup),
+            Err(e)
+                if e.root_cause()
+                    .downcast_ref::<std::io::Error>()
+                    .is_some_and(|e| e.kind() == std::io::ErrorKind::AlreadyExists) => {}
+            Err(e) => return Err(e),
+        }
+    }
+    unreachable!()
+}
+
+/// Colour a unified diff when stdout is a terminal (and `NO_COLOR` is unset).
+fn colorize_diff(diff: &str) -> String {
+    use std::io::IsTerminal;
+    if !std::io::stdout().is_terminal() || std::env::var_os("NO_COLOR").is_some() {
+        return diff.to_string();
+    }
+    diff.split_inclusive('\n')
+        .map(|line| {
+            let color = if line.starts_with("+++") || line.starts_with("---") {
+                "1"
+            } else if line.starts_with('+') {
+                "32"
+            } else if line.starts_with('-') {
+                "31"
+            } else if line.starts_with("@@") {
+                "36"
+            } else {
+                return line.to_string();
+            };
+            let body = line.trim_end_matches('\n');
+            let end = &line[body.len()..];
+            format!("\x1b[{color}m{body}\x1b[0m{end}")
+        })
+        .collect()
 }
 
 /// `-v`: which yt-dlp runs.
