@@ -2,10 +2,10 @@
 source: tests/config_validation.rs
 expression: err
 ---
-source.toml:1:1 playlists.missing: missing required key "source"
-source.toml:5:10 playlists.no_list.source: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" is not a playlist URL: it must contain list=<playlist id>
-source.toml:8:10 playlists.bare_id.source: "PLcccccccc" is not a URL; use the playlist's URL (e.g. "https://www.youtube.com/playlist?list=PLxxxxxxxx")
-source.toml:11:10 playlists.not_youtube.source: "https://example.com/playlist?list=PLdddddddd" is not a YouTube URL (e.g. "https://www.youtube.com/playlist?list=PLxxxxxxxx")
-source.toml:13:1 playlists.old_keys: missing required key "source"
-source.toml:14:1 playlists.old_keys.url: unknown key "url"
-source.toml:15:1 playlists.old_keys.id: unknown key "id"
+source.toml:1:1 sources.missing: missing required key "url"
+source.toml:5:7 sources.no_list.url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" is not a playlist URL: it must contain list=<playlist id>
+source.toml:8:7 sources.bare_id.url: "PLcccccccc" is not a URL; use the playlist's URL (e.g. "https://www.youtube.com/playlist?list=PLxxxxxxxx")
+source.toml:11:7 sources.not_youtube.url: "https://example.com/playlist?list=PLdddddddd" is not a YouTube URL (e.g. "https://www.youtube.com/playlist?list=PLxxxxxxxx")
+source.toml:13:1 sources.old_keys: missing required key "url"
+source.toml:14:1 sources.old_keys.source: unknown key "source"
+source.toml:15:1 sources.old_keys.id: unknown key "id"

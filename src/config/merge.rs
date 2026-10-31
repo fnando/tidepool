@@ -1,9 +1,9 @@
-//! Merge `[defaults]` into each playlist: the effective, fully-resolved options.
+//! Merge `[defaults]` into each source: the effective, fully-resolved options.
 //!
-//! - Scalars and tables: playlist value wins, then `[defaults]`, then built-in
+//! - Scalars and tables: source value wins, then `[defaults]`, then built-in
 //!   defaults. `embed` and `cleanup` merge key by key.
 //! - Lists (`include`, `exclude`, `hooks`, `ytdlp_args`, `match_fields`): the
-//!   playlist replaces defaults, unless `inherit_rules` (include/exclude) or
+//!   source replaces defaults, unless `inherit_rules` (include/exclude) or
 //!   `inherit_hooks` (hooks) concatenates them.
 
 use std::collections::BTreeMap;
@@ -11,26 +11,26 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 
 use super::duration::Cutoff;
-use super::schema::playlist_id_from_source;
+use super::schema::source_id_from_url;
 use super::types::*;
 
-/// Built-in option values, used when neither the playlist nor `[defaults]` sets one.
+/// Built-in option values, used when neither the source nor `[defaults]` sets one.
 pub mod builtin {
     pub const FORMAT: &str = "bv*+ba/b";
     pub const MERGE_OUTPUT_FORMAT: &str = "mkv";
-    pub const OUTPUT: &str = "{playlist_dir}/{upload_date} - {title} [{id}]";
+    pub const OUTPUT: &str = "{source_dir}/{upload_date} - {title} [{id}]";
     pub const COVER_NAME: &str = "{title}-poster";
 }
 
-/// One playlist with every option resolved.
+/// One source with every option resolved.
 #[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct EffectivePlaylist {
+pub struct EffectiveSource {
     #[serde(skip)]
     pub key: String,
-    /// YouTube playlist id, from the `list=` parameter of `source`.
+    /// YouTube playlist id, from the `list=` parameter of `url`.
     #[serde(skip)]
     pub id: String,
-    pub source: String,
+    pub url: String,
     pub dir: String,
     pub enabled: bool,
     pub format: String,
@@ -70,23 +70,23 @@ pub struct Cleanup {
     pub max_age: OptionalDuration,
     pub max_size: OptionalSize,
     pub order: CleanupOrder,
-    pub removed_from_playlist: RemovedFromPlaylist,
+    pub removed_from_source: RemovedFromSource,
     pub keep: CleanupKeep,
     pub marker_file: String,
     pub keep_latest: u32,
 }
 
-/// Resolve every playlist in `config`, in key order.
-pub fn effective_playlists(config: &Config) -> Vec<EffectivePlaylist> {
+/// Resolve every source in `config`, in name order.
+pub fn effective_sources(config: &Config) -> Vec<EffectiveSource> {
     config
-        .playlists
+        .sources
         .iter()
-        .map(|(key, playlist)| effective_playlist(key, playlist, &config.defaults))
+        .map(|(key, source)| effective_source(key, source, &config.defaults))
         .collect()
 }
 
-/// Resolve one playlist against `[defaults]`.
-pub fn effective_playlist(key: &str, p: &PlaylistConfig, d: &Defaults) -> EffectivePlaylist {
+/// Resolve one source against `[defaults]`.
+pub fn effective_source(key: &str, p: &SourceConfig, d: &Defaults) -> EffectiveSource {
     macro_rules! pick {
         ($field:ident, $default:expr) => {
             p.$field
@@ -105,12 +105,12 @@ pub fn effective_playlist(key: &str, p: &PlaylistConfig, d: &Defaults) -> Effect
 
     let inherit_rules = p.inherit_rules.unwrap_or(false);
     let inherit_hooks = p.inherit_hooks.unwrap_or(false);
-    let id = playlist_id_from_source(&p.source).unwrap_or_default();
+    let id = source_id_from_url(&p.url).unwrap_or_default();
 
-    EffectivePlaylist {
+    EffectiveSource {
         key: key.to_string(),
         id,
-        source: p.source.clone(),
+        url: p.url.clone(),
         dir: p.dir.clone().unwrap_or_else(|| key.to_string()),
         enabled: p.enabled.unwrap_or(true),
         format: pick!(format, builtin::FORMAT.into()),
@@ -172,7 +172,7 @@ fn merge_cleanup(p: Option<&CleanupOptions>, d: Option<&CleanupOptions>) -> Clea
         max_age: pick!(max_age, OptionalDuration(None)),
         max_size: pick!(max_size, OptionalSize::default()),
         order: pick!(order, CleanupOrder::OldestDownloaded),
-        removed_from_playlist: pick!(removed_from_playlist, RemovedFromPlaylist::Keep),
+        removed_from_source: pick!(removed_from_source, RemovedFromSource::Keep),
         keep: pick!(keep, CleanupKeep::Metadata),
         marker_file: pick!(marker_file, String::new()),
         keep_latest: pick!(keep_latest, 0),
@@ -188,8 +188,8 @@ mod tests {
         toml::from_str(toml).unwrap()
     }
 
-    fn only(toml: &str) -> EffectivePlaylist {
-        let mut all = effective_playlists(&config(toml));
+    fn only(toml: &str) -> EffectiveSource {
+        let mut all = effective_sources(&config(toml));
         assert_eq!(all.len(), 1);
         all.remove(0)
     }
@@ -200,9 +200,9 @@ mod tests {
 
     #[test]
     fn falls_back_to_builtin_defaults() {
-        let p = only("[playlists.lofi]\nsource = 'https://www.youtube.com/playlist?list=PLx'");
+        let p = only("[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLx'");
         assert_eq!(p.id, "PLx");
-        assert_eq!(p.source, "https://www.youtube.com/playlist?list=PLx");
+        assert_eq!(p.url, "https://www.youtube.com/playlist?list=PLx");
         assert_eq!(p.dir, "lofi");
         assert!(p.enabled);
         assert_eq!(p.format, builtin::FORMAT);
@@ -217,15 +217,15 @@ mod tests {
 
     #[test]
     fn extracts_id_from_url() {
-        let p = only("[playlists.a]\nsource = 'https://www.youtube.com/watch?v=x&list=PLabc'");
+        let p = only("[sources.a]\nurl = 'https://www.youtube.com/watch?v=x&list=PLabc'");
         assert_eq!(p.id, "PLabc");
     }
 
     #[test]
-    fn playlist_scalars_override_defaults() {
+    fn source_scalars_override_defaults() {
         let p = only(
             "[defaults]\nformat = 'a'\ncutoff = '30d'\nthumbnail_format = 'webp'\n\
-             [playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\nformat = 'b'\ncutoff = 'none'",
+             [sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\nformat = 'b'\ncutoff = 'none'",
         );
         assert_eq!(p.format, "b");
         assert_eq!(p.cutoff.value, Cutoff::None);
@@ -236,7 +236,7 @@ mod tests {
     fn lists_replace_unless_inherited() {
         let base = "[defaults]\ninclude = ['d1']\nexclude = ['dx']\nhooks = ['h1']\n";
         let p = only(&format!(
-            "{base}[playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['p1']\nhooks = ['h2']"
+            "{base}[sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['p1']\nhooks = ['h2']"
         ));
         assert_eq!(p.include, vec![pat("p1")]);
         assert_eq!(
@@ -247,7 +247,7 @@ mod tests {
         assert_eq!(p.hooks, vec!["h2"]);
 
         let p = only(&format!(
-            "{base}[playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['p1']\nexclude = ['px']\nhooks = ['h2']\n\
+            "{base}[sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['p1']\nexclude = ['px']\nhooks = ['h2']\n\
              inherit_rules = true\ninherit_hooks = true"
         ));
         assert_eq!(p.include, vec![pat("d1"), pat("p1")]);
@@ -259,8 +259,8 @@ mod tests {
     fn cleanup_and_embed_merge_key_by_key() {
         let p = only(
             "[defaults.cleanup]\nmax_items = 10\nmax_age = '30d'\n[defaults.embed]\ncover = true\n\
-             [playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\n[playlists.x.cleanup]\nmax_items = 50\n\
-             [playlists.x.embed]\nmetadata = true",
+             [sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\n[sources.x.cleanup]\nmax_items = 50\n\
+             [sources.x.embed]\nmetadata = true",
         );
         assert_eq!(p.cleanup.max_items, 50);
         assert_eq!(

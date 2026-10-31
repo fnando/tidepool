@@ -1,4 +1,4 @@
-//! Include/exclude rules, compiled once per playlist.
+//! Include/exclude rules, compiled once per source.
 //!
 //! An item is kept when it matches at least one include rule (or the include
 //! list is empty) and no exclude rule. Exclude always wins.
@@ -7,7 +7,7 @@ use std::fmt;
 
 use fancy_regex::{Regex, RegexBuilder};
 
-use crate::config::merge::EffectivePlaylist;
+use crate::config::merge::EffectiveSource;
 use crate::config::{Rule as RuleConfig, RuleField};
 
 /// The fields of an item rules can look at. `None` = not known yet (e.g. the
@@ -113,7 +113,7 @@ pub enum Decision {
     },
 }
 
-/// A playlist's compiled include/exclude rules.
+/// A source's compiled include/exclude rules.
 #[derive(Debug, Clone)]
 pub struct RuleSet {
     pub include: Vec<Rule>,
@@ -121,21 +121,21 @@ pub struct RuleSet {
 }
 
 impl RuleSet {
-    /// Compile a playlist's rules. Patterns were validated at config load.
-    pub fn compile(playlist: &EffectivePlaylist, backtrack_limit: usize) -> Result<Self, String> {
+    /// Compile a source's rules. Patterns were validated at config load.
+    pub fn compile(effective: &EffectiveSource, backtrack_limit: usize) -> Result<Self, String> {
         let compile = |list, rules: &[RuleConfig]| {
             rules
                 .iter()
                 .enumerate()
                 .map(|(index, rule)| {
                     let (fields, source) = match rule {
-                        RuleConfig::Pattern(p) => (playlist.match_fields.clone(), p.clone()),
+                        RuleConfig::Pattern(p) => (effective.match_fields.clone(), p.clone()),
                         RuleConfig::Field(f) => (vec![f.field], f.pattern.clone()),
                     };
                     let re = RegexBuilder::new(&source)
                         .backtrack_limit(backtrack_limit)
                         .build()
-                        .map_err(|e| format!("playlists.{}.{list}[{index}]: {e}", playlist.key))?;
+                        .map_err(|e| format!("sources.{}.{list}[{index}]: {e}", effective.key))?;
                     Ok(Rule {
                         list,
                         index,
@@ -147,8 +147,8 @@ impl RuleSet {
                 .collect::<Result<Vec<_>, String>>()
         };
         Ok(Self {
-            include: compile(List::Include, &playlist.include)?,
-            exclude: compile(List::Exclude, &playlist.exclude)?,
+            include: compile(List::Include, &effective.include)?,
+            exclude: compile(List::Exclude, &effective.exclude)?,
         })
     }
 
@@ -204,15 +204,15 @@ impl RuleSet {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::merge::effective_playlists;
+    use crate::config::merge::effective_sources;
     use proptest::prelude::*;
 
     fn rules(toml: &str) -> RuleSet {
         let config: crate::config::Config = toml::from_str(&format!(
-            "[playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\n{toml}"
+            "[sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\n{toml}"
         ))
         .unwrap();
-        RuleSet::compile(&effective_playlists(&config)[0], 1_000_000).unwrap()
+        RuleSet::compile(&effective_sources(&config)[0], 1_000_000).unwrap()
     }
 
     fn title(t: &str) -> Fields<'_> {
@@ -303,8 +303,8 @@ include = [{ field = "channel", pattern = '^Lofi Girl$' }, 'chill']"#,
     #[test]
     fn backtrack_limit_is_a_filter_error() {
         let config: crate::config::Config =
-            toml::from_str("[playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['(a|a)*\\1b']").unwrap();
-        let set = RuleSet::compile(&effective_playlists(&config)[0], 100).unwrap();
+            toml::from_str("[sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['(a|a)*\\1b']").unwrap();
+        let set = RuleSet::compile(&effective_sources(&config)[0], 100).unwrap();
         let decision = set.decide(&title(&"a".repeat(40)));
         assert!(
             matches!(

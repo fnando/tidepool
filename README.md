@@ -3,7 +3,7 @@
 tidepool keeps local copies of YouTube playlists in sync. For each video it
 saves the video file, its details (title, channel, description, …) and the
 largest available cover image. Rules decide which videos to keep, and limits
-keep each playlist's folder from growing forever.
+keep each folder from growing forever.
 
 > **Early days.** You can set up tidepool, write and check your configuration,
 > and test your filters. Downloading isn't available yet.
@@ -36,8 +36,8 @@ tidepool to use it, and tells you what to do next. Nothing is asked.
 
 The config file lists every setting with a short explanation. Settings you
 haven't changed are commented out and show their default value, so the file
-doubles as a reference. It comes with a sample playlist holding one short
-video, so you can see tidepool work before adding your own playlists.
+doubles as a reference. It comes with a sample source holding one short
+video, so you can see tidepool work before adding your own.
 
 | Option | Meaning |
 | --- | --- |
@@ -60,22 +60,25 @@ any text editor. Its sections:
 | `[youtube]` | Your YouTube API key (optional) |
 | `[schedule]` | How often to sync in the background |
 | `[server]` | The web interface |
-| `[defaults]` | Settings every playlist uses unless it sets its own |
+| `[defaults]` | Settings every source uses unless it sets its own |
 | `[hooks.<name>]` | Your own scripts to run after each download |
-| `[playlists.<name>]` | The playlists to keep in sync |
+| `[sources.<name>]` | What to keep in sync |
 
-A minimal playlist looks like this:
+A *source* is something to keep in sync: for now, a YouTube playlist. A
+minimal one looks like this:
 
 ```toml
-[playlists.lofi]
-source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+[sources.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
 ```
 
-`source` is the playlist's address, as you'd copy it from your browser. A link
-to a video inside a playlist works too, as long as it contains `list=`.
+`url` is the playlist's address, as you'd copy it from your browser. A link to
+a video inside a playlist works too, as long as it contains `list=`. The name
+(`lofi` here) is up to you: lowercase letters, digits, `-` and `_`. It's also
+the name of the source's folder, unless you set `dir`.
 
-Any setting from `[defaults]` can be changed for a single playlist by adding it
-under that playlist. See [`examples/config.toml`](examples/config.toml) for a
+Any setting from `[defaults]` can be changed for a single source by adding it
+under that source. See [`examples/config.toml`](examples/config.toml) for a
 complete example.
 
 ### Applying changes
@@ -91,7 +94,7 @@ Or add `--config <path>` to any command; the file is applied first if it
 changed. This is handy when you keep the file in a dotfiles repository:
 
 ```sh
-tidepool filter test "Lofi LIVE radio" --playlist lofi --config ~/.config/tidepool/config.toml
+tidepool filter test "Lofi LIVE radio" --source lofi --config ~/.config/tidepool/config.toml
 ```
 
 ### Checking for mistakes
@@ -104,12 +107,12 @@ This shows every problem at once, with the line and column where it is:
 
 ```
 config.toml:2:1 library.concurency: unknown key "concurency"
-config.toml:20:12 playlists.lofi.cleanup.max_size: "20 gigs" is not a valid byte size (e.g. "20GiB", "500MB")
+config.toml:20:12 sources.lofi.cleanup.max_size: "20 gigs" is not a valid byte size (e.g. "20GiB", "500MB")
 ```
 
 It also checks that `ffmpeg` and yt-dlp are available and that the video
 folder is writable. Then it prints your settings with every default filled in,
-so you can see exactly what each playlist will do. A file with mistakes is
+so you can see exactly what each source will do. A file with mistakes is
 never applied.
 
 Editors that understand the `#:schema` line at the top of the file (for
@@ -142,21 +145,21 @@ applied.
 expressions, tested against the video title by default:
 
 ```toml
-[playlists.lofi]
-source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+[sources.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
 include = ['(?i)\blive\b']                 # only videos with "live" in the title
 exclude = ['(?i)\b(trailer|teaser)\b']     # but never trailers or teasers
 ```
 
 A video is kept when it matches at least one `include` rule (or there are
-none) and no `exclude` rule. Try a title against a playlist's rules:
+none) and no `exclude` rule. Try a title against a source's rules:
 
 ```sh
-tidepool filter test "Lofi LIVE radio" --playlist lofi
+tidepool filter test "Lofi LIVE radio" --source lofi
 ```
 
 ```
-playlist lofi (PLxxxxxxxx)
+source lofi (PLxxxxxxxx)
   include[0] "(?i)\\blive\\b" on title: match
   exclude[0] "(?i)\\b(trailer|teaser)\\b" on title: no match
 decision: keep (matches include[0])
@@ -200,7 +203,7 @@ token = "a long random secret"
 
 ### More than one library
 
-Each set of playlists with its own settings is a *library*. You get one called
+Each set of sources with its own settings is a *library*. You get one called
 `default`; add `--library <name>` to any command to use another. Each library
 has its own settings and history:
 
@@ -228,4 +231,4 @@ For scripts:
 | --- | --- |
 | 0 | Success |
 | 1 | Something went wrong (e.g. a config mistake); the message says what |
-| 2 | The command was used incorrectly (unknown option, unknown playlist) |
+| 2 | The command was used incorrectly (unknown option, unknown source) |

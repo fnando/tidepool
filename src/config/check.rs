@@ -8,7 +8,7 @@ use std::process::Command;
 use serde::Serialize;
 
 use super::diff::mask_secret;
-use super::merge::{EffectivePlaylist, effective_playlists};
+use super::merge::{EffectiveSource, effective_sources};
 use super::types::{
     Config, HookConfig, LibraryConfig, ScheduleConfig, ServerConfig, YoutubeConfig, YtdlpConfig,
 };
@@ -155,7 +155,7 @@ pub struct EffectiveConfig {
     pub schedule: ScheduleConfig,
     pub server: ServerConfig,
     pub hooks: BTreeMap<String, HookConfig>,
-    pub playlists: BTreeMap<String, EffectivePlaylist>,
+    pub sources: BTreeMap<String, EffectiveSource>,
 }
 
 #[derive(Debug, Serialize)]
@@ -185,7 +185,7 @@ impl EffectiveConfig {
             schedule: config.schedule.clone(),
             server,
             hooks: config.hooks.clone(),
-            playlists: effective_playlists(config)
+            sources: effective_sources(config)
                 .into_iter()
                 .map(|p| (p.key.clone(), p))
                 .collect(),
@@ -223,7 +223,7 @@ mod tests {
     fn effective_config_masks_keys_and_fills_defaults() {
         let config: Config = toml::from_str(
             "[youtube]\napi_key = 'AIzaSyD-1234567890x1Qw'\n[server]\ntoken = 'my-long-secret-token'\n\
-             [playlists.lofi]\nsource = 'https://www.youtube.com/playlist?list=PLx'",
+             [sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLx'",
         )
         .unwrap();
         let text = EffectiveConfig::new(&config, &dirs(), false).to_toml();
@@ -232,9 +232,9 @@ mod tests {
             "{text}"
         );
         assert!(text.contains("root = \"/d/tidepool/media\""), "{text}");
-        assert!(text.contains("[playlists.lofi]"), "{text}");
+        assert!(text.contains("[sources.lofi]"), "{text}");
         assert!(
-            text.contains("output = \"{playlist_dir}/{upload_date} - {title} [{id}]\""),
+            text.contains("output = \"{source_dir}/{upload_date} - {title} [{id}]\""),
             "{text}"
         );
         let shown = EffectiveConfig::new(&config, &dirs(), true).to_toml();

@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use std::path::{Component, Path};
 
 use super::load::Diagnostic;
-use super::merge::effective_playlist;
+use super::merge::effective_source;
 use super::types::Config;
 
 /// Run every semantic check.
@@ -39,31 +39,31 @@ fn check_hook_references(config: &Config, out: &mut Vec<Diagnostic>) {
         }
     };
     check("/defaults".into(), &config.defaults.hooks);
-    for (key, playlist) in &config.playlists {
-        check(format!("/playlists/{key}"), &playlist.hooks);
+    for (key, source) in &config.sources {
+        check(format!("/sources/{key}"), &source.hooks);
     }
 }
 
 fn check_unique_ids_and_dirs(config: &Config, out: &mut Vec<Diagnostic>) {
     let mut ids: BTreeMap<String, &str> = BTreeMap::new();
     let mut dirs: BTreeMap<String, &str> = BTreeMap::new();
-    for (key, playlist) in &config.playlists {
-        let effective = effective_playlist(key, playlist, &config.defaults);
-        let id_pointer = format!("/playlists/{key}/source");
+    for (key, source) in &config.sources {
+        let effective = effective_source(key, source, &config.defaults);
+        let id_pointer = format!("/sources/{key}/url");
         if let Some(other) = ids.insert(effective.id.clone(), key) {
             out.push(Diagnostic::error(
                 id_pointer,
                 format!(
-                    "playlist {} is already configured as playlists.{other}",
+                    "playlist {} is already used by sources.{other}",
                     effective.id
                 ),
             ));
         }
 
-        let dir_pointer = if playlist.dir.is_some() {
-            format!("/playlists/{key}/dir")
+        let dir_pointer = if source.dir.is_some() {
+            format!("/sources/{key}/dir")
         } else {
-            format!("/playlists/{key}")
+            format!("/sources/{key}")
         };
         match normalize_dir(&effective.dir) {
             None => out.push(Diagnostic::error(
@@ -77,7 +77,7 @@ fn check_unique_ids_and_dirs(config: &Config, out: &mut Vec<Diagnostic>) {
                 if let Some(other) = dirs.insert(normalized, key) {
                     out.push(Diagnostic::error(
                         dir_pointer,
-                        format!("dir {:?} is also used by playlists.{other}", effective.dir),
+                        format!("dir {:?} is also used by sources.{other}", effective.dir),
                     ));
                 }
             }
@@ -85,7 +85,7 @@ fn check_unique_ids_and_dirs(config: &Config, out: &mut Vec<Diagnostic>) {
     }
 }
 
-/// Normalize a playlist dir; `None` if it is absolute or escapes the root.
+/// Normalize a source dir; `None` if it is absolute or escapes the root.
 fn normalize_dir(dir: &str) -> Option<String> {
     let mut parts = Vec::new();
     for component in Path::new(dir).components() {
@@ -111,21 +111,21 @@ fn check_durations(config: &Config, out: &mut Vec<Diagnostic>) {
     {
         out.push(Diagnostic::error("/defaults/min_duration", message));
     }
-    for (key, playlist) in &config.playlists {
-        if playlist.min_duration.is_none() && playlist.max_duration.is_none() {
+    for (key, source) in &config.sources {
+        if source.min_duration.is_none() && source.max_duration.is_none() {
             continue; // already reported for [defaults]
         }
-        let effective = effective_playlist(key, playlist, d);
+        let effective = effective_source(key, source, d);
         if let (Some(min), Some(max)) = (effective.min_duration.0, effective.max_duration.0)
             && min > max
         {
-            let field = if playlist.min_duration.is_some() {
+            let field = if source.min_duration.is_some() {
                 "min_duration"
             } else {
                 "max_duration"
             };
             out.push(Diagnostic::error(
-                format!("/playlists/{key}/{field}"),
+                format!("/sources/{key}/{field}"),
                 message,
             ));
         }

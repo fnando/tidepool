@@ -33,7 +33,7 @@ pub const FORMATS: &[&str] = &[
     "hook-template",
     "fancy-regex",
     "socket-address",
-    "playlist-source",
+    "source-url",
 ];
 
 /// Check `value` against one of tidepool's custom formats, explaining failures.
@@ -63,7 +63,7 @@ pub fn check_format(format: &str, value: &str) -> Result<(), String> {
             .map_err(|_| {
                 format!("{value:?} is not an address with a port (e.g. \"127.0.0.1:8787\")")
             }),
-        "playlist-source" => playlist_id_from_source(value).map(drop),
+        "source-url" => source_id_from_url(value).map(drop),
         other => Err(format!("unknown format {other:?}")),
     }
 }
@@ -91,9 +91,9 @@ fn regex_error_detail(error: &fancy_regex::Error) -> String {
     error.to_string()
 }
 
-/// The playlist id in a `source` URL: the `list=` parameter of a YouTube URL.
+/// The playlist id in a source `url`: the `list=` parameter of a YouTube URL.
 /// Only URLs are accepted, so channel URLs can be told apart later.
-pub fn playlist_id_from_source(source: &str) -> Result<String, String> {
+pub fn source_id_from_url(source: &str) -> Result<String, String> {
     const HOSTS: [&str; 5] = [
         "youtube.com",
         "www.youtube.com",
@@ -189,9 +189,9 @@ pub fn validator() -> &'static Validator {
     })
 }
 
-/// Root transform: key patterns for `playlists` and `hooks`.
+/// Root transform: name patterns for `sources` and `hooks`.
 pub(crate) fn transform_root(schema: &mut Schema) {
-    for table in ["playlists", "hooks"] {
+    for table in ["sources", "hooks"] {
         if let Some(Value::Object(prop)) = schema.pointer_mut(&format!("/properties/{table}")) {
             prop.insert("propertyNames".into(), json!({ "pattern": KEY_PATTERN }));
         }
@@ -277,7 +277,7 @@ mod tests {
         assert!(check_format("fancy-regex", "(unclosed").is_err());
         assert!(check_format("hook-template", "{media_path}").is_ok());
         assert!(check_format("tag-template", "{media_path}").is_err());
-        let source = |s| check_format("playlist-source", s);
+        let source = |s| check_format("source-url", s);
         assert!(source("https://www.youtube.com/playlist?list=PLabc_-1").is_ok());
         assert!(source("https://youtube.com/watch?v=x&list=PLa").is_ok());
         assert!(source("http://music.youtube.com/playlist?list=PLa").is_ok());

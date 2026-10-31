@@ -12,10 +12,10 @@ tags = { album = "{media_path}" }
 command = ["ntfy", "{nope}"]
 timeout = "soon"
 
-[playlists.lofi]
-source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+[sources.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
 exclude = [{ field = "channel", pattern = '[z-a]' }]
 
-[playlists.lofi.cleanup]
+[sources.lofi.cleanup]
 max_size = "20 gigs"
 max_age = "a month"

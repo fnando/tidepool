@@ -1,5 +1,5 @@
 [hooks."Bad Hook"]
 command = ["true"]
 
-[playlists.Lofi]
-source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+[sources.Lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"

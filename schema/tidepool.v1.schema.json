@@ -58,9 +58,9 @@
           "$ref": "#/$defs/CleanupOrder",
           "description": "Who goes first for count, size and age limits."
         },
-        "removed_from_playlist": {
-          "$ref": "#/$defs/RemovedFromPlaylist",
-          "description": "Items no longer in the remote playlist (or no longer passing the rules)."
+        "removed_from_source": {
+          "$ref": "#/$defs/RemovedFromSource",
+          "description": "Videos no longer in the source (or no longer passing the rules)."
         }
       },
       "type": "object"
@@ -69,20 +69,20 @@
       "enum": [
         "oldest_downloaded",
         "oldest_published",
-        "playlist_position"
+        "source_position"
       ],
       "type": "string"
     },
     "Defaults": {
       "additionalProperties": false,
-      "description": "`[defaults]`: options every playlist inherits.",
+      "description": "`[defaults]`: options every source inherits.",
       "properties": {
         "cleanup": {
           "$ref": "#/$defs/CleanupOptions",
           "description": "Cleanup policies."
         },
         "cookies_file": {
-          "description": "Netscape cookies file, for private playlists. \"\" = none.",
+          "description": "Netscape cookies file, for private sources. \"\" = none.",
           "type": "string"
         },
         "cover_name": {
@@ -183,7 +183,7 @@
       "type": "object"
     },
     "Duplicates": {
-      "description": "Same video in several playlists.",
+      "description": "Same video in several sources.",
       "enum": [
         "hardlink",
         "symlink",
@@ -335,7 +335,7 @@
         "duplicates": {
           "$ref": "#/$defs/Duplicates",
           "default": "hardlink",
-          "description": "What to do when the same video is in several playlists."
+          "description": "What to do when the same video is in several sources."
         },
         "regex_backtrack_limit": {
           "default": 1000000,
@@ -384,16 +384,92 @@
         }
       ]
     },
-    "PlaylistConfig": {
+    "RemovedFromSource": {
+      "enum": [
+        "keep",
+        "remove"
+      ],
+      "type": "string"
+    },
+    "Rule": {
+      "anyOf": [
+        {
+          "description": "Regex (fancy-regex syntax) tested against every field in `match_fields`.",
+          "format": "fancy-regex",
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/FieldRule",
+          "description": "Regex tested against one field."
+        }
+      ],
+      "description": "An include/exclude rule: a regex tested against `match_fields`, or a\n`{ field, pattern }` table targeting one field."
+    },
+    "RuleField": {
+      "description": "A field rules can match against.",
+      "enum": [
+        "title",
+        "description",
+        "channel",
+        "tags",
+        "id"
+      ],
+      "type": "string"
+    },
+    "ScheduleConfig": {
       "additionalProperties": false,
-      "description": "One playlist to mirror.",
+      "description": "`[schedule]`",
+      "properties": {
+        "interval": {
+          "default": "",
+          "description": "Run sync + cleanup this often; \"\" = off.",
+          "examples": [
+            "30d"
+          ],
+          "format": "optional-duration",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ServerConfig": {
+      "additionalProperties": false,
+      "description": "`[server]`",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Serve the web UI from `tidepool run`; false = sync daemon only.",
+          "type": "boolean"
+        },
+        "listen": {
+          "default": "127.0.0.1:8787",
+          "description": "Address the web UI listens on, e.g. \"127.0.0.1:8787\".",
+          "format": "socket-address",
+          "type": "string"
+        },
+        "read_only_config": {
+          "default": false,
+          "description": "Disable the config editor in the web UI.",
+          "type": "boolean"
+        },
+        "token": {
+          "default": "",
+          "description": "Access token; required for a non-loopback `listen` address. \"\" = none.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "SourceConfig": {
+      "additionalProperties": false,
+      "description": "One source to keep in sync.",
       "properties": {
         "cleanup": {
           "$ref": "#/$defs/CleanupOptions",
           "description": "Cleanup policies."
         },
         "cookies_file": {
-          "description": "Netscape cookies file, for private playlists. \"\" = none.",
+          "description": "Netscape cookies file, for private sources. \"\" = none.",
           "type": "string"
         },
         "cover_name": {
@@ -410,7 +486,7 @@
           "type": "string"
         },
         "dir": {
-          "description": "Directory under `root`. Defaults to the playlist key.",
+          "description": "Directory under `root`. Defaults to the source name.",
           "minLength": 1,
           "type": "string"
         },
@@ -419,7 +495,7 @@
           "description": "Metadata embedded in the media file."
         },
         "enabled": {
-          "description": "Disabled playlists are skipped.",
+          "description": "Disabled sources are skipped.",
           "type": "boolean"
         },
         "exclude": {
@@ -496,14 +572,14 @@
           "description": "Download again when a downloaded item's media file is gone.",
           "type": "boolean"
         },
-        "source": {
-          "description": "Where videos come from: a playlist URL (anything with `list=`) or a playlist id.",
-          "format": "playlist-source",
-          "type": "string"
-        },
         "thumbnail_format": {
           "$ref": "#/$defs/ThumbnailFormat",
           "description": "Cover image format."
+        },
+        "url": {
+          "description": "Where videos come from: a YouTube playlist URL (with `list=`).",
+          "format": "source-url",
+          "type": "string"
         },
         "ytdlp_args": {
           "description": "Extra yt-dlp arguments, passed through.",
@@ -514,84 +590,8 @@
         }
       },
       "required": [
-        "source"
+        "url"
       ],
-      "type": "object"
-    },
-    "RemovedFromPlaylist": {
-      "enum": [
-        "keep",
-        "remove"
-      ],
-      "type": "string"
-    },
-    "Rule": {
-      "anyOf": [
-        {
-          "description": "Regex (fancy-regex syntax) tested against every field in `match_fields`.",
-          "format": "fancy-regex",
-          "type": "string"
-        },
-        {
-          "$ref": "#/$defs/FieldRule",
-          "description": "Regex tested against one field."
-        }
-      ],
-      "description": "An include/exclude rule: a regex tested against `match_fields`, or a\n`{ field, pattern }` table targeting one field."
-    },
-    "RuleField": {
-      "description": "A field rules can match against.",
-      "enum": [
-        "title",
-        "description",
-        "channel",
-        "tags",
-        "id"
-      ],
-      "type": "string"
-    },
-    "ScheduleConfig": {
-      "additionalProperties": false,
-      "description": "`[schedule]`",
-      "properties": {
-        "interval": {
-          "default": "",
-          "description": "Run sync + cleanup this often; \"\" = off.",
-          "examples": [
-            "30d"
-          ],
-          "format": "optional-duration",
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "ServerConfig": {
-      "additionalProperties": false,
-      "description": "`[server]`",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "description": "Serve the web UI from `tidepool run`; false = sync daemon only.",
-          "type": "boolean"
-        },
-        "listen": {
-          "default": "127.0.0.1:8787",
-          "description": "Address the web UI listens on, e.g. \"127.0.0.1:8787\".",
-          "format": "socket-address",
-          "type": "string"
-        },
-        "read_only_config": {
-          "default": false,
-          "description": "Disable the config editor in the web UI.",
-          "type": "boolean"
-        },
-        "token": {
-          "default": "",
-          "description": "Access token; required for a non-loopback `listen` address. \"\" = none.",
-          "type": "string"
-        }
-      },
       "type": "object"
     },
     "ThumbnailFormat": {
@@ -691,14 +691,14 @@
     "defaults": {
       "$ref": "#/$defs/Defaults",
       "default": {},
-      "description": "Options every playlist inherits."
+      "description": "Options every source inherits."
     },
     "hooks": {
       "additionalProperties": {
         "$ref": "#/$defs/HookConfig"
       },
       "default": {},
-      "description": "Named post-download hooks, attached to playlists by name.",
+      "description": "Named post-download hooks, attached to sources by name.",
       "propertyNames": {
         "pattern": "^[a-z0-9][a-z0-9_-]*$"
       },
@@ -714,17 +714,6 @@
         "tmp_dir": ".tidepool-tmp"
       },
       "description": "Where media goes and how downloads run."
-    },
-    "playlists": {
-      "additionalProperties": {
-        "$ref": "#/$defs/PlaylistConfig"
-      },
-      "default": {},
-      "description": "Playlists to mirror, by key.",
-      "propertyNames": {
-        "pattern": "^[a-z0-9][a-z0-9_-]*$"
-      },
-      "type": "object"
     },
     "schedule": {
       "$ref": "#/$defs/ScheduleConfig",
@@ -742,6 +731,17 @@
         "token": ""
       },
       "description": "The web UI served by `tidepool run`."
+    },
+    "sources": {
+      "additionalProperties": {
+        "$ref": "#/$defs/SourceConfig"
+      },
+      "default": {},
+      "description": "Sources to keep in sync, by name.",
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9_-]*$"
+      },
+      "type": "object"
     },
     "version": {
       "description": "Config format version. Optional; when set, must be 1.",

@@ -1,15 +1,15 @@
-[playlists.missing]
+[sources.missing]
 dir = "missing"
 
-[playlists.no_list]
-source = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+[sources.no_list]
+url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
-[playlists.bare_id]
-source = "PLcccccccc"
+[sources.bare_id]
+url = "PLcccccccc"
 
-[playlists.not_youtube]
-source = "https://example.com/playlist?list=PLdddddddd"
+[sources.not_youtube]
+url = "https://example.com/playlist?list=PLdddddddd"
 
-[playlists.old_keys]
-url = "https://www.youtube.com/playlist?list=PLaaaaaaaa"
+[sources.old_keys]
+source = "https://www.youtube.com/playlist?list=PLaaaaaaaa"
 id = "PLaaaaaaaa"

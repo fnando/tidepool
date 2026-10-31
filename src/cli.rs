@@ -132,9 +132,9 @@ impl Command {
 
 #[derive(Debug, Args)]
 pub struct ScopeArgs {
-    /// Limit to these playlists: config key, playlist id or URL; repeatable
-    #[arg(long = "playlist", short = 'p', value_name = "KEY|ID|URL")]
-    pub playlists: Vec<PlaylistRef>,
+    /// Limit to these sources: name, playlist id or URL; repeatable
+    #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
+    pub sources: Vec<SourceRef>,
 }
 
 #[derive(Debug, Args)]
@@ -229,12 +229,12 @@ pub enum ConfigCmd {
 
 #[derive(Debug, Subcommand)]
 pub enum FilterCmd {
-    /// Show which include/exclude rule matches a title for a playlist
+    /// Show which include/exclude rule matches a title for a source
     Test {
         title: String,
-        /// Playlist whose rules to test (config key, id or URL)
-        #[arg(long = "playlist", short = 'p', value_name = "KEY|ID|URL")]
-        playlist: PlaylistRef,
+        /// Source whose rules to test (name, playlist id or URL)
+        #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
+        source: SourceRef,
     },
 }
 
@@ -242,8 +242,8 @@ pub enum FilterCmd {
 #[group(required = true, multiple = false)]
 pub struct EmbedTarget {
     pub video_id: Option<String>,
-    #[arg(long = "playlist", short = 'p', value_name = "KEY|ID|URL")]
-    pub playlist: Option<PlaylistRef>,
+    #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
+    pub source: Option<SourceRef>,
     #[arg(long)]
     pub all: bool,
 }
@@ -311,10 +311,10 @@ pub struct InitArgs {
     pub print: bool,
 }
 
-/// A playlist reference from the command line, resolved after config load.
+/// A source reference from the command line, resolved after config load.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PlaylistRef {
-    /// A playlist config key, e.g. `lofi`.
+pub enum SourceRef {
+    /// A source name from the config, e.g. `lofi`.
     Key(String),
     /// A YouTube playlist id, e.g. `PLxxxxxxxx`.
     Id(String),
@@ -322,11 +322,11 @@ pub enum PlaylistRef {
     Url { url: String, id: String },
 }
 
-impl PlaylistRef {
+impl SourceRef {
     pub fn raw(&self) -> &str {
         match self {
-            PlaylistRef::Key(s) | PlaylistRef::Id(s) => s,
-            PlaylistRef::Url { url, .. } => url,
+            SourceRef::Key(s) | SourceRef::Id(s) => s,
+            SourceRef::Url { url, .. } => url,
         }
     }
 }
@@ -352,32 +352,32 @@ fn looks_like_playlist_id(s: &str) -> bool {
             .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
 }
 
-impl FromStr for PlaylistRef {
+impl FromStr for SourceRef {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.contains("://") || s.contains("list=") {
             return playlist_id_from_url(s)
-                .map(|id| PlaylistRef::Url {
+                .map(|id| SourceRef::Url {
                     url: s.to_string(),
                     id,
                 })
                 .ok_or_else(|| format!("{s:?} is a URL without a list= parameter"));
         }
         if looks_like_playlist_id(s) {
-            return Ok(PlaylistRef::Id(s.to_string()));
+            return Ok(SourceRef::Id(s.to_string()));
         }
-        if crate::config::is_valid_playlist_key(s) {
-            return Ok(PlaylistRef::Key(s.to_string()));
+        if crate::config::is_valid_name(s) {
+            return Ok(SourceRef::Key(s.to_string()));
         }
         Err(format!(
-            "{s:?} is not a playlist key, playlist id or playlist URL"
+            "{s:?} is not a source name, playlist id or playlist URL"
         ))
     }
 }
 
 fn parse_library_name(s: &str) -> Result<String, String> {
-    if crate::config::is_valid_playlist_key(s) {
+    if crate::config::is_valid_name(s) {
         Ok(s.to_string())
     } else {
         Err("library names use lowercase letters, digits, '-' and '_'".to_string())
@@ -395,25 +395,25 @@ mod tests {
     }
 
     #[test]
-    fn parses_playlist_refs() {
-        assert_eq!("lofi".parse(), Ok(PlaylistRef::Key("lofi".into())));
+    fn parses_source_refs() {
+        assert_eq!("lofi".parse(), Ok(SourceRef::Key("lofi".into())));
         assert_eq!(
             "PLabcdefghij123".parse(),
-            Ok(PlaylistRef::Id("PLabcdefghij123".into()))
+            Ok(SourceRef::Id("PLabcdefghij123".into()))
         );
         assert_eq!(
             "https://www.youtube.com/watch?v=x&list=PLabc&index=2".parse(),
-            Ok(PlaylistRef::Url {
+            Ok(SourceRef::Url {
                 url: "https://www.youtube.com/watch?v=x&list=PLabc&index=2".into(),
                 id: "PLabc".into()
             })
         );
         assert!(
             "https://www.youtube.com/watch?v=x"
-                .parse::<PlaylistRef>()
+                .parse::<SourceRef>()
                 .is_err()
         );
-        assert!("Not A Key".parse::<PlaylistRef>().is_err());
+        assert!("Not A Key".parse::<SourceRef>().is_err());
     }
 
     #[test]

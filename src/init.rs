@@ -3,19 +3,19 @@
 //!
 //! The generated file lists every option with its default and a one-line
 //! comment; options left at their default are commented out, so the file
-//! doubles as documentation. It includes one short sample playlist so the
+//! doubles as documentation. It includes one short sample source so the
 //! first sync has something to do. A test keeps it in sync with the schema.
 
 use crate::config::schema::SCHEMA_ID;
 
-/// The sample playlist in a new config: one short, unlisted video.
-pub const SAMPLE_PLAYLIST_URL: &str = "https://www.youtube.com/playlist?list=PLXLpuA-bwY4s";
+/// The sample source in a new config: one short, unlisted video.
+pub const SAMPLE_SOURCE_URL: &str = "https://www.youtube.com/playlist?list=PLXLpuA-bwY4s";
 
 /// The config file `init` writes.
 pub fn render() -> String {
     TEMPLATE
         .replace("@SCHEMA_ID@", SCHEMA_ID)
-        .replace("@SAMPLE_PLAYLIST_URL@", SAMPLE_PLAYLIST_URL)
+        .replace("@SAMPLE_SOURCE_URL@", SAMPLE_SOURCE_URL)
 }
 
 /// The config file template. Commented-out settings show built-in defaults.
@@ -32,7 +32,7 @@ version = 1
 [library]
 # root = "~/.local/share/tidepool/media" # where videos go
 # concurrency = 2                   # parallel yt-dlp downloads
-# duplicates = "hardlink"           # same video in several playlists: hardlink | symlink | copy | download
+# duplicates = "hardlink"           # same video in several sources: hardlink | symlink | copy | download
 # regex_backtrack_limit = 1000000   # fancy-regex step limit per match
 # shutdown_timeout = "10s"          # grace period for child processes after SIGINT/SIGTERM
 # tmp_dir = ".tidepool-tmp"         # work area, relative to root (same filesystem, atomic rename)
@@ -59,11 +59,11 @@ interval = "6h"                     # tidepool run: sync + cleanup this often; "
 # token = ""                        # required for a non-loopback listen address
 # read_only_config = false          # true = config editor disabled
 
-# Options every playlist inherits; each playlist can override any of them.
+# Options every source inherits; each source can override any of them.
 [defaults]
 # format = "bv*+ba/b"               # yt-dlp format selector (-f)
 # merge_output_format = "mkv"       # container for merged formats
-# output = "{playlist_dir}/{upload_date} - {title} [{id}]"   # each video's directory, must contain {id}
+# output = "{source_dir}/{upload_date} - {title} [{id}]"   # each video's directory, must contain {id}
 # ytdlp_args = []                   # extra yt-dlp arguments, e.g. ["--write-subs", "--sub-langs", "en.*"]
 # cookies_file = ""                 # Netscape cookies file, for private playlists
 # thumbnail_format = "jpg"          # jpg | webp | original
@@ -87,12 +87,12 @@ interval = "6h"                     # tidepool run: sync + cleanup this often; "
 # after_hooks = true                # re-embed if a hook replaced the media file
 # tags = {}                         # extra tags, e.g. { genre = "Music", album_artist = "{channel}" }
 
-[defaults.cleanup]                  # limits that keep each playlist bounded
+[defaults.cleanup]                  # limits that keep each source bounded
 # max_items = 0                     # keep at most this many videos; 0 = unlimited
 # max_age = ""                      # remove videos older than this, e.g. "30d"
 # max_size = ""                     # remove oldest videos until media fits, e.g. "20GiB"
-# order = "oldest_downloaded"       # oldest_downloaded | oldest_published | playlist_position
-# removed_from_playlist = "keep"    # keep | remove videos no longer in the playlist
+# order = "oldest_downloaded"       # oldest_downloaded | oldest_published | source_position
+# removed_from_source = "keep"      # keep | remove videos no longer in the source
 # keep = "metadata"                 # nothing | metadata (keep metadata.json + cover, drop media)
 # marker_file = ""                  # remove videos whose directory contains this file, e.g. ".watched"
 # keep_latest = 0                   # protect the newest N videos from every other limit
@@ -108,15 +108,16 @@ interval = "6h"                     # tidepool run: sync + cleanup this often; "
 # env = {}                          # extra environment variables
 # cwd = "."                         # working directory; defaults to the video's directory
 
-# Playlists to mirror. Any [defaults] option can be overridden per playlist.
+# Sources to keep in sync (YouTube playlists). Any [defaults] option can be
+# overridden per source.
 
-[playlists.sample]                  # one short video, to see tidepool work; replace it with your own
-source = "@SAMPLE_PLAYLIST_URL@"
+[sources.sample]                  # one short video, to see tidepool work; replace it with your own
+url = "@SAMPLE_SOURCE_URL@"
 
-# [playlists.example]
-# source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # the playlist's URL
+# [sources.example]
+# url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # the playlist's URL
 # dir = "example"                   # directory under root; defaults to the key
-# enabled = true                    # disabled playlists are skipped
+# enabled = true                    # disabled sources are skipped
 # inherit_rules = false             # true = add [defaults] include/exclude instead of replacing them
 # inherit_hooks = false             # true = add [defaults] hooks instead of replacing them
 # hooks = ["notify"]
@@ -125,15 +126,13 @@ source = "@SAMPLE_PLAYLIST_URL@"
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::merge::effective_playlist;
+    use crate::config::merge::effective_source;
     use crate::config::schema::generate;
-    use crate::config::{
-        Config, PlaylistConfig, ServerConfig, YoutubeConfig, YtdlpConfig, load_str,
-    };
+    use crate::config::{Config, ServerConfig, SourceConfig, YoutubeConfig, YtdlpConfig, load_str};
     use serde_json::Value;
 
     #[test]
-    fn renders_a_valid_config_with_the_sample_playlist() {
+    fn renders_a_valid_config_with_the_sample_source() {
         let text = render();
         assert!(text.starts_with(&format!("#:schema {SCHEMA_ID}\n")));
         let loaded = load_str("init.toml", &text).unwrap_or_else(|e| panic!("{e}\n{text}"));
@@ -146,9 +145,9 @@ mod tests {
             config.schedule.interval.0,
             Some(std::time::Duration::from_secs(6 * 3600))
         );
-        let keys: Vec<&String> = config.playlists.keys().collect();
+        let keys: Vec<&String> = config.sources.keys().collect();
         assert_eq!(keys, ["sample"]);
-        assert_eq!(config.playlists["sample"].source, SAMPLE_PLAYLIST_URL);
+        assert_eq!(config.sources["sample"].url, SAMPLE_SOURCE_URL);
         assert!(
             text.lines().all(|l| l == l.trim_end()),
             "trailing whitespace"
@@ -190,13 +189,13 @@ mod tests {
         let mut library = config.library.clone();
         library.root = None;
         assert_eq!(library, crate::config::LibraryConfig::default());
-        let plain = PlaylistConfig {
-            source: "https://www.youtube.com/playlist?list=PLx".into(),
-            ..PlaylistConfig::default()
+        let plain = SourceConfig {
+            url: "https://www.youtube.com/playlist?list=PLx".into(),
+            ..SourceConfig::default()
         };
         assert_eq!(
-            effective_playlist("x", &plain, &config.defaults),
-            effective_playlist("x", &plain, &Config::default().defaults),
+            effective_source("x", &plain, &config.defaults),
+            effective_source("x", &plain, &Config::default().defaults),
             "[defaults] in the template must show the built-in defaults"
         );
 
@@ -225,12 +224,12 @@ mod tests {
             ("EmbedOptions", &["/defaults/embed"]),
             ("CleanupOptions", &["/defaults/cleanup"]),
             ("HookConfig", &["/hooks/notify"]),
-            ("PlaylistConfig", &["/playlists/example"]),
+            ("SourceConfig", &["/sources/example"]),
         ];
         let defaults_props = props("Defaults");
         for (def, pointers) in where_documented {
             for prop in props(def) {
-                if *def == "PlaylistConfig" && defaults_props.contains(&prop) {
+                if *def == "SourceConfig" && defaults_props.contains(&prop) {
                     continue; // documented under [defaults]
                 }
                 let found = pointers

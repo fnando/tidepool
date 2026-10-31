@@ -22,6 +22,6 @@ on_failure = "explode"
 [hooks.missing]
 timeout = "1m"
 
-[playlists.lofi]
-source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+[sources.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
 enabled = "yes"

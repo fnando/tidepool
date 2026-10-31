@@ -59,7 +59,7 @@ pub fn pointer_segments(pointer: &str) -> Vec<String> {
         .collect()
 }
 
-/// Render a JSON pointer as a dotted config path: `playlists.lofi.include[0]`.
+/// Render a JSON pointer as a dotted config path: `sources.lofi.include[0]`.
 pub fn dotted(pointer: &str) -> String {
     let mut out = String::new();
     for segment in pointer_segments(pointer) {
@@ -170,11 +170,11 @@ mod tests {
 [library]
 concurrency = 2
 
-[playlists.lofi]
+[sources.lofi]
 url = "https://www.youtube.com/playlist?list=PLx"
 include = ['a', { field = "channel", pattern = 'b' }]
 
-[playlists.lofi.cleanup]
+[sources.lofi.cleanup]
 max_size = "20 gigs"
 "#;
 
@@ -188,7 +188,7 @@ max_size = "20 gigs"
             to_json(&doc()),
             json!({
                 "library": { "concurrency": 2 },
-                "playlists": { "lofi": {
+                "sources": { "lofi": {
                     "url": "https://www.youtube.com/playlist?list=PLx",
                     "include": ["a", { "field": "channel", "pattern": "b" }],
                     "cleanup": { "max_size": "20 gigs" }
@@ -209,26 +209,17 @@ max_size = "20 gigs"
         let at = |p, key| locate(&doc, p, key).map(|r| line_col(SRC, r.start));
         assert_eq!(at("/library/concurrency", false), Some((3, 15)));
         assert_eq!(at("/library/concurrency", true), Some((3, 1)));
-        assert_eq!(
-            at("/playlists/lofi/cleanup/max_size", false),
-            Some((10, 12))
-        );
-        assert_eq!(
-            at("/playlists/lofi/include/1/pattern", false),
-            Some((7, 48))
-        );
-        assert_eq!(at("/playlists/lofi/include/0", false), Some((7, 12)));
+        assert_eq!(at("/sources/lofi/cleanup/max_size", false), Some((10, 12)));
+        assert_eq!(at("/sources/lofi/include/1/pattern", false), Some((7, 48)));
+        assert_eq!(at("/sources/lofi/include/0", false), Some((7, 12)));
         // Unknown leaf: falls back to the closest ancestor with a span.
-        assert!(at("/playlists/lofi/nope", false).is_some());
+        assert!(at("/sources/lofi/nope", false).is_some());
     }
 
     #[test]
     fn renders_dotted_paths() {
-        assert_eq!(
-            dotted("/playlists/lofi/include/0"),
-            "playlists.lofi.include[0]"
-        );
-        assert_eq!(dotted("/playlists/Bad Key"), "playlists.\"Bad Key\"");
+        assert_eq!(dotted("/sources/lofi/include/0"), "sources.lofi.include[0]");
+        assert_eq!(dotted("/sources/Bad Key"), "sources.\"Bad Key\"");
         assert_eq!(dotted(""), "");
     }
 

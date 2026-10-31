@@ -13,7 +13,7 @@ version = 1
 [library]
 root = "~/Videos/youtube"           # media; default ~/.local/share/tidepool/media
 concurrency = 2                     # parallel yt-dlp downloads
-duplicates = "hardlink"             # same video in several playlists: hardlink | symlink | copy | download
+duplicates = "hardlink"             # same video in several sources: hardlink | symlink | copy | download
 regex_backtrack_limit = 1000000     # fancy-regex step limit per match
 shutdown_timeout = "10s"            # grace period for child processes after SIGINT/SIGTERM
 tmp_dir = ".tidepool-tmp"           # relative to root: same filesystem, atomic rename
@@ -43,7 +43,7 @@ read_only_config = false            # true = config editor disabled
 [defaults]
 format = "bv*[height<=1080]+ba/b"
 merge_output_format = "mkv"
-output = "{playlist_dir}/{upload_date} - {title} [{id}]"  # directory per video
+output = "{source_dir}/{upload_date} - {title} [{id}]"  # directory per video
 ytdlp_args = ["--write-subs", "--sub-langs", "en.*"]
 cookies_file = ""                   # optional, for private playlists
 thumbnail_format = "jpg"            # jpg | webp | original
@@ -57,7 +57,7 @@ cutoff = "30d"                      # skip videos published more than 30d ago; "
 hooks = []
 redownload_missing = false          # once downloaded, never fetch again even if the file is gone
 
-[defaults.embed]                    # everything is off unless turned on here or per playlist
+[defaults.embed]                    # everything is off unless turned on here or per source
 metadata = true                     # title, channel, date, description, URL, album/track
 cover = true                        # same image as the poster file
 chapters = true
@@ -70,8 +70,8 @@ tags = { genre = "Music", album_artist = "{channel}" }
 max_items = 0                       # 0 = unlimited
 max_age = ""                        # e.g. "30d"
 max_size = ""                       # e.g. "20GiB"
-order = "oldest_downloaded"         # oldest_downloaded | oldest_published | playlist_position
-removed_from_playlist = "keep"      # keep | remove
+order = "oldest_downloaded"         # oldest_downloaded | oldest_published | source_position
+removed_from_source = "keep"        # keep | remove
 keep = "metadata"                   # nothing | metadata (keep json + cover, drop media)
 
 [hooks.transcode]
@@ -86,21 +86,21 @@ command = ["ntfy", "publish", "videos", "New: {title}"]
 timeout = "30s"
 on_failure = "warn"
 
-[playlists.lofi]
-source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # the playlist's URL
+[sources.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # the playlist's URL
 dir = "lofi"                        # defaults to the key
 enabled = true
 include = ['(?i)\blive\b', { field = "channel", pattern = '^Lofi Girl$' }]
 exclude = ['(?i)\b(trailer|teaser)\b']
 hooks = ["transcode", "notify"]
 
-[playlists.lofi.cleanup]
+[sources.lofi.cleanup]
 max_items = 50
 max_age = "30d"
-removed_from_playlist = "remove"
+removed_from_source = "remove"
 
-[playlists.talks]
-source = "https://www.youtube.com/playlist?list=PLyyyyyyyy"
+[sources.talks]
+url = "https://www.youtube.com/playlist?list=PLyyyyyyyy"
 cutoff = "none"                     # overrides the global 30d: keep the whole back catalogue
 format = "ba/b"                     # audio only
 ytdlp_args = ["-x", "--audio-format", "opus"]

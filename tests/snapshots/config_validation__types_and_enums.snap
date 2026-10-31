@@ -11,9 +11,9 @@ types_and_enums.toml:11:16 defaults.match_fields: [] has less than 1 item
 types_and_enums.toml:12:12 defaults.include[0]: must be a regex string or a { field, pattern } table
 types_and_enums.toml:12:25 defaults.include[1].field: "comments" is not one of "title", "description", "channel", "tags", "id"
 types_and_enums.toml:12:54 defaults.include[2]: missing required key "field"
-types_and_enums.toml:15:9 defaults.cleanup.order: "random" is not one of "oldest_downloaded", "oldest_published", "playlist_position"
+types_and_enums.toml:15:9 defaults.cleanup.order: "random" is not one of "oldest_downloaded", "oldest_published", "source_position"
 types_and_enums.toml:16:13 defaults.cleanup.max_items: -1 is less than the minimum of 0
 types_and_enums.toml:19:11 hooks.empty.command: [] has less than 1 item
 types_and_enums.toml:20:14 hooks.empty.on_failure: "explode" is not one of "fail", "warn", "retry"
 types_and_enums.toml:22:1 hooks.missing: missing required key "command"
-types_and_enums.toml:27:11 playlists.lofi.enabled: "yes" is not of type "boolean"
+types_and_enums.toml:27:11 sources.lofi.enabled: "yes" is not of type "boolean"

@@ -6,10 +6,10 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context as _, bail};
 use serde_json::Value;
 
-use crate::cli::{Cli, Command, ConfigArgs, ConfigCmd, FilterCmd, InitArgs, PlaylistRef};
+use crate::cli::{Cli, Command, ConfigArgs, ConfigCmd, FilterCmd, InitArgs, SourceRef};
 use crate::config::check::{EffectiveConfig, Finding, check_environment, media_root};
 use crate::config::diff::{key_changes, mask_json, mask_toml, text_diff};
-use crate::config::merge::{EffectivePlaylist, effective_playlists};
+use crate::config::merge::{EffectiveSource, effective_sources};
 use crate::config::schema::schema_json;
 use crate::config::store::{ConfigStore, Imported, Revision};
 use crate::config::{Loaded, load_file, load_str};
@@ -49,8 +49,8 @@ pub fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Init(args) => app.init(args, out),
         Command::Config(args) => app.config(args, out),
         Command::Filter {
-            cmd: FilterCmd::Test { title, playlist },
-        } => app.filter_test(title, playlist, out),
+            cmd: FilterCmd::Test { title, source },
+        } => app.filter_test(title, source, out),
         other => {
             let milestone = other.milestone().unwrap_or("a later milestone");
             bail!("this command is not implemented yet (planned for {milestone})")
@@ -199,8 +199,8 @@ impl App<'_> {
         }
         writeln!(
             out,
-            "\nThe config includes a sample playlist with one short video. Next steps:\n\
-             \x20 1. Edit {name}: replace the sample with your playlists, set where videos go.\n\
+            "\nThe config includes a sample source with one short video. Next steps:\n\
+             \x20 1. Edit {name}: replace the sample with your sources, set where videos go.\n\
              \x20 2. Apply your changes: tidepool config import {name}{library}\n\
              \x20 3. Sync once: tidepool sync{library}\n\
              \x20    Or keep syncing every {interval} with the web UI at http://{listen}: tidepool run{library}",
@@ -410,8 +410,8 @@ impl App<'_> {
             bail!("{source} is valid, but the environment checks above failed");
         }
         tracing::info!(
-            "{source} is valid ({} playlists)",
-            loaded.config.playlists.len()
+            "{source} is valid ({} sources)",
+            loaded.config.sources.len()
         );
         Ok(exit::OK)
     }
@@ -485,22 +485,22 @@ impl App<'_> {
     fn filter_test(
         &self,
         title: &str,
-        playlist: &PlaylistRef,
+        source: &SourceRef,
         out: &mut dyn Write,
     ) -> anyhow::Result<i32> {
         let state = self.open_state()?;
         let loaded = self.current_config(&state)?;
-        let playlists = effective_playlists(&loaded.config);
-        let playlist = resolve_playlist(playlist, &playlists)?;
+        let sources = effective_sources(&loaded.config);
+        let source = resolve_source(source, &sources)?;
         let limit =
             usize::try_from(loaded.config.library.regex_backtrack_limit).unwrap_or(usize::MAX);
-        let rules = RuleSet::compile(playlist, limit).map_err(anyhow::Error::msg)?;
+        let rules = RuleSet::compile(source, limit).map_err(anyhow::Error::msg)?;
         let item = Fields {
             title: Some(title),
             ..Fields::default()
         };
 
-        writeln!(out, "playlist {} ({})", playlist.key, playlist.id)?;
+        writeln!(out, "source {} ({})", source.key, source.id)?;
         if rules.include.is_empty() && rules.exclude.is_empty() {
             writeln!(out, "  no include/exclude rules")?;
         }
@@ -557,20 +557,20 @@ impl App<'_> {
     }
 }
 
-/// Find the configured playlist a `--playlist` value refers to.
-pub fn resolve_playlist<'a>(
-    r: &PlaylistRef,
-    playlists: &'a [EffectivePlaylist],
-) -> anyhow::Result<&'a EffectivePlaylist> {
+/// Find the configured source a `--source` value refers to.
+pub fn resolve_source<'a>(
+    r: &SourceRef,
+    sources: &'a [EffectiveSource],
+) -> anyhow::Result<&'a EffectiveSource> {
     let found = match r {
-        PlaylistRef::Key(key) => playlists.iter().find(|p| &p.key == key),
-        PlaylistRef::Id(id) | PlaylistRef::Url { id, .. } => playlists.iter().find(|p| &p.id == id),
+        SourceRef::Key(key) => sources.iter().find(|p| &p.key == key),
+        SourceRef::Id(id) | SourceRef::Url { id, .. } => sources.iter().find(|p| &p.id == id),
     };
     found.ok_or_else(|| {
-        let known: Vec<&str> = playlists.iter().map(|p| p.key.as_str()).collect();
+        let known: Vec<&str> = sources.iter().map(|p| p.key.as_str()).collect();
         let known = if known.is_empty() { "none".to_string() } else { known.join(", ") };
         UsageError(format!(
-            "--playlist {:?} matches no configured playlist (configured: {known}); add it under [playlists.<key>] in your config",
+            "--source {:?} matches no configured source (configured: {known}); add it under [sources.<name>] in your config",
             r.raw()
         ))
         .into()

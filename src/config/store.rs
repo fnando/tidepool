@@ -250,9 +250,8 @@ mod tests {
     use super::*;
     use crate::state::State;
 
-    const A: &str = "# my playlists\n[playlists.lofi]\nsource = 'https://www.youtube.com/playlist?list=PLaaaaaaaa' # comment kept\n";
-    const B: &str =
-        "[playlists.lofi]\nsource = 'https://www.youtube.com/playlist?list=PLbbbbbbbb'\n";
+    const A: &str = "# my playlists\n[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLaaaaaaaa' # comment kept\n";
+    const B: &str = "[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLbbbbbbbb'\n";
 
     fn import(store: &ConfigStore<'_>, path: &str, text: &str) -> Imported {
         store
@@ -274,7 +273,7 @@ mod tests {
         assert_eq!(current.source_path.as_deref(), Some("/c.toml"));
         assert_eq!(
             current.json,
-            r#"{"playlists":{"lofi":{"source":"https://www.youtube.com/playlist?list=PLbbbbbbbb"}}}"#
+            r#"{"sources":{"lofi":{"url":"https://www.youtube.com/playlist?list=PLbbbbbbbb"}}}"#
         );
     }
 
@@ -352,7 +351,7 @@ mod tests {
         import(&store, "/c.toml", A);
         let (rev, loaded) = store.load_current("default").unwrap();
         assert_eq!(rev.rev, 1);
-        assert!(loaded.config.playlists.contains_key("lofi"));
+        assert!(loaded.config.sources.contains_key("lofi"));
 
         // Simulate a revision stored by a build with a different schema.
         state

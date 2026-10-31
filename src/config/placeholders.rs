@@ -88,15 +88,10 @@ pub const PLACEHOLDERS: &[Placeholder] = &[
     ph!("upload_year", true, ALL, None),
     ph!("duration", true, ALL, Some("TIDEPOOL_DURATION")),
     ph!("position", true, ALL, Some("TIDEPOOL_POSITION")),
-    ph!("playlist", false, ALL, Some("TIDEPOOL_PLAYLIST_KEY")),
-    ph!("playlist_dir", false, OUT | HOOK, None),
-    ph!("playlist_id", false, ALL, Some("TIDEPOOL_PLAYLIST_ID")),
-    ph!(
-        "playlist_title",
-        false,
-        ALL,
-        Some("TIDEPOOL_PLAYLIST_TITLE")
-    ),
+    ph!("source", false, ALL, Some("TIDEPOOL_SOURCE")),
+    ph!("source_dir", false, OUT | HOOK, None),
+    ph!("source_id", false, ALL, Some("TIDEPOOL_SOURCE_ID")),
+    ph!("source_title", false, ALL, Some("TIDEPOOL_SOURCE_TITLE")),
     ph!("url", false, TAG | HOOK, Some("TIDEPOOL_URL")),
     ph!("library", false, HOOK, Some("TIDEPOOL_LIBRARY")),
     ph!("video_dir", false, HOOK, Some("TIDEPOOL_VIDEO_DIR")),
@@ -341,7 +336,7 @@ mod tests {
     fn validates_per_setting() {
         assert!(
             validate(
-                "{playlist_dir}/{upload_date} - {title} [{id}]",
+                "{source_dir}/{upload_date} - {title} [{id}]",
                 Setting::Output
             )
             .is_ok()

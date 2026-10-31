@@ -1,7 +1,7 @@
 //! The config file's shape. These types generate the JSON Schema (via
 //! `schemars`) and are deserialized only after the schema validated the input.
 //!
-//! `[defaults]` and `[playlists.<key>]` share every option; playlists override
+//! `[defaults]` and `[sources.<key>]` share every option; sources override
 //! defaults key by key (see [`super::merge`]).
 
 use std::collections::BTreeMap;
@@ -37,15 +37,15 @@ pub struct Config {
     /// The web UI served by `tidepool run`.
     #[serde(default)]
     pub server: ServerConfig,
-    /// Options every playlist inherits.
+    /// Options every source inherits.
     #[serde(default)]
     pub defaults: Defaults,
-    /// Named post-download hooks, attached to playlists by name.
+    /// Named post-download hooks, attached to sources by name.
     #[serde(default)]
     pub hooks: BTreeMap<String, HookConfig>,
-    /// Playlists to mirror, by key.
+    /// Sources to keep in sync, by name.
     #[serde(default)]
-    pub playlists: BTreeMap<String, PlaylistConfig>,
+    pub sources: BTreeMap<String, SourceConfig>,
 }
 
 /// `[library]`
@@ -58,7 +58,7 @@ pub struct LibraryConfig {
     /// Parallel yt-dlp downloads.
     #[schemars(range(min = 1))]
     pub concurrency: u32,
-    /// What to do when the same video is in several playlists.
+    /// What to do when the same video is in several sources.
     pub duplicates: Duplicates,
     /// fancy-regex backtracking step limit per match.
     #[schemars(range(min = 1))]
@@ -82,7 +82,7 @@ impl Default for LibraryConfig {
     }
 }
 
-/// Same video in several playlists.
+/// Same video in several sources.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum Duplicates {
@@ -262,8 +262,8 @@ pub enum OnFailure {
     Retry,
 }
 
-/// Defines a struct holding every per-playlist option, all optional, plus any
-/// extra fields. Used for both `[defaults]` and `[playlists.<key>]` so the two
+/// Defines a struct holding every per-source option, all optional, plus any
+/// extra fields. Used for both `[defaults]` and `[sources.<key>]` so the two
 /// can't drift apart (serde's `flatten` doesn't work with `deny_unknown_fields`).
 macro_rules! options_struct {
     (
@@ -288,7 +288,7 @@ macro_rules! options_struct {
             /// Extra yt-dlp arguments, passed through.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub ytdlp_args: Option<Vec<String>>,
-            /// Netscape cookies file, for private playlists. "" = none.
+            /// Netscape cookies file, for private sources. "" = none.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub cookies_file: Option<String>,
             /// Cover image format.
@@ -337,21 +337,21 @@ macro_rules! options_struct {
 }
 
 options_struct! {
-    /// `[defaults]`: options every playlist inherits.
+    /// `[defaults]`: options every source inherits.
     pub struct Defaults {}
 }
 
 options_struct! {
-    /// One playlist to mirror.
-    pub struct PlaylistConfig {
-        /// Where videos come from: a playlist URL (anything with `list=`) or a playlist id.
-        #[schemars(extend("format" = "playlist-source"))]
-        pub source: String,
-        /// Directory under `root`. Defaults to the playlist key.
+    /// One source to keep in sync.
+    pub struct SourceConfig {
+        /// Where videos come from: a YouTube playlist URL (with `list=`).
+        #[schemars(extend("format" = "source-url"))]
+        pub url: String,
+        /// Directory under `root`. Defaults to the source name.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(length(min = 1))]
         pub dir: Option<String>,
-        /// Disabled playlists are skipped.
+        /// Disabled sources are skipped.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         pub enabled: Option<bool>,
         /// Concatenate `[defaults]` include/exclude instead of replacing them.
@@ -447,9 +447,9 @@ pub struct CleanupOptions {
     /// Who goes first for count, size and age limits.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub order: Option<CleanupOrder>,
-    /// Items no longer in the remote playlist (or no longer passing the rules).
+    /// Videos no longer in the source (or no longer passing the rules).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub removed_from_playlist: Option<RemovedFromPlaylist>,
+    pub removed_from_source: Option<RemovedFromSource>,
     /// What to keep of a removed item.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub keep: Option<CleanupKeep>,
@@ -466,12 +466,12 @@ pub struct CleanupOptions {
 pub enum CleanupOrder {
     OldestDownloaded,
     OldestPublished,
-    PlaylistPosition,
+    SourcePosition,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum RemovedFromPlaylist {
+pub enum RemovedFromSource {
     Keep,
     Remove,
 }

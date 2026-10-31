@@ -10,6 +10,6 @@ bad_formats.toml:6:12 defaults.include[0]: "(unclosed" is not a valid regex: Par
 bad_formats.toml:9:18 defaults.embed.tags.album: "{media_path}": placeholder {media_path} is not allowed in embed.tags
 bad_formats.toml:12:20 hooks.notify.command[1]: "{nope}": unknown placeholder {nope}
 bad_formats.toml:13:11 hooks.notify.timeout: "soon" is not a valid duration (e.g. "30d", "12h", "1h30m")
-bad_formats.toml:17:43 playlists.lofi.exclude[0].pattern: "[z-a]" is not a valid regex: invalid character class range, the start must be <= the end
-bad_formats.toml:20:12 playlists.lofi.cleanup.max_size: "20 gigs" is not a valid byte size (e.g. "20GiB", "500MB")
-bad_formats.toml:21:11 playlists.lofi.cleanup.max_age: "a month" is not a valid duration (e.g. "30d", "12h", "1h30m")
+bad_formats.toml:17:43 sources.lofi.exclude[0].pattern: "[z-a]" is not a valid regex: invalid character class range, the start must be <= the end
+bad_formats.toml:20:12 sources.lofi.cleanup.max_size: "20 gigs" is not a valid byte size (e.g. "20GiB", "500MB")
+bad_formats.toml:21:11 sources.lofi.cleanup.max_age: "a month" is not a valid duration (e.g. "30d", "12h", "1h30m")

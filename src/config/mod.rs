@@ -4,11 +4,11 @@ pub mod duration;
 pub mod placeholders;
 pub mod size;
 
-/// Playlist keys (and library names): `^[a-z0-9][a-z0-9_-]*$`.
+/// Source names (and library names): `^[a-z0-9][a-z0-9_-]*$`.
 pub const KEY_PATTERN: &str = "^[a-z0-9][a-z0-9_-]*$";
 
-/// Whether `s` is a valid playlist key or library name.
-pub fn is_valid_playlist_key(s: &str) -> bool {
+/// Whether `s` is a valid source or library name.
+pub fn is_valid_name(s: &str) -> bool {
     let mut chars = s.chars();
     matches!(chars.next(), Some(c) if c.is_ascii_lowercase() || c.is_ascii_digit())
         && chars.all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_' || c == '-')

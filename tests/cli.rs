@@ -50,7 +50,7 @@ impl Env {
         let text = format!(
             "# my config\n[library]\nroot = \"{}\"\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
              [youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n\n\
-             [playlists.lofi]\nsource = \"https://www.youtube.com/playlist?list=PLaaaaaaaaaaaa\"\ninclude = ['(?i)\\blive\\b']\nexclude = ['(?i)trailer']\n{extra}",
+             [sources.lofi]\nurl = \"https://www.youtube.com/playlist?list=PLaaaaaaaaaaaa\"\ninclude = ['(?i)\\blive\\b']\nexclude = ['(?i)trailer']\n{extra}",
             self.path("media").display(),
             ytdlp.display()
         );
@@ -166,7 +166,7 @@ fn invalid_configs_report_file_line_col_and_are_not_stored() {
     let file = env.path("bad.toml");
     fs::write(
         &file,
-        "[library]\nconcurency = 2\n\n[playlists.lofi]\nsource = 'https://www.youtube.com/playlist?list=PLx'\nmin_duration = 'soon'\n",
+        "[library]\nconcurency = 2\n\n[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLx'\nmin_duration = 'soon'\n",
     )
     .unwrap();
     let file = file.display().to_string();
@@ -178,7 +178,7 @@ fn invalid_configs_report_file_line_col_and_are_not_stored() {
                 "{file}:2:1 library.concurency: unknown key \"concurency\""
             ))
             .and(contains(format!(
-                "{file}:6:16 playlists.lofi.min_duration: \"soon\" is not a valid duration"
+                "{file}:6:16 sources.lofi.min_duration: \"soon\" is not a valid duration"
             ))),
         );
     env.cmd(&["config", "check", &file]).assert().code(1);
@@ -196,11 +196,11 @@ fn check_prints_the_effective_config() {
         .assert()
         .success()
         .stdout(
-            contains("[playlists.lofi]")
+            contains("[sources.lofi]")
                 .and(contains("cover_name = \"{title}-poster\""))
                 .and(contains("AIza…x1Qw")),
         )
-        .stderr(contains("yt-dlp 2026.10.01").and(contains("is valid (1 playlists)")));
+        .stderr(contains("yt-dlp 2026.10.01").and(contains("is valid (1 sources)")));
 
     // Without a path: checks the stored revision.
     env.cmd(&["config", "import", &file]).assert().success();
@@ -239,15 +239,15 @@ fn diff_shows_key_changes_and_text_diff() {
     env.cmd(&["config", "diff"])
         .assert()
         .success()
-        .stdout(contains("+ playlists.lofi.enabled = false").and(contains("+enabled = false")));
+        .stdout(contains("+ sources.lofi.enabled = false").and(contains("+enabled = false")));
 }
 
 #[test]
 fn filter_test_explains_the_decision() {
     let env = Env::new();
     let file = env.write_config("c.toml", "");
-    let run = |title: &str, playlist: &str| {
-        env.cmd(&["filter", "test", title, "-p", playlist, "--config", &file])
+    let run = |title: &str, source: &str| {
+        env.cmd(&["filter", "test", title, "-s", source, "--config", &file])
             .assert()
     };
 
@@ -264,7 +264,7 @@ fn filter_test_explains_the_decision() {
     .success()
     .stdout(contains("decision: drop (matches no include rule)"));
     run("x", "PLzzzzzzzzzzzz").code(2).stderr(contains(
-        "--playlist \"PLzzzzzzzzzzzz\" matches no configured playlist (configured: lofi)",
+        "--source \"PLzzzzzzzzzzzz\" matches no configured source (configured: lofi)",
     ));
 }
 
@@ -315,7 +315,8 @@ fn exit_codes() {
         .code(1)
         .stderr(contains("not implemented yet (planned for M2)"));
     env.cmd(&["--bogus"]).assert().code(2);
-    env.cmd(&["sync", "-p", "Not A Key"]).assert().code(2);
+    env.cmd(&["sync", "-s", "Not A Key"]).assert().code(2);
+    env.cmd(&["sync", "--playlist", "lofi"]).assert().code(2);
     env.cmd(&["--library", "../escape", "config"])
         .assert()
         .code(2);
@@ -360,7 +361,7 @@ fn init_creates_config_and_library() {
         .stdout(
             contains(format!("Created {}", file.display()))
                 .and(contains("Created library \"default\" (config revision 1)"))
-                .and(contains("sample playlist"))
+                .and(contains("sample source"))
                 .and(contains("tidepool config import"))
                 .and(contains(
                     "every 6h with the web UI at http://127.0.0.1:8787: tidepool run",
@@ -376,8 +377,8 @@ fn init_creates_config_and_library() {
     let text = fs::read_to_string(&file).unwrap();
     assert!(text.starts_with("#:schema https://raw.githubusercontent.com/fnando/tidepool/v"));
     assert!(text.contains(
-        "[playlists.sample]                  # one short video, to see tidepool work; replace it with your own\n\
-         source = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\""
+        "[sources.sample]                  # one short video, to see tidepool work; replace it with your own\n\
+         url = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\""
     ));
 
     // The library holds the same text as revision 1.
@@ -386,7 +387,7 @@ fn init_creates_config_and_library() {
         .assert()
         .success()
         .stdout(contains("*    1  "));
-    env.cmd(&["filter", "test", "anything", "-p", "sample"])
+    env.cmd(&["filter", "test", "anything", "--source", "sample"])
         .assert()
         .success()
         .stdout(contains("decision: keep (no include rules)"));
@@ -424,7 +425,7 @@ fn init_never_overwrites() {
     assert!(
         fs::read_to_string(&file)
             .unwrap()
-            .contains("[playlists.sample]")
+            .contains("[sources.sample]")
     );
 }
 
@@ -441,7 +442,7 @@ fn init_with_a_custom_path_and_library() {
     env.cmd(&["config", "-l", "music"])
         .assert()
         .success()
-        .stdout(contains("[playlists.sample]"));
+        .stdout(contains("[sources.sample]"));
 }
 
 #[test]
@@ -450,7 +451,7 @@ fn init_print_and_dry_run_create_nothing() {
     env.cmd(&["init", "--print"])
         .assert()
         .success()
-        .stdout(contains("[playlists.sample]").and(contains("# [playlists.example]")));
+        .stdout(contains("[sources.sample]").and(contains("# [sources.example]")));
     env.cmd(&["init", "--dry-run"])
         .assert()
         .success()

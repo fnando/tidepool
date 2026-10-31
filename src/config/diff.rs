@@ -188,8 +188,8 @@ mod tests {
 
     #[test]
     fn summarizes_key_changes() {
-        let old = json!({ "playlists": { "lofi": { "cleanup": { "max_age": "30d" }, "include": ["a"] }, "old": { "id": "PL1" } } });
-        let new = json!({ "playlists": { "lofi": { "cleanup": { "max_age": "14d" }, "include": ["a", "b"] }, "new pl": { "id": "PL2" } } });
+        let old = json!({ "sources": { "lofi": { "cleanup": { "max_age": "30d" }, "include": ["a"] }, "old": { "id": "PL1" } } });
+        let new = json!({ "sources": { "lofi": { "cleanup": { "max_age": "14d" }, "include": ["a", "b"] }, "new pl": { "id": "PL2" } } });
         let lines: Vec<String> = key_changes(&old, &new)
             .iter()
             .map(ToString::to_string)
@@ -197,10 +197,10 @@ mod tests {
         assert_eq!(
             lines,
             vec![
-                r#"~ playlists.lofi.cleanup.max_age: "30d" → "14d""#,
-                r#"~ playlists.lofi.include: ["a"] → ["a","b"]"#,
-                r#"+ playlists."new pl" = {"id":"PL2"}"#,
-                r#"- playlists.old = {"id":"PL1"}"#,
+                r#"~ sources.lofi.cleanup.max_age: "30d" → "14d""#,
+                r#"~ sources.lofi.include: ["a"] → ["a","b"]"#,
+                r#"+ sources."new pl" = {"id":"PL2"}"#,
+                r#"- sources.old = {"id":"PL1"}"#,
             ]
         );
         assert!(key_changes(&old, &old).is_empty());

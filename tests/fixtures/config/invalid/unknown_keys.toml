@@ -1,9 +1,9 @@
 [library]
 concurency = 2
 
-[playlists.lofi]
+[sources.lofi]
 urll = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
-source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
 
-[playlists.lofi.cleanup]
+[sources.lofi.cleanup]
 max_itms = 3

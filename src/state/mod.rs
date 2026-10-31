@@ -96,7 +96,7 @@ mod tests {
             "config_revisions",
             "hook_runs",
             "items",
-            "playlists",
+            "sources",
             "quota_usage",
             "runs",
             "videos",
