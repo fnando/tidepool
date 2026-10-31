@@ -303,65 +303,12 @@ pub enum YtdlpCmd {
 /// (default ~/.config/tidepool/config.toml); --library names the library.
 #[derive(Debug, Args)]
 pub struct InitArgs {
-    /// Don't ask; use flags and defaults
-    #[arg(long, short = 'y')]
-    pub yes: bool,
-    /// Where videos go (library.root)
-    #[arg(long, value_name = "DIR")]
-    pub root: Option<String>,
-    /// Playlist to add (URL or id); repeatable
-    #[arg(long = "playlist", short = 'p', value_name = "URL|ID", value_parser = parse_init_playlist)]
-    pub playlists: Vec<InitPlaylist>,
-    /// YouTube Data API key (optional; without it, indexing uses yt-dlp)
-    #[arg(long, value_name = "KEY")]
-    pub api_key: Option<String>,
-    /// Sync interval for `tidepool run`, e.g. "6h"; "" = no schedule
-    #[arg(long, value_name = "DURATION", value_parser = parse_interval)]
-    pub interval: Option<String>,
-    /// Disable the web UI (server.enabled = false)
-    #[arg(long)]
-    pub no_server: bool,
     /// Replace an existing config file (kept as <file>.bak)
     #[arg(long)]
     pub force: bool,
-    /// Print the generated config to stdout and create nothing
+    /// Print the config file it would write; create nothing
     #[arg(long)]
     pub print: bool,
-}
-
-/// A playlist given to `init`: a URL with `list=`, or a bare id.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct InitPlaylist {
-    pub id: String,
-    pub url: Option<String>,
-}
-
-pub fn parse_init_playlist(s: &str) -> Result<InitPlaylist, String> {
-    if s.contains("://") || s.contains("list=") {
-        return playlist_id_from_url(s)
-            .map(|id| InitPlaylist {
-                id,
-                url: Some(s.to_string()),
-            })
-            .ok_or_else(|| format!("{s:?} is a URL without a list= parameter"));
-    }
-    if !s.is_empty()
-        && s.chars()
-            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
-    {
-        return Ok(InitPlaylist {
-            id: s.to_string(),
-            url: None,
-        });
-    }
-    Err(format!("{s:?} is not a playlist URL or id"))
-}
-
-fn parse_interval(s: &str) -> Result<String, String> {
-    if s.is_empty() {
-        return Ok(String::new());
-    }
-    crate::config::duration::parse_duration(s).map(|_| s.to_string())
 }
 
 /// A playlist reference from the command line, resolved after config load.
@@ -479,35 +426,25 @@ mod tests {
     }
 
     #[test]
-    fn parses_init_flags() {
-        let cli = Cli::try_parse_from([
-            "tidepool",
-            "init",
-            "--yes",
-            "-p",
-            "PLabc",
-            "-p",
-            "https://www.youtube.com/playlist?list=PLdef",
-            "--interval",
-            "",
-            "--no-server",
-        ])
-        .unwrap();
+    fn init_takes_only_force_and_print() {
+        let cli = Cli::try_parse_from(["tidepool", "init", "--force", "--print"]).unwrap();
         let Command::Init(args) = cli.command else {
             panic!("expected init")
         };
-        assert!(args.yes && args.no_server);
-        assert_eq!(args.interval.as_deref(), Some(""));
-        assert_eq!(
-            args.playlists[0],
-            InitPlaylist {
-                id: "PLabc".into(),
-                url: None
-            }
-        );
-        assert_eq!(args.playlists[1].id, "PLdef");
-        assert!(Cli::try_parse_from(["tidepool", "init", "--interval", "soon"]).is_err());
-        assert!(Cli::try_parse_from(["tidepool", "init", "-p", "not an id"]).is_err());
+        assert!(args.force && args.print);
+        for removed in [
+            "--yes",
+            "--root",
+            "--playlist",
+            "--api-key",
+            "--interval",
+            "--no-server",
+        ] {
+            assert!(
+                Cli::try_parse_from(["tidepool", "init", removed]).is_err(),
+                "{removed}"
+            );
+        }
     }
 
     #[test]

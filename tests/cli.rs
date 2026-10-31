@@ -354,96 +354,77 @@ fn config_flag_applies_to_every_library_command() {
 fn init_creates_config_and_library() {
     let env = Env::new();
     let file = env.path("config/tidepool/config.toml");
-    env.cmd(&[
-        "init",
-        "--yes",
-        "--root",
-        "~/Videos",
-        "-p",
-        "PLAbc_DEF",
-        "-p",
-        "https://www.youtube.com/playlist?list=PLxyz",
-        "--api-key",
-        "AIzaSyD-1234567890x1Qw",
-    ])
-    .assert()
-    .success()
-    .stdout(
-        contains(format!("Created {}", file.display()))
-            .and(contains("Created library \"default\" (config revision 1)"))
-            .and(contains(
-                "tidepool run     # daemon: sync every 6h, web UI at http://127.0.0.1:8787",
-            ))
-            .and(contains("--on-config-mismatch import")),
-    )
-    .stderr(contains("will be downloaded on first use").and(contains("ffmpeg version 9.0.2-fake")));
+    env.cmd(&["init"])
+        .assert()
+        .success()
+        .stdout(
+            contains(format!("Created {}", file.display()))
+                .and(contains("Created library \"default\" (config revision 1)"))
+                .and(contains("sample playlist"))
+                .and(contains("tidepool config import"))
+                .and(contains(
+                    "every 6h with the web UI at http://127.0.0.1:8787: tidepool run",
+                ))
+                .and(contains("--on-config-mismatch import")),
+        )
+        .stderr(
+            contains("will be downloaded on first use").and(contains("ffmpeg version 9.0.2-fake")),
+        );
 
     let mode = fs::metadata(&file).unwrap().permissions().mode() & 0o777;
     assert_eq!(mode, 0o600);
     let text = fs::read_to_string(&file).unwrap();
     assert!(text.starts_with("#:schema https://raw.githubusercontent.com/fnando/tidepool/v"));
-    assert!(
-        text.contains("[playlists.plabc_def]\nid = \"PLAbc_DEF\""),
-        "{text}"
-    );
-    assert!(
-        text.contains("[playlists.plxyz]\nurl = \"https://www.youtube.com/playlist?list=PLxyz\"")
-    );
-    assert!(text.contains("root = \"~/Videos\""));
+    assert!(text.contains(
+        "[playlists.sample]                  # one short video, to see tidepool work; replace it with your own\n\
+         url = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\""
+    ));
 
     // The library holds the same text as revision 1.
-    env.cmd(&["config", "--show-secrets"])
-        .assert()
-        .success()
-        .stdout(text);
+    env.cmd(&["config"]).assert().success().stdout(text);
     env.cmd(&["config", "history"])
         .assert()
         .success()
         .stdout(contains("*    1  "));
+    env.cmd(&["filter", "test", "anything", "-p", "sample"])
+        .assert()
+        .success()
+        .stdout(contains("decision: keep (no include rules)"));
 }
 
 #[test]
 fn init_never_overwrites() {
     let env = Env::new();
-    env.cmd(&["init", "--yes"]).assert().success();
+    env.cmd(&["init"]).assert().success();
     let file = env.path("config/tidepool/config.toml");
-    let original = fs::read_to_string(&file).unwrap();
+    fs::write(&file, "# my edits\n").unwrap();
 
     // The library already has a config, even with --force.
-    for args in [&["init", "--yes"][..], &["init", "--yes", "--force"]] {
+    for args in [&["init"][..], &["init", "--force"]] {
         env.cmd(args).assert().code(1).stderr(contains(
             "library \"default\" already has a config (revision 1)",
         ));
     }
     // A new library, but the file exists.
-    env.cmd(&["init", "--yes", "-l", "work"])
+    env.cmd(&["init", "-l", "work"])
         .assert()
         .code(1)
         .stderr(contains("already exists").and(contains("pass --force to replace it")));
     assert!(!env.path("data/tidepool/libraries/work/state.db").exists());
 
     // --force keeps the old file as .bak.
-    env.cmd(&[
-        "init",
-        "--yes",
-        "-l",
-        "work",
-        "--force",
-        "--no-server",
-        "--interval",
-        "",
-    ])
-    .assert()
-    .success()
-    .stdout(contains("tidepool sync --library work").and(contains("tidepool run").not()));
+    env.cmd(&["init", "-l", "work", "--force"])
+        .assert()
+        .success()
+        .stdout(contains("tidepool sync --library work"));
     assert_eq!(
         fs::read_to_string(env.path("config/tidepool/config.toml.bak")).unwrap(),
-        original
+        "# my edits\n"
     );
     assert!(
         fs::read_to_string(&file)
             .unwrap()
-            .contains("enabled = false")
+            .contains("[playlists.sample]")
     );
 }
 
@@ -451,24 +432,26 @@ fn init_never_overwrites() {
 fn init_with_a_custom_path_and_library() {
     let env = Env::new();
     let file = env.path("elsewhere/tp.toml").display().to_string();
-    env.cmd(&["init", "--yes", "--config", &file, "--library", "music"])
+    env.cmd(&["init", "--config", &file, "--library", "music"])
         .assert()
         .success()
-        .stdout(contains("tidepool sync --library music").and(contains("Add playlists to")));
+        .stdout(contains(format!(
+            "tidepool config import {file} --library music"
+        )));
     env.cmd(&["config", "-l", "music"])
         .assert()
         .success()
-        .stdout(contains("# No playlists yet"));
+        .stdout(contains("[playlists.sample]"));
 }
 
 #[test]
 fn init_print_and_dry_run_create_nothing() {
     let env = Env::new();
-    env.cmd(&["init", "--yes", "--print", "-p", "PLaa"])
+    env.cmd(&["init", "--print"])
         .assert()
         .success()
-        .stdout(contains("[playlists.plaa]").and(contains("# [playlists.example]")));
-    env.cmd(&["init", "--yes", "--dry-run"])
+        .stdout(contains("[playlists.sample]").and(contains("# [playlists.example]")));
+    env.cmd(&["init", "--dry-run"])
         .assert()
         .success()
         .stderr(contains("dry run"));
@@ -477,13 +460,13 @@ fn init_print_and_dry_run_create_nothing() {
 }
 
 #[test]
-fn init_needs_a_terminal_or_yes() {
+fn init_asks_nothing() {
+    // No terminal and no flags needed.
     let env = Env::new();
-    env.cmd(&["init"])
-        .assert()
-        .code(1)
-        .stderr(contains("pass --yes"));
-    assert!(!env.path("config/tidepool/config.toml").exists());
+    env.cmd(&["init"]).write_stdin("").assert().success();
+    for removed in ["--yes", "--root"] {
+        env.cmd(&["init", removed]).assert().code(2);
+    }
 }
 
 #[test]

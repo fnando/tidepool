@@ -7,16 +7,14 @@ use anyhow::{Context as _, bail};
 use serde_json::Value;
 
 use crate::cli::{Cli, Command, ConfigArgs, ConfigCmd, FilterCmd, InitArgs, PlaylistRef};
-use crate::config::check::{
-    EffectiveConfig, Finding, check_environment, check_storage, check_tools, media_root,
-};
+use crate::config::check::{EffectiveConfig, Finding, check_environment, media_root};
 use crate::config::diff::{key_changes, mask_json, mask_toml, text_diff};
 use crate::config::merge::{EffectivePlaylist, effective_playlists};
 use crate::config::schema::schema_json;
 use crate::config::store::{ConfigStore, Imported, Revision};
 use crate::config::{Loaded, load_file, load_str};
 use crate::filter::{Decision, Fields, List, Match, RuleSet};
-use crate::init::{self, Answers, TerminalAsk};
+use crate::init;
 use crate::lock::{self, LibraryLock};
 use crate::paths::{Dirs, LibraryPaths};
 use crate::state::State;
@@ -121,32 +119,10 @@ impl App<'_> {
             .clone()
             .unwrap_or_else(|| self.dirs.default_config_file());
         let name = Self::display_path(&path);
-        let creates = !args.print && !self.cli.dry_run;
-
-        // Refuse before asking anything.
-        if creates {
-            self.ensure_library_is_new()?;
-            if path.exists() && !args.force {
-                bail!(
-                    "{name} already exists; import it with `tidepool config import {name}`, \
-                     or pass --force to replace it (the old file is kept as {name}.bak)"
-                );
-            }
-            self.report(check_tools(&crate::config::Config::default(), &self.dirs));
-        }
-
-        let answers: Answers = if args.yes {
-            init::answers_from_flags(args)?
-        } else if TerminalAsk::available() {
-            let default_root = self.dirs.default_media_root().display().to_string();
-            init::ask_answers(args, &mut TerminalAsk, &default_root)?
-        } else {
-            return Err(init::needs_terminal_error());
-        };
-        let text = init::render(&answers);
+        let text = init::render();
         let loaded = load_str(&name, &text)?;
 
-        if !creates {
+        if args.print || self.cli.dry_run {
             if self.cli.dry_run {
                 tracing::info!(
                     "dry run: would write {name} and create library {:?}",
@@ -157,15 +133,23 @@ impl App<'_> {
             return Ok(exit::OK);
         }
 
+        self.ensure_library_is_new()?;
+        if path.exists() && !args.force {
+            bail!(
+                "{name} already exists; import it with `tidepool config import {name}`, \
+                 or pass --force to replace it (the old file is kept as {name}.bak)"
+            );
+        }
+
         write_private_file(&path, &text, args.force)?;
         let state = self.open_state()?;
         let _lock = self.lock()?;
         let rev = ConfigStore::new(&state.conn)
             .import(Some(&name), &text, &loaded)?
             .rev();
-        let errors = self.report(check_storage(&loaded.config, &self.dirs, Some(&path)));
+        let errors = self.report(check_environment(&loaded.config, &self.dirs, Some(&path)));
 
-        self.print_next_steps(&name, rev, &answers, &loaded, errors, out)?;
+        self.print_next_steps(&name, rev, &loaded, errors, out)?;
         Ok(exit::OK)
     }
 
@@ -191,7 +175,6 @@ impl App<'_> {
         &self,
         name: &str,
         rev: i64,
-        answers: &Answers,
         loaded: &Loaded,
         errors: usize,
         out: &mut dyn Write,
@@ -214,28 +197,18 @@ impl App<'_> {
         if errors > 0 {
             writeln!(out, "\nFix the problems reported above before syncing.")?;
         }
-        writeln!(out, "\nNext steps:")?;
-        if answers.playlists.is_empty() {
-            writeln!(
-                out,
-                "  Add playlists to {name}, then: tidepool config import {name}{library}"
-            )?;
-        }
-        writeln!(out, "  tidepool sync{library}    # sync once now")?;
-        let ui = config
-            .server
-            .enabled
-            .then(|| format!("web UI at http://{}", config.server.listen));
-        let schedule =
-            (!answers.interval.is_empty()).then(|| format!("sync every {}", answers.interval));
-        let daemon = match (schedule, ui) {
-            (Some(s), Some(u)) => format!("daemon: {s}, {u}"),
-            (Some(s), None) => format!("daemon: {s}"),
-            (None, Some(u)) => format!("{u}; sync on demand"),
-            // Without a schedule or a UI, `tidepool run` has nothing to do.
-            (None, None) => return Ok(()),
-        };
-        writeln!(out, "  tidepool run{library}     # {daemon}")?;
+        writeln!(
+            out,
+            "\nThe config includes a sample playlist with one short video. Next steps:\n\
+             \x20 1. Edit {name}: replace the sample with your playlists, set where videos go.\n\
+             \x20 2. Apply your changes: tidepool config import {name}{library}\n\
+             \x20 3. Sync once: tidepool sync{library}\n\
+             \x20    Or keep syncing every {interval} with the web UI at http://{listen}: tidepool run{library}",
+            interval = crate::config::types::format_duration(
+                config.schedule.interval.0.unwrap_or_default()
+            ),
+            listen = config.server.listen,
+        )?;
         let exe = std::env::current_exe()
             .map(|p| p.display().to_string())
             .unwrap_or_else(|_| "tidepool".into());

@@ -1,150 +1,228 @@
 # tidepool
 
-Keep local mirrors of YouTube playlists in sync: media, a normalized
-`metadata.json` and the largest cover image per video, with include/exclude
-rules, post-download hooks and cleanup policies.
+tidepool keeps local copies of YouTube playlists in sync. For each video it
+saves the video file, its details (title, channel, description, …) and the
+largest available cover image. Rules decide which videos to keep, and limits
+keep each playlist's folder from growing forever.
 
-> **Status: M1 (skeleton and config).** `tidepool init`, the CLI surface,
-> configuration (validation, merging, storage with history and rollback) and
-> rule testing work. Indexing and downloading land in M2; see
-> [Roadmap](#roadmap).
+> **Early days.** You can set up tidepool, write and check your configuration,
+> and test your filters. Downloading isn't available yet.
 
-Supports Linux and macOS. Requires `ffmpeg`/`ffprobe` (merging formats,
-embedding). [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) is downloaded and kept
-up to date by tidepool (from M2); set `ytdlp.managed = false` to use your own.
+Works on Linux and macOS.
 
-## Install
+## Requirements
 
-```sh
-cargo install --path .
-```
+- [`ffmpeg`](https://ffmpeg.org) (including `ffprobe`), e.g.
+  `brew install ffmpeg` or `apt install ffmpeg`.
+- [`yt-dlp`](https://github.com/yt-dlp/yt-dlp): you won't need to install it.
+  tidepool will download it and keep it up to date once downloading is
+  available. If you'd rather use your own copy, see
+  [Using your own yt-dlp](#using-your-own-yt-dlp).
 
-## Quick start
+## Installation
 
-```sh
-tidepool init                                   # asks a few questions
-tidepool filter test "Lofi LIVE radio" -p lofi  # which rule keeps or drops a title?
-```
+TBD.
 
-`init` writes a commented config file (`~/.config/tidepool/config.toml`, or
-`--config <path>`) listing every option with its default, creates the library
-and imports the file as revision 1. For scripts, answer with flags:
+## Getting started
+
+Run:
 
 ```sh
-tidepool init --yes --root ~/Videos/youtube \
-  --playlist https://www.youtube.com/playlist?list=PLxxxxxxxx \
-  --interval 6h --no-server
+tidepool init
 ```
 
-Playlists added with flags are named after their id, lowercased. `init` never
-overwrites: an existing file needs `--force` (the old one is kept as `.bak`),
-and a library that already has a config is never touched. `--print` writes the
-config to stdout and creates nothing.
+It creates your config file at `~/.config/tidepool/config.toml`, sets up
+tidepool to use it, and tells you what to do next. Nothing is asked.
+
+The config file lists every setting with a short explanation. Settings you
+haven't changed are commented out and show their default value, so the file
+doubles as a reference. It comes with a sample playlist holding one short
+video, so you can see tidepool work before adding your own playlists.
+
+| Option | Meaning |
+| --- | --- |
+| `--config <path>` | Write the config file somewhere else |
+| `--print` | Only show the config file it would write; create nothing |
+| `--force` | Replace an existing config file (the old one is kept as `config.toml.bak`) |
+
+`init` never overwrites anything by accident: if the config file already
+exists, it stops and suggests what to do instead.
 
 ## Configuration
 
-One TOML file with `[library]`, `[ytdlp]`, `[youtube]`, `[schedule]`,
-`[server]`, `[defaults]`, `[hooks.<name>]` and `[playlists.<key>]`. Playlists override `[defaults]` key by
-key; lists (`include`, `exclude`, `hooks`, `ytdlp_args`) replace the defaults
-unless `inherit_rules = true` / `inherit_hooks = true`. See
-[`examples/config.toml`](examples/config.toml) for every option.
+Your settings live in one file, `~/.config/tidepool/config.toml`. Open it in
+any text editor. Its sections:
 
-### Validation
+| Section | What it's for |
+| --- | --- |
+| `[library]` | Where videos go, how many download at once |
+| `[ytdlp]` | Which yt-dlp to use and how it's kept up to date |
+| `[youtube]` | Your YouTube API key (optional) |
+| `[schedule]` | How often to sync in the background |
+| `[server]` | The web interface |
+| `[defaults]` | Settings every playlist uses unless it sets its own |
+| `[hooks.<name>]` | Your own scripts to run after each download |
+| `[playlists.<name>]` | The playlists to keep in sync |
 
-The config's shape is a JSON Schema (draft 2020-12) generated from the Rust
-types: [`schema/tidepool.v1.schema.json`](schema/tidepool.v1.schema.json), also
-printed by `tidepool config schema`. Every error is reported at once with its
-location:
+A minimal playlist looks like this:
+
+```toml
+[playlists.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+```
+
+Any setting from `[defaults]` can be changed for a single playlist by adding it
+under that playlist. See [`examples/config.toml`](examples/config.toml) for a
+complete example.
+
+### Applying changes
+
+tidepool keeps its own copy of your settings, so a half-edited file never
+affects anything. After editing the file, apply it:
+
+```sh
+tidepool config import ~/.config/tidepool/config.toml
+```
+
+Or add `--config <path>` to any command; the file is applied first if it
+changed. This is handy when you keep the file in a dotfiles repository:
+
+```sh
+tidepool filter test "Lofi LIVE radio" --playlist lofi --config ~/.config/tidepool/config.toml
+```
+
+### Checking for mistakes
+
+```sh
+tidepool config check ~/.config/tidepool/config.toml
+```
+
+This shows every problem at once, with the line and column where it is:
 
 ```
 config.toml:2:1 library.concurency: unknown key "concurency"
 config.toml:20:12 playlists.lofi.cleanup.max_size: "20 gigs" is not a valid byte size (e.g. "20GiB", "500MB")
 ```
 
-For autocompletion in Taplo-based editors (e.g. Even Better TOML), start the
-file with:
+It also checks that `ffmpeg` and yt-dlp are available and that the video
+folder is writable. Then it prints your settings with every default filled in,
+so you can see exactly what each playlist will do. A file with mistakes is
+never applied.
 
-```toml
-#:schema https://raw.githubusercontent.com/fnando/tidepool/v0.1.0/schema/tidepool.v1.schema.json
-```
+Editors that understand the `#:schema` line at the top of the file (for
+example VS Code with the *Even Better TOML* extension) suggest setting names
+and flag mistakes as you type.
 
-### Storage
+### History and undo
 
-Each library keeps its config in its state DB as numbered revisions; TOML files
-are how it gets in and out (comments are kept).
+Every applied change is kept, so you can always go back:
 
 | Command | What it does |
 | --- | --- |
-| `tidepool config` | Print the current revision (`youtube.api_key` and `server.token` masked unless `--show-secrets`) |
-| `tidepool config import <path>` | Validate and store as a new revision; no-op if unchanged |
-| `tidepool config export [--rev N]` | Print a revision as TOML |
-| `tidepool config history` | List revisions (`*` = current) |
-| `tidepool config rollback <rev>` | Make an old revision current, as a new revision |
-| `tidepool config check [<path>]` | Validate a file (or the current revision), check `yt-dlp`, `ffmpeg`/`ffprobe`, the media root and file permissions, print the effective config |
-| `tidepool config diff [<path>]` | Key-level summary + text diff against the current revision (defaults to the last imported file) |
-| `tidepool config schema` | Print the JSON Schema |
+| `tidepool config` | Show the current settings |
+| `tidepool config history` | List every applied version (`*` marks the current one) |
+| `tidepool config diff` | Show how your file differs from the current settings |
+| `tidepool config export [--rev N]` | Show an older version |
+| `tidepool config rollback N` | Go back to version `N` (saved as a new version, so nothing is lost) |
 
-`--config <path>` (or `TIDEPOOL_CONFIG`) on any command imports the file first
-if it changed, so a git-managed config stays a single cron line. If the current
-revision came from a rollback (or, later, the web UI) the run stops instead of
-overwriting it; `--force-config` imports anyway.
+Your API key and web interface token are hidden in this output; add
+`--show-secrets` to see them.
 
-### Paths
+If you roll back and later pass `--config` with a file that differs from the
+current settings, tidepool stops instead of silently undoing your rollback. Use
+`tidepool config diff` to compare, and `--force-config` if you do want the file
+applied.
+
+### Testing your filters
+
+`include` and `exclude` rules decide which videos are kept. They're regular
+expressions, tested against the video title by default:
+
+```toml
+[playlists.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+include = ['(?i)\blive\b']                 # only videos with "live" in the title
+exclude = ['(?i)\b(trailer|teaser)\b']     # but never trailers or teasers
+```
+
+A video is kept when it matches at least one `include` rule (or there are
+none) and no `exclude` rule. Try a title against a playlist's rules:
+
+```sh
+tidepool filter test "Lofi LIVE radio" --playlist lofi
+```
+
+```
+playlist lofi (PLxxxxxxxx)
+  include[0] "(?i)\\blive\\b" on title: match
+  exclude[0] "(?i)\\b(trailer|teaser)\\b" on title: no match
+decision: keep (matches include[0])
+```
+
+### YouTube API key
+
+An API key is optional. Once downloading is available, a key will make
+checking playlists for new videos faster and bring more details per video;
+without one, tidepool uses yt-dlp for everything. To add a key later, set it in the config file and apply the change:
+
+```toml
+[youtube]
+api_key = "AIza..."
+```
+
+The config file is created so only you can read it. If you create it some
+other way and it holds a key or token, `config check` warns you if other users
+can read it.
+
+### Using your own yt-dlp
+
+```toml
+[ytdlp]
+managed = false
+path = "/usr/local/bin/yt-dlp"
+```
+
+### The web interface
+
+The web interface is coming soon, but you can already choose its settings. By
+default it listens on `http://127.0.0.1:8787`, so only your own computer can
+reach it. To reach it from other machines, change `listen` and set a `token` (a
+password); tidepool won't accept other addresses without one:
+
+```toml
+[server]
+listen = "0.0.0.0:8787"
+token = "a long random secret"
+```
+
+### More than one library
+
+Each set of playlists with its own settings is a *library*. You get one called
+`default`; add `--library <name>` to any command to use another. Each library
+has its own settings and history:
+
+```sh
+tidepool init --library music --config ~/.config/tidepool/music.toml
+tidepool config history --library music
+```
+
+## Where things are
 
 | What | Where |
 | --- | --- |
-| Config file (convention) | `~/.config/tidepool/config.toml` |
-| State, lock, logs | `~/.local/share/tidepool/libraries/<name>/` |
-| Managed yt-dlp | `~/.local/share/tidepool/bin/` |
-| Media (default `library.root`) | `~/.local/share/tidepool/media` |
+| Your config file | `~/.config/tidepool/config.toml` |
+| Videos (unless you choose another folder) | `~/.local/share/tidepool/media` |
+| tidepool's own data | `~/.local/share/tidepool/` |
 
-`$XDG_CONFIG_HOME` and `$XDG_DATA_HOME` are honored on macOS too.
-`--library <name>` (default `default`) picks the library.
+If you set `XDG_CONFIG_HOME` or `XDG_DATA_HOME`, tidepool uses those folders
+instead, on macOS too.
 
 ## Exit codes
+
+For scripts:
 
 | Code | Meaning |
 | --- | --- |
 | 0 | Success |
-| 1 | Fatal error (bad config, DB error, lock held, not implemented yet) |
-| 2 | Usage error (bad flags, unknown `--playlist`) |
-| 3 | Partial failure (M2+) |
-| 4 | API quota exhausted and fallback disabled (M3+) |
-
-## Roadmap
-
-| Milestone | Commands |
-| --- | --- |
-| M1 Skeleton and config ✅ | `init`, `config …`, `filter test` |
-| M2 yt-dlp path end to end | `sync`, `index`, `download`, `reset`, managed yt-dlp (`ytdlp …`), `problems` |
-| M3 API indexer | (indexing via YouTube Data API v3) |
-| M4 Hooks and embedding | `hooks run`, `embed` |
-| M5 Cleanup | `cleanup`, `pin`, `unpin`, `config check --reconcile` |
-| M6 Polish | `list`, progress, release builds |
-| M7 Daemon and management UI | `run` (with the web UI from `[server]`), `config merge` |
-
-## Development
-
-```sh
-cargo test
-cargo clippy --all-targets -- -D warnings
-cargo fmt --check
-```
-
-The schema file is checked by a test. After changing config types (or bumping
-the version, which is part of the schema `$id`), regenerate it:
-
-```sh
-cargo run -- config schema > schema/tidepool.v1.schema.json
-```
-
-`tests/bin/` holds fake `yt-dlp`, `ffmpeg` and `ffprobe` scripts that the
-end-to-end tests put first on `PATH`, so tests never depend on (or run) the
-real tools.
-
-The template `tidepool init` writes is tested against the schema: a new config
-option must be added to it (with its real default) or the tests fail.
-
-Error messages for invalid configs are snapshot-tested with
-[`insta`](https://insta.rs) over `tests/fixtures/config/invalid/*.toml`; review
-changes with `cargo insta review`.
+| 1 | Something went wrong (e.g. a config mistake); the message says what |
+| 2 | The command was used incorrectly (unknown option, unknown playlist) |
