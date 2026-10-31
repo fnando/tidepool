@@ -15,6 +15,7 @@ pub fn check(config: &Config) -> Vec<Diagnostic> {
     check_unique_ids_and_dirs(config, &mut out);
     check_durations(config, &mut out);
     check_youtube(config, &mut out);
+    check_server(config, &mut out);
     out
 }
 
@@ -135,10 +136,26 @@ fn check_durations(config: &Config, out: &mut Vec<Diagnostic>) {
 }
 
 fn check_youtube(config: &Config, out: &mut Vec<Diagnostic>) {
-    if config.youtube.api_keys.is_empty() && !config.youtube.fallback_to_ytdlp {
+    if config.youtube.api_key.is_none() && !config.youtube.fallback_to_ytdlp {
         out.push(Diagnostic::warning(
             "/youtube/fallback_to_ytdlp",
-            "has no effect without api_keys: yt-dlp is always the indexer then",
+            "has no effect without api_key: yt-dlp is always the indexer then",
+        ));
+    }
+}
+
+fn check_server(config: &Config, out: &mut Vec<Diagnostic>) {
+    let server = &config.server;
+    let Ok(addr) = server.listen.parse::<std::net::SocketAddr>() else {
+        return;
+    };
+    if server.enabled && !addr.ip().is_loopback() && server.token.is_empty() {
+        out.push(Diagnostic::error(
+            "/server/listen",
+            format!(
+                "{} is reachable from other machines, so server.token is required (or listen on 127.0.0.1)",
+                server.listen
+            ),
         ));
     }
 }

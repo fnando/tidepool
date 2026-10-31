@@ -4,6 +4,7 @@ pub mod app;
 pub mod cli;
 pub mod config;
 pub mod filter;
+pub mod init;
 pub mod lock;
 pub mod paths;
 pub mod state;

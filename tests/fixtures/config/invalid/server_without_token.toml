@@ -1,0 +1,5 @@
+[server]
+listen = "0.0.0.0:8787"
+
+[playlists.lofi]
+id = "PLxxxxxxxx"

@@ -333,6 +333,12 @@ fn convert(error: &ValidationError<'_>, out: &mut Vec<Diagnostic>) {
                 not_one_of(instance, options.iter()),
             ));
         }
+        ValidationErrorKind::MinLength { limit: 1 } => {
+            out.push(Diagnostic::error(
+                pointer,
+                "must not be empty (remove it to use the default)",
+            ));
+        }
         ValidationErrorKind::Required { property } => {
             let name = property.as_str().unwrap_or_default();
             out.push(Diagnostic::error(

@@ -7,9 +7,11 @@ use std::process::Command;
 
 use serde::Serialize;
 
-use super::diff::mask_key;
+use super::diff::mask_secret;
 use super::merge::{EffectivePlaylist, effective_playlists};
-use super::types::{Config, HookConfig, LibraryConfig, ScheduleConfig, YoutubeConfig};
+use super::types::{
+    Config, HookConfig, LibraryConfig, ScheduleConfig, ServerConfig, YoutubeConfig, YtdlpConfig,
+};
 use crate::paths::{Dirs, expand};
 
 /// Something found while checking the environment.
@@ -31,28 +33,52 @@ pub fn media_root(config: &Config, dirs: &Dirs) -> Result<PathBuf, String> {
 /// Check what a run needs: yt-dlp (and ffmpeg when embedding needs it), a
 /// writable media root, and a private config file when it holds API keys.
 pub fn check_environment(config: &Config, dirs: &Dirs, config_file: Option<&Path>) -> Vec<Finding> {
+    let mut out = check_tools(config, dirs);
+    out.extend(check_storage(config, dirs, config_file));
+    out
+}
+
+/// yt-dlp (unless managed and not downloaded yet) and ffmpeg/ffprobe.
+pub fn check_tools(config: &Config, dirs: &Dirs) -> Vec<Finding> {
     let mut out = Vec::new();
 
-    let ytdlp = &config.library.ytdlp_path;
-    out.push(match tool_version(ytdlp, "--version") {
-        Ok(version) => Finding::Ok(format!("yt-dlp {version} ({ytdlp})")),
-        Err(e) => Finding::Error(format!(
-            "yt-dlp: cannot run {ytdlp:?} (library.ytdlp_path): {e}"
-        )),
-    });
-
-    let playlists = effective_playlists(config);
-    if playlists.iter().any(|p| p.embed.cover || p.embed.info_json) {
-        for tool in ["ffmpeg", "ffprobe"] {
-            out.push(match tool_version(tool, "-version") {
-                Ok(version) => Finding::Ok(version),
-                Err(e) => Finding::Error(format!(
-                    "{tool} is required by embed.cover/embed.info_json: {e}"
-                )),
-            });
-        }
+    let ytdlp = &config.ytdlp;
+    if ytdlp.managed {
+        let managed = dirs.managed_ytdlp(ytdlp.channel);
+        out.push(match tool_version(&managed.to_string_lossy(), "--version") {
+            Ok(version) => Finding::Ok(format!("yt-dlp {version} (managed, {})", managed.display())),
+            Err(_) => Finding::Ok(format!(
+                "yt-dlp is managed by tidepool ({} channel) and will be downloaded on first use",
+                channel_name(ytdlp)
+            )),
+        });
+    } else {
+        let path = &ytdlp.path;
+        out.push(match tool_version(path, "--version") {
+            Ok(version) => Finding::Ok(format!("yt-dlp {version} ({path})")),
+            Err(e) => Finding::Error(format!(
+                "yt-dlp: cannot run {path:?} (ytdlp.path): {e}; install yt-dlp or set ytdlp.managed = true"
+            )),
+        });
     }
 
+    // Needed for merging formats and for embedding.
+    for tool in ["ffmpeg", "ffprobe"] {
+        out.push(match tool_version(tool, "-version") {
+            Ok(version) => Finding::Ok(version),
+            Err(e) => Finding::Error(format!(
+                "{tool} is required (merging formats, embedding) but cannot be run: {e}; \
+                 install ffmpeg (e.g. `brew install ffmpeg` or `apt install ffmpeg`)"
+            )),
+        });
+    }
+
+    out
+}
+
+/// A writable media root, and a private config file when it holds secrets.
+pub fn check_storage(config: &Config, dirs: &Dirs, config_file: Option<&Path>) -> Vec<Finding> {
+    let mut out = Vec::new();
     match media_root(config, dirs) {
         Ok(root) => out.push(match check_writable(&root) {
             Ok(()) => Finding::Ok(format!("library.root {} is writable", root.display())),
@@ -62,17 +88,28 @@ pub fn check_environment(config: &Config, dirs: &Dirs, config_file: Option<&Path
     }
 
     if let Some(path) = config_file
-        && !config.youtube.api_keys.is_empty()
+        && has_secrets(config)
         && let Ok(meta) = std::fs::metadata(path)
         && meta.permissions().mode() & 0o077 != 0
     {
         out.push(Finding::Warning(format!(
-            "{} contains youtube.api_keys and is readable by other users; run `chmod 600 {}`",
+            "{} contains secrets (youtube.api_key or server.token) and is readable by other users; run `chmod 600 {}`",
             path.display(),
             path.display()
         )));
     }
     out
+}
+
+fn has_secrets(config: &Config) -> bool {
+    config.youtube.api_key.is_some() || !config.server.token.is_empty()
+}
+
+fn channel_name(ytdlp: &YtdlpConfig) -> String {
+    serde_json::to_value(ytdlp.channel)
+        .ok()
+        .and_then(|v| v.as_str().map(str::to_string))
+        .unwrap_or_default()
 }
 
 fn tool_version(program: &str, flag: &str) -> Result<String, String> {
@@ -113,8 +150,10 @@ fn check_writable(root: &Path) -> Result<(), String> {
 #[derive(Debug, Serialize)]
 pub struct EffectiveConfig {
     pub library: EffectiveLibrary,
+    pub ytdlp: YtdlpConfig,
     pub youtube: YoutubeConfig,
     pub schedule: ScheduleConfig,
+    pub server: ServerConfig,
     pub hooks: BTreeMap<String, HookConfig>,
     pub playlists: BTreeMap<String, EffectivePlaylist>,
 }
@@ -129,8 +168,10 @@ pub struct EffectiveLibrary {
 impl EffectiveConfig {
     pub fn new(config: &Config, dirs: &Dirs, show_secrets: bool) -> Self {
         let mut youtube = config.youtube.clone();
+        let mut server = config.server.clone();
         if !show_secrets {
-            youtube.api_keys = youtube.api_keys.iter().map(|k| mask_key(k)).collect();
+            youtube.api_key = youtube.api_key.as_deref().map(mask_secret);
+            server.token = mask_secret(&server.token);
         }
         let root = media_root(config, dirs)
             .map(|p| p.display().to_string())
@@ -139,8 +180,10 @@ impl EffectiveConfig {
         rest.root = None;
         Self {
             library: EffectiveLibrary { root, rest },
+            ytdlp: config.ytdlp.clone(),
             youtube,
             schedule: config.schedule.clone(),
+            server,
             hooks: config.hooks.clone(),
             playlists: effective_playlists(config)
                 .into_iter()
@@ -179,7 +222,8 @@ mod tests {
     #[test]
     fn effective_config_masks_keys_and_fills_defaults() {
         let config: Config = toml::from_str(
-            "[youtube]\napi_keys = ['AIzaSyD-1234567890x1Qw']\n[playlists.lofi]\nid = 'PLx'",
+            "[youtube]\napi_key = 'AIzaSyD-1234567890x1Qw'\n[server]\ntoken = 'my-long-secret-token'\n\
+             [playlists.lofi]\nid = 'PLx'",
         )
         .unwrap();
         let text = EffectiveConfig::new(&config, &dirs(), false).to_toml();
@@ -199,8 +243,10 @@ mod tests {
 
     #[test]
     fn missing_ytdlp_is_an_error() {
-        let config: Config =
-            toml::from_str("[library]\nytdlp_path = '/nonexistent/yt-dlp'\nroot = '/tmp'").unwrap();
+        let config: Config = toml::from_str(
+            "[ytdlp]\nmanaged = false\npath = '/nonexistent/yt-dlp'\n[library]\nroot = '/tmp'",
+        )
+        .unwrap();
         let findings = check_environment(&config, &dirs(), None);
         assert!(
             findings
@@ -217,13 +263,30 @@ mod tests {
     }
 
     #[test]
+    fn missing_managed_ytdlp_is_fine() {
+        let config: Config = toml::from_str("[library]\nroot = '/tmp'").unwrap();
+        let findings = check_environment(&config, &dirs(), None);
+        assert!(
+            findings
+                .iter()
+                .any(|f| matches!(f, Finding::Ok(m) if m.contains("downloaded on first use"))),
+            "{findings:?}"
+        );
+        assert!(
+            !findings
+                .iter()
+                .any(|f| matches!(f, Finding::Error(m) if m.contains("yt-dlp")))
+        );
+    }
+
+    #[test]
     fn warns_about_world_readable_keys() {
         let dir = tempfile::tempdir().unwrap();
         let file = dir.path().join("config.toml");
         std::fs::write(&file, "").unwrap();
         std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o644)).unwrap();
         let config: Config =
-            toml::from_str("[youtube]\napi_keys = ['k']\n[library]\nroot = '/tmp'").unwrap();
+            toml::from_str("[server]\ntoken = 'k'\n[library]\nroot = '/tmp'").unwrap();
         let findings = check_environment(&config, &dirs(), Some(&file));
         assert!(
             findings

@@ -1,0 +1,5 @@
+[ytdlp]
+managed = false
+path = "/usr/local/bin/yt-dlp"
+channel = "stable"
+update_check = "6h"

@@ -50,4 +50,11 @@ CREATE TABLE quota_usage (
   units INTEGER NOT NULL
 );
 
+CREATE TABLE problems (
+  id INTEGER PRIMARY KEY, kind TEXT NOT NULL, -- e.g. ytdlp_extraction, ytdlp_bot_check, hook_failing
+  first_seen TEXT, last_seen TEXT, count INTEGER NOT NULL,
+  sample TEXT, ytdlp_version TEXT, playlists_json TEXT, hint TEXT,
+  shown_cli_at TEXT, acknowledged_at TEXT, resolved_at TEXT
+);
+
 CREATE INDEX items_status ON items(playlist_key, status);

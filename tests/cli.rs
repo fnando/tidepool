@@ -1,12 +1,22 @@
 //! End-to-end: run the binary against a temp library.
 
 use std::fs;
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
 use predicates::prelude::*;
 use predicates::str::contains;
 use tempfile::TempDir;
+
+fn test_bin() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/bin")
+}
+
+/// Fake yt-dlp/ffmpeg/ffprobe first, then the system basics.
+fn test_path() -> String {
+    format!("{}:/usr/bin:/bin", test_bin().display())
+}
 
 struct Env {
     tmp: TempDir,
@@ -26,7 +36,7 @@ impl Env {
     fn cmd(&self, args: &[&str]) -> Command {
         let mut cmd = Command::cargo_bin("tidepool").unwrap();
         cmd.env_clear()
-            .env("PATH", std::env::var("PATH").unwrap())
+            .env("PATH", test_path())
             .env("HOME", self.path("home"))
             .env("XDG_CONFIG_HOME", self.path("config"))
             .env("XDG_DATA_HOME", self.path("data"))
@@ -36,10 +46,10 @@ impl Env {
 
     /// A valid config file using the fake yt-dlp and a temp media root.
     fn write_config(&self, name: &str, extra: &str) -> String {
-        let ytdlp = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/bin/yt-dlp");
+        let ytdlp = test_bin().join("yt-dlp");
         let text = format!(
-            "# my config\n[library]\nroot = \"{}\"\nytdlp_path = \"{}\"\n\n\
-             [youtube]\napi_keys = [\"AIzaSyD-1234567890x1Qw\"]\n\n\
+            "# my config\n[library]\nroot = \"{}\"\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
+             [youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n\n\
              [playlists.lofi]\nid = \"PLaaaaaaaaaaaa\"\ninclude = ['(?i)\\blive\\b']\nexclude = ['(?i)trailer']\n{extra}",
             self.path("media").display(),
             ytdlp.display()
@@ -55,7 +65,7 @@ impl Env {
 fn commands_without_a_config_explain_how_to_import_one() {
     let env = Env::new();
     env.cmd(&["config"]).assert().code(1).stderr(contains(
-        "library \"default\" has no config yet; run `tidepool config import <path>` first",
+        "library \"default\" has no config yet; run `tidepool init` (or `tidepool config import <path>`) first",
     ));
 }
 
@@ -204,7 +214,11 @@ fn check_prints_the_effective_config() {
 fn check_fails_when_ytdlp_is_missing() {
     let env = Env::new();
     let file = env.path("c.toml");
-    fs::write(&file, "[library]\nytdlp_path = '/nonexistent/yt-dlp'\n").unwrap();
+    fs::write(
+        &file,
+        "[ytdlp]\nmanaged = false\npath = '/nonexistent/yt-dlp'\n",
+    )
+    .unwrap();
     env.cmd(&["config", "check", &file.display().to_string()])
         .assert()
         .code(1)
@@ -334,4 +348,151 @@ fn config_flag_applies_to_every_library_command() {
         .assert()
         .success()
         .stdout(contains("*    2  "));
+}
+
+#[test]
+fn init_creates_config_and_library() {
+    let env = Env::new();
+    let file = env.path("config/tidepool/config.toml");
+    env.cmd(&[
+        "init",
+        "--yes",
+        "--root",
+        "~/Videos",
+        "-p",
+        "PLAbc_DEF",
+        "-p",
+        "https://www.youtube.com/playlist?list=PLxyz",
+        "--api-key",
+        "AIzaSyD-1234567890x1Qw",
+    ])
+    .assert()
+    .success()
+    .stdout(
+        contains(format!("Created {}", file.display()))
+            .and(contains("Created library \"default\" (config revision 1)"))
+            .and(contains(
+                "tidepool run     # daemon: sync every 6h, web UI at http://127.0.0.1:8787",
+            ))
+            .and(contains("--on-config-mismatch import")),
+    )
+    .stderr(contains("will be downloaded on first use").and(contains("ffmpeg version 9.0.2-fake")));
+
+    let mode = fs::metadata(&file).unwrap().permissions().mode() & 0o777;
+    assert_eq!(mode, 0o600);
+    let text = fs::read_to_string(&file).unwrap();
+    assert!(text.starts_with("#:schema https://raw.githubusercontent.com/fnando/tidepool/v"));
+    assert!(
+        text.contains("[playlists.plabc_def]\nid = \"PLAbc_DEF\""),
+        "{text}"
+    );
+    assert!(
+        text.contains("[playlists.plxyz]\nurl = \"https://www.youtube.com/playlist?list=PLxyz\"")
+    );
+    assert!(text.contains("root = \"~/Videos\""));
+
+    // The library holds the same text as revision 1.
+    env.cmd(&["config", "--show-secrets"])
+        .assert()
+        .success()
+        .stdout(text);
+    env.cmd(&["config", "history"])
+        .assert()
+        .success()
+        .stdout(contains("*    1  "));
+}
+
+#[test]
+fn init_never_overwrites() {
+    let env = Env::new();
+    env.cmd(&["init", "--yes"]).assert().success();
+    let file = env.path("config/tidepool/config.toml");
+    let original = fs::read_to_string(&file).unwrap();
+
+    // The library already has a config, even with --force.
+    for args in [&["init", "--yes"][..], &["init", "--yes", "--force"]] {
+        env.cmd(args).assert().code(1).stderr(contains(
+            "library \"default\" already has a config (revision 1)",
+        ));
+    }
+    // A new library, but the file exists.
+    env.cmd(&["init", "--yes", "-l", "work"])
+        .assert()
+        .code(1)
+        .stderr(contains("already exists").and(contains("pass --force to replace it")));
+    assert!(!env.path("data/tidepool/libraries/work/state.db").exists());
+
+    // --force keeps the old file as .bak.
+    env.cmd(&[
+        "init",
+        "--yes",
+        "-l",
+        "work",
+        "--force",
+        "--no-server",
+        "--interval",
+        "",
+    ])
+    .assert()
+    .success()
+    .stdout(contains("tidepool sync --library work").and(contains("tidepool run").not()));
+    assert_eq!(
+        fs::read_to_string(env.path("config/tidepool/config.toml.bak")).unwrap(),
+        original
+    );
+    assert!(
+        fs::read_to_string(&file)
+            .unwrap()
+            .contains("enabled = false")
+    );
+}
+
+#[test]
+fn init_with_a_custom_path_and_library() {
+    let env = Env::new();
+    let file = env.path("elsewhere/tp.toml").display().to_string();
+    env.cmd(&["init", "--yes", "--config", &file, "--library", "music"])
+        .assert()
+        .success()
+        .stdout(contains("tidepool sync --library music").and(contains("Add playlists to")));
+    env.cmd(&["config", "-l", "music"])
+        .assert()
+        .success()
+        .stdout(contains("# No playlists yet"));
+}
+
+#[test]
+fn init_print_and_dry_run_create_nothing() {
+    let env = Env::new();
+    env.cmd(&["init", "--yes", "--print", "-p", "PLaa"])
+        .assert()
+        .success()
+        .stdout(contains("[playlists.plaa]").and(contains("# [playlists.example]")));
+    env.cmd(&["init", "--yes", "--dry-run"])
+        .assert()
+        .success()
+        .stderr(contains("dry run"));
+    assert!(!env.path("config").exists());
+    assert!(!env.path("data").exists());
+}
+
+#[test]
+fn init_needs_a_terminal_or_yes() {
+    let env = Env::new();
+    env.cmd(&["init"])
+        .assert()
+        .code(1)
+        .stderr(contains("pass --yes"));
+    assert!(!env.path("config/tidepool/config.toml").exists());
+}
+
+#[test]
+fn check_requires_ffmpeg() {
+    let env = Env::new();
+    let file = env.write_config("c.toml", "");
+    env.cmd(&["config", "check", &file])
+        .env("PATH", env.path("empty-path"))
+        .assert()
+        .code(1)
+        .stderr(contains("ffmpeg is required").and(contains("ffprobe is required")));
 }

@@ -16,18 +16,29 @@ concurrency = 2                     # parallel yt-dlp downloads
 duplicates = "hardlink"             # same video in several playlists: hardlink | symlink | copy | download
 regex_backtrack_limit = 1000000     # fancy-regex step limit per match
 shutdown_timeout = "10s"            # grace period for child processes after SIGINT/SIGTERM
-ytdlp_path = "yt-dlp"
 tmp_dir = ".tidepool-tmp"           # relative to root: same filesystem, atomic rename
 
+[ytdlp]
+managed = true                      # tidepool downloads yt-dlp and keeps it updated
+channel = "nightly"                 # stable | nightly | master (nightly is what yt-dlp recommends)
+update_check = "1h"                 # how often to look for a new release (one GitHub API call)
+path = "yt-dlp"                     # only used when managed = false
+
 [youtube]
-api_keys = []                       # e.g. ["AIza..."]; empty = index with yt-dlp
+# api_key = "AIza..."               # optional; without it, indexing uses yt-dlp only
 daily_quota = 10000                 # raise only if Google granted your project an extension
-quota_warn_at = 0.8                 # warn at 80% of daily_quota
-fallback_to_ytdlp = true            # with keys: use yt-dlp on quota/5xx
+quota_warn_at = 0.8                 # warn in logs and the web UI at 80% of daily_quota
+fallback_to_ytdlp = true            # with a key: use yt-dlp on quota/5xx; always on without api_key
 requests_per_second = 5
 
 [schedule]
-interval = "6h"                     # tidepool run / server: sync + cleanup this often; "" = off
+interval = "6h"                     # tidepool run: sync + cleanup this often; "" = off
+
+[server]                            # web UI inside tidepool run
+enabled = true                      # false = sync daemon only, no UI
+listen = "127.0.0.1:8787"
+token = ""                          # required for a non-loopback listen address
+read_only_config = false            # true = config editor disabled
 
 [defaults]
 format = "bv*[height<=1080]+ba/b"

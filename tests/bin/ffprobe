@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "ffprobe version 9.0.2-fake Copyright (c) fake"

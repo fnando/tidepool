@@ -6,14 +6,17 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context as _, bail};
 use serde_json::Value;
 
-use crate::cli::{Cli, Command, ConfigArgs, ConfigCmd, FilterCmd, PlaylistRef};
-use crate::config::check::{EffectiveConfig, Finding, check_environment};
+use crate::cli::{Cli, Command, ConfigArgs, ConfigCmd, FilterCmd, InitArgs, PlaylistRef};
+use crate::config::check::{
+    EffectiveConfig, Finding, check_environment, check_storage, check_tools, media_root,
+};
 use crate::config::diff::{key_changes, mask_json, mask_toml, text_diff};
 use crate::config::merge::{EffectivePlaylist, effective_playlists};
 use crate::config::schema::schema_json;
 use crate::config::store::{ConfigStore, Imported, Revision};
 use crate::config::{Loaded, load_file, load_str};
 use crate::filter::{Decision, Fields, List, Match, RuleSet};
+use crate::init::{self, Answers, TerminalAsk};
 use crate::lock::{self, LibraryLock};
 use crate::paths::{Dirs, LibraryPaths};
 use crate::state::State;
@@ -45,6 +48,7 @@ pub fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         app.import_config_flag()?;
     }
     match &cli.command {
+        Command::Init(args) => app.init(args, out),
         Command::Config(args) => app.config(args, out),
         Command::Filter {
             cmd: FilterCmd::Test { title, playlist },
@@ -92,6 +96,158 @@ impl App<'_> {
             Imported::Created(rev) => tracing::info!("imported {name} as config revision {rev}"),
             Imported::Unchanged(rev) => tracing::debug!("{name} matches config revision {rev}"),
         }
+        Ok(())
+    }
+
+    fn report(&self, findings: Vec<Finding>) -> usize {
+        let mut errors = 0;
+        for finding in findings {
+            match finding {
+                Finding::Ok(message) => tracing::info!("{message}"),
+                Finding::Warning(message) => tracing::warn!("{message}"),
+                Finding::Error(message) => {
+                    errors += 1;
+                    tracing::error!("{message}");
+                }
+            }
+        }
+        errors
+    }
+
+    fn init(&self, args: &InitArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
+        let path = self
+            .cli
+            .config
+            .clone()
+            .unwrap_or_else(|| self.dirs.default_config_file());
+        let name = Self::display_path(&path);
+        let creates = !args.print && !self.cli.dry_run;
+
+        // Refuse before asking anything.
+        if creates {
+            self.ensure_library_is_new()?;
+            if path.exists() && !args.force {
+                bail!(
+                    "{name} already exists; import it with `tidepool config import {name}`, \
+                     or pass --force to replace it (the old file is kept as {name}.bak)"
+                );
+            }
+            self.report(check_tools(&crate::config::Config::default(), &self.dirs));
+        }
+
+        let answers: Answers = if args.yes {
+            init::answers_from_flags(args)?
+        } else if TerminalAsk::available() {
+            let default_root = self.dirs.default_media_root().display().to_string();
+            init::ask_answers(args, &mut TerminalAsk, &default_root)?
+        } else {
+            return Err(init::needs_terminal_error());
+        };
+        let text = init::render(&answers);
+        let loaded = load_str(&name, &text)?;
+
+        if !creates {
+            if self.cli.dry_run {
+                tracing::info!(
+                    "dry run: would write {name} and create library {:?}",
+                    self.cli.library
+                );
+            }
+            write!(out, "{text}")?;
+            return Ok(exit::OK);
+        }
+
+        write_private_file(&path, &text, args.force)?;
+        let state = self.open_state()?;
+        let _lock = self.lock()?;
+        let rev = ConfigStore::new(&state.conn)
+            .import(Some(&name), &text, &loaded)?
+            .rev();
+        let errors = self.report(check_storage(&loaded.config, &self.dirs, Some(&path)));
+
+        self.print_next_steps(&name, rev, &answers, &loaded, errors, out)?;
+        Ok(exit::OK)
+    }
+
+    /// `init` never touches a library that already has a config.
+    fn ensure_library_is_new(&self) -> anyhow::Result<()> {
+        if !self.library.state_db.exists() {
+            return Ok(());
+        }
+        let state = self.open_state()?;
+        if let Some(current) = ConfigStore::new(&state.conn).current()? {
+            bail!(
+                "library {:?} already has a config (revision {}); change it with \
+                 `tidepool config import <path>`, or create another library with \
+                 `tidepool init --library <name>`",
+                self.cli.library,
+                current.rev
+            );
+        }
+        Ok(())
+    }
+
+    fn print_next_steps(
+        &self,
+        name: &str,
+        rev: i64,
+        answers: &Answers,
+        loaded: &Loaded,
+        errors: usize,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<()> {
+        let library = if self.cli.library == "default" {
+            String::new()
+        } else {
+            format!(" --library {}", self.cli.library)
+        };
+        let config = &loaded.config;
+        writeln!(out, "Created {name}")?;
+        writeln!(
+            out,
+            "Created library {:?} (config revision {rev})",
+            self.cli.library
+        )?;
+        if let Ok(root) = media_root(config, &self.dirs) {
+            writeln!(out, "Videos go to {}", root.display())?;
+        }
+        if errors > 0 {
+            writeln!(out, "\nFix the problems reported above before syncing.")?;
+        }
+        writeln!(out, "\nNext steps:")?;
+        if answers.playlists.is_empty() {
+            writeln!(
+                out,
+                "  Add playlists to {name}, then: tidepool config import {name}{library}"
+            )?;
+        }
+        writeln!(out, "  tidepool sync{library}    # sync once now")?;
+        let ui = config
+            .server
+            .enabled
+            .then(|| format!("web UI at http://{}", config.server.listen));
+        let schedule =
+            (!answers.interval.is_empty()).then(|| format!("sync every {}", answers.interval));
+        let daemon = match (schedule, ui) {
+            (Some(s), Some(u)) => format!("daemon: {s}, {u}"),
+            (Some(s), None) => format!("daemon: {s}"),
+            (None, Some(u)) => format!("{u}; sync on demand"),
+            // Without a schedule or a UI, `tidepool run` has nothing to do.
+            (None, None) => return Ok(()),
+        };
+        writeln!(out, "  tidepool run{library}     # {daemon}")?;
+        let exe = std::env::current_exe()
+            .map(|p| p.display().to_string())
+            .unwrap_or_else(|_| "tidepool".into());
+        writeln!(
+            out,
+            "\nTo run it as a service, save this as ~/.config/systemd/user/tidepool.service\n\
+             and run `systemctl --user enable --now tidepool`:\n\n\
+             [Unit]\nDescription=tidepool\n\n\
+             [Service]\nExecStart={exe} run{library} --config {name} --on-config-mismatch import\n\
+             Restart=on-failure\n\n\
+             [Install]\nWantedBy=default.target"
+        )?;
         Ok(())
     }
 
@@ -267,17 +423,11 @@ impl App<'_> {
             self.warn(&loaded.warnings);
         }
 
-        let mut failed = false;
-        for finding in check_environment(&loaded.config, &self.dirs, file.as_deref()) {
-            match finding {
-                Finding::Ok(message) => tracing::info!("{message}"),
-                Finding::Warning(message) => tracing::warn!("{message}"),
-                Finding::Error(message) => {
-                    failed = true;
-                    tracing::error!("{message}");
-                }
-            }
-        }
+        let failed = self.report(check_environment(
+            &loaded.config,
+            &self.dirs,
+            file.as_deref(),
+        )) > 0;
         write!(
             out,
             "{}",
@@ -452,4 +602,28 @@ pub fn resolve_playlist<'a>(
         ))
         .into()
     })
+}
+
+/// Write `text` to `path` with owner-only permissions. With `replace`, an
+/// existing file is moved to `<path>.bak` first.
+fn write_private_file(path: &Path, text: &str, replace: bool) -> anyhow::Result<()> {
+    use std::os::unix::fs::OpenOptionsExt;
+
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir).with_context(|| format!("cannot create {}", dir.display()))?;
+    }
+    if replace && path.exists() {
+        let mut backup = path.as_os_str().to_owned();
+        backup.push(".bak");
+        std::fs::rename(path, &backup)
+            .with_context(|| format!("cannot move {} aside", path.display()))?;
+    }
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(path)
+        .with_context(|| format!("cannot create {}", path.display()))?;
+    file.write_all(text.as_bytes())?;
+    Ok(())
 }

@@ -361,11 +361,6 @@
           "default": ".tidepool-tmp",
           "description": "Work area, relative to `root` (same filesystem, so the final rename is atomic).",
           "type": "string"
-        },
-        "ytdlp_path": {
-          "default": "yt-dlp",
-          "description": "yt-dlp executable.",
-          "type": "string"
         }
       },
       "type": "object"
@@ -585,6 +580,34 @@
       },
       "type": "object"
     },
+    "ServerConfig": {
+      "additionalProperties": false,
+      "description": "`[server]`",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Serve the web UI from `tidepool run`; false = sync daemon only.",
+          "type": "boolean"
+        },
+        "listen": {
+          "default": "127.0.0.1:8787",
+          "description": "Address the web UI listens on, e.g. \"127.0.0.1:8787\".",
+          "format": "socket-address",
+          "type": "string"
+        },
+        "read_only_config": {
+          "default": false,
+          "description": "Disable the config editor in the web UI.",
+          "type": "boolean"
+        },
+        "token": {
+          "default": "",
+          "description": "Access token; required for a non-loopback `listen` address. \"\" = none.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "ThumbnailFormat": {
       "enum": [
         "jpg",
@@ -597,13 +620,10 @@
       "additionalProperties": false,
       "description": "`[youtube]`",
       "properties": {
-        "api_keys": {
-          "default": [],
-          "description": "API keys, tried in order only when a key is invalid or revoked. Empty = index with yt-dlp.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
+        "api_key": {
+          "description": "YouTube Data API v3 key. Optional; without it, indexing uses yt-dlp only.",
+          "minLength": 1,
+          "type": "string"
         },
         "daily_quota": {
           "default": 10000,
@@ -614,7 +634,7 @@
         },
         "fallback_to_ytdlp": {
           "default": true,
-          "description": "With API keys: use yt-dlp on quota exhaustion or repeated 5xx.",
+          "description": "With an API key: use yt-dlp on quota exhaustion, a rejected key or repeated 5xx.",
           "type": "boolean"
         },
         "quota_warn_at": {
@@ -631,6 +651,47 @@
           "format": "uint32",
           "minimum": 1,
           "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "YtdlpChannel": {
+      "description": "yt-dlp release channel.",
+      "enum": [
+        "stable",
+        "nightly",
+        "master"
+      ],
+      "type": "string"
+    },
+    "YtdlpConfig": {
+      "additionalProperties": false,
+      "description": "`[ytdlp]`",
+      "properties": {
+        "channel": {
+          "$ref": "#/$defs/YtdlpChannel",
+          "default": "nightly",
+          "description": "Release channel for the managed binary."
+        },
+        "managed": {
+          "default": true,
+          "description": "tidepool downloads yt-dlp and keeps it updated.",
+          "type": "boolean"
+        },
+        "path": {
+          "default": "yt-dlp",
+          "description": "yt-dlp executable; only used when `managed = false`.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "update_check": {
+          "default": "1h",
+          "description": "How often to look for a new release.",
+          "examples": [
+            "30d"
+          ],
+          "format": "duration",
+          "type": "string"
         }
       },
       "type": "object"
@@ -664,8 +725,7 @@
         "duplicates": "hardlink",
         "regex_backtrack_limit": 1000000,
         "shutdown_timeout": "10s",
-        "tmp_dir": ".tidepool-tmp",
-        "ytdlp_path": "yt-dlp"
+        "tmp_dir": ".tidepool-tmp"
       },
       "description": "Where media goes and how downloads run."
     },
@@ -685,7 +745,17 @@
       "default": {
         "interval": ""
       },
-      "description": "Scheduling for `tidepool run` and `tidepool server`."
+      "description": "Scheduling for `tidepool run`."
+    },
+    "server": {
+      "$ref": "#/$defs/ServerConfig",
+      "default": {
+        "enabled": true,
+        "listen": "127.0.0.1:8787",
+        "read_only_config": false,
+        "token": ""
+      },
+      "description": "The web UI served by `tidepool run`."
     },
     "version": {
       "description": "Config format version. Optional; when set, must be 1.",
@@ -697,13 +767,22 @@
     "youtube": {
       "$ref": "#/$defs/YoutubeConfig",
       "default": {
-        "api_keys": [],
         "daily_quota": 10000,
         "fallback_to_ytdlp": true,
         "quota_warn_at": 0.8,
         "requests_per_second": 5
       },
       "description": "YouTube Data API settings."
+    },
+    "ytdlp": {
+      "$ref": "#/$defs/YtdlpConfig",
+      "default": {
+        "channel": "nightly",
+        "managed": true,
+        "path": "yt-dlp",
+        "update_check": "1h"
+      },
+      "description": "The yt-dlp binary: managed by tidepool, or your own."
     }
   },
   "title": "tidepool config",

@@ -25,12 +25,18 @@ pub struct Config {
     /// Where media goes and how downloads run.
     #[serde(default)]
     pub library: LibraryConfig,
+    /// The yt-dlp binary: managed by tidepool, or your own.
+    #[serde(default)]
+    pub ytdlp: YtdlpConfig,
     /// YouTube Data API settings.
     #[serde(default)]
     pub youtube: YoutubeConfig,
-    /// Scheduling for `tidepool run` and `tidepool server`.
+    /// Scheduling for `tidepool run`.
     #[serde(default)]
     pub schedule: ScheduleConfig,
+    /// The web UI served by `tidepool run`.
+    #[serde(default)]
+    pub server: ServerConfig,
     /// Options every playlist inherits.
     #[serde(default)]
     pub defaults: Defaults,
@@ -59,8 +65,6 @@ pub struct LibraryConfig {
     pub regex_backtrack_limit: u64,
     /// Grace period for child processes after SIGINT/SIGTERM.
     pub shutdown_timeout: HumanDuration,
-    /// yt-dlp executable.
-    pub ytdlp_path: String,
     /// Work area, relative to `root` (same filesystem, so the final rename is atomic).
     pub tmp_dir: String,
 }
@@ -73,7 +77,6 @@ impl Default for LibraryConfig {
             duplicates: Duplicates::Hardlink,
             regex_backtrack_limit: 1_000_000,
             shutdown_timeout: HumanDuration(Duration::from_secs(10)),
-            ytdlp_path: "yt-dlp".into(),
             tmp_dir: ".tidepool-tmp".into(),
         }
     }
@@ -89,19 +92,56 @@ pub enum Duplicates {
     Download,
 }
 
+/// `[ytdlp]`
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields, default)]
+pub struct YtdlpConfig {
+    /// tidepool downloads yt-dlp and keeps it updated.
+    pub managed: bool,
+    /// Release channel for the managed binary.
+    pub channel: YtdlpChannel,
+    /// How often to look for a new release.
+    pub update_check: HumanDuration,
+    /// yt-dlp executable; only used when `managed = false`.
+    #[schemars(length(min = 1))]
+    pub path: String,
+}
+
+impl Default for YtdlpConfig {
+    fn default() -> Self {
+        Self {
+            managed: true,
+            channel: YtdlpChannel::Nightly,
+            update_check: HumanDuration(Duration::from_secs(3600)),
+            path: "yt-dlp".into(),
+        }
+    }
+}
+
+/// yt-dlp release channel.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum YtdlpChannel {
+    Stable,
+    Nightly,
+    Master,
+}
+
 /// `[youtube]`
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields, default)]
 pub struct YoutubeConfig {
-    /// API keys, tried in order only when a key is invalid or revoked. Empty = index with yt-dlp.
-    pub api_keys: Vec<String>,
+    /// YouTube Data API v3 key. Optional; without it, indexing uses yt-dlp only.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
+    pub api_key: Option<String>,
     /// Daily quota of the Google Cloud project.
     #[schemars(range(min = 1))]
     pub daily_quota: u32,
     /// Warn when this fraction of `daily_quota` is used.
     #[schemars(range(min = 0.0, max = 1.0))]
     pub quota_warn_at: f64,
-    /// With API keys: use yt-dlp on quota exhaustion or repeated 5xx.
+    /// With an API key: use yt-dlp on quota exhaustion, a rejected key or repeated 5xx.
     pub fallback_to_ytdlp: bool,
     /// API request rate limit.
     #[schemars(range(min = 1))]
@@ -111,7 +151,7 @@ pub struct YoutubeConfig {
 impl Default for YoutubeConfig {
     fn default() -> Self {
         Self {
-            api_keys: Vec::new(),
+            api_key: None,
             daily_quota: 10_000,
             quota_warn_at: 0.8,
             fallback_to_ytdlp: true,
@@ -126,6 +166,32 @@ impl Default for YoutubeConfig {
 pub struct ScheduleConfig {
     /// Run sync + cleanup this often; "" = off.
     pub interval: OptionalDuration,
+}
+
+/// `[server]`
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields, default)]
+pub struct ServerConfig {
+    /// Serve the web UI from `tidepool run`; false = sync daemon only.
+    pub enabled: bool,
+    /// Address the web UI listens on, e.g. "127.0.0.1:8787".
+    #[schemars(extend("format" = "socket-address"))]
+    pub listen: String,
+    /// Access token; required for a non-loopback `listen` address. "" = none.
+    pub token: String,
+    /// Disable the config editor in the web UI.
+    pub read_only_config: bool,
+}
+
+impl Default for ServerConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            listen: "127.0.0.1:8787".into(),
+            token: String::new(),
+            read_only_config: false,
+        }
+    }
 }
 
 /// A hook: a command run after a video is downloaded or before it is cleaned up.

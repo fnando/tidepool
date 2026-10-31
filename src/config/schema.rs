@@ -32,6 +32,7 @@ pub const FORMATS: &[&str] = &[
     "tag-template",
     "hook-template",
     "fancy-regex",
+    "socket-address",
 ];
 
 /// Check `value` against one of tidepool's custom formats, explaining failures.
@@ -55,6 +56,12 @@ pub fn check_format(format: &str, value: &str) -> Result<(), String> {
         "fancy-regex" => fancy_regex::Regex::new(value)
             .map(drop)
             .map_err(|e| format!("{value:?} is not a valid regex: {}", regex_error_detail(&e))),
+        "socket-address" => value
+            .parse::<std::net::SocketAddr>()
+            .map(drop)
+            .map_err(|_| {
+                format!("{value:?} is not an address with a port (e.g. \"127.0.0.1:8787\")")
+            }),
         other => Err(format!("unknown format {other:?}")),
     }
 }

@@ -1,0 +1,5 @@
+---
+source: tests/config_validation.rs
+expression: err
+---
+server_without_token.toml:2:10 server.listen: 0.0.0.0:8787 is reachable from other machines, so server.token is required (or listen on 127.0.0.1)

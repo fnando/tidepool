@@ -82,7 +82,9 @@ pub enum StoreError {
     Config(#[from] ConfigError),
     #[error("revision {0} does not exist (see `tidepool config history`)")]
     NoSuchRevision(i64),
-    #[error("library {0:?} has no config yet; run `tidepool config import <path>` first")]
+    #[error(
+        "library {0:?} has no config yet; run `tidepool init` (or `tidepool config import <path>`) first"
+    )]
     Empty(String),
     #[error(
         "{path} differs from the stored config, which was changed by {changed_by} (revision {rev}) after it was last imported.\n\

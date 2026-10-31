@@ -5,7 +5,7 @@ expression: err
 types_and_enums.toml:2:15 library.concurrency: 0 is less than the minimum of 1
 types_and_enums.toml:3:14 library.duplicates: "move" is not one of "hardlink", "symlink", "copy", "download"
 types_and_enums.toml:6:17 youtube.quota_warn_at: 1.5 is greater than the maximum of 1.0
-types_and_enums.toml:7:12 youtube.api_keys: "AIza" is not of type "array"
+types_and_enums.toml:7:11 youtube.api_key: 42 is not of type "string"
 types_and_enums.toml:10:20 defaults.thumbnail_format: "png" is not one of "jpg", "webp", "original"
 types_and_enums.toml:11:16 defaults.match_fields: [] has less than 1 item
 types_and_enums.toml:12:12 defaults.include[0]: must be a regex string or a { field, pattern } table

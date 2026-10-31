@@ -1,0 +1,5 @@
+---
+source: tests/config_validation.rs
+expression: err
+---
+server_bad_listen.toml:2:10 server.listen: "localhost" is not an address with a port (e.g. "127.0.0.1:8787")

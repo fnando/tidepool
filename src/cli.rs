@@ -65,6 +65,8 @@ pub enum LogFormat {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
+    /// Create a commented config file and the library behind it
+    Init(InitArgs),
     /// Full pipeline: index, filter, download, run hooks, clean up
     Sync(ScopeArgs),
     /// Index only: update the DB with remote items and filter results
@@ -95,24 +97,35 @@ pub enum Command {
     Unpin(VideoArgs),
     /// Forget an item so it is downloaded again
     Reset(ResetArgs),
-    /// Loop: sync + cleanup every schedule.interval
+    /// List open problems, or acknowledge one
+    Problems {
+        #[command(subcommand)]
+        cmd: Option<ProblemsCmd>,
+    },
+    /// Inspect, update or roll back the managed yt-dlp binary
+    Ytdlp {
+        #[command(subcommand)]
+        cmd: YtdlpCmd,
+    },
+    /// Daemon: sync + cleanup every schedule.interval, plus the web UI ([server])
     Run(RunArgs),
-    /// Start the local management UI
-    Server(ServerArgs),
 }
 
 impl Command {
     /// Milestone in which a not-yet-implemented command lands.
     pub fn milestone(&self) -> Option<&'static str> {
         match self {
-            Command::Config(_) | Command::Filter { .. } => None,
-            Command::Sync(_) | Command::Index(_) | Command::Download(_) | Command::Reset(_) => {
-                Some("M2")
-            }
+            Command::Init(_) | Command::Config(_) | Command::Filter { .. } => None,
+            Command::Sync(_)
+            | Command::Index(_)
+            | Command::Download(_)
+            | Command::Reset(_)
+            | Command::Problems { .. }
+            | Command::Ytdlp { .. } => Some("M2"),
             Command::Hooks { .. } | Command::Embed(_) => Some("M4"),
             Command::Cleanup(_) | Command::Pin(_) | Command::Unpin(_) => Some("M5"),
             Command::List(_) => Some("M6"),
-            Command::Run(_) | Command::Server(_) => Some("M7"),
+            Command::Run(_) => Some("M7"),
         }
     }
 }
@@ -264,23 +277,91 @@ pub enum ConfigMismatch {
 
 #[derive(Debug, Args)]
 pub struct RunArgs {
-    /// What to do when the config file differs from the stored config
-    #[arg(long, value_enum, default_value_t = ConfigMismatch::Fail)]
-    pub on_config_mismatch: ConfigMismatch,
-}
-
-#[derive(Debug, Args)]
-pub struct ServerArgs {
-    #[arg(long, default_value = "127.0.0.1:8787")]
-    pub listen: String,
-    /// Environment variable holding the access token
-    #[arg(long, default_value = "TIDEPOOL_TOKEN")]
-    pub token_env: String,
-    /// Disable config editing in the UI
-    #[arg(long)]
-    pub read_only_config: bool,
+    /// What to do when the config file differs from the stored config. Without
+    /// it: ask in a terminal, resolve in the web UI, or fail when the UI is off.
     #[arg(long, value_enum)]
     pub on_config_mismatch: Option<ConfigMismatch>,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ProblemsCmd {
+    /// Hide a problem until it happens again
+    Ack { id: i64 },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum YtdlpCmd {
+    /// Path, version, channel and last update check
+    Status,
+    /// Check for a new release now
+    Update,
+    /// Restore the previous binary until the next release
+    Rollback,
+}
+
+/// `tidepool init`. The config file goes to the global --config path
+/// (default ~/.config/tidepool/config.toml); --library names the library.
+#[derive(Debug, Args)]
+pub struct InitArgs {
+    /// Don't ask; use flags and defaults
+    #[arg(long, short = 'y')]
+    pub yes: bool,
+    /// Where videos go (library.root)
+    #[arg(long, value_name = "DIR")]
+    pub root: Option<String>,
+    /// Playlist to add (URL or id); repeatable
+    #[arg(long = "playlist", short = 'p', value_name = "URL|ID", value_parser = parse_init_playlist)]
+    pub playlists: Vec<InitPlaylist>,
+    /// YouTube Data API key (optional; without it, indexing uses yt-dlp)
+    #[arg(long, value_name = "KEY")]
+    pub api_key: Option<String>,
+    /// Sync interval for `tidepool run`, e.g. "6h"; "" = no schedule
+    #[arg(long, value_name = "DURATION", value_parser = parse_interval)]
+    pub interval: Option<String>,
+    /// Disable the web UI (server.enabled = false)
+    #[arg(long)]
+    pub no_server: bool,
+    /// Replace an existing config file (kept as <file>.bak)
+    #[arg(long)]
+    pub force: bool,
+    /// Print the generated config to stdout and create nothing
+    #[arg(long)]
+    pub print: bool,
+}
+
+/// A playlist given to `init`: a URL with `list=`, or a bare id.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InitPlaylist {
+    pub id: String,
+    pub url: Option<String>,
+}
+
+pub fn parse_init_playlist(s: &str) -> Result<InitPlaylist, String> {
+    if s.contains("://") || s.contains("list=") {
+        return playlist_id_from_url(s)
+            .map(|id| InitPlaylist {
+                id,
+                url: Some(s.to_string()),
+            })
+            .ok_or_else(|| format!("{s:?} is a URL without a list= parameter"));
+    }
+    if !s.is_empty()
+        && s.chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+    {
+        return Ok(InitPlaylist {
+            id: s.to_string(),
+            url: None,
+        });
+    }
+    Err(format!("{s:?} is not a playlist URL or id"))
+}
+
+fn parse_interval(s: &str) -> Result<String, String> {
+    if s.is_empty() {
+        return Ok(String::new());
+    }
+    crate::config::duration::parse_duration(s).map(|_| s.to_string())
 }
 
 /// A playlist reference from the command line, resolved after config load.
@@ -395,6 +476,46 @@ mod tests {
             cli.command,
             Command::Config(ConfigArgs { cmd: None, .. })
         ));
+    }
+
+    #[test]
+    fn parses_init_flags() {
+        let cli = Cli::try_parse_from([
+            "tidepool",
+            "init",
+            "--yes",
+            "-p",
+            "PLabc",
+            "-p",
+            "https://www.youtube.com/playlist?list=PLdef",
+            "--interval",
+            "",
+            "--no-server",
+        ])
+        .unwrap();
+        let Command::Init(args) = cli.command else {
+            panic!("expected init")
+        };
+        assert!(args.yes && args.no_server);
+        assert_eq!(args.interval.as_deref(), Some(""));
+        assert_eq!(
+            args.playlists[0],
+            InitPlaylist {
+                id: "PLabc".into(),
+                url: None
+            }
+        );
+        assert_eq!(args.playlists[1].id, "PLdef");
+        assert!(Cli::try_parse_from(["tidepool", "init", "--interval", "soon"]).is_err());
+        assert!(Cli::try_parse_from(["tidepool", "init", "-p", "not an id"]).is_err());
+    }
+
+    #[test]
+    fn server_command_is_gone() {
+        assert!(Cli::try_parse_from(["tidepool", "server"]).is_err());
+        assert!(Cli::try_parse_from(["tidepool", "ytdlp", "status"]).is_ok());
+        assert!(Cli::try_parse_from(["tidepool", "problems", "ack", "3"]).is_ok());
+        assert!(Cli::try_parse_from(["tidepool", "problems"]).is_ok());
     }
 
     #[test]

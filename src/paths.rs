@@ -47,6 +47,21 @@ impl Dirs {
         self.data_dir.join("media")
     }
 
+    /// Managed binaries, shared by all libraries.
+    pub fn bin_dir(&self) -> PathBuf {
+        self.data_dir.join("bin")
+    }
+
+    /// The managed yt-dlp binary for a release channel.
+    pub fn managed_ytdlp(&self, channel: crate::config::YtdlpChannel) -> PathBuf {
+        let name = match channel {
+            crate::config::YtdlpChannel::Stable => "yt-dlp-stable",
+            crate::config::YtdlpChannel::Nightly => "yt-dlp-nightly",
+            crate::config::YtdlpChannel::Master => "yt-dlp-master",
+        };
+        self.bin_dir().join(name)
+    }
+
     pub fn library(&self, name: &str) -> LibraryPaths {
         let dir = self.data_dir.join("libraries").join(name);
         LibraryPaths {

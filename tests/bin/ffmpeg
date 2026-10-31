@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "ffmpeg version 9.0.2-fake Copyright (c) fake"

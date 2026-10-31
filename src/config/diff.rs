@@ -16,37 +16,47 @@ pub fn mask_key(key: &str) -> String {
     format!("{head}…{tail}")
 }
 
-/// Mask `youtube.api_keys` in TOML text, keeping comments and formatting.
-/// Text that doesn't parse is returned unchanged.
+/// Config values that are secrets: masked unless `--show-secrets`.
+pub const SECRETS: &[(&str, &str)] = &[("youtube", "api_key"), ("server", "token")];
+
+/// Mask a secret for display; empty values stay empty.
+pub fn mask_secret(value: &str) -> String {
+    if value.is_empty() {
+        String::new()
+    } else {
+        mask_key(value)
+    }
+}
+
+/// Mask [`SECRETS`] in TOML text, keeping comments and formatting. Text that
+/// doesn't parse is returned unchanged.
 pub fn mask_toml(text: &str) -> String {
     let Ok(mut doc) = text.parse::<DocumentMut>() else {
         return text.to_string();
     };
-    let Some(keys) = doc
-        .get_mut("youtube")
-        .and_then(|y| y.as_table_like_mut())
-        .and_then(|y| y.get_mut("api_keys"))
-        .and_then(|k| k.as_array_mut())
-    else {
-        return text.to_string();
-    };
-    for value in keys.iter_mut() {
-        if let Some(key) = value.as_str() {
+    for (table, key) in SECRETS {
+        let Some(value) = doc
+            .get_mut(table)
+            .and_then(|t| t.as_table_like_mut())
+            .and_then(|t| t.get_mut(key))
+            .and_then(|v| v.as_value_mut())
+        else {
+            continue;
+        };
+        if let Some(secret) = value.as_str() {
             let decor = value.decor().clone();
-            *value = mask_key(key).into();
+            *value = mask_secret(secret).into();
             *value.decor_mut() = decor;
         }
     }
     doc.to_string()
 }
 
-/// Mask `youtube.api_keys` in a JSON config.
+/// Mask [`SECRETS`] in a JSON config.
 pub fn mask_json(value: &mut Value) {
-    if let Some(Value::Array(keys)) = value.pointer_mut("/youtube/api_keys") {
-        for key in keys {
-            if let Value::String(s) = key {
-                *s = mask_key(s);
-            }
+    for (table, key) in SECRETS {
+        if let Some(Value::String(s)) = value.pointer_mut(&format!("/{table}/{key}")) {
+            *s = mask_secret(s);
         }
     }
 }
@@ -153,17 +163,27 @@ mod tests {
     fn masks_keys() {
         assert_eq!(mask_key("AIzaSyD-1234567890x1Qw"), "AIza…x1Qw");
         assert_eq!(mask_key("short"), "…");
-        let text =
-            "[youtube]\napi_keys = [\"AIzaSyD-1234567890x1Qw\", \"AIzaSyOTHERkeyzzzz\"] # keys\n";
+        let text = "[youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\" # key\n\n\
+                    [server]\ntoken = \"my-long-secret-token\"\n";
         assert_eq!(
             mask_toml(text),
-            "[youtube]\napi_keys = [\"AIza…x1Qw\", \"AIza…zzzz\"] # keys\n"
+            "[youtube]\napi_key = \"AIza…x1Qw\" # key\n\n[server]\ntoken = \"my-l…oken\"\n"
+        );
+        assert_eq!(
+            mask_toml("[server]\ntoken = \"\"\n"),
+            "[server]\ntoken = \"\"\n"
         );
         assert_eq!(mask_toml("[library]\n"), "[library]\n");
 
-        let mut value = json!({ "youtube": { "api_keys": ["AIzaSyD-1234567890x1Qw"] } });
+        let mut value = json!({
+            "youtube": { "api_key": "AIzaSyD-1234567890x1Qw" },
+            "server": { "token": "my-long-secret-token" }
+        });
         mask_json(&mut value);
-        assert_eq!(value, json!({ "youtube": { "api_keys": ["AIza…x1Qw"] } }));
+        assert_eq!(
+            value,
+            json!({ "youtube": { "api_key": "AIza…x1Qw" }, "server": { "token": "my-l…oken" } })
+        );
     }
 
     #[test]
