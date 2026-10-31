@@ -14,10 +14,8 @@ Works on Linux and macOS.
 
 - [`ffmpeg`](https://ffmpeg.org) (including `ffprobe`), e.g.
   `brew install ffmpeg` or `apt install ffmpeg`.
-- [`yt-dlp`](https://github.com/yt-dlp/yt-dlp): you won't need to install it.
-  tidepool will download it and keep it up to date once downloading is
-  available. If you'd rather use your own copy, see
-  [Using your own yt-dlp](#using-your-own-yt-dlp).
+- [`yt-dlp`](https://github.com/yt-dlp/yt-dlp): you don't need to install it;
+  tidepool downloads it and keeps it up to date (see [yt-dlp](#yt-dlp)).
 
 ## Installation
 
@@ -183,13 +181,41 @@ The config file is created so only you can read it. If you create it some
 other way and it holds a key or token, `config check` warns you if other users
 can read it.
 
-### Using your own yt-dlp
+### yt-dlp
+
+tidepool downloads [yt-dlp](https://github.com/yt-dlp/yt-dlp) the first time
+it's needed and keeps it up to date, checking for a new release at most once an
+hour. Before installing a release, it checks that the release was signed by the
+yt-dlp project and that the file wasn't altered, so a tampered download is
+never used.
+
+| Command | What it does |
+| --- | --- |
+| `tidepool ytdlp status` | Show the installed version, where it is, and when tidepool last checked for updates |
+| `tidepool ytdlp update` | Check for a new release now and install it |
+| `tidepool ytdlp rollback` | Go back to the version you had before the last update. The release you rolled back from is skipped until a newer one comes out |
+
+By default tidepool follows yt-dlp's *nightly* releases, which is what the
+yt-dlp project recommends, since YouTube changes often. To follow the regular
+releases instead, or check less often:
+
+```toml
+[ytdlp]
+channel = "stable"         # stable | nightly | master
+update_check = "1d"
+```
+
+#### Using your own yt-dlp
+
+If you'd rather install and update yt-dlp yourself:
 
 ```toml
 [ytdlp]
 managed = false
 path = "/usr/local/bin/yt-dlp"
 ```
+
+tidepool then uses that copy as it is, and never updates it.
 
 ### The web interface
 

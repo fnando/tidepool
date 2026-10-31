@@ -24,10 +24,11 @@ fn init_tracing(cli: &Cli) {
     }
 }
 
-fn main() -> ExitCode {
+#[tokio::main]
+async fn main() -> ExitCode {
     let cli = Cli::parse(); // usage errors exit 2
     init_tracing(&cli);
-    let code = match app::run(&cli, &mut std::io::stdout().lock()) {
+    let code = match app::run(&cli, &mut std::io::stdout().lock()).await {
         Ok(code) => code,
         Err(err) => {
             eprintln!("error: {err:#}");

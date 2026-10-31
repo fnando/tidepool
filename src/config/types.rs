@@ -127,6 +127,25 @@ pub enum YtdlpChannel {
     Master,
 }
 
+impl YtdlpChannel {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            YtdlpChannel::Stable => "stable",
+            YtdlpChannel::Nightly => "nightly",
+            YtdlpChannel::Master => "master",
+        }
+    }
+
+    /// GitHub repository that publishes this channel's releases.
+    pub fn repository(self) -> &'static str {
+        match self {
+            YtdlpChannel::Stable => "yt-dlp/yt-dlp",
+            YtdlpChannel::Nightly => "yt-dlp/yt-dlp-nightly-builds",
+            YtdlpChannel::Master => "yt-dlp/yt-dlp-master-builds",
+        }
+    }
+}
+
 /// `[youtube]`
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields, default)]

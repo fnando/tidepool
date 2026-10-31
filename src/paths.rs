@@ -54,12 +54,7 @@ impl Dirs {
 
     /// The managed yt-dlp binary for a release channel.
     pub fn managed_ytdlp(&self, channel: crate::config::YtdlpChannel) -> PathBuf {
-        let name = match channel {
-            crate::config::YtdlpChannel::Stable => "yt-dlp-stable",
-            crate::config::YtdlpChannel::Nightly => "yt-dlp-nightly",
-            crate::config::YtdlpChannel::Master => "yt-dlp-master",
-        };
-        self.bin_dir().join(name)
+        self.bin_dir().join(format!("yt-dlp-{}", channel.as_str()))
     }
 
     pub fn library(&self, name: &str) -> LibraryPaths {

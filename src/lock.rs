@@ -22,6 +22,37 @@ pub enum LockError {
     },
 }
 
+/// Take the lock at `path`, waiting for any other holder to finish.
+pub fn acquire_blocking(path: &Path) -> Result<LibraryLock, LockError> {
+    let io = |source| LockError::Io {
+        path: path.to_path_buf(),
+        source,
+    };
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent).map_err(io)?;
+    }
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .open(path)
+        .map_err(io)?;
+    file.lock().map_err(io)?;
+    record_pid(&mut file).map_err(io)?;
+    Ok(LibraryLock {
+        _file: file,
+        path: path.to_path_buf(),
+    })
+}
+
+fn record_pid(file: &mut File) -> std::io::Result<()> {
+    file.set_len(0)?;
+    file.seek(SeekFrom::Start(0))?;
+    write!(file, "{}", std::process::id())?;
+    file.flush()
+}
+
 /// Take the lock at `path` without blocking, recording our PID in it.
 pub fn acquire(path: &Path) -> Result<LibraryLock, LockError> {
     let io = |source| LockError::Io {
@@ -50,10 +81,7 @@ pub fn acquire(path: &Path) -> Result<LibraryLock, LockError> {
         }
         Err(TryLockError::Error(e)) => return Err(io(e)),
     }
-    file.set_len(0).map_err(io)?;
-    file.seek(SeekFrom::Start(0)).map_err(io)?;
-    write!(file, "{}", std::process::id()).map_err(io)?;
-    file.flush().map_err(io)?;
+    record_pid(&mut file).map_err(io)?;
     Ok(LibraryLock {
         _file: file,
         path: path.to_path_buf(),

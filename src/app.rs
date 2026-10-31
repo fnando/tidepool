@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context as _, bail};
 use serde_json::Value;
 
-use crate::cli::{Cli, Command, ConfigArgs, ConfigCmd, FilterCmd, InitArgs, SourceRef};
+use crate::cli::{Cli, Command, ConfigArgs, ConfigCmd, FilterCmd, InitArgs, SourceRef, YtdlpCmd};
 use crate::config::check::{EffectiveConfig, Finding, check_environment, media_root};
 use crate::config::diff::{key_changes, mask_json, mask_toml, text_diff};
 use crate::config::merge::{EffectiveSource, effective_sources};
@@ -38,7 +38,7 @@ struct App<'a> {
 }
 
 /// Run a parsed command; returns the process exit code.
-pub fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
+pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
     let dirs = Dirs::from_env().map_err(anyhow::Error::msg)?;
     let library = dirs.library(&cli.library);
     let app = App { cli, dirs, library };
@@ -51,6 +51,7 @@ pub fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Filter {
             cmd: FilterCmd::Test { title, source },
         } => app.filter_test(title, source, out),
+        Command::Ytdlp { cmd } => app.ytdlp(cmd, out).await,
         other => {
             let milestone = other.milestone().unwrap_or("a later milestone");
             bail!("this command is not implemented yet (planned for {milestone})")
@@ -70,12 +71,117 @@ fn uses_stored_config(command: &Command) -> bool {
                 | Some(ConfigCmd::Diff { .. })
                 | Some(ConfigCmd::Check { path: None, .. })
         ),
-        Command::Filter { .. } => true,
+        Command::Filter { .. } | Command::Ytdlp { .. } => true,
         _ => false,
     }
 }
 
 impl App<'_> {
+    /// The stored config, or built-in defaults for a library without one
+    /// (so library-independent commands like `ytdlp` work before `init`).
+    fn config_or_defaults(&self) -> anyhow::Result<crate::config::Config> {
+        if let (Some(path), true) = (&self.cli.config, self.cli.dry_run) {
+            return Ok(load_file(path)?.config);
+        }
+        if !self.library.state_db.exists() {
+            return Ok(crate::config::Config::default());
+        }
+        let state = self.open_state()?;
+        match ConfigStore::new(&state.conn).load_current(&self.cli.library) {
+            Ok((_, loaded)) => Ok(loaded.config),
+            Err(crate::config::store::StoreError::Empty(_)) => Ok(crate::config::Config::default()),
+            Err(err) => Err(err.into()),
+        }
+    }
+
+    async fn ytdlp(&self, cmd: &YtdlpCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
+        use crate::ytdlp::manager::Manager;
+
+        let config = self.config_or_defaults()?;
+        let ytdlp = &config.ytdlp;
+        if !ytdlp.managed {
+            if !matches!(cmd, YtdlpCmd::Status) {
+                bail!(
+                    "ytdlp.managed = false: tidepool doesn't update your yt-dlp; update it yourself \
+                     (e.g. `yt-dlp -U`, pip or brew), or set ytdlp.managed = true"
+                );
+            }
+            let version = crate::ytdlp::manager::tool_version(Path::new(&ytdlp.path))
+                .map_err(|e| anyhow::anyhow!("cannot run {:?} (ytdlp.path): {e}", ytdlp.path))?;
+            writeln!(
+                out,
+                "yt-dlp {version} at {} (ytdlp.managed = false: tidepool doesn't update it)",
+                ytdlp.path
+            )?;
+            return Ok(exit::OK);
+        }
+
+        let manager = Manager::new(&self.dirs);
+        let channel = ytdlp.channel;
+        let when = |t: jiff::Timestamp| t.strftime("%Y-%m-%d %H:%M:%S UTC").to_string();
+        match cmd {
+            YtdlpCmd::Status => {
+                let path = manager.binary(channel);
+                let Some(state) = manager.state(channel).filter(|_| path.exists()) else {
+                    writeln!(
+                        out,
+                        "yt-dlp isn't downloaded yet (managed, {} channel); it's downloaded on first use, \
+                         or run `tidepool ytdlp update`",
+                        channel.as_str()
+                    )?;
+                    return Ok(exit::OK);
+                };
+                writeln!(
+                    out,
+                    "yt-dlp {} (managed, {} channel)",
+                    state.version,
+                    channel.as_str()
+                )?;
+                writeln!(out, "path: {}", path.display())?;
+                writeln!(out, "installed: {}", when(state.installed_at))?;
+                writeln!(
+                    out,
+                    "last update check: {} (checks every {})",
+                    when(state.last_check_at),
+                    crate::config::types::format_duration(ytdlp.update_check.0)
+                )?;
+                if let Some(previous) = &state.previous_version {
+                    writeln!(
+                        out,
+                        "previous version: {previous} (`tidepool ytdlp rollback` restores it)"
+                    )?;
+                }
+                if let Some(skipped) = &state.skip_version {
+                    writeln!(
+                        out,
+                        "{skipped} was rolled back; staying on {} until a newer release",
+                        state.version
+                    )?;
+                }
+            }
+            YtdlpCmd::Update => {
+                if self.cli.dry_run {
+                    writeln!(
+                        out,
+                        "dry run: would check {} for a newer release",
+                        channel.repository()
+                    )?;
+                    return Ok(exit::OK);
+                }
+                let outcome = manager.update(channel, jiff::Timestamp::now()).await?;
+                writeln!(out, "{outcome}")?;
+            }
+            YtdlpCmd::Rollback => {
+                let (from, to) = manager.rollback(channel)?;
+                writeln!(
+                    out,
+                    "rolled back yt-dlp {from} → {to}; {from} won't be installed again until a newer release"
+                )?;
+            }
+        }
+        Ok(exit::OK)
+    }
+
     /// `--config <path>`: import the file if it changed since the current revision.
     fn import_config_flag(&self) -> anyhow::Result<()> {
         let Some(path) = &self.cli.config else {

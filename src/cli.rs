@@ -118,8 +118,8 @@ impl Command {
             | Command::Index(_)
             | Command::Download(_)
             | Command::Reset(_)
-            | Command::Problems { .. }
-            | Command::Ytdlp { .. } => Some("M2"),
+            | Command::Problems { .. } => Some("M2"),
+            Command::Ytdlp { .. } => None,
             Command::Hooks { .. } | Command::Embed(_) => Some("M4"),
             Command::Cleanup(_) | Command::Pin(_) | Command::Unpin(_) => Some("M5"),
             Command::List(_) => Some("M6"),
