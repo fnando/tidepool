@@ -4,7 +4,7 @@ min_duration = "10m"
 max_duration = "5m"
 
 [hooks.transcode]
-command = ["to-h265.sh", "{media_path}"]
+command = ["to-h265.sh", "{output_file}"]
 
 [sources.one]
 url = "https://www.youtube.com/playlist?list=PLsamesame"

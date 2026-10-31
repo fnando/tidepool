@@ -6,7 +6,7 @@ cutoff = "yesterday"
 include = ['(unclosed']
 
 [category.default.embed]
-tags = { album = "{media_path}" }
+tags = { album = "{output_file}" }
 
 [hooks.notify]
 command = ["ntfy", "{nope}"]

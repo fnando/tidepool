@@ -288,8 +288,8 @@ mod tests {
         assert!(check_format("output-template", "{title}").is_err());
         assert!(check_format("fancy-regex", r"(?i)\blive\b(?! stream)").is_ok());
         assert!(check_format("fancy-regex", "(unclosed").is_err());
-        assert!(check_format("hook-template", "{media_path}").is_ok());
-        assert!(check_format("tag-template", "{media_path}").is_err());
+        assert!(check_format("hook-template", "{output_file}").is_ok());
+        assert!(check_format("tag-template", "{output_file}").is_err());
         let source = |s| check_format("source-url", s);
         assert!(source("https://www.youtube.com/playlist?list=PLabc_-1").is_ok());
         assert!(source("https://youtube.com/watch?v=x&list=PLa").is_ok());

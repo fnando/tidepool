@@ -88,7 +88,7 @@ cutoff = "none"                     # keep the whole back catalogue
 inherit_rules = true                # add to default's include/exclude instead of replacing them
 
 [hooks.transcode]
-command = ["/usr/local/bin/to-h265.sh", "{media_path}"]
+command = ["/usr/local/bin/to-h265.sh", "{output_file}"]
 timeout = "30m"
 on_failure = "fail"                 # fail | warn | retry
 retries = 2

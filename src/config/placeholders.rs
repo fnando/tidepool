@@ -135,13 +135,17 @@ pub const PLACEHOLDERS: &[Placeholder] = &[
     ph!("category", false, ALL, Some("TIDEPOOL_CATEGORY")),
     ph!("media_dir", false, PATHS | TMP, None),
     ph!("data_dir", false, PATHS | TMP, None),
-    ph!("output_dir", false, FILES, None),
+    ph!(
+        "output_dir",
+        false,
+        FILES | HOOK,
+        Some("TIDEPOOL_OUTPUT_DIR")
+    ),
     ph!("ext", false, OUT_FILE | SUB, None),
     ph!("lang", false, SUB, None),
-    ph!("video_dir", false, HOOK, Some("TIDEPOOL_VIDEO_DIR")),
-    ph!("media_path", false, HOOK, Some("TIDEPOOL_MEDIA_PATH")),
-    ph!("cover_path", false, HOOK, Some("TIDEPOOL_COVER_PATH")),
-    ph!("metadata_path", false, HOOK, Some("TIDEPOOL_METADATA_PATH")),
+    ph!("output_file", false, HOOK, Some("TIDEPOOL_OUTPUT_FILE")),
+    ph!("cover_file", false, HOOK, Some("TIDEPOOL_COVER_FILE")),
+    ph!("metadata_file", false, HOOK, Some("TIDEPOOL_METADATA_FILE")),
 ];
 
 /// Look up a placeholder by name.
@@ -475,7 +479,9 @@ mod tests {
             ("{output_dir}/metadata.json", MetadataFile),
             ("{data_dir}/tmp", TmpDir),
             ("{channel}", Tags),
-            ("{media_path}", Hook),
+            ("{output_file}", Hook),
+            ("{output_dir}/x", Hook),
+            ("{cover_file} {metadata_file}", Hook),
         ];
         for (template, setting) in ok {
             assert!(
@@ -552,10 +558,23 @@ mod tests {
                 TemplateError::Unknown("nope".into()),
             ),
             (
-                "{media_path} {id}",
+                "{output_file} {id}",
                 OutputDir,
                 TemplateError::NotAllowed {
-                    name: "media_path".into(),
+                    name: "output_file".into(),
+                    setting: OutputDir,
+                },
+            ),
+            (
+                "{media_path}",
+                Hook,
+                TemplateError::Unknown("media_path".into()),
+            ),
+            (
+                "{output_file}",
+                OutputDir,
+                TemplateError::NotAllowed {
+                    name: "output_file".into(),
                     setting: OutputDir,
                 },
             ),

@@ -7,7 +7,7 @@ bad_formats.toml:3:14 category.default.cover_file: "{output_dir}/{title}.gif": m
 bad_formats.toml:4:16 category.default.min_duration: "1 hour" is not a valid duration (e.g. "30d", "12h", "1h30m")
 bad_formats.toml:5:10 category.default.cutoff: "yesterday" is not a valid cutoff (e.g. "30d", "2024-01-01" or "none")
 bad_formats.toml:6:12 category.default.include[0]: "(unclosed" is not a valid regex: Parsing error at position 9: Opening parenthesis without closing parenthesis
-bad_formats.toml:9:18 category.default.embed.tags.album: "{media_path}": placeholder {media_path} is not allowed in embed.tags
+bad_formats.toml:9:18 category.default.embed.tags.album: "{output_file}": placeholder {output_file} is not allowed in embed.tags
 bad_formats.toml:12:20 hooks.notify.command[1]: "{nope}": unknown placeholder {nope}
 bad_formats.toml:13:11 hooks.notify.timeout: "soon" is not a valid duration (e.g. "30d", "12h", "1h30m")
 bad_formats.toml:17:43 sources.lofi.exclude[0].pattern: "[z-a]" is not a valid regex: invalid character class range, the start must be <= the end
