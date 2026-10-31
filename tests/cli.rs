@@ -310,10 +310,14 @@ fn schema_command_prints_the_committed_schema() {
 #[test]
 fn exit_codes() {
     let env = Env::new();
-    env.cmd(&["run"])
+    env.cmd(&["problems"])
         .assert()
         .code(1)
         .stderr(contains("not implemented yet (planned for M2)"));
+    env.cmd(&["run"])
+        .assert()
+        .code(1)
+        .stderr(contains("has no config yet"));
     env.cmd(&["run", "--daemon"])
         .assert()
         .code(1)

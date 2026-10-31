@@ -19,7 +19,8 @@ CREATE TABLE items (               -- a video's membership in a source
   video_id TEXT NOT NULL REFERENCES videos(id),
   position INTEGER, added_at TEXT, in_remote INTEGER NOT NULL,
   status TEXT NOT NULL, decision TEXT,
-  dir TEXT, media_present INTEGER NOT NULL DEFAULT 1, media_bytes INTEGER, downloaded_at TEXT,
+  dir TEXT, format TEXT,            -- dir relative to root; format string it was downloaded with
+  media_present INTEGER NOT NULL DEFAULT 1, media_bytes INTEGER, downloaded_at TEXT,
   attempts INTEGER NOT NULL DEFAULT 0, next_attempt_at TEXT, last_error TEXT,
   pinned INTEGER NOT NULL DEFAULT 0, cleaned_up_at TEXT, cleanup_reason TEXT,
   PRIMARY KEY (source_key, video_id)

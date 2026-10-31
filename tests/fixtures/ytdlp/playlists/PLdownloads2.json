@@ -1,0 +1,25 @@
+{
+ "id": "PLdownloads2",
+ "title": "Downloads 2",
+ "availability": "public",
+ "channel": "Lofi Girl",
+ "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+ "_type": "playlist",
+ "webpage_url": "https://www.youtube.com/playlist?list=PLdownloads2",
+ "entries": [
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "okvideo01",
+   "url": "https://www.youtube.com/watch?v=okvideo01",
+   "title": "Video okvideo01",
+   "duration": 300,
+   "timestamp": 1790000000,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": []
+  }
+ ]
+}

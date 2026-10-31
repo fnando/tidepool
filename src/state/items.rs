@@ -94,40 +94,7 @@ pub fn record_index(
         if !seen.insert(item.video_id.as_str()) {
             continue; // the same video twice in one playlist: first position wins
         }
-        let tags = item
-            .tags
-            .as_ref()
-            .map(|t| serde_json::to_string(t).expect("tags serialize"));
-        let thumbs = (!item.thumbnails.is_empty())
-            .then(|| serde_json::to_string(&item.thumbnails).expect("thumbnails serialize"));
-        tx.execute(
-            "INSERT INTO videos (id, title, channel, channel_id, description, tags_json, duration_s,
-               published_at, availability, thumbs_json, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
-             ON CONFLICT(id) DO UPDATE SET title = excluded.title,
-               channel = COALESCE(excluded.channel, videos.channel),
-               channel_id = COALESCE(excluded.channel_id, videos.channel_id),
-               description = COALESCE(excluded.description, videos.description),
-               tags_json = COALESCE(excluded.tags_json, videos.tags_json),
-               duration_s = COALESCE(excluded.duration_s, videos.duration_s),
-               published_at = COALESCE(excluded.published_at, videos.published_at),
-               availability = excluded.availability,
-               thumbs_json = COALESCE(excluded.thumbs_json, videos.thumbs_json),
-               updated_at = excluded.updated_at",
-            params![
-                item.video_id,
-                item.title,
-                item.channel,
-                item.channel_id,
-                item.description,
-                tags,
-                item.duration.map(|d| d as i64),
-                item.published_at.map(|t| t.to_string()),
-                item.availability.as_str(),
-                thumbs,
-                now,
-            ],
-        )?;
+        upsert_video(&tx, item, &now)?;
 
         let existing: Option<String> = tx
             .query_row(
@@ -412,5 +379,488 @@ mod tests {
             ),
             ("x (new title)", "full description", r#"["lofi"]"#, 300)
         );
+    }
+}
+
+fn upsert_video(conn: &Connection, item: &RemoteItem, now: &str) -> rusqlite::Result<()> {
+    let tags = item
+        .tags
+        .as_ref()
+        .map(|t| serde_json::to_string(t).expect("tags serialize"));
+    let thumbs = (!item.thumbnails.is_empty())
+        .then(|| serde_json::to_string(&item.thumbnails).expect("thumbnails serialize"));
+    conn.execute(
+        "INSERT INTO videos (id, title, channel, channel_id, description, tags_json, duration_s,
+           published_at, availability, thumbs_json, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+         ON CONFLICT(id) DO UPDATE SET title = excluded.title,
+           channel = COALESCE(excluded.channel, videos.channel),
+           channel_id = COALESCE(excluded.channel_id, videos.channel_id),
+           description = COALESCE(excluded.description, videos.description),
+           tags_json = COALESCE(excluded.tags_json, videos.tags_json),
+           duration_s = COALESCE(excluded.duration_s, videos.duration_s),
+           published_at = COALESCE(excluded.published_at, videos.published_at),
+           availability = excluded.availability,
+           thumbs_json = COALESCE(excluded.thumbs_json, videos.thumbs_json),
+           updated_at = excluded.updated_at",
+        params![
+            item.video_id,
+            item.title,
+            item.channel,
+            item.channel_id,
+            item.description,
+            tags,
+            item.duration.map(|d| d as i64),
+            item.published_at.map(|t| t.to_string()),
+            item.availability.as_str(),
+            thumbs,
+            now,
+        ],
+    )?;
+    Ok(())
+}
+
+/// Timestamps compared in SQL: whole seconds, UTC, fixed width.
+fn sql_time(t: Timestamp) -> String {
+    t.strftime("%Y-%m-%dT%H:%M:%SZ").to_string()
+}
+
+/// Give up retrying a video after this many failed attempts.
+pub const MAX_ATTEMPTS: i64 = 5;
+
+/// A video waiting to be downloaded, with what the index knows about it.
+#[derive(Debug, Clone, PartialEq)]
+pub struct QueuedItem {
+    pub source_key: String,
+    pub video_id: String,
+    pub position: u32,
+    pub status: String,
+    pub attempts: i64,
+    pub source_title: Option<String>,
+    pub item: RemoteItem,
+}
+
+/// Videos to download for these sources, in source order then position:
+/// pending, waiting on a field, or failed and due for a retry.
+pub fn download_queue(
+    conn: &Connection,
+    sources: &[String],
+    now: Timestamp,
+) -> rusqlite::Result<Vec<QueuedItem>> {
+    let mut stmt = conn.prepare(
+        "SELECT i.video_id, i.position, i.status, i.attempts, s.title, v.title, v.channel, v.channel_id,
+                v.description, v.tags_json, v.duration_s, v.published_at, v.availability, v.thumbs_json
+         FROM items i JOIN videos v ON v.id = i.video_id JOIN sources s ON s.key = i.source_key
+         WHERE i.source_key = ?1 AND i.in_remote = 1
+           AND (i.status IN ('pending', 'pending_check')
+                OR (i.status = 'failed' AND i.attempts < ?3
+                    AND (i.next_attempt_at IS NULL OR i.next_attempt_at <= ?2)))
+         ORDER BY i.position",
+    )?;
+    let mut queue = Vec::new();
+    for key in sources {
+        let rows = stmt.query_map(params![key, sql_time(now), MAX_ATTEMPTS], |r| {
+            let video_id: String = r.get(0)?;
+            let position: u32 = r.get(1)?;
+            let tags: Option<String> = r.get(9)?;
+            let thumbs: Option<String> = r.get(13)?;
+            let published: Option<String> = r.get(11)?;
+            let availability: Option<String> = r.get(12)?;
+            Ok(QueuedItem {
+                source_key: key.clone(),
+                position,
+                status: r.get(2)?,
+                attempts: r.get(3)?,
+                source_title: r.get(4)?,
+                item: RemoteItem {
+                    video_id: video_id.clone(),
+                    position,
+                    title: r.get::<_, Option<String>>(5)?.unwrap_or_default(),
+                    channel: r.get(6)?,
+                    channel_id: r.get(7)?,
+                    description: r.get(8)?,
+                    tags: tags.and_then(|t| serde_json::from_str(&t).ok()),
+                    duration: r.get::<_, Option<i64>>(10)?.map(|d| d.max(0) as u64),
+                    published_at: published.and_then(|p| p.parse().ok()),
+                    availability: crate::index::Availability::parse(
+                        availability.as_deref().unwrap_or("public"),
+                    ),
+                    thumbnails: thumbs
+                        .and_then(|t| serde_json::from_str(&t).ok())
+                        .unwrap_or_default(),
+                },
+                video_id,
+            })
+        })?;
+        for row in rows {
+            queue.push(row?);
+        }
+    }
+    Ok(queue)
+}
+
+pub fn set_status(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    status: &str,
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE items SET status = ?3 WHERE source_key = ?1 AND video_id = ?2",
+        params![source_key, video_id, status],
+    )?;
+    Ok(())
+}
+
+/// A decision made right before download (for `pending_check` items).
+pub fn record_decision(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    decision: &Decision,
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE items SET status = ?3, decision = ?4 WHERE source_key = ?1 AND video_id = ?2",
+        params![
+            source_key,
+            video_id,
+            status_for(decision),
+            decision.to_json()
+        ],
+    )?;
+    Ok(())
+}
+
+/// Details learned from a full video lookup.
+pub fn update_video_details(
+    conn: &Connection,
+    item: &RemoteItem,
+    now: Timestamp,
+) -> rusqlite::Result<()> {
+    upsert_video(conn, item, &now.to_string())
+}
+
+pub fn mark_done(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    dir: &str,
+    format: &str,
+    media_bytes: u64,
+    now: Timestamp,
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE items SET status = 'done', dir = ?3, format = ?4, media_bytes = ?5, media_present = 1,
+           downloaded_at = ?6, attempts = 0, next_attempt_at = NULL, last_error = NULL
+         WHERE source_key = ?1 AND video_id = ?2",
+        params![source_key, video_id, dir, format, media_bytes as i64, now.to_string()],
+    )?;
+    Ok(())
+}
+
+/// A failed download: permanent failures become `unavailable`; others are
+/// retried later with exponential backoff (1h, 2h, 4h, … capped at a day).
+pub fn mark_failed(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    message: &str,
+    permanent: bool,
+    now: Timestamp,
+) -> rusqlite::Result<()> {
+    if permanent {
+        conn.execute(
+            "UPDATE items SET status = 'unavailable', last_error = ?3, next_attempt_at = NULL
+             WHERE source_key = ?1 AND video_id = ?2",
+            params![source_key, video_id, message],
+        )?;
+        return Ok(());
+    }
+    let attempts: i64 = conn.query_row(
+        "SELECT attempts FROM items WHERE source_key = ?1 AND video_id = ?2",
+        params![source_key, video_id],
+        |r| r.get(0),
+    )?;
+    let attempts = attempts + 1;
+    let hours = (1_i64 << (attempts - 1).clamp(0, 5)).min(24);
+    let next = now
+        .checked_add(jiff::SignedDuration::from_hours(hours))
+        .unwrap_or(now);
+    conn.execute(
+        "UPDATE items SET status = 'failed', attempts = ?3, next_attempt_at = ?4, last_error = ?5
+         WHERE source_key = ?1 AND video_id = ?2",
+        params![source_key, video_id, attempts, sql_time(next), message],
+    )?;
+    Ok(())
+}
+
+/// The directory of a finished download of the same video and format in
+/// another source, if any.
+pub fn find_copy(
+    conn: &Connection,
+    video_id: &str,
+    format: &str,
+    except_source: &str,
+) -> rusqlite::Result<Option<String>> {
+    conn.query_row(
+        "SELECT dir FROM items WHERE video_id = ?1 AND format = ?2 AND source_key != ?3
+           AND status IN ('done', 'downloaded') AND dir IS NOT NULL AND media_present = 1
+         ORDER BY downloaded_at LIMIT 1",
+        params![video_id, format, except_source],
+        |r| r.get(0),
+    )
+    .optional()
+}
+
+/// After a crash or an interrupt: downloads that didn't finish go back to
+/// `pending`. Returns how many.
+pub fn reset_interrupted(conn: &Connection) -> rusqlite::Result<usize> {
+    conn.execute(
+        "UPDATE items SET status = 'pending' WHERE status = 'downloading'",
+        [],
+    )
+}
+
+/// Forget a video's download state in every source so it's downloaded
+/// again. Returns `(source, dir)` for each item reset.
+pub fn reset_video(
+    conn: &Connection,
+    video_id: &str,
+) -> rusqlite::Result<Vec<(String, Option<String>)>> {
+    let mut stmt =
+        conn.prepare("SELECT source_key, dir FROM items WHERE video_id = ?1 ORDER BY source_key")?;
+    let items: Vec<(String, Option<String>)> = stmt
+        .query_map([video_id], |r| Ok((r.get(0)?, r.get(1)?)))?
+        .collect::<Result<_, _>>()?;
+    conn.execute(
+        "UPDATE items SET status = 'pending', dir = NULL, format = NULL, media_bytes = NULL, downloaded_at = NULL,
+           attempts = 0, next_attempt_at = NULL, last_error = NULL, cleaned_up_at = NULL, cleanup_reason = NULL
+         WHERE video_id = ?1",
+        [video_id],
+    )?;
+    Ok(items)
+}
+
+#[cfg(test)]
+mod download_tests {
+    use super::*;
+    use crate::index::{Availability, Thumbnail};
+    use crate::state::State;
+
+    fn item(id: &str, position: u32) -> RemoteItem {
+        RemoteItem {
+            video_id: id.into(),
+            position,
+            title: format!("Video {id}"),
+            channel: Some("Lofi Girl".into()),
+            channel_id: None,
+            description: None,
+            tags: None,
+            duration: Some(300),
+            published_at: None,
+            availability: Availability::Public,
+            thumbnails: vec![Thumbnail {
+                url: "https://i.ytimg.com/x.jpg".into(),
+                width: None,
+                height: None,
+            }],
+        }
+    }
+
+    fn seed(state: &mut State, key: &str, ids: &[&str]) {
+        let items = ids
+            .iter()
+            .enumerate()
+            .map(|(i, id)| item(id, i as u32 + 1))
+            .collect();
+        let list = RemoteList {
+            id: format!("PL{key}"),
+            title: Some(format!("{key} title")),
+            items,
+        };
+        let source = SourceRecord {
+            key,
+            rules_hash: "h",
+            index_source: "ytdlp",
+        };
+        record_index(
+            &mut state.conn,
+            &source,
+            &list,
+            |_| Decision::Keep { include: None },
+            now(),
+        )
+        .unwrap();
+    }
+
+    fn now() -> Timestamp {
+        "2026-10-31T12:00:00Z".parse().unwrap()
+    }
+
+    fn row(state: &State, key: &str, id: &str) -> (String, i64, Option<String>, Option<String>) {
+        state
+            .conn
+            .query_row(
+                "SELECT status, attempts, next_attempt_at, dir FROM items WHERE source_key = ?1 AND video_id = ?2",
+                params![key, id],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
+            )
+            .unwrap()
+    }
+
+    fn queued(state: &State, keys: &[&str], at: Timestamp) -> Vec<String> {
+        let keys: Vec<String> = keys.iter().map(|k| k.to_string()).collect();
+        download_queue(&state.conn, &keys, at)
+            .unwrap()
+            .into_iter()
+            .map(|q| format!("{}/{}", q.source_key, q.video_id))
+            .collect()
+    }
+
+    #[test]
+    fn queues_pending_items_in_order_with_index_details() {
+        let mut state = State::open_in_memory().unwrap();
+        seed(&mut state, "b", &["b1", "b2"]);
+        seed(&mut state, "a", &["a1"]);
+        set_status(&state.conn, "b", "b2", status::PENDING_CHECK).unwrap();
+        state
+            .conn
+            .execute(
+                "UPDATE items SET status = 'filtered' WHERE video_id = 'b1'",
+                [],
+            )
+            .unwrap();
+        assert_eq!(queued(&state, &["b", "a"], now()), vec!["b/b2", "a/a1"]);
+        assert_eq!(queued(&state, &["a"], now()), vec!["a/a1"]);
+        let q = download_queue(&state.conn, &["b".into()], now())
+            .unwrap()
+            .remove(0);
+        assert_eq!(
+            (q.position, q.status.as_str(), q.source_title.as_deref()),
+            (2, "pending_check", Some("b title"))
+        );
+        assert_eq!(q.item.title, "Video b2");
+        assert_eq!(q.item.thumbnails.len(), 1);
+        // Gone from the source: not downloaded.
+        seed(&mut state, "a", &[]);
+        assert!(queued(&state, &["a"], now()).is_empty());
+    }
+
+    #[test]
+    fn retries_with_backoff_and_gives_up() {
+        let mut state = State::open_in_memory().unwrap();
+        seed(&mut state, "a", &["x", "y"]);
+        mark_failed(&state.conn, "a", "x", "HTTP Error 429", false, now()).unwrap();
+        assert_eq!(
+            row(&state, "a", "x"),
+            (
+                "failed".into(),
+                1,
+                Some("2026-10-31T13:00:00Z".into()),
+                None
+            )
+        );
+        assert_eq!(queued(&state, &["a"], now()), vec!["a/y"]);
+        assert_eq!(
+            queued(&state, &["a"], "2026-10-31T13:00:00Z".parse().unwrap()),
+            vec!["a/x", "a/y"]
+        );
+        mark_failed(&state.conn, "a", "x", "again", false, now()).unwrap();
+        assert_eq!(row(&state, "a", "x").2, Some("2026-10-31T14:00:00Z".into()));
+        for _ in 0..3 {
+            mark_failed(&state.conn, "a", "x", "again", false, now()).unwrap();
+        }
+        assert_eq!(row(&state, "a", "x").1, MAX_ATTEMPTS);
+        assert_eq!(
+            queued(&state, &["a"], "2027-01-01T00:00:00Z".parse().unwrap()),
+            vec!["a/y"],
+            "gave up"
+        );
+
+        mark_failed(&state.conn, "a", "y", "Private video", true, now()).unwrap();
+        assert_eq!(row(&state, "a", "y").0, "unavailable");
+        let error: String = state
+            .conn
+            .query_row(
+                "SELECT last_error FROM items WHERE video_id = 'y'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(error, "Private video");
+    }
+
+    #[test]
+    fn done_copies_interrupts_and_resets() {
+        let mut state = State::open_in_memory().unwrap();
+        seed(&mut state, "a", &["x"]);
+        seed(&mut state, "b", &["x"]);
+        set_status(&state.conn, "b", "x", status::DOWNLOADING).unwrap();
+        assert_eq!(reset_interrupted(&state.conn).unwrap(), 1);
+        assert_eq!(row(&state, "b", "x").0, "pending");
+
+        mark_done(
+            &state.conn,
+            "a",
+            "x",
+            "a/2026 - x [x]",
+            "bv*+ba/b",
+            1234,
+            now(),
+        )
+        .unwrap();
+        assert_eq!(
+            row(&state, "a", "x"),
+            ("done".into(), 0, None, Some("a/2026 - x [x]".into()))
+        );
+        assert_eq!(
+            find_copy(&state.conn, "x", "bv*+ba/b", "b").unwrap(),
+            Some("a/2026 - x [x]".into())
+        );
+        assert_eq!(
+            find_copy(&state.conn, "x", "ba/b", "b").unwrap(),
+            None,
+            "other format"
+        );
+        assert_eq!(
+            find_copy(&state.conn, "x", "bv*+ba/b", "a").unwrap(),
+            None,
+            "same source"
+        );
+
+        let reset = reset_video(&state.conn, "x").unwrap();
+        assert_eq!(
+            reset,
+            vec![
+                ("a".into(), Some("a/2026 - x [x]".into())),
+                ("b".into(), None)
+            ]
+        );
+        assert_eq!(row(&state, "a", "x"), ("pending".into(), 0, None, None));
+        assert!(reset_video(&state.conn, "nope").unwrap().is_empty());
+    }
+
+    #[test]
+    fn records_late_decisions_and_details() {
+        let mut state = State::open_in_memory().unwrap();
+        seed(&mut state, "a", &["x"]);
+        let mut richer = item("x", 1);
+        richer.description = Some("full".into());
+        richer.published_at = Some(now());
+        update_video_details(&state.conn, &richer, now()).unwrap();
+        let (description, published): (String, String) = state
+            .conn
+            .query_row(
+                "SELECT description, published_at FROM videos WHERE id = 'x'",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(
+            (description.as_str(), published.as_str()),
+            ("full", "2026-10-31T12:00:00Z")
+        );
+        record_decision(&state.conn, "a", "x", &Decision::NotIncluded).unwrap();
+        assert_eq!(row(&state, "a", "x").0, "filtered");
     }
 }

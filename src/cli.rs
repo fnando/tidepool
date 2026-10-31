@@ -114,11 +114,11 @@ impl Command {
     pub fn milestone(&self) -> Option<&'static str> {
         match self {
             Command::Init(_) | Command::Config(_) | Command::Filter { .. } => None,
-            Command::Index(_) => None,
-            Command::Run(RunArgs { daemon: false, .. })
+            Command::Index(_)
             | Command::Download(_)
             | Command::Reset(_)
-            | Command::Problems { .. } => Some("M2"),
+            | Command::Run(RunArgs { daemon: false, .. }) => None,
+            Command::Problems { .. } => Some("M2"),
             Command::Ytdlp { .. } => None,
             Command::Hooks { .. } | Command::Embed(_) => Some("M4"),
             Command::Cleanup(_) | Command::Pin(_) | Command::Unpin(_) => Some("M5"),

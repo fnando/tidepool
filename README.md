@@ -5,9 +5,9 @@ saves the video file, its details (title, channel, description, …) and the
 largest available cover image. Rules decide which videos to keep, and limits
 keep each folder from growing forever.
 
-> **Early days.** You can set up tidepool, write and check your configuration,
-> and see what each source contains and which videos would be downloaded.
-> Downloading isn't available yet.
+> **Early days.** tidepool can keep your sources downloaded. Running your own
+> scripts after each download, automatic cleanup, running in the background and
+> the web interface aren't available yet.
 
 Works on Linux and macOS.
 
@@ -36,7 +36,24 @@ tidepool to use it, and tells you what to do next. Nothing is asked.
 The config file lists every setting with a short explanation. Settings you
 haven't changed are commented out and show their default value, so the file
 doubles as a reference. It comes with a sample source holding one short
-video, so you can see tidepool work before adding your own.
+video, so you can see tidepool work before adding your own:
+
+```sh
+tidepool run
+```
+
+```
+installed yt-dlp 2026.10.29.232701
+sample: 1 video (1 new): 1 to download
+sample: downloaded “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” (243.8 MB)
+downloaded 1 video (243.8 MB)
+```
+
+The video lands in `~/.local/share/tidepool/media/sample/`. tidepool downloads
+the best quality available by default, which for this video is 4K (about
+240 MB); set `format` to download smaller files, e.g.
+`format = "bv*[height<=1080]+ba/b"` for 1080p at most. See
+[Downloading](#downloading) for what you get and how to run it regularly.
 
 | Option | Meaning |
 | --- | --- |
@@ -167,6 +184,71 @@ been downloaded yet are re-checked against the new rules. If a source can't
 be read (for example, a wrong or private playlist), the others are still
 checked, and the command ends with exit code 3.
 
+### Downloading
+
+```sh
+tidepool run
+```
+
+checks every source for new videos and downloads the ones your rules keep. Run
+it as often as you like: videos already downloaded are never downloaded again.
+Add `--source <name>` (or `-s`) to run only some sources.
+
+Each video gets its own folder:
+
+```
+~/.local/share/tidepool/media/      # or library.root
+  lofi/                             # one folder per source (its name, or `dir`)
+    2025-03-01 - Some title [dQw4w9WgXcQ]/
+      media.mkv                     # the video
+      Some title-poster.jpg         # the largest cover image available
+      metadata.json                 # title, channel, dates, description, tags, chapters, …
+      media.en.vtt                  # subtitles, if you asked yt-dlp for them
+```
+
+The folder and file names come from the `output` and `cover_name` settings, and
+the video quality from `format` (yt-dlp's format selector). A video's folder
+only appears once it's complete, so you never find half-downloaded videos in
+your library.
+
+To run tidepool on a schedule, call it from cron (or launchd, or a systemd
+timer). `--config` applies your config file first if you changed it:
+
+```
+0 */6 * * *  tidepool run --config ~/.config/tidepool/config.toml
+```
+
+**When a download fails.** A video that can't be downloaded right now (network
+trouble, YouTube asking to slow down) is tried again on later runs, waiting
+longer each time, up to 5 attempts. Videos that can't be downloaded at all
+(private, removed, members-only, age-restricted without `cookies_file`) are
+marked unavailable and not tried again. Either way, the other videos still
+download, and the command ends with exit code 3.
+
+**Stopping.** Ctrl-C stops cleanly: unfinished downloads are discarded and
+picked up again on the next run.
+
+**Downloading only what's waiting.** `tidepool download` downloads videos
+already found by `tidepool run` or `tidepool index`, without checking the
+sources again. `--limit 5` downloads at most five; `--concurrency 4` runs four
+downloads at once (default: `library.concurrency`, 2).
+
+**Downloading a video again.** `tidepool reset <video id>` makes tidepool
+download it again on the next run; add `--delete-files` to remove the current
+copy first. The video id is the part after `v=` in its YouTube address, and
+it's also in the folder name.
+
+**The same video in several sources.** Each source gets its own folder. If a
+video was already downloaded for another source in the same `format`, tidepool
+reuses that file instead of downloading it again (`library.duplicates`):
+
+| `duplicates` | What it does |
+| --- | --- |
+| `"hardlink"` (default) | Both folders share the same file on disk, using no extra space |
+| `"symlink"` | The second folder links to the first one's files |
+| `"copy"` | A full copy |
+| `"download"` | Download it again |
+
 ### Testing your filters
 
 `include` and `exclude` rules decide which videos are kept. They're regular
@@ -195,9 +277,9 @@ decision: keep (matches include[0])
 
 ### YouTube API key
 
-An API key is optional. Once downloading is available, a key will make
-checking playlists for new videos faster and bring more details per video;
-without one, tidepool uses yt-dlp for everything. To add a key later, set it in the config file and apply the change:
+An API key is optional. A future version will use it to check playlists for
+new videos faster, with more details per video. Today tidepool uses yt-dlp for
+everything. To add a key later, set it in the config file and apply the change:
 
 ```toml
 [youtube]
@@ -288,4 +370,5 @@ For scripts:
 | 0 | Success |
 | 1 | Something went wrong (e.g. a config mistake); the message says what |
 | 2 | The command was used incorrectly (unknown option, unknown source) |
-| 3 | Some sources couldn't be checked; the others were |
+| 3 | Something failed for some sources or videos, but the rest finished |
+| 130 / 143 | Stopped by Ctrl-C / `kill` |

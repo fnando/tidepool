@@ -1,0 +1,67 @@
+{
+ "id": "PLdownloads",
+ "title": "Downloads",
+ "availability": "public",
+ "channel": "Lofi Girl",
+ "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+ "_type": "playlist",
+ "webpage_url": "https://www.youtube.com/playlist?list=PLdownloads",
+ "entries": [
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "dQw4w9WgXcQ",
+   "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+   "title": "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)",
+   "duration": 213,
+   "timestamp": 1256453853,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": []
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "okvideo01",
+   "url": "https://www.youtube.com/watch?v=okvideo01",
+   "title": "Video okvideo01",
+   "duration": 300,
+   "timestamp": 1790000000,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": []
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "flaky001",
+   "url": "https://www.youtube.com/watch?v=flaky001",
+   "title": "Flaky upload",
+   "duration": 300,
+   "timestamp": 1790000000,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": []
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "members01",
+   "url": "https://www.youtube.com/watch?v=members01",
+   "title": "Members only stream",
+   "duration": 300,
+   "timestamp": 1790000000,
+   "live_status": null,
+   "availability": null,
+   "channel": "Lofi Girl",
+   "channel_id": "UCSJ4gkVC6NrvII8umztf0Ow",
+   "thumbnails": []
+  }
+ ]
+}

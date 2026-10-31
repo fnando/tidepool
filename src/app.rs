@@ -7,7 +7,8 @@ use anyhow::{Context as _, bail};
 use serde_json::Value;
 
 use crate::cli::{
-    Cli, Command, ConfigArgs, ConfigCmd, FilterCmd, InitArgs, ScopeArgs, SourceRef, YtdlpCmd,
+    Cli, Command, ConfigArgs, ConfigCmd, DownloadArgs, FilterCmd, InitArgs, ResetArgs, RunArgs,
+    ScopeArgs, SourceRef, YtdlpCmd,
 };
 use crate::config::check::{EffectiveConfig, Finding, check_environment, media_root};
 use crate::config::diff::{key_changes, mask_json, mask_toml, text_diff};
@@ -57,6 +58,9 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         } => app.filter_test(title, source, out),
         Command::Ytdlp { cmd } => app.ytdlp(cmd, out).await,
         Command::Index(scope) => app.index(scope, out).await,
+        Command::Download(args) => app.download(args, out).await,
+        Command::Run(args) if !args.daemon => app.run_once(args, out).await,
+        Command::Reset(args) => app.reset(args, out),
         other => {
             let milestone = other.milestone().unwrap_or("a later milestone");
             bail!("this command is not implemented yet (planned for {milestone})")
@@ -76,7 +80,12 @@ fn uses_stored_config(command: &Command) -> bool {
                 | Some(ConfigCmd::Diff { .. })
                 | Some(ConfigCmd::Check { path: None, .. })
         ),
-        Command::Filter { .. } | Command::Ytdlp { .. } | Command::Index(_) => true,
+        Command::Filter { .. }
+        | Command::Ytdlp { .. }
+        | Command::Index(_)
+        | Command::Download(_)
+        | Command::Reset(_) => true,
+        Command::Run(args) => !args.daemon,
         _ => false,
     }
 }
@@ -158,18 +167,25 @@ impl App<'_> {
         }
         let _lock = self.lock()?;
         let ytdlp = self.ytdlp_binary(&loaded.config).await?;
+        let failed = self
+            .index_sources(&mut state, &loaded.config, &sources, &ytdlp, out)
+            .await?;
+        Ok(if failed > 0 { exit::PARTIAL } else { exit::OK })
+    }
+
+    /// Index `sources`, printing a line per source; returns how many failed.
+    async fn index_sources(
+        &self,
+        state: &mut State,
+        config: &crate::config::Config,
+        sources: &[EffectiveSource],
+        ytdlp: &Path,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<usize> {
         let now = jiff::Timestamp::now();
         let mut failed = 0;
-        for source in &sources {
-            match crate::pipeline::index_source(
-                &mut state,
-                &loaded.config,
-                source,
-                &self.dirs,
-                &ytdlp,
-                now,
-            )
-            .await
+        for source in sources {
+            match crate::pipeline::index_source(state, config, source, &self.dirs, ytdlp, now).await
             {
                 Ok(summary) => writeln!(
                     out,
@@ -182,7 +198,177 @@ impl App<'_> {
                 }
             }
         }
-        Ok(if failed > 0 { exit::PARTIAL } else { exit::OK })
+        Ok(failed)
+    }
+
+    /// Download what's queued for `sources`, printing a line per video and a summary.
+    #[allow(clippy::too_many_arguments)]
+    async fn download_sources(
+        &self,
+        state: &mut State,
+        config: &crate::config::Config,
+        sources: &[EffectiveSource],
+        ytdlp: PathBuf,
+        limit: Option<usize>,
+        concurrency: Option<u32>,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<crate::download::Summary> {
+        use crate::download::{Context, Options, human_bytes};
+
+        let root = media_root(config, &self.dirs).map_err(anyhow::Error::msg)?;
+        #[allow(unused_mut)]
+        let mut thumbnail_base = crate::download::thumbnail::YTIMG.to_string();
+        // Debug builds (tests) can point cover downloads at a fake server.
+        #[cfg(debug_assertions)]
+        if let Ok(base) = std::env::var("TIDEPOOL_TEST_THUMBNAIL_BASE") {
+            thumbnail_base = base;
+        }
+        let ctx = Context {
+            tmp_root: root.join(&config.library.tmp_dir),
+            root,
+            ytdlp_version: crate::ytdlp::manager::tool_version(&ytdlp).ok(),
+            ytdlp,
+            library: self.cli.library.clone(),
+            duplicates: config.library.duplicates,
+            thumbnail_base,
+            backtrack_limit: usize::try_from(config.library.regex_backtrack_limit)
+                .unwrap_or(usize::MAX),
+            http: reqwest::Client::builder()
+                .user_agent(concat!("tidepool/", env!("CARGO_PKG_VERSION")))
+                .connect_timeout(std::time::Duration::from_secs(15))
+                .read_timeout(std::time::Duration::from_secs(30))
+                .build()?,
+            shutdown_timeout: config.library.shutdown_timeout.0,
+            cancel: tokio_util::sync::CancellationToken::new(),
+        };
+        let options = Options {
+            limit,
+            concurrency: concurrency.unwrap_or(config.library.concurrency) as usize,
+        };
+        let dirs = &self.dirs;
+        let cookies =
+            |source: &EffectiveSource| crate::pipeline::cookies_file(source, dirs).ok().flatten();
+        let summary = crate::download::download_all(
+            state,
+            sources,
+            cookies,
+            ctx,
+            options,
+            out,
+            jiff::Timestamp::now(),
+        )
+        .await
+        .map_err(anyhow::Error::msg)?;
+
+        if summary.interrupted.is_some() {
+            writeln!(
+                out,
+                "stopped; unfinished downloads will resume on the next run"
+            )?;
+        } else if summary.downloaded + summary.skipped + summary.failed == 0 {
+            writeln!(out, "nothing to download")?;
+        } else {
+            let videos = if summary.downloaded == 1 {
+                "video"
+            } else {
+                "videos"
+            };
+            let mut parts = vec![format!(
+                "downloaded {} {videos} ({})",
+                summary.downloaded,
+                human_bytes(summary.bytes)
+            )];
+            if summary.skipped > 0 {
+                parts.push(format!("{} skipped", summary.skipped));
+            }
+            if summary.failed > 0 {
+                parts.push(format!("{} failed", summary.failed));
+            }
+            writeln!(out, "{}", parts.join("; "))?;
+        }
+        Ok(summary)
+    }
+
+    fn exit_code(summary: &crate::download::Summary, index_failures: usize) -> i32 {
+        match summary.interrupted {
+            Some(code) => code,
+            None if summary.failed > 0 || index_failures > 0 => exit::PARTIAL,
+            None => exit::OK,
+        }
+    }
+
+    async fn download(&self, args: &DownloadArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
+        let mut state = self.open_state()?;
+        let loaded = self.current_config(&state)?;
+        let sources = self.scoped_sources(&loaded.config, &args.scope.sources)?;
+        let _lock = self.lock()?;
+        let ytdlp = self.ytdlp_binary(&loaded.config).await?;
+        let limit = args.limit.map(|l| l as usize);
+        let summary = self
+            .download_sources(
+                &mut state,
+                &loaded.config,
+                &sources,
+                ytdlp,
+                limit,
+                args.concurrency,
+                out,
+            )
+            .await?;
+        Ok(Self::exit_code(&summary, 0))
+    }
+
+    /// `tidepool run`: index, then download, once.
+    async fn run_once(&self, args: &RunArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
+        let mut state = self.open_state()?;
+        let loaded = self.current_config(&state)?;
+        let sources = self.scoped_sources(&loaded.config, &args.sources)?;
+        if sources.is_empty() {
+            writeln!(
+                out,
+                "no enabled sources; add one under [sources.<name>] in your config"
+            )?;
+            return Ok(exit::OK);
+        }
+        let _lock = self.lock()?;
+        let ytdlp = self.ytdlp_binary(&loaded.config).await?;
+        let failed = self
+            .index_sources(&mut state, &loaded.config, &sources, &ytdlp, out)
+            .await?;
+        let summary = self
+            .download_sources(&mut state, &loaded.config, &sources, ytdlp, None, None, out)
+            .await?;
+        Ok(Self::exit_code(&summary, failed))
+    }
+
+    /// `tidepool reset <video>`: download it again on the next run.
+    fn reset(&self, args: &ResetArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
+        let state = self.open_state()?;
+        let loaded = self.current_config(&state)?;
+        let _lock = self.lock()?;
+        let reset = crate::state::items::reset_video(&state.conn, &args.video_id)?;
+        if reset.is_empty() {
+            bail!("no video {} in this library", args.video_id);
+        }
+        if args.delete_files {
+            let root = media_root(&loaded.config, &self.dirs).map_err(anyhow::Error::msg)?;
+            for dir in reset.iter().filter_map(|(_, dir)| dir.as_ref()) {
+                let path = root.join(dir);
+                if path.starts_with(&root) && path.exists() {
+                    std::fs::remove_dir_all(&path)
+                        .with_context(|| format!("cannot delete {}", path.display()))?;
+                    writeln!(out, "deleted {}", path.display())?;
+                }
+            }
+        }
+        let sources: Vec<&str> = reset.iter().map(|(key, _)| key.as_str()).collect();
+        writeln!(
+            out,
+            "reset {} in {}; it will be downloaded on the next run",
+            args.video_id,
+            sources.join(", ")
+        )?;
+        Ok(exit::OK)
     }
 
     async fn ytdlp(&self, cmd: &YtdlpCmd, out: &mut dyn Write) -> anyhow::Result<i32> {

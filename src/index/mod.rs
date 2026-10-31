@@ -35,6 +35,18 @@ impl Availability {
         }
     }
 
+    pub fn parse(s: &str) -> Self {
+        match s {
+            "unlisted" => Availability::Unlisted,
+            "private" => Availability::Private,
+            "deleted" => Availability::Deleted,
+            "restricted" => Availability::Restricted,
+            "upcoming" => Availability::Upcoming,
+            "live" => Availability::Live,
+            _ => Availability::Public,
+        }
+    }
+
     pub fn downloadable(self) -> bool {
         matches!(self, Availability::Public | Availability::Unlisted)
     }
