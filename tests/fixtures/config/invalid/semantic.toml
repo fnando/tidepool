@@ -1,4 +1,4 @@
-[defaults]
+[category.default]
 hooks = ["notify"]
 min_duration = "10m"
 max_duration = "5m"
@@ -20,3 +20,15 @@ url = "https://www.youtube.com/playlist?list=PLthree"
 dir = "../outside"
 max_duration = "1m"
 min_duration = "2m"
+
+[category.music]
+root = "/nas/music"
+
+[sources.four]
+url = "https://www.youtube.com/playlist?list=PLfour"
+category = "music"
+dir = "music"                       # fine: a different root than sources.one
+
+[sources.five]
+url = "https://www.youtube.com/playlist?list=PLfive"
+category = "podcasts"

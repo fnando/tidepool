@@ -292,6 +292,14 @@ fn convert(error: &ValidationError<'_>, out: &mut Vec<Diagnostic>) {
                 .unwrap_or_else(|| format!("{value:?} is not a valid {format}"));
             out.push(Diagnostic::error(pointer, message));
         }
+        ValidationErrorKind::Pattern { .. } if pointer.ends_with("/category") => {
+            out.push(Diagnostic::error(
+                pointer,
+                format!(
+                    "{instance} isn't a category name: use lowercase letters, digits, '-' and '_'"
+                ),
+            ));
+        }
         ValidationErrorKind::Enum { options } => {
             out.push(Diagnostic::error(
                 pointer,

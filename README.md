@@ -71,12 +71,11 @@ any text editor. Its sections:
 
 | Section | What it's for |
 | --- | --- |
-| `[library]` | Where videos go, how many download at once |
+| `[general]` | How many downloads run at once, and other settings for the whole run |
 | `[ytdlp]` | Which yt-dlp to use and how it's kept up to date |
-| `[youtube]` | Your YouTube API key (optional) |
 | `[schedule]` | How often to sync in the background |
 | `[server]` | The web interface |
-| `[defaults]` | Settings every source uses unless it sets its own |
+| `[category.<name>]` | Where videos go and how they're downloaded, named and filtered; see [Categories](#categories) |
 | `[hooks.<name>]` | Your own scripts to run after each download |
 | `[sources.<name>]` | What to keep in sync |
 
@@ -93,9 +92,46 @@ a video inside a playlist works too, as long as it contains `list=`. The name
 (`lofi` here) is up to you: lowercase letters, digits, `-` and `_`. It's also
 the name of the source's folder, unless you set `dir`.
 
-Any setting from `[defaults]` can be changed for a single source by adding it
-under that source. See [`examples/config.toml`](examples/config.toml) for a
-complete example.
+See [`examples/config.toml`](examples/config.toml) for a complete example.
+
+### Categories
+
+Most settings live in categories: where videos go (`root`), the quality
+(`format`), folder and file names (`output`, `cover_name`), filters, limits and
+your YouTube API key. Every source uses `[category.default]`. Give a source
+another category to change some of those settings for a group of sources;
+the category only lists what differs from `default`:
+
+```toml
+[category.default]
+root = "~/Videos/youtube"
+format = "bv*[height<=1080]+ba/b"
+exclude = ['(?i)#shorts']
+
+[category.music]
+root = "~/Music/youtube"                 # music goes somewhere else
+format = "ba/b"                          # audio only
+ytdlp_args = ["-x", "--audio-format", "opus"]
+
+[sources.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+category = "music"
+```
+
+Here `lofi` saves audio in `~/Music/youtube/lofi/`, and still skips `#shorts`
+from `default`. A source's settings come from `[category.default]`, then its
+category, then anything set on the source itself, so a single source can still
+change any setting:
+
+```toml
+[sources.talks]
+url = "https://www.youtube.com/playlist?list=PLyyyyyyyy"
+cutoff = "none"                          # keep the whole back catalogue
+```
+
+Lists like `include`, `exclude` and `hooks` replace the inherited ones. Add
+`inherit_rules = true` (or `inherit_hooks = true`) to add to them instead.
+`{category}` can be used in `output`, e.g. `output = "{category}/{source_dir}/{title} [{id}]"`.
 
 ### Applying changes
 
@@ -139,7 +175,7 @@ tidepool config check ~/.config/tidepool/config.toml
 This shows every problem at once, with the line and column where it is:
 
 ```
-config.toml:2:1 library.concurency: unknown key "concurency"
+config.toml:2:1 general.concurency: unknown key "concurency"
 config.toml:20:12 sources.lofi.cleanup.max_size: "20 gigs" is not a valid byte size (e.g. "20GiB", "500MB")
 ```
 
@@ -211,7 +247,7 @@ Add `--source <name>` (or `-s`) to run only some sources.
 Each video gets its own folder:
 
 ```
-~/.local/share/tidepool/media/      # or library.root
+~/.local/share/tidepool/media/      # or the category's root
   lofi/                             # one folder per source (its name, or `dir`)
     2025-03-01 - Some title [dQw4w9WgXcQ]/
       media.mkv                     # the video
@@ -223,7 +259,7 @@ Each video gets its own folder:
 The folder and file names come from the `output` and `cover_name` settings, and
 the video quality from `format` (yt-dlp's format selector). A video's folder
 only appears once it's complete, so you never find half-downloaded videos in
-your library.
+your media folders.
 
 To run tidepool on a schedule, call it from cron (or launchd, or a systemd
 timer). `--config` applies your config file first if you changed it:
@@ -245,7 +281,7 @@ picked up again on the next run.
 **Downloading only what's waiting.** `tidepool download` downloads videos
 already found by `tidepool run` or `tidepool index`, without checking the
 sources again. `--limit 5` downloads at most five; `--concurrency 4` runs four
-downloads at once (default: `library.concurrency`, 2).
+downloads at once (default: `general.concurrency`, 2).
 
 **Downloading a video again.** `tidepool reset <video id>` makes tidepool
 download it again on the next run; add `--delete-files` to remove the current
@@ -254,7 +290,7 @@ it's also in the folder name.
 
 **The same video in several sources.** Each source gets its own folder. If a
 video was already downloaded for another source in the same `format`, tidepool
-reuses that file instead of downloading it again (`library.duplicates`):
+reuses that file instead of downloading it again (`general.duplicates`):
 
 | `duplicates` | What it does |
 | --- | --- |
@@ -322,9 +358,12 @@ new videos faster, with more details per video. Today tidepool uses yt-dlp for
 everything. To add a key later, set it in the config file and apply the change:
 
 ```toml
-[youtube]
+[category.default.youtube]
 api_key = "AIza..."
 ```
+
+A category (or a single source) can use its own key, with its own quota
+settings, e.g. under `[category.music.youtube]`. Quota is counted per key.
 
 The config file is created so only you can read it. If you create it some
 other way and it holds a key or token, `config check` warns you if other users
@@ -379,17 +418,6 @@ listen = "0.0.0.0:8787"
 token = "a long random secret"
 ```
 
-### More than one library
-
-Each set of sources with its own settings is a *library*. You get one called
-`default`; add `--library <name>` to any command to use another. Each library
-has its own settings and history:
-
-```sh
-tidepool init --library music --config ~/.config/tidepool/music.toml
-tidepool config history --library music
-```
-
 ## Seeing more (or less)
 
 Add `-v` (`--verbose`) to any command to see what tidepool is doing: which
@@ -399,9 +427,9 @@ download's progress, cover and destination:
 
 ```
 $ tidepool run -v
-DEBUG library default: config revision 2, imported from ~/.config/tidepool/config.toml on 2026-10-31 20:48 UTC
+DEBUG config revision 2, imported from ~/.config/tidepool/config.toml on 2026-10-31 20:48 UTC
 DEBUG media in ~/.local/share/tidepool/media, work area ~/.local/share/tidepool/media/.tidepool-tmp
-DEBUG sample: https://www.youtube.com/playlist?list=PLXLpuA-bwY4s → sample/, format bv*[height<=360]+ba/b, output {source_dir}/{upload_date} - {title} [{id}]
+DEBUG sample: https://www.youtube.com/playlist?list=PLXLpuA-bwY4s → sample/ (category default), format bv*[height<=360]+ba/b, output {source_dir}/{upload_date} - {title} [{id}]
 DEBUG yt-dlp 2026.10.29.232701 at ~/.local/share/tidepool/bin/yt-dlp-nightly (managed, nightly channel)
 DEBUG sample: listed 1 video in 2.9s
 DEBUG sample: new: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” [dQw4w9WgXcQ]: keep (no include rules)
@@ -426,7 +454,7 @@ so `tidepool run -v > out.txt` keeps the summary lines separate. With
 | What | Where |
 | --- | --- |
 | Your config file | `~/.config/tidepool/config.toml` |
-| Videos (unless you choose another folder) | `~/.local/share/tidepool/media` |
+| Videos (unless a category sets `root`) | `~/.local/share/tidepool/media` |
 | tidepool's own data | `~/.local/share/tidepool/` |
 
 If you set `XDG_CONFIG_HOME` or `XDG_DATA_HOME`, tidepool uses those folders

@@ -1,4 +1,4 @@
 version = 2
 
-[library]
+[general]
 concurency = 2

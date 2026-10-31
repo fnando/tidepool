@@ -1,11 +1,11 @@
-[defaults]
+[category.default]
 output = "{title}"
 cover_name = "covers/{title}"
 min_duration = "1 hour"
 cutoff = "yesterday"
 include = ['(unclosed']
 
-[defaults.embed]
+[category.default.embed]
 tags = { album = "{media_path}" }
 
 [hooks.notify]

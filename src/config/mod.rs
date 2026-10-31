@@ -4,10 +4,10 @@ pub mod duration;
 pub mod placeholders;
 pub mod size;
 
-/// Source names (and library names): `^[a-z0-9][a-z0-9_-]*$`.
+/// Source, category and hook names: `^[a-z0-9][a-z0-9_-]*$`.
 pub const KEY_PATTERN: &str = "^[a-z0-9][a-z0-9_-]*$";
 
-/// Whether `s` is a valid source or library name.
+/// Whether `s` is a valid source, category or hook name.
 pub fn is_valid_name(s: &str) -> bool {
     let mut chars = s.chars();
     matches!(chars.next(), Some(c) if c.is_ascii_lowercase() || c.is_ascii_digit())

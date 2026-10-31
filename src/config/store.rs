@@ -1,4 +1,4 @@
-//! Config revisions in the library's state DB. TOML files are how a config
+//! Config revisions in the state DB. TOML files are how a config
 //! gets in and out; each revision keeps the TOML text verbatim (comments
 //! included) next to the validated, normalized JSON.
 
@@ -83,9 +83,9 @@ pub enum StoreError {
     #[error("revision {0} does not exist (see `tidepool config history`)")]
     NoSuchRevision(i64),
     #[error(
-        "library {0:?} has no config yet; run `tidepool init` (or `tidepool config import <path>`) first"
+        "tidepool has no config yet; run `tidepool init` (or `tidepool config import <path>`) first"
     )]
-    Empty(String),
+    Empty,
     #[error(
         "{path} differs from the stored config, which was changed by {changed_by} (revision {rev}) after it was last imported.\n\
          Refusing to overwrite those edits. Compare with `tidepool config diff {path}`, \
@@ -106,7 +106,7 @@ pub fn hash(text: &str) -> String {
         .collect()
 }
 
-/// Config revisions for one library.
+/// Config revisions.
 pub struct ConfigStore<'a> {
     conn: &'a Connection,
 }
@@ -161,10 +161,8 @@ impl<'a> ConfigStore<'a> {
     }
 
     /// The current revision, re-validated against this binary's schema.
-    pub fn load_current(&self, library: &str) -> Result<(Revision, Loaded), StoreError> {
-        let current = self
-            .current()?
-            .ok_or_else(|| StoreError::Empty(library.to_string()))?;
+    pub fn load_current(&self) -> Result<(Revision, Loaded), StoreError> {
+        let current = self.current()?.ok_or(StoreError::Empty)?;
         let loaded = load_str(&format!("config revision {}", current.rev), &current.toml)?;
         Ok((current, loaded))
     }
@@ -344,12 +342,9 @@ mod tests {
     fn load_current_revalidates() {
         let state = State::open_in_memory().unwrap();
         let store = ConfigStore::new(&state.conn);
-        assert!(matches!(
-            store.load_current("default"),
-            Err(StoreError::Empty(_))
-        ));
+        assert!(matches!(store.load_current(), Err(StoreError::Empty)));
         import(&store, "/c.toml", A);
-        let (rev, loaded) = store.load_current("default").unwrap();
+        let (rev, loaded) = store.load_current().unwrap();
         assert_eq!(rev.rev, 1);
         assert!(loaded.config.sources.contains_key("lofi"));
 
@@ -357,14 +352,14 @@ mod tests {
         state
             .conn
             .execute(
-                "UPDATE config_revisions SET toml = '[library]\nconcurency = 2\n'",
+                "UPDATE config_revisions SET toml = '[general]\nconcurency = 2\n'",
                 [],
             )
             .unwrap();
-        let err = store.load_current("default").unwrap_err().to_string();
+        let err = store.load_current().unwrap_err().to_string();
         assert_eq!(
             err,
-            "config revision 1:2:1 library.concurency: unknown key \"concurency\""
+            "config revision 1:2:1 general.concurency: unknown key \"concurency\""
         );
     }
 }

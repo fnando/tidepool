@@ -10,26 +10,17 @@
 
 version = 1
 
-[library]
-root = "~/Videos/youtube"           # media; default ~/.local/share/tidepool/media
+[general]                           # settings for the whole run
 concurrency = 2                     # parallel yt-dlp downloads
 duplicates = "hardlink"             # same video in several sources: hardlink | symlink | copy | download
 regex_backtrack_limit = 1000000     # fancy-regex step limit per match
 shutdown_timeout = "10s"            # grace period for child processes after SIGINT/SIGTERM
-tmp_dir = ".tidepool-tmp"           # relative to root: same filesystem, atomic rename
 
 [ytdlp]
 managed = true                      # tidepool downloads yt-dlp and keeps it updated
 channel = "nightly"                 # stable | nightly | master (nightly is what yt-dlp recommends)
 update_check = "1h"                 # how often to look for a new release (one GitHub API call)
 path = "yt-dlp"                     # only used when managed = false
-
-[youtube]
-# api_key = "AIza..."               # optional; without it, indexing uses yt-dlp only
-daily_quota = 10000                 # raise only if Google granted your project an extension
-quota_warn_at = 0.8                 # warn in logs and the web UI at 80% of daily_quota
-fallback_to_ytdlp = true            # with a key: use yt-dlp on quota/5xx; always on without api_key
-requests_per_second = 5
 
 [schedule]
 interval = "6h"                     # tidepool run --daemon: sync + cleanup this often; "" = off
@@ -40,7 +31,12 @@ listen = "127.0.0.1:8787"
 token = ""                          # required for a non-loopback listen address
 read_only_config = false            # true = config editor disabled
 
-[defaults]
+# Every source uses [category.default]; a source with category = "audio" gets
+# [category.audio] on top of it.
+
+[category.default]
+root = "~/Videos/youtube"           # media; default ~/.local/share/tidepool/media
+tmp_dir = ".tidepool-tmp"           # relative to root: same filesystem, atomic move
 format = "bv*[height<=1080]+ba/b"
 merge_output_format = "mkv"
 output = "{source_dir}/{upload_date} - {title} [{id}]"  # directory per video
@@ -57,7 +53,14 @@ cutoff = "30d"                      # skip videos published more than 30d ago; "
 hooks = []
 redownload_missing = false          # once downloaded, never fetch again even if the file is gone
 
-[defaults.embed]                    # everything is off unless turned on here or per source
+[category.default.youtube]
+# api_key = "AIza..."               # optional; without it, indexing uses yt-dlp only
+daily_quota = 10000                 # raise only if Google granted your project an extension
+quota_warn_at = 0.8                 # warn in logs and the web UI at 80% of daily_quota
+fallback_to_ytdlp = true            # with a key: use yt-dlp on quota/5xx; always on without api_key
+requests_per_second = 5
+
+[category.default.embed]            # everything is off unless turned on here, per category or per source
 metadata = true                     # title, channel, date, description, URL, album/track
 cover = true                        # same image as the poster file
 chapters = true
@@ -66,13 +69,21 @@ info_json = false                   # attach metadata.json (mkv/mka only)
 after_hooks = true                  # re-embed if a hook replaced the media file
 tags = { genre = "Music", album_artist = "{channel}" }
 
-[defaults.cleanup]
+[category.default.cleanup]
 max_items = 0                       # 0 = unlimited
 max_age = ""                        # e.g. "30d"
 max_size = ""                       # e.g. "20GiB"
 order = "oldest_downloaded"         # oldest_downloaded | oldest_published | source_position
 removed_from_source = "keep"        # keep | remove
 keep = "metadata"                   # nothing | metadata (keep json + cover, drop media)
+
+[category.audio]                    # only what differs from default
+root = "~/Music/youtube"            # audio goes somewhere else
+format = "ba/b"                     # audio only
+ytdlp_args = ["-x", "--audio-format", "opus"]
+cover_name = "cover"
+cutoff = "none"                     # keep the whole back catalogue
+inherit_rules = true                # add to default's include/exclude instead of replacing them
 
 [hooks.transcode]
 command = ["/usr/local/bin/to-h265.sh", "{media_path}"]
@@ -88,7 +99,7 @@ on_failure = "warn"
 
 [sources.lofi]
 url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # the playlist's URL
-dir = "lofi"                        # defaults to the key
+dir = "lofi"                        # defaults to the source name
 enabled = true
 include = ['(?i)\blive\b', { field = "channel", pattern = '^Lofi Girl$' }]
 exclude = ['(?i)\b(trailer|teaser)\b']
@@ -101,7 +112,4 @@ removed_from_source = "remove"
 
 [sources.talks]
 url = "https://www.youtube.com/playlist?list=PLyyyyyyyy"
-cutoff = "none"                     # overrides the global 30d: keep the whole back catalogue
-format = "ba/b"                     # audio only
-ytdlp_args = ["-x", "--audio-format", "opus"]
-inherit_rules = true                # concat defaults.include/exclude instead of replacing
+category = "audio"                  # [category.default], then [category.audio], then what's set here

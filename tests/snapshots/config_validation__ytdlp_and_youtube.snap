@@ -5,5 +5,5 @@ expression: err
 ytdlp_and_youtube.toml:2:11 ytdlp.channel: "beta" is not one of "stable", "nightly", "master"
 ytdlp_and_youtube.toml:3:16 ytdlp.update_check: "often" is not a valid duration (e.g. "30d", "12h", "1h30m")
 ytdlp_and_youtube.toml:4:1 ytdlp.ytdlp_path: unknown key "ytdlp_path"
-ytdlp_and_youtube.toml:7:1 youtube.api_keys: unknown key "api_keys"
-ytdlp_and_youtube.toml:8:11 youtube.api_key: must not be empty (remove it to use the default)
+ytdlp_and_youtube.toml:7:1 category.default.youtube.api_keys: unknown key "api_keys"
+ytdlp_and_youtube.toml:8:11 category.default.youtube.api_key: must not be empty (remove it to use the default)

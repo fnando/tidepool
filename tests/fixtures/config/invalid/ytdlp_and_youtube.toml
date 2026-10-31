@@ -3,7 +3,7 @@ channel = "beta"
 update_check = "often"
 ytdlp_path = "yt-dlp"
 
-[youtube]
+[category.default.youtube]
 api_keys = ["AIza"]
 api_key = ""
 

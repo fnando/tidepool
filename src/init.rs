@@ -1,4 +1,4 @@
-//! `tidepool init`: write a commented config file and create the library
+//! `tidepool init`: write a commented config file and store it
 //! behind it, without asking anything.
 //!
 //! The generated file lists every option with its default and a one-line
@@ -29,26 +29,17 @@ const TEMPLATE: &str = r#"#:schema @SCHEMA_ID@
 
 version = 1
 
-[library]
-# root = "~/.local/share/tidepool/media" # where videos go
+[general]                           # settings for the whole run
 # concurrency = 2                   # parallel yt-dlp downloads
 # duplicates = "hardlink"           # same video in several sources: hardlink | symlink | copy | download
 # regex_backtrack_limit = 1000000   # fancy-regex step limit per match
 # shutdown_timeout = "10s"          # grace period for child processes after SIGINT/SIGTERM
-# tmp_dir = ".tidepool-tmp"         # work area, relative to root (same filesystem, atomic rename)
 
 [ytdlp]
 # managed = true                    # tidepool downloads yt-dlp and keeps it updated
 # channel = "nightly"               # stable | nightly | master
 # update_check = "1h"               # how often to look for a new yt-dlp release
 # path = "yt-dlp"                   # your own yt-dlp; only used when managed = false
-
-[youtube]
-# api_key = "AIza..."               # optional; without it, indexing uses yt-dlp only
-# daily_quota = 10000               # your Google Cloud project's daily quota
-# quota_warn_at = 0.8               # warn at this fraction of daily_quota
-# fallback_to_ytdlp = true          # with a key: use yt-dlp on quota exhaustion or API errors
-# requests_per_second = 5           # API request rate limit
 
 [schedule]
 interval = "6h"                     # tidepool run --daemon: sync + cleanup this often; "" = off
@@ -59,8 +50,13 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # token = ""                        # required for a non-loopback listen address
 # read_only_config = false          # true = config editor disabled
 
-# Options every source inherits; each source can override any of them.
-[defaults]
+# Categories group settings. Every source uses [category.default] unless it
+# picks another category; other categories only list what differs from
+# default, and a source can override any of these settings for itself.
+
+[category.default]
+# root = "~/.local/share/tidepool/media" # where videos go
+# tmp_dir = ".tidepool-tmp"         # work area, relative to root (same filesystem, atomic move)
 # format = "bv*+ba/b"               # yt-dlp format selector (-f)
 # merge_output_format = "mkv"       # container for merged formats
 # output = "{source_dir}/{upload_date} - {title} [{id}]"   # each video's directory, must contain {id}
@@ -71,14 +67,23 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # match_fields = ["title"]          # title | description | channel | tags | id
 # include = []                      # keep a video if any regex matches (empty = keep all)
 # exclude = []                      # drop a video if any regex matches, e.g. ['(?i)#shorts']
+# inherit_rules = false             # elsewhere: true = add to the include/exclude inherited instead of replacing them
 # min_duration = ""                 # skip shorter videos, e.g. "60s"
 # max_duration = ""                 # skip longer videos, e.g. "4h"
 # cutoff = "none"                   # skip videos published before: "30d", "2024-01-01" or "none"
 # hooks = []                        # hook names, run in order after each download
+# inherit_hooks = false             # elsewhere: true = add to the hooks inherited instead of replacing them
 # redownload_missing = false        # download again when a downloaded file is gone
 # keep_raw_info = false             # keep yt-dlp's raw info.json
 
-[defaults.embed]                    # what goes into the media file
+[category.default.youtube]          # YouTube Data API (optional)
+# api_key = "AIza..."               # without one, indexing uses yt-dlp only
+# daily_quota = 10000               # the key's Google Cloud project daily quota
+# quota_warn_at = 0.8               # warn at this fraction of daily_quota
+# fallback_to_ytdlp = true          # with a key: use yt-dlp on quota exhaustion or API errors
+# requests_per_second = 5           # API request rate limit
+
+[category.default.embed]            # what goes into the media file
 # metadata = false                  # title, channel, date, description, URL, album/track
 # cover = false                     # the poster image (needs ffmpeg)
 # chapters = false                  # chapter markers
@@ -87,7 +92,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # after_hooks = true                # re-embed if a hook replaced the media file
 # tags = {}                         # extra tags, e.g. { genre = "Music", album_artist = "{channel}" }
 
-[defaults.cleanup]                  # limits that keep each source bounded
+[category.default.cleanup]          # limits that keep each source bounded
 # max_items = 0                     # keep at most this many videos; 0 = unlimited
 # max_age = ""                      # remove videos older than this, e.g. "30d"
 # max_size = ""                     # remove oldest videos until media fits, e.g. "20GiB"
@@ -96,6 +101,13 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # keep = "metadata"                 # nothing | metadata (keep metadata.json + cover, drop media)
 # marker_file = ""                  # remove videos whose directory contains this file, e.g. ".watched"
 # keep_latest = 0                   # protect the newest N videos from every other limit
+
+[category.music]                    # an example: audio only, for sources with category = "music"
+# root = "~/Music/tidepool"         # e.g. keep music somewhere else
+format = "ba/b"                     # best audio
+ytdlp_args = ["-x", "--audio-format", "opus"]
+output = "{source_dir}/{title} [{id}]"
+cover_name = "cover"
 
 # Hooks: commands run after each download (or before cleanup). Example:
 #
@@ -108,15 +120,14 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # env = {}                          # extra environment variables
 # cwd = "."                         # working directory; defaults to the video's directory
 
-# Sources to keep in sync (YouTube playlists). Any [defaults] option can be
-# overridden per source.
+# Sources to keep in sync (YouTube playlists). A source can set any category
+# setting for itself.
 
 [sources.sample]                    # one short video, to see tidepool work; replace it with your own
 url = "@SAMPLE_SOURCE_URL@"   # the playlist's URL
+# category = "default"              # which category's settings to use, e.g. "music"
 # dir = "sample"                    # folder under root; defaults to the source name
 # enabled = true                    # disabled sources are skipped
-# inherit_rules = false             # true = add [defaults] include/exclude instead of replacing them
-# inherit_hooks = false             # true = add [defaults] hooks instead of replacing them
 # hooks = ["notify"]                # hook names, run in order after each download
 "#;
 
@@ -125,7 +136,7 @@ mod tests {
     use super::*;
     use crate::config::merge::effective_source;
     use crate::config::schema::generate;
-    use crate::config::{Config, ServerConfig, SourceConfig, YoutubeConfig, YtdlpConfig, load_str};
+    use crate::config::{Config, GeneralConfig, ServerConfig, SourceConfig, YtdlpConfig, load_str};
     use serde_json::Value;
 
     #[test]
@@ -135,9 +146,11 @@ mod tests {
         let loaded = load_str("init.toml", &text).unwrap_or_else(|e| panic!("{e}\n{text}"));
         assert!(loaded.warnings.is_empty(), "{:?}", loaded.warnings);
         let config = loaded.config;
-        assert_eq!(config.library.root, None);
-        assert_eq!(config.youtube, YoutubeConfig::default());
+        assert_eq!(config.general, GeneralConfig::default());
         assert_eq!(config.server, ServerConfig::default());
+        let categories: Vec<&String> = config.category.keys().collect();
+        assert_eq!(categories, ["default", "music"]);
+        assert_eq!(config.category["music"].format.as_deref(), Some("ba/b"));
         assert_eq!(
             config.schedule.interval.0,
             Some(std::time::Duration::from_secs(6 * 3600))
@@ -178,22 +191,25 @@ mod tests {
             .config;
 
         // Commented values are the built-in defaults.
+        assert_eq!(config.general, GeneralConfig::default());
         assert_eq!(config.ytdlp, YtdlpConfig::default());
-        let mut youtube = config.youtube.clone();
-        youtube.api_key = None;
-        assert_eq!(youtube, YoutubeConfig::default());
         assert_eq!(config.server, ServerConfig::default());
-        let mut library = config.library.clone();
-        library.root = None;
-        assert_eq!(library, crate::config::LibraryConfig::default());
         let plain = SourceConfig {
             url: "https://www.youtube.com/playlist?list=PLx".into(),
             ..SourceConfig::default()
         };
+        let mut documented = effective_source(&config, "x", &plain);
+        let builtin = effective_source(&Config::default(), "x", &plain);
+        // The template shows these as examples rather than defaults.
         assert_eq!(
-            effective_source("x", &plain, &config.defaults),
-            effective_source("x", &plain, &Config::default().defaults),
-            "[defaults] in the template must show the built-in defaults"
+            documented.root.as_deref(),
+            Some("~/.local/share/tidepool/media")
+        );
+        documented.root = None;
+        documented.youtube.api_key = None;
+        assert_eq!(
+            documented, builtin,
+            "[category.default] in the template must show the built-in defaults"
         );
 
         // Every schema property appears in the template.
@@ -212,22 +228,22 @@ mod tests {
         };
         let where_documented: &[(&str, &[&str])] = &[
             ("", &[""]),
-            ("LibraryConfig", &["/library"]),
+            ("GeneralConfig", &["/general"]),
             ("YtdlpConfig", &["/ytdlp"]),
-            ("YoutubeConfig", &["/youtube"]),
             ("ScheduleConfig", &["/schedule"]),
             ("ServerConfig", &["/server"]),
-            ("Defaults", &["/defaults"]),
-            ("EmbedOptions", &["/defaults/embed"]),
-            ("CleanupOptions", &["/defaults/cleanup"]),
+            ("CategoryConfig", &["/category/default"]),
+            ("YoutubeOptions", &["/category/default/youtube"]),
+            ("EmbedOptions", &["/category/default/embed"]),
+            ("CleanupOptions", &["/category/default/cleanup"]),
             ("HookConfig", &["/hooks/notify"]),
             ("SourceConfig", &["/sources/sample"]),
         ];
-        let defaults_props = props("Defaults");
+        let category_props = props("CategoryConfig");
         for (def, pointers) in where_documented {
             for prop in props(def) {
-                if *def == "SourceConfig" && defaults_props.contains(&prop) {
-                    continue; // documented under [defaults]
+                if *def == "SourceConfig" && category_props.contains(&prop) {
+                    continue; // documented under [category.default]
                 }
                 let found = pointers
                     .iter()

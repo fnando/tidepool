@@ -125,11 +125,11 @@ impl Kind {
             Kind::Forbidden => format!("YouTube refused the download; {version} may be outdated: {update}"),
             Kind::Options => format!("check the source's ytdlp_args; {version} may also be outdated: {update}"),
             Kind::BotCheck => "set cookies_file to a cookies.txt exported from a browser where you're logged in to YouTube, or wait and try again later".into(),
-            Kind::RateLimited => "lower library.concurrency or run tidepool less often; downloads are retried later".into(),
+            Kind::RateLimited => "lower general.concurrency or run tidepool less often; downloads are retried later".into(),
             Kind::Missing => "install yt-dlp, or set ytdlp.managed = true so tidepool downloads it".into(),
             Kind::SourceFailed => "check the source's url: the playlist may have been deleted or made private (private playlists need cookies_file)".into(),
             Kind::UpdateFailed => format!("tidepool keeps using {version}; check your network, or run `tidepool ytdlp update`"),
-            Kind::RegexLimit => "simplify the rule, or raise library.regex_backtrack_limit; affected videos are held until then".into(),
+            Kind::RegexLimit => "simplify the rule, or raise general.regex_backtrack_limit; affected videos are held until then".into(),
         }
     }
 }

@@ -8,10 +8,8 @@ use std::process::Command;
 use serde::Serialize;
 
 use super::diff::mask_secret;
-use super::merge::{EffectiveSource, effective_sources};
-use super::types::{
-    Config, HookConfig, LibraryConfig, ScheduleConfig, ServerConfig, YoutubeConfig, YtdlpConfig,
-};
+use super::merge::{DEFAULT_CATEGORY, EffectiveSource, category_settings, effective_sources};
+use super::types::{Config, GeneralConfig, HookConfig, ScheduleConfig, ServerConfig, YtdlpConfig};
 use crate::paths::{Dirs, expand};
 
 /// Something found while checking the environment.
@@ -22,12 +20,37 @@ pub enum Finding {
     Error(String),
 }
 
-/// Resolve `library.root` (expanding `~`/`$VARS`), defaulting to the data dir.
-pub fn media_root(config: &Config, dirs: &Dirs) -> Result<PathBuf, String> {
-    match &config.library.root {
+/// A source's media folder (`root`, expanding `~`/`$VARS`), defaulting to
+/// the data dir.
+pub fn media_root(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, String> {
+    match &source.root {
         Some(root) => expand(root, &dirs.home),
         None => Ok(dirs.default_media_root()),
     }
+}
+
+/// Every media folder the config uses: each category's and each source's,
+/// without repeats.
+pub fn media_roots(config: &Config, dirs: &Dirs) -> Vec<Result<PathBuf, String>> {
+    let mut categories: Vec<&str> = vec![DEFAULT_CATEGORY];
+    categories.extend(
+        config
+            .category
+            .keys()
+            .map(String::as_str)
+            .filter(|c| *c != DEFAULT_CATEGORY),
+    );
+    let mut roots: Vec<Result<PathBuf, String>> = Vec::new();
+    let settings = categories
+        .iter()
+        .map(|c| category_settings(config, c))
+        .chain(effective_sources(config));
+    for root in settings.map(|s| media_root(&s, dirs)) {
+        if !roots.contains(&root) {
+            roots.push(root);
+        }
+    }
+    roots
 }
 
 /// Check what a run needs: yt-dlp (and ffmpeg when embedding needs it), a
@@ -79,12 +102,14 @@ pub fn check_tools(config: &Config, dirs: &Dirs) -> Vec<Finding> {
 /// A writable media root, and a private config file when it holds secrets.
 pub fn check_storage(config: &Config, dirs: &Dirs, config_file: Option<&Path>) -> Vec<Finding> {
     let mut out = Vec::new();
-    match media_root(config, dirs) {
-        Ok(root) => out.push(match check_writable(&root) {
-            Ok(()) => Finding::Ok(format!("library.root {} is writable", root.display())),
-            Err(e) => Finding::Error(format!("library.root {}: {e}", root.display())),
-        }),
-        Err(e) => out.push(Finding::Error(format!("library.root: {e}"))),
+    for root in media_roots(config, dirs) {
+        out.push(match root {
+            Ok(root) => match check_writable(&root) {
+                Ok(()) => Finding::Ok(format!("media folder {} is writable", root.display())),
+                Err(e) => Finding::Error(format!("media folder {}: {e}", root.display())),
+            },
+            Err(e) => Finding::Error(format!("root: {e}")),
+        });
     }
 
     if let Some(path) = config_file
@@ -93,7 +118,7 @@ pub fn check_storage(config: &Config, dirs: &Dirs, config_file: Option<&Path>) -
         && meta.permissions().mode() & 0o077 != 0
     {
         out.push(Finding::Warning(format!(
-            "{} contains secrets (youtube.api_key or server.token) and is readable by other users; run `chmod 600 {}`",
+            "{} contains secrets (an api_key or server.token) and is readable by other users; run `chmod 600 {}`",
             path.display(),
             path.display()
         )));
@@ -102,7 +127,11 @@ pub fn check_storage(config: &Config, dirs: &Dirs, config_file: Option<&Path>) -
 }
 
 fn has_secrets(config: &Config) -> bool {
-    config.youtube.api_key.is_some() || !config.server.token.is_empty()
+    let key =
+        |y: &Option<super::types::YoutubeOptions>| y.as_ref().is_some_and(|y| y.api_key.is_some());
+    config.category.values().any(|c| key(&c.youtube))
+        || config.sources.values().any(|s| key(&s.youtube))
+        || !config.server.token.is_empty()
 }
 
 fn channel_name(ytdlp: &YtdlpConfig) -> String {
@@ -146,49 +175,43 @@ fn check_writable(root: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// The merged config `config check` prints: every default filled in.
+/// The merged config `config check` prints: every default filled in. Each
+/// source shows its resolved settings, including what its categories set.
 #[derive(Debug, Serialize)]
 pub struct EffectiveConfig {
-    pub library: EffectiveLibrary,
+    pub general: GeneralConfig,
     pub ytdlp: YtdlpConfig,
-    pub youtube: YoutubeConfig,
     pub schedule: ScheduleConfig,
     pub server: ServerConfig,
     pub hooks: BTreeMap<String, HookConfig>,
     pub sources: BTreeMap<String, EffectiveSource>,
 }
 
-#[derive(Debug, Serialize)]
-pub struct EffectiveLibrary {
-    pub root: String,
-    #[serde(flatten)]
-    pub rest: LibraryConfig,
-}
-
 impl EffectiveConfig {
     pub fn new(config: &Config, dirs: &Dirs, show_secrets: bool) -> Self {
-        let mut youtube = config.youtube.clone();
         let mut server = config.server.clone();
         if !show_secrets {
-            youtube.api_key = youtube.api_key.as_deref().map(mask_secret);
             server.token = mask_secret(&server.token);
         }
-        let root = media_root(config, dirs)
-            .map(|p| p.display().to_string())
-            .unwrap_or_else(|_| config.library.root.clone().unwrap_or_default());
-        let mut rest = config.library.clone();
-        rest.root = None;
+        let sources = effective_sources(config)
+            .into_iter()
+            .map(|mut source| {
+                if !show_secrets {
+                    source.youtube.api_key = source.youtube.api_key.as_deref().map(mask_secret);
+                }
+                if let Ok(root) = media_root(&source, dirs) {
+                    source.root = Some(root.display().to_string());
+                }
+                (source.key.clone(), source)
+            })
+            .collect();
         Self {
-            library: EffectiveLibrary { root, rest },
+            general: config.general.clone(),
             ytdlp: config.ytdlp.clone(),
-            youtube,
             schedule: config.schedule.clone(),
             server,
             hooks: config.hooks.clone(),
-            sources: effective_sources(config)
-                .into_iter()
-                .map(|p| (p.key.clone(), p))
-                .collect(),
+            sources,
         }
     }
 
@@ -210,19 +233,29 @@ mod tests {
     }
 
     #[test]
-    fn resolves_media_root() {
-        let config: Config = toml::from_str("[library]\nroot = '~/Videos'").unwrap();
-        assert_eq!(media_root(&config, &dirs()), Ok("/home/me/Videos".into()));
+    fn resolves_media_roots() {
+        let config: Config = toml::from_str(
+            "[category.default]\nroot = '~/Videos'\n[category.music]\nroot = '/nas/music'\n[category.misc]\n\
+             [sources.a]\nurl = 'https://www.youtube.com/playlist?list=PLa'\ncategory = 'music'",
+        )
+        .unwrap();
+        let source = effective_sources(&config).remove(0);
+        assert_eq!(media_root(&source, &dirs()), Ok("/nas/music".into()));
         assert_eq!(
-            media_root(&Config::default(), &dirs()),
-            Ok("/d/tidepool/media".into())
+            media_roots(&config, &dirs()),
+            vec![Ok("/home/me/Videos".into()), Ok("/nas/music".into())],
+            "default, then each category's, without repeats"
+        );
+        assert_eq!(
+            media_roots(&Config::default(), &dirs()),
+            vec![Ok("/d/tidepool/media".into())]
         );
     }
 
     #[test]
     fn effective_config_masks_keys_and_fills_defaults() {
         let config: Config = toml::from_str(
-            "[youtube]\napi_key = 'AIzaSyD-1234567890x1Qw'\n[server]\ntoken = 'my-long-secret-token'\n\
+            "[category.default.youtube]\napi_key = 'AIzaSyD-1234567890x1Qw'\n[server]\ntoken = 'my-long-secret-token'\n\
              [sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLx'",
         )
         .unwrap();
@@ -244,7 +277,7 @@ mod tests {
     #[test]
     fn missing_ytdlp_is_an_error() {
         let config: Config = toml::from_str(
-            "[ytdlp]\nmanaged = false\npath = '/nonexistent/yt-dlp'\n[library]\nroot = '/tmp'",
+            "[ytdlp]\nmanaged = false\npath = '/nonexistent/yt-dlp'\n[category.default]\nroot = '/tmp'",
         )
         .unwrap();
         let findings = check_environment(&config, &dirs(), None);
@@ -264,7 +297,7 @@ mod tests {
 
     #[test]
     fn missing_managed_ytdlp_is_fine() {
-        let config: Config = toml::from_str("[library]\nroot = '/tmp'").unwrap();
+        let config: Config = toml::from_str("[category.default]\nroot = '/tmp'").unwrap();
         let findings = check_environment(&config, &dirs(), None);
         assert!(
             findings
@@ -286,7 +319,7 @@ mod tests {
         std::fs::write(&file, "").unwrap();
         std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o644)).unwrap();
         let config: Config =
-            toml::from_str("[server]\ntoken = 'k'\n[library]\nroot = '/tmp'").unwrap();
+            toml::from_str("[server]\ntoken = 'k'\n[category.default]\nroot = '/tmp'").unwrap();
         let findings = check_environment(&config, &dirs(), Some(&file));
         assert!(
             findings

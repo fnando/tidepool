@@ -1,4 +1,4 @@
-[youtube]
+[category.default.youtube]
 fallback_to_ytdlp = false
 
 [sources.lofi]

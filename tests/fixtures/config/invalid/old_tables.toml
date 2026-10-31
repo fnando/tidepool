@@ -1,0 +1,12 @@
+[library]
+root = "~/Videos"
+
+[youtube]
+api_key = "AIzaSyD-1234567890x1Qw"
+
+[defaults]
+format = "ba/b"
+
+[sources.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+category = "Music!"

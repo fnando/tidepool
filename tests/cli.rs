@@ -1,4 +1,4 @@
-//! End-to-end: run the binary against a temp library.
+//! End-to-end: run the binary against a temp home.
 
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
@@ -48,8 +48,8 @@ impl Env {
     fn write_config(&self, name: &str, extra: &str) -> String {
         let ytdlp = test_bin().join("yt-dlp");
         let text = format!(
-            "# my config\n[library]\nroot = \"{}\"\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
-             [youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n\n\
+            "# my config\n[category.default]\nroot = \"{}\"\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
+             [category.default.youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n\n\
              [sources.lofi]\nurl = \"https://www.youtube.com/playlist?list=PLaaaaaaaaaaaa\"\ninclude = ['(?i)\\blive\\b']\nexclude = ['(?i)trailer']\n{extra}",
             self.path("media").display(),
             ytdlp.display()
@@ -65,7 +65,7 @@ impl Env {
 fn commands_without_a_config_explain_how_to_import_one() {
     let env = Env::new();
     env.cmd(&["config"]).assert().code(1).stderr(contains(
-        "library \"default\" has no config yet; run `tidepool init` (or `tidepool config import <path>`) first",
+        "tidepool has no config yet; run `tidepool init` (or `tidepool config import <path>`) first",
     ));
 }
 
@@ -166,7 +166,7 @@ fn invalid_configs_report_file_line_col_and_are_not_stored() {
     let file = env.path("bad.toml");
     fs::write(
         &file,
-        "[library]\nconcurency = 2\n\n[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLx'\nmin_duration = 'soon'\n",
+        "[general]\nconcurency = 2\n\n[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLx'\nmin_duration = 'soon'\n",
     )
     .unwrap();
     let file = file.display().to_string();
@@ -175,7 +175,7 @@ fn invalid_configs_report_file_line_col_and_are_not_stored() {
         .code(1)
         .stderr(
             contains(format!(
-                "{file}:2:1 library.concurency: unknown key \"concurency\""
+                "{file}:2:1 general.concurency: unknown key \"concurency\""
             ))
             .and(contains(format!(
                 "{file}:6:16 sources.lofi.min_duration: \"soon\" is not a valid duration"
@@ -272,26 +272,14 @@ fn filter_test_explains_the_decision() {
 fn held_lock_names_the_holder() {
     let env = Env::new();
     let file = env.write_config("c.toml", "");
-    let _held = tidepool::lock::acquire(&env.path("data/tidepool/libraries/default/lock")).unwrap();
+    let _held = tidepool::lock::acquire(&env.path("data/tidepool/lock")).unwrap();
     env.cmd(&["config", "import", &file])
         .assert()
         .code(1)
         .stderr(contains(format!(
-            "library is locked by another tidepool process (pid {})",
+            "another tidepool is running (pid {})",
             std::process::id()
         )));
-}
-
-#[test]
-fn libraries_are_isolated() {
-    let env = Env::new();
-    let file = env.write_config("c.toml", "");
-    env.cmd(&["--library", "work", "config", "import", &file])
-        .assert()
-        .success();
-    assert!(env.path("data/tidepool/libraries/work/state.db").exists());
-    env.cmd(&["config"]).assert().code(1);
-    env.cmd(&["config", "-l", "work"]).assert().success();
 }
 
 #[test]
@@ -331,9 +319,7 @@ fn exit_codes() {
     env.cmd(&["run", "--on-config-mismatch", "import"])
         .assert()
         .code(2);
-    env.cmd(&["--library", "../escape", "config"])
-        .assert()
-        .code(2);
+    env.cmd(&["--library", "work", "config"]).assert().code(2);
 }
 
 #[test]
@@ -344,14 +330,11 @@ fn dry_run_import_changes_nothing() {
         .assert()
         .success()
         .stdout(contains("dry run"));
-    assert!(
-        !env.path("data/tidepool/libraries/default/state.db")
-            .exists()
-    );
+    assert!(!env.path("data/tidepool/state.db").exists());
 }
 
 #[test]
-fn config_flag_applies_to_every_library_command() {
+fn config_flag_applies_to_every_command() {
     let env = Env::new();
     let file = env.write_config("c.toml", "");
     env.cmd(&["config", "history", "--config", &file])
@@ -366,7 +349,7 @@ fn config_flag_applies_to_every_library_command() {
 }
 
 #[test]
-fn init_creates_config_and_library() {
+fn init_creates_config_and_state() {
     let env = Env::new();
     let file = env.path("config/tidepool/config.toml");
     env.cmd(&["init"])
@@ -374,7 +357,7 @@ fn init_creates_config_and_library() {
         .success()
         .stdout(
             contains(format!("Created {}", file.display()))
-                .and(contains("Created library \"default\" (config revision 1)"))
+                .and(contains("Stored it as config revision 1"))
                 .and(contains("sample source"))
                 .and(contains("tidepool config import"))
                 .and(contains(
@@ -393,10 +376,10 @@ fn init_creates_config_and_library() {
     assert!(text.contains(
         "[sources.sample]                    # one short video, to see tidepool work; replace it with your own\n\
          url = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"   # the playlist's URL\n\
-         # dir = \"sample\""
+         # category = \"default\""
     ));
 
-    // The library holds the same text as revision 1.
+    // The stored config holds the same text as revision 1.
     env.cmd(&["config"]).assert().success().stdout(text);
     env.cmd(&["config", "history"])
         .assert()
@@ -415,24 +398,33 @@ fn init_never_overwrites() {
     let file = env.path("config/tidepool/config.toml");
     fs::write(&file, "# my edits\n").unwrap();
 
-    // The library already has a config, even with --force.
-    for args in [&["init"][..], &["init", "--force"]] {
-        env.cmd(args).assert().code(1).stderr(contains(
-            "library \"default\" already has a config (revision 1)",
-        ));
+    // A stored config is never replaced, even with --force or another file.
+    let elsewhere = env.path("elsewhere.toml").display().to_string();
+    for args in [
+        &["init"][..],
+        &["init", "--force"],
+        &["init", "--config", &elsewhere],
+    ] {
+        env.cmd(args)
+            .assert()
+            .code(1)
+            .stderr(contains("tidepool already has a config (revision 1)"));
     }
-    // A new library, but the file exists.
-    env.cmd(&["init", "-l", "work"])
+    assert!(!env.path("elsewhere.toml").exists());
+
+    // Without a stored config, an existing file still needs --force.
+    fs::remove_dir_all(env.path("data")).unwrap();
+    env.cmd(&["init"])
         .assert()
         .code(1)
         .stderr(contains("already exists").and(contains("pass --force to replace it")));
-    assert!(!env.path("data/tidepool/libraries/work/state.db").exists());
+    assert!(!env.path("data/tidepool/state.db").exists());
 
     // --force keeps the old file as .bak.
-    env.cmd(&["init", "-l", "work", "--force"])
+    env.cmd(&["init", "--force"])
         .assert()
         .success()
-        .stdout(contains("Sync once: tidepool run --library work"));
+        .stdout(contains("Sync once: tidepool run\n"));
     assert_eq!(
         fs::read_to_string(env.path("config/tidepool/config.toml.bak")).unwrap(),
         "# my edits\n"
@@ -445,16 +437,14 @@ fn init_never_overwrites() {
 }
 
 #[test]
-fn init_with_a_custom_path_and_library() {
+fn init_with_a_custom_path() {
     let env = Env::new();
     let file = env.path("elsewhere/tp.toml").display().to_string();
-    env.cmd(&["init", "--config", &file, "--library", "music"])
+    env.cmd(&["init", "--config", &file])
         .assert()
         .success()
-        .stdout(contains(format!(
-            "tidepool config import {file} --library music"
-        )));
-    env.cmd(&["config", "-l", "music"])
+        .stdout(contains(format!("tidepool config import {file}\n")));
+    env.cmd(&["config"])
         .assert()
         .success()
         .stdout(contains("[sources.sample]"));
@@ -553,7 +543,7 @@ fn filter_test_ignores_duration_and_cutoff_limits() {
 fn write_index_config(env: &Env, extra_mixed: &str) -> String {
     let ytdlp = test_bin().join("yt-dlp");
     let text = format!(
-        "[library]\nroot = \"{root}\"\n\n[ytdlp]\nmanaged = false\npath = \"{ytdlp}\"\n\n\
+        "[category.default]\nroot = \"{root}\"\n\n[ytdlp]\nmanaged = false\npath = \"{ytdlp}\"\n\n\
          [sources.sample]\nurl = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"\n\n\
          [sources.mixed]\nurl = \"https://www.youtube.com/playlist?list=PLmixedmixedmixed\"\n\
          min_duration = \"60s\"\nmax_duration = \"4h\"\ncutoff = \"2026-01-01\"\n{extra_mixed}\n\
@@ -567,8 +557,7 @@ fn write_index_config(env: &Env, extra_mixed: &str) -> String {
 }
 
 fn item_statuses(env: &Env, source: &str) -> Vec<(String, String)> {
-    let conn =
-        rusqlite::Connection::open(env.path("data/tidepool/libraries/default/state.db")).unwrap();
+    let conn = rusqlite::Connection::open(env.path("data/tidepool/state.db")).unwrap();
     let mut stmt = conn
         .prepare("SELECT v.title, i.status FROM items i JOIN videos v ON v.id = i.video_id WHERE i.source_key = ?1 ORDER BY i.position")
         .unwrap();
@@ -664,7 +653,9 @@ fn config_drift_halts_until_applied_or_skipped() {
     fs::write(&file, text).unwrap();
     run(&[]).code(1).stderr(
         contains(format!("{file} has changes that aren't applied yet"))
-            .and(contains("~ youtube.api_key: \"AIza…x1Qw\" → \"AIza…z9Zz\""))
+            .and(contains(
+                "~ category.default.youtube.api_key: \"AIza…x1Qw\" → \"AIza…z9Zz\"",
+            ))
             .and(contains("+ sources.lofi.enabled = false"))
             .and(contains("tidepool config import"))
             .and(contains("--skip-config-check"))

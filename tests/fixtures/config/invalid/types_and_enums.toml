@@ -1,17 +1,17 @@
-[library]
+[general]
 concurrency = 0
 duplicates = "move"
 
-[youtube]
+[category.default.youtube]
 quota_warn_at = 1.5
 api_key = 42
 
-[defaults]
+[category.default]
 thumbnail_format = "png"
 match_fields = []
 include = [1, { field = "comments", pattern = "x" }, { pattern = "y" }]
 
-[defaults.cleanup]
+[category.default.cleanup]
 order = "random"
 max_items = -1
 

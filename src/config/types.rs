@@ -1,8 +1,9 @@
 //! The config file's shape. These types generate the JSON Schema (via
 //! `schemars`) and are deserialized only after the schema validated the input.
 //!
-//! `[defaults]` and `[sources.<key>]` share every option; sources override
-//! defaults key by key (see [`super::merge`]).
+//! `[category.<name>]` and `[sources.<name>]` share every option. A source's
+//! settings come from the built-in defaults, then `[category.default]`, then
+//! its category, then the source itself (see [`super::merge`]).
 
 use std::collections::BTreeMap;
 use std::time::Duration;
@@ -22,24 +23,22 @@ pub struct Config {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(range(min = 1, max = 1))]
     pub version: Option<u32>,
-    /// Where media goes and how downloads run.
+    /// Settings for the whole run: concurrency, duplicates, shutdown.
     #[serde(default)]
-    pub library: LibraryConfig,
+    pub general: GeneralConfig,
     /// The yt-dlp binary: managed by tidepool, or your own.
     #[serde(default)]
     pub ytdlp: YtdlpConfig,
-    /// YouTube Data API settings.
-    #[serde(default)]
-    pub youtube: YoutubeConfig,
     /// Scheduling for `tidepool run --daemon`.
     #[serde(default)]
     pub schedule: ScheduleConfig,
     /// The web UI served by `tidepool run --daemon`.
     #[serde(default)]
     pub server: ServerConfig,
-    /// Options every source inherits.
+    /// Groups of settings sources pick with `category`; `default` applies to
+    /// every source, other categories on top of it.
     #[serde(default)]
-    pub defaults: Defaults,
+    pub category: BTreeMap<String, CategoryConfig>,
     /// Named post-download hooks, attached to sources by name.
     #[serde(default)]
     pub hooks: BTreeMap<String, HookConfig>,
@@ -48,13 +47,10 @@ pub struct Config {
     pub sources: BTreeMap<String, SourceConfig>,
 }
 
-/// `[library]`
+/// `[general]`: settings for the whole run.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields, default)]
-pub struct LibraryConfig {
-    /// Media root. Defaults to ~/.local/share/tidepool/media.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub root: Option<String>,
+pub struct GeneralConfig {
     /// Parallel yt-dlp downloads.
     #[schemars(range(min = 1))]
     pub concurrency: u32,
@@ -65,19 +61,15 @@ pub struct LibraryConfig {
     pub regex_backtrack_limit: u64,
     /// Grace period for child processes after SIGINT/SIGTERM.
     pub shutdown_timeout: HumanDuration,
-    /// Work area, relative to `root` (same filesystem, so the final rename is atomic).
-    pub tmp_dir: String,
 }
 
-impl Default for LibraryConfig {
+impl Default for GeneralConfig {
     fn default() -> Self {
         Self {
-            root: None,
             concurrency: 2,
             duplicates: Duplicates::Hardlink,
             regex_backtrack_limit: 1_000_000,
             shutdown_timeout: HumanDuration(Duration::from_secs(10)),
-            tmp_dir: ".tidepool-tmp".into(),
         }
     }
 }
@@ -146,7 +138,33 @@ impl YtdlpChannel {
     }
 }
 
-/// `[youtube]`
+/// `youtube` in a category or source: YouTube Data API settings, merged key
+/// by key like the other options.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct YoutubeOptions {
+    /// YouTube Data API v3 key. Optional; without it, indexing uses yt-dlp only.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
+    pub api_key: Option<String>,
+    /// Daily quota of the key's Google Cloud project.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 1))]
+    pub daily_quota: Option<u32>,
+    /// Warn when this fraction of `daily_quota` is used.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 0.0, max = 1.0))]
+    pub quota_warn_at: Option<f64>,
+    /// With an API key: use yt-dlp on quota exhaustion, a rejected key or repeated 5xx.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fallback_to_ytdlp: Option<bool>,
+    /// API request rate limit.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 1))]
+    pub requests_per_second: Option<u32>,
+}
+
+/// Resolved YouTube settings for a source.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields, default)]
 pub struct YoutubeConfig {
@@ -262,7 +280,7 @@ fn default_hook_timeout() -> HumanDuration {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum HookEvent {
-    /// After a video is committed to the library.
+    /// After a video is moved into its folder.
     #[default]
     Downloaded,
     /// Before files are deleted; a non-zero exit vetoes the cleanup.
@@ -281,9 +299,10 @@ pub enum OnFailure {
     Retry,
 }
 
-/// Defines a struct holding every per-source option, all optional, plus any
-/// extra fields. Used for both `[defaults]` and `[sources.<key>]` so the two
-/// can't drift apart (serde's `flatten` doesn't work with `deny_unknown_fields`).
+/// Defines a struct holding every shared option, all optional, plus any extra
+/// fields, and its conversion to [`Options`]. Used for `[category.<name>]` and
+/// `[sources.<name>]` so they can't drift apart (serde's `flatten` doesn't
+/// work with `deny_unknown_fields`).
 macro_rules! options_struct {
     (
         $(#[$meta:meta])*
@@ -294,6 +313,12 @@ macro_rules! options_struct {
         $(#[$meta])*
         pub struct $name {
             $($extra)*
+            /// Where videos go. Defaults to ~/.local/share/tidepool/media.
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            pub root: Option<String>,
+            /// Work area, relative to `root` (same filesystem, so the final move is atomic).
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            pub tmp_dir: Option<String>,
             /// yt-dlp format selector (`-f`).
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub format: Option<String>,
@@ -327,6 +352,9 @@ macro_rules! options_struct {
             /// Drop an item if any rule matches. Wins over include.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub exclude: Option<Vec<Rule>>,
+            /// Add include/exclude to the ones inherited (category, then `default`) instead of replacing them.
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            pub inherit_rules: Option<bool>,
             /// Skip videos shorter than this.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub min_duration: Option<OptionalDuration>,
@@ -339,6 +367,9 @@ macro_rules! options_struct {
             /// Hook names, run in order after each download.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub hooks: Option<Vec<String>>,
+            /// Add hooks to the ones inherited instead of replacing them.
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            pub inherit_hooks: Option<bool>,
             /// Download again when a downloaded item's media file is gone.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub redownload_missing: Option<bool>,
@@ -351,13 +382,53 @@ macro_rules! options_struct {
             /// Cleanup policies.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub cleanup: Option<CleanupOptions>,
+            /// YouTube Data API settings.
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            pub youtube: Option<YoutubeOptions>,
+        }
+
+        impl $name {
+            /// The shared options, for merging.
+            pub fn options(&self) -> Options {
+                Options {
+                    root: self.root.clone(),
+                    tmp_dir: self.tmp_dir.clone(),
+                    format: self.format.clone(),
+                    merge_output_format: self.merge_output_format.clone(),
+                    output: self.output.clone(),
+                    ytdlp_args: self.ytdlp_args.clone(),
+                    cookies_file: self.cookies_file.clone(),
+                    thumbnail_format: self.thumbnail_format.clone(),
+                    cover_name: self.cover_name.clone(),
+                    match_fields: self.match_fields.clone(),
+                    include: self.include.clone(),
+                    exclude: self.exclude.clone(),
+                    inherit_rules: self.inherit_rules.clone(),
+                    min_duration: self.min_duration.clone(),
+                    max_duration: self.max_duration.clone(),
+                    cutoff: self.cutoff.clone(),
+                    hooks: self.hooks.clone(),
+                    inherit_hooks: self.inherit_hooks.clone(),
+                    redownload_missing: self.redownload_missing.clone(),
+                    keep_raw_info: self.keep_raw_info.clone(),
+                    embed: self.embed.clone(),
+                    cleanup: self.cleanup.clone(),
+                    youtube: self.youtube.clone(),
+                }
+            }
         }
     };
 }
 
 options_struct! {
-    /// `[defaults]`: options every source inherits.
-    pub struct Defaults {}
+    /// The options categories and sources share, as one layer of settings.
+    pub struct Options {}
+}
+
+options_struct! {
+    /// `[category.<name>]`: settings shared by the sources that pick it.
+    /// `[category.default]` applies to every source.
+    pub struct CategoryConfig {}
 }
 
 options_struct! {
@@ -366,6 +437,10 @@ options_struct! {
         /// Where videos come from: a YouTube playlist URL (with `list=`).
         #[schemars(extend("format" = "source-url"))]
         pub url: String,
+        /// The category whose settings this source uses. Defaults to "default".
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(regex(pattern = r"^[a-z0-9][a-z0-9_-]*$"))]
+        pub category: Option<String>,
         /// Directory under `root`. Defaults to the source name.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(length(min = 1))]
@@ -373,12 +448,6 @@ options_struct! {
         /// Disabled sources are skipped.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         pub enabled: Option<bool>,
-        /// Concatenate `[defaults]` include/exclude instead of replacing them.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        pub inherit_rules: Option<bool>,
-        /// Concatenate `[defaults]` hooks instead of replacing them.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        pub inherit_hooks: Option<bool>,
     }
 }
 

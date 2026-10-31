@@ -1,4 +1,4 @@
-//! The per-library SQLite state store.
+//! The SQLite state store.
 
 use std::fs::OpenOptions;
 use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};

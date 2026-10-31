@@ -93,7 +93,7 @@ pub const PLACEHOLDERS: &[Placeholder] = &[
     ph!("source_id", false, ALL, Some("TIDEPOOL_SOURCE_ID")),
     ph!("source_title", false, ALL, Some("TIDEPOOL_SOURCE_TITLE")),
     ph!("url", false, TAG | HOOK, Some("TIDEPOOL_URL")),
-    ph!("library", false, HOOK, Some("TIDEPOOL_LIBRARY")),
+    ph!("category", false, ALL, Some("TIDEPOOL_CATEGORY")),
     ph!("video_dir", false, HOOK, Some("TIDEPOOL_VIDEO_DIR")),
     ph!("media_path", false, HOOK, Some("TIDEPOOL_MEDIA_PATH")),
     ph!("cover_path", false, HOOK, Some("TIDEPOOL_COVER_PATH")),

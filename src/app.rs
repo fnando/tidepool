@@ -19,7 +19,7 @@ use crate::config::{Loaded, load_file, load_str};
 use crate::filter::{Fields, Match, RuleSet};
 use crate::init;
 use crate::lock::{self, LibraryLock};
-use crate::paths::{Dirs, LibraryPaths};
+use crate::paths::{Dirs, StatePaths};
 use crate::state::State;
 
 /// Process exit codes.
@@ -39,14 +39,14 @@ pub struct UsageError(pub String);
 struct App<'a> {
     cli: &'a Cli,
     dirs: Dirs,
-    library: LibraryPaths,
+    paths: StatePaths,
 }
 
 /// Run a parsed command; returns the process exit code.
 pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
     let dirs = Dirs::from_env().map_err(anyhow::Error::msg)?;
-    let library = dirs.library(&cli.library);
-    let app = App { cli, dirs, library };
+    let paths = dirs.state();
+    let app = App { cli, dirs, paths };
     if cli.config.is_some() && !cli.dry_run && uses_stored_config(&cli.command) {
         app.import_config_flag()?;
     }
@@ -87,7 +87,7 @@ fn checks_config_drift(command: &Command) -> bool {
     }
 }
 
-/// Commands that read the library's stored config, so `--config` is imported
+/// Commands that read the stored config, so `--config` is imported
 /// before they run.
 fn uses_stored_config(command: &Command) -> bool {
     match command {
@@ -110,19 +110,19 @@ fn uses_stored_config(command: &Command) -> bool {
 }
 
 impl App<'_> {
-    /// The stored config, or built-in defaults for a library without one
-    /// (so library-independent commands like `ytdlp` work before `init`).
+    /// The stored config, or built-in defaults when there's none yet
+    /// (so commands like `ytdlp` work before `init`).
     fn config_or_defaults(&self) -> anyhow::Result<crate::config::Config> {
         if let (Some(path), true) = (&self.cli.config, self.cli.dry_run) {
             return Ok(load_file(path)?.config);
         }
-        if !self.library.state_db.exists() {
+        if !self.paths.state_db.exists() {
             return Ok(crate::config::Config::default());
         }
         let state = self.open_state()?;
-        match ConfigStore::new(&state.conn).load_current(&self.cli.library) {
+        match ConfigStore::new(&state.conn).load_current() {
             Ok((_, loaded)) => Ok(loaded.config),
-            Err(crate::config::store::StoreError::Empty(_)) => Ok(crate::config::Config::default()),
+            Err(crate::config::store::StoreError::Empty) => Ok(crate::config::Config::default()),
             Err(err) => Err(err.into()),
         }
     }
@@ -159,14 +159,10 @@ impl App<'_> {
         if !tracing::enabled!(tracing::Level::DEBUG) {
             return;
         }
-        let library = &self.cli.library;
         let current = ConfigStore::new(&state.conn).current().ok().flatten();
         match (&self.cli.config, self.cli.dry_run, current) {
             (Some(path), true, _) => {
-                tracing::debug!(
-                    "library {library}: using {} without storing it (dry run)",
-                    path.display()
-                )
+                tracing::debug!("using {} without storing it (dry run)", path.display())
             }
             (_, _, Some(rev)) => {
                 let when = rev
@@ -181,21 +177,23 @@ impl App<'_> {
                     }
                     (source, _) => format!("from {source}"),
                 };
-                tracing::debug!(
-                    "library {library}: config revision {}, {origin} on {when}",
-                    rev.rev
-                );
+                tracing::debug!("config revision {}, {origin} on {when}", rev.rev);
             }
             _ => {}
         }
-        if let Ok(root) = media_root(config, &self.dirs) {
-            tracing::debug!(
-                "media in {}, work area {}",
-                root.display(),
-                root.join(&config.library.tmp_dir).display()
-            );
+        let mut folders: Vec<(PathBuf, PathBuf)> = Vec::new();
+        for source in sources {
+            if let Ok(root) = media_root(source, &self.dirs) {
+                let tmp = root.join(&source.tmp_dir);
+                if !folders.contains(&(root.clone(), tmp.clone())) {
+                    folders.push((root, tmp));
+                }
+            }
         }
-        tracing::debug!("state in {}", self.library.state_db.display());
+        for (root, tmp) in folders {
+            tracing::debug!("media in {}, work area {}", root.display(), tmp.display());
+        }
+        tracing::debug!("state in {}", self.paths.state_db.display());
         if tracing::enabled!(tracing::Level::TRACE) {
             // Everything the run uses, as `config check` prints it.
             let effective = EffectiveConfig::new(config, &self.dirs, false).to_toml();
@@ -206,10 +204,11 @@ impl App<'_> {
         }
         for source in sources {
             tracing::debug!(
-                "{}: {} → {}/, format {}, output {}",
+                "{}: {} → {}/ (category {}), format {}, output {}",
                 source.key,
                 source.url,
                 source.dir,
+                source.category,
                 source.format,
                 source.output
             );
@@ -442,7 +441,6 @@ impl App<'_> {
     ) -> anyhow::Result<crate::download::Summary> {
         use crate::download::{Context, Options, human_bytes};
 
-        let root = media_root(config, &self.dirs).map_err(anyhow::Error::msg)?;
         #[allow(unused_mut)]
         let mut thumbnail_base = crate::download::thumbnail::YTIMG.to_string();
         // Debug builds (tests) can point cover downloads at a fake server.
@@ -451,33 +449,36 @@ impl App<'_> {
             thumbnail_base = base;
         }
         let ctx = Context {
-            tmp_root: root.join(&config.library.tmp_dir),
-            root,
             ytdlp_version: crate::ytdlp::manager::tool_version(&ytdlp).ok(),
             ytdlp,
-            library: self.cli.library.clone(),
-            duplicates: config.library.duplicates,
+            duplicates: config.general.duplicates,
             thumbnail_base,
-            backtrack_limit: usize::try_from(config.library.regex_backtrack_limit)
+            backtrack_limit: usize::try_from(config.general.regex_backtrack_limit)
                 .unwrap_or(usize::MAX),
             http: reqwest::Client::builder()
                 .user_agent(concat!("tidepool/", env!("CARGO_PKG_VERSION")))
                 .connect_timeout(std::time::Duration::from_secs(15))
                 .read_timeout(std::time::Duration::from_secs(30))
                 .build()?,
-            shutdown_timeout: config.library.shutdown_timeout.0,
+            shutdown_timeout: config.general.shutdown_timeout.0,
             cancel: tokio_util::sync::CancellationToken::new(),
         };
         let options = Options {
             limit,
-            concurrency: concurrency.unwrap_or(config.library.concurrency) as usize,
+            concurrency: concurrency.unwrap_or(config.general.concurrency) as usize,
             now: jiff::Timestamp::now(),
         };
         let dirs = &self.dirs;
-        let cookies =
-            |source: &EffectiveSource| crate::pipeline::cookies_file(source, dirs).ok().flatten();
+        let paths = |source: &EffectiveSource| {
+            let root = media_root(source, dirs)?;
+            Ok(crate::download::SourcePaths {
+                tmp_root: root.join(&source.tmp_dir),
+                root,
+                cookies: crate::pipeline::cookies_file(source, dirs)?,
+            })
+        };
         let summary =
-            crate::download::download_all(state, sources, cookies, ctx, options, tracker, out)
+            crate::download::download_all(state, sources, paths, ctx, options, tracker, out)
                 .await
                 .map_err(anyhow::Error::msg)?;
 
@@ -599,7 +600,7 @@ impl App<'_> {
     ) -> anyhow::Result<i32> {
         use crate::problems::{acknowledge, describe, open, recently_resolved};
 
-        if !self.library.state_db.exists() {
+        if !self.paths.state_db.exists() {
             writeln!(out, "no open problems")?;
             return Ok(exit::OK);
         }
@@ -650,7 +651,7 @@ impl App<'_> {
     fn check_config_drift(&self) -> anyhow::Result<()> {
         use crate::config::store::Source;
 
-        if !self.library.state_db.exists() {
+        if !self.paths.state_db.exists() {
             return Ok(());
         }
         let state = self.open_state()?;
@@ -710,7 +711,7 @@ impl App<'_> {
     }
 
     fn show_problem_notices(&self) -> anyhow::Result<()> {
-        if !self.library.state_db.exists() {
+        if !self.paths.state_db.exists() {
             return Ok(());
         }
         let state = self.open_state()?;
@@ -741,17 +742,17 @@ impl App<'_> {
     /// `tidepool reset <video>`: download it again on the next run.
     fn reset(&self, args: &ResetArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
         let state = self.open_state()?;
-        let loaded = self.current_config(&state)?;
+        self.current_config(&state)?;
         let _lock = self.lock()?;
         let reset = crate::state::items::reset_video(&state.conn, &args.video_id)?;
         if reset.is_empty() {
-            bail!("no video {} in this library", args.video_id);
+            bail!("no video {} in any source", args.video_id);
         }
         if args.delete_files {
-            let root = media_root(&loaded.config, &self.dirs).map_err(anyhow::Error::msg)?;
             for dir in reset.iter().filter_map(|(_, dir)| dir.as_ref()) {
-                let path = root.join(dir);
-                if path.starts_with(&root) && path.exists() {
+                // Only folders tidepool made: they hold its metadata.json.
+                let path = PathBuf::from(dir);
+                if path.is_absolute() && path.join("metadata.json").is_file() {
                     std::fs::remove_dir_all(&path)
                         .with_context(|| format!("cannot delete {}", path.display()))?;
                     writeln!(out, "deleted {}", path.display())?;
@@ -904,16 +905,13 @@ impl App<'_> {
 
         if args.print || self.cli.dry_run {
             if self.cli.dry_run {
-                tracing::info!(
-                    "dry run: would write {name} and create library {:?}",
-                    self.cli.library
-                );
+                tracing::info!("dry run: would write {name} and create the state database");
             }
             write!(out, "{text}")?;
             return Ok(exit::OK);
         }
 
-        self.ensure_library_is_new()?;
+        self.ensure_no_config_yet()?;
         if path.exists() && !args.force {
             bail!(
                 "{name} already exists; import it with `tidepool config import {name}`, \
@@ -933,18 +931,15 @@ impl App<'_> {
         Ok(exit::OK)
     }
 
-    /// `init` never touches a library that already has a config.
-    fn ensure_library_is_new(&self) -> anyhow::Result<()> {
-        if !self.library.state_db.exists() {
+    /// `init` never touches a config that's already stored.
+    fn ensure_no_config_yet(&self) -> anyhow::Result<()> {
+        if !self.paths.state_db.exists() {
             return Ok(());
         }
         let state = self.open_state()?;
         if let Some(current) = ConfigStore::new(&state.conn).current()? {
             bail!(
-                "library {:?} already has a config (revision {}); change it with \
-                 `tidepool config import <path>`, or create another library with \
-                 `tidepool init --library <name>`",
-                self.cli.library,
+                "tidepool already has a config (revision {}); change it with `tidepool config import <path>`",
                 current.rev
             );
         }
@@ -975,19 +970,12 @@ impl App<'_> {
         errors: usize,
         out: &mut dyn Write,
     ) -> anyhow::Result<()> {
-        let library = if self.cli.library == "default" {
-            String::new()
-        } else {
-            format!(" --library {}", self.cli.library)
-        };
         let config = &loaded.config;
         writeln!(out, "Created {name}")?;
-        writeln!(
-            out,
-            "Created library {:?} (config revision {rev})",
-            self.cli.library
-        )?;
-        if let Ok(root) = media_root(config, &self.dirs) {
+        writeln!(out, "Stored it as config revision {rev}")?;
+        let default =
+            crate::config::merge::category_settings(config, crate::config::merge::DEFAULT_CATEGORY);
+        if let Ok(root) = media_root(&default, &self.dirs) {
             writeln!(out, "Videos go to {}", root.display())?;
         }
         if errors > 0 {
@@ -997,9 +985,9 @@ impl App<'_> {
             out,
             "\nThe config includes a sample source with one short video. Next steps:\n\
              \x20 1. Edit {name}: replace the sample with your sources, set where videos go.\n\
-             \x20 2. Apply your changes: tidepool config import{import_path}{library}\n\
-             \x20 3. Sync once: tidepool run{library}\n\
-             \x20    Or keep syncing every {interval} with the web UI at http://{listen}: tidepool run --daemon{library}",
+             \x20 2. Apply your changes: tidepool config import{import_path}\n\
+             \x20 3. Sync once: tidepool run\n\
+             \x20    Or keep syncing every {interval} with the web UI at http://{listen}: tidepool run --daemon",
             import_path = if Path::new(name) == self.dirs.default_config_file() {
                 String::new()
             } else {
@@ -1018,7 +1006,7 @@ impl App<'_> {
             "\nTo run it as a service, save this as ~/.config/systemd/user/tidepool.service\n\
              and run `systemctl --user enable --now tidepool`:\n\n\
              [Unit]\nDescription=tidepool\n\n\
-             [Service]\nExecStart={exe} run --daemon{library} --config {name} --on-config-mismatch import\n\
+             [Service]\nExecStart={exe} run --daemon --config {name} --on-config-mismatch import\n\
              Restart=on-failure\n\n\
              [Install]\nWantedBy=default.target"
         )?;
@@ -1026,11 +1014,11 @@ impl App<'_> {
     }
 
     fn open_state(&self) -> anyhow::Result<State> {
-        Ok(State::open(&self.library.state_db)?)
+        Ok(State::open(&self.paths.state_db)?)
     }
 
     fn lock(&self) -> anyhow::Result<LibraryLock> {
-        Ok(lock::acquire(&self.library.lock)?)
+        Ok(lock::acquire(&self.paths.lock)?)
     }
 
     fn display_path(path: &Path) -> String {
@@ -1054,7 +1042,7 @@ impl App<'_> {
             self.warn(&loaded.warnings);
             return Ok(loaded);
         }
-        let (_, loaded) = ConfigStore::new(&state.conn).load_current(&self.cli.library)?;
+        let (_, loaded) = ConfigStore::new(&state.conn).load_current()?;
         self.warn(&loaded.warnings);
         Ok(loaded)
     }
@@ -1228,7 +1216,7 @@ impl App<'_> {
         let store = ConfigStore::new(&state.conn);
         let current = store
             .current()?
-            .ok_or_else(|| crate::config::store::StoreError::Empty(self.cli.library.clone()))?;
+            .ok_or(crate::config::store::StoreError::Empty)?;
         let file = match path {
             Some(path) => path.to_path_buf(),
             None => store
@@ -1295,7 +1283,7 @@ impl App<'_> {
         let sources = effective_sources(&loaded.config);
         let source = resolve_source(source, &sources)?;
         let limit =
-            usize::try_from(loaded.config.library.regex_backtrack_limit).unwrap_or(usize::MAX);
+            usize::try_from(loaded.config.general.regex_backtrack_limit).unwrap_or(usize::MAX);
         let rules =
             RuleSet::compile(source, limit, jiff::Timestamp::now()).map_err(anyhow::Error::msg)?;
         // A bare title has no duration or date: test only the include/exclude rules.

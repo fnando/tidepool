@@ -20,7 +20,6 @@ impl Values {
         source: &EffectiveSource,
         source_title: Option<&str>,
         position: u32,
-        library: &str,
     ) -> Self {
         let mut map = BTreeMap::new();
         let mut put = |key: &'static str, value: Option<String>| {
@@ -48,7 +47,7 @@ impl Values {
             "url",
             Some(format!("https://www.youtube.com/watch?v={}", info.id)),
         );
-        put("library", Some(library.to_string()));
+        put("category", Some(source.category.clone()));
         Self(map)
     }
 
@@ -105,7 +104,7 @@ pub fn video_dir(source: &EffectiveSource, values: &Values) -> Result<PathBuf, S
     let rendered = render_file_name(&source.output, Setting::Output, values)?;
     let relative = normalize_dir(&rendered).ok_or_else(|| {
         format!(
-            "output {:?} renders to {rendered:?}, which isn't inside the library",
+            "output {:?} renders to {rendered:?}, which isn't inside the media folder",
             source.output
         )
     })?;
@@ -147,7 +146,7 @@ mod tests {
     }
 
     fn values(source: &EffectiveSource, title: &str) -> Values {
-        Values::new(&info(title), source, Some("Rick's hits"), 7, "default")
+        Values::new(&info(title), source, Some("Rick's hits"), 7)
     }
 
     #[test]
@@ -183,12 +182,12 @@ mod tests {
     }
 
     #[test]
-    fn rejects_paths_outside_the_library() {
+    fn rejects_paths_outside_the_media_folder() {
         let s = source("output = '../{id}'");
         assert!(
             video_dir(&s, &values(&s, "x"))
                 .unwrap_err()
-                .contains("isn't inside the library")
+                .contains("isn't inside the media folder")
         );
     }
 }

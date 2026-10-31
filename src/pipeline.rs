@@ -59,7 +59,7 @@ pub async fn index_source(
         plural(list.items.len(), "video", "videos"),
         started.elapsed().as_secs_f64()
     );
-    let limit = usize::try_from(config.library.regex_backtrack_limit).unwrap_or(usize::MAX);
+    let limit = usize::try_from(config.general.regex_backtrack_limit).unwrap_or(usize::MAX);
     let rules = RuleSet::compile(source, limit, now)?;
     let hash = rules_hash(source);
     let record = SourceRecord {

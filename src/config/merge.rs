@@ -1,10 +1,12 @@
-//! Merge `[defaults]` into each source: the effective, fully-resolved options.
+//! Resolve each source's settings: built-in defaults, then
+//! `[category.default]`, then the source's category, then the source itself.
 //!
-//! - Scalars and tables: source value wins, then `[defaults]`, then built-in
-//!   defaults. `embed` and `cleanup` merge key by key.
-//! - Lists (`include`, `exclude`, `hooks`, `ytdlp_args`, `match_fields`): the
-//!   source replaces defaults, unless `inherit_rules` (include/exclude) or
-//!   `inherit_hooks` (hooks) concatenates them.
+//! - Scalars: the last layer that sets a value wins. `embed`, `cleanup` and
+//!   `youtube` merge key by key.
+//! - Lists (`include`, `exclude`, `hooks`, `ytdlp_args`, `match_fields`): a
+//!   layer's list replaces what came before, unless that layer sets
+//!   `inherit_rules` (include/exclude) or `inherit_hooks` (hooks), which add
+//!   to it instead.
 
 use std::collections::BTreeMap;
 
@@ -14,12 +16,16 @@ use super::duration::Cutoff;
 use super::schema::source_id_from_url;
 use super::types::*;
 
-/// Built-in option values, used when neither the source nor `[defaults]` sets one.
+/// The category every source builds on, and the one sources use by default.
+pub const DEFAULT_CATEGORY: &str = "default";
+
+/// Built-in option values, used when no layer sets one.
 pub mod builtin {
     pub const FORMAT: &str = "bv*+ba/b";
     pub const MERGE_OUTPUT_FORMAT: &str = "mkv";
     pub const OUTPUT: &str = "{source_dir}/{upload_date} - {title} [{id}]";
     pub const COVER_NAME: &str = "{title}-poster";
+    pub const TMP_DIR: &str = ".tidepool-tmp";
 }
 
 /// One source with every option resolved.
@@ -31,8 +37,13 @@ pub struct EffectiveSource {
     #[serde(skip)]
     pub id: String,
     pub url: String,
+    pub category: String,
     pub dir: String,
     pub enabled: bool,
+    /// Unset means the default media folder.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub root: Option<String>,
+    pub tmp_dir: String,
     pub format: String,
     pub merge_output_format: String,
     pub output: String,
@@ -51,6 +62,7 @@ pub struct EffectiveSource {
     pub keep_raw_info: bool,
     pub embed: Embed,
     pub cleanup: Cleanup,
+    pub youtube: YoutubeConfig,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -76,43 +88,97 @@ pub struct Cleanup {
     pub keep_latest: u32,
 }
 
+/// The category a source uses.
+pub fn category_of(source: &SourceConfig) -> &str {
+    source.category.as_deref().unwrap_or(DEFAULT_CATEGORY)
+}
+
+/// The option layers for a category, lowest priority first: `default`, then
+/// the category itself (when it's another one).
+pub fn category_layers(config: &Config, category: &str) -> Vec<Options> {
+    let mut layers = Vec::new();
+    if let Some(default) = config.category.get(DEFAULT_CATEGORY) {
+        layers.push(default.options());
+    }
+    if category != DEFAULT_CATEGORY
+        && let Some(named) = config.category.get(category)
+    {
+        layers.push(named.options());
+    }
+    layers
+}
+
 /// Resolve every source in `config`, in name order.
 pub fn effective_sources(config: &Config) -> Vec<EffectiveSource> {
     config
         .sources
         .iter()
-        .map(|(key, source)| effective_source(key, source, &config.defaults))
+        .map(|(key, source)| effective_source(config, key, source))
         .collect()
 }
 
-/// Resolve one source against `[defaults]`.
-pub fn effective_source(key: &str, p: &SourceConfig, d: &Defaults) -> EffectiveSource {
+/// Resolve one source against its categories.
+pub fn effective_source(config: &Config, key: &str, source: &SourceConfig) -> EffectiveSource {
+    let category = category_of(source).to_string();
+    let mut layers = category_layers(config, &category);
+    layers.push(source.options());
+    resolve(key, source, category, &layers)
+}
+
+/// Apply `layers` (lowest priority first) over the built-in defaults.
+fn resolve(
+    key: &str,
+    source: &SourceConfig,
+    category: String,
+    layers: &[Options],
+) -> EffectiveSource {
     macro_rules! pick {
         ($field:ident, $default:expr) => {
-            p.$field
-                .clone()
-                .or_else(|| d.$field.clone())
+            layers
+                .iter()
+                .rev()
+                .find_map(|l| l.$field.clone())
                 .unwrap_or_else(|| $default)
         };
     }
-    fn concat<T: Clone>(inherit: bool, own: &Option<Vec<T>>, base: &Option<Vec<T>>) -> Vec<T> {
-        match (own, inherit) {
-            (Some(own), true) => base.iter().flatten().chain(own).cloned().collect(),
-            (Some(own), false) => own.clone(),
-            (None, _) => base.clone().unwrap_or_default(),
-        }
+    macro_rules! table {
+        ($table:ident, $field:ident, $default:expr) => {
+            layers
+                .iter()
+                .rev()
+                .find_map(|l| l.$table.as_ref().and_then(|t| t.$field.clone()))
+                .unwrap_or_else(|| $default)
+        };
     }
-
-    let inherit_rules = p.inherit_rules.unwrap_or(false);
-    let inherit_hooks = p.inherit_hooks.unwrap_or(false);
-    let id = source_id_from_url(&p.url).unwrap_or_default();
+    fn list<T: Clone>(
+        layers: &[Options],
+        get: impl Fn(&Options) -> &Option<Vec<T>>,
+        inherit: impl Fn(&Options) -> bool,
+    ) -> Vec<T> {
+        let mut out = Vec::new();
+        for layer in layers {
+            if let Some(items) = get(layer) {
+                if !inherit(layer) {
+                    out.clear();
+                }
+                out.extend(items.iter().cloned());
+            }
+        }
+        out
+    }
+    let inherit_rules = |l: &Options| l.inherit_rules.unwrap_or(false);
+    let inherit_hooks = |l: &Options| l.inherit_hooks.unwrap_or(false);
+    let youtube_default = YoutubeConfig::default();
 
     EffectiveSource {
         key: key.to_string(),
-        id,
-        url: p.url.clone(),
-        dir: p.dir.clone().unwrap_or_else(|| key.to_string()),
-        enabled: p.enabled.unwrap_or(true),
+        id: source_id_from_url(&source.url).unwrap_or_default(),
+        url: source.url.clone(),
+        category,
+        dir: source.dir.clone().unwrap_or_else(|| key.to_string()),
+        enabled: source.enabled.unwrap_or(true),
+        root: layers.iter().rev().find_map(|l| l.root.clone()),
+        tmp_dir: pick!(tmp_dir, builtin::TMP_DIR.into()),
         format: pick!(format, builtin::FORMAT.into()),
         merge_output_format: pick!(merge_output_format, builtin::MERGE_OUTPUT_FORMAT.into()),
         output: pick!(output, builtin::OUTPUT.into()),
@@ -121,8 +187,8 @@ pub fn effective_source(key: &str, p: &SourceConfig, d: &Defaults) -> EffectiveS
         thumbnail_format: pick!(thumbnail_format, ThumbnailFormat::Jpg),
         cover_name: pick!(cover_name, builtin::COVER_NAME.into()),
         match_fields: pick!(match_fields, vec![RuleField::Title]),
-        include: concat(inherit_rules, &p.include, &d.include),
-        exclude: concat(inherit_rules, &p.exclude, &d.exclude),
+        include: list(layers, |l| &l.include, inherit_rules),
+        exclude: list(layers, |l| &l.exclude, inherit_rules),
         min_duration: pick!(min_duration, OptionalDuration(None)),
         max_duration: pick!(max_duration, OptionalDuration(None)),
         cutoff: pick!(
@@ -132,57 +198,75 @@ pub fn effective_source(key: &str, p: &SourceConfig, d: &Defaults) -> EffectiveS
                 value: Cutoff::None
             }
         ),
-        hooks: concat(inherit_hooks, &p.hooks, &d.hooks),
+        hooks: list(layers, |l| &l.hooks, inherit_hooks),
         redownload_missing: pick!(redownload_missing, false),
         keep_raw_info: pick!(keep_raw_info, false),
-        embed: merge_embed(p.embed.as_ref(), d.embed.as_ref()),
-        cleanup: merge_cleanup(p.cleanup.as_ref(), d.cleanup.as_ref()),
+        embed: Embed {
+            metadata: table!(embed, metadata, false),
+            cover: table!(embed, cover, false),
+            chapters: table!(embed, chapters, false),
+            subtitles: table!(embed, subtitles, false),
+            info_json: table!(embed, info_json, false),
+            after_hooks: table!(embed, after_hooks, true),
+            tags: table!(embed, tags, BTreeMap::new()),
+        },
+        cleanup: Cleanup {
+            max_items: table!(cleanup, max_items, 0),
+            max_age: table!(cleanup, max_age, OptionalDuration(None)),
+            max_size: table!(cleanup, max_size, OptionalSize::default()),
+            order: table!(cleanup, order, CleanupOrder::OldestDownloaded),
+            removed_from_source: table!(cleanup, removed_from_source, RemovedFromSource::Keep),
+            keep: table!(cleanup, keep, CleanupKeep::Metadata),
+            marker_file: table!(cleanup, marker_file, String::new()),
+            keep_latest: table!(cleanup, keep_latest, 0),
+        },
+        youtube: YoutubeConfig {
+            api_key: layers
+                .iter()
+                .rev()
+                .find_map(|l| l.youtube.as_ref().and_then(|y| y.api_key.clone())),
+            daily_quota: table!(youtube, daily_quota, youtube_default.daily_quota),
+            quota_warn_at: table!(youtube, quota_warn_at, youtube_default.quota_warn_at),
+            fallback_to_ytdlp: table!(
+                youtube,
+                fallback_to_ytdlp,
+                youtube_default.fallback_to_ytdlp
+            ),
+            requests_per_second: table!(
+                youtube,
+                requests_per_second,
+                youtube_default.requests_per_second
+            ),
+        },
     }
 }
 
-fn merge_embed(p: Option<&EmbedOptions>, d: Option<&EmbedOptions>) -> Embed {
-    macro_rules! pick {
-        ($field:ident, $default:expr) => {
-            p.and_then(|e| e.$field.clone())
-                .or_else(|| d.and_then(|e| e.$field.clone()))
-                .unwrap_or($default)
-        };
-    }
-    Embed {
-        metadata: pick!(metadata, false),
-        cover: pick!(cover, false),
-        chapters: pick!(chapters, false),
-        subtitles: pick!(subtitles, false),
-        info_json: pick!(info_json, false),
-        after_hooks: pick!(after_hooks, true),
-        tags: pick!(tags, BTreeMap::new()),
-    }
+/// A category resolved on its own (`default` + the category, no source), for
+/// checks about categories rather than sources.
+pub fn category_settings(config: &Config, category: &str) -> EffectiveSource {
+    let source = SourceConfig {
+        url: String::new(),
+        ..SourceConfig::default()
+    };
+    resolve(
+        "",
+        &source,
+        category.to_string(),
+        &category_layers(config, category),
+    )
 }
 
-fn merge_cleanup(p: Option<&CleanupOptions>, d: Option<&CleanupOptions>) -> Cleanup {
-    macro_rules! pick {
-        ($field:ident, $default:expr) => {
-            p.and_then(|c| c.$field.clone())
-                .or_else(|| d.and_then(|c| c.$field.clone()))
-                .unwrap_or($default)
-        };
-    }
-    Cleanup {
-        max_items: pick!(max_items, 0),
-        max_age: pick!(max_age, OptionalDuration(None)),
-        max_size: pick!(max_size, OptionalSize::default()),
-        order: pick!(order, CleanupOrder::OldestDownloaded),
-        removed_from_source: pick!(removed_from_source, RemovedFromSource::Keep),
-        keep: pick!(keep, CleanupKeep::Metadata),
-        marker_file: pick!(marker_file, String::new()),
-        keep_latest: pick!(keep_latest, 0),
-    }
+/// A category's own resolved youtube settings.
+pub fn category_youtube(config: &Config, category: &str) -> YoutubeConfig {
+    category_settings(config, category).youtube
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::time::Duration;
+
+    const URL: &str = "url = 'https://www.youtube.com/playlist?list=PLx'";
 
     fn config(toml: &str) -> Config {
         toml::from_str(toml).unwrap()
@@ -200,11 +284,15 @@ mod tests {
 
     #[test]
     fn falls_back_to_builtin_defaults() {
-        let p = only("[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLx'");
+        let p = only(&format!("[sources.lofi]\n{URL}"));
         assert_eq!(p.id, "PLx");
         assert_eq!(p.url, "https://www.youtube.com/playlist?list=PLx");
-        assert_eq!(p.dir, "lofi");
+        assert_eq!(
+            (p.category.as_str(), p.dir.as_str(), p.root.as_deref()),
+            ("default", "lofi", None)
+        );
         assert!(p.enabled);
+        assert_eq!(p.tmp_dir, ".tidepool-tmp");
         assert_eq!(p.format, builtin::FORMAT);
         assert_eq!(p.output, builtin::OUTPUT);
         assert_eq!(p.cover_name, builtin::COVER_NAME);
@@ -213,6 +301,7 @@ mod tests {
         assert!(!p.embed.metadata && p.embed.after_hooks);
         assert_eq!(p.cleanup.keep, CleanupKeep::Metadata);
         assert_eq!(p.cleanup.order, CleanupOrder::OldestDownloaded);
+        assert_eq!(p.youtube, YoutubeConfig::default());
     }
 
     #[test]
@@ -222,51 +311,96 @@ mod tests {
     }
 
     #[test]
-    fn source_scalars_override_defaults() {
-        let p = only(
-            "[defaults]\nformat = 'a'\ncutoff = '30d'\nthumbnail_format = 'webp'\n\
-             [sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\nformat = 'b'\ncutoff = 'none'",
+    fn layers_stack_default_then_category_then_source() {
+        let c = config(&format!(
+            "[category.default]\nroot = '~/Videos'\nformat = 'a'\ncutoff = '30d'\nthumbnail_format = 'webp'\n\
+             [category.music]\nroot = '/nas/music'\nformat = 'ba/b'\n\
+             [sources.lofi]\n{URL}\ncategory = 'music'\ncutoff = 'none'\n\
+             [sources.talks]\nurl = 'https://www.youtube.com/playlist?list=PLy'"
+        ));
+        let all = effective_sources(&c);
+        let (lofi, talks) = (&all[0], &all[1]);
+        assert_eq!(
+            (
+                lofi.category.as_str(),
+                lofi.root.as_deref(),
+                lofi.format.as_str()
+            ),
+            ("music", Some("/nas/music"), "ba/b")
         );
-        assert_eq!(p.format, "b");
-        assert_eq!(p.cutoff.value, Cutoff::None);
-        assert_eq!(p.thumbnail_format, ThumbnailFormat::Webp);
+        assert_eq!(lofi.cutoff.value, Cutoff::None, "the source wins");
+        assert_eq!(
+            lofi.thumbnail_format,
+            ThumbnailFormat::Webp,
+            "from category.default"
+        );
+        assert_eq!(
+            (
+                talks.category.as_str(),
+                talks.root.as_deref(),
+                talks.format.as_str()
+            ),
+            ("default", Some("~/Videos"), "a")
+        );
     }
 
     #[test]
-    fn lists_replace_unless_inherited() {
-        let base = "[defaults]\ninclude = ['d1']\nexclude = ['dx']\nhooks = ['h1']\n";
-        let p = only(&format!(
-            "{base}[sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['p1']\nhooks = ['h2']"
-        ));
-        assert_eq!(p.include, vec![pat("p1")]);
+    fn lists_replace_unless_inherited_at_each_layer() {
+        let base = "[category.default]\ninclude = ['d1']\nexclude = ['dx']\nhooks = ['h1']\n\
+                    [category.music]\ninclude = ['c1']\ninherit_rules = true\n";
+        let p = only(&format!("{base}[sources.x]\n{URL}\ncategory = 'music'"));
         assert_eq!(
-            p.exclude,
-            vec![pat("dx")],
-            "unset list falls back to defaults"
+            p.include,
+            vec![pat("d1"), pat("c1")],
+            "the category added to default"
         );
+        assert_eq!(p.exclude, vec![pat("dx")], "unset lists fall back");
+        assert_eq!(p.hooks, vec!["h1"]);
+
+        let p = only(&format!(
+            "{base}[sources.x]\n{URL}\ncategory = 'music'\ninclude = ['p1']\nhooks = ['h2']"
+        ));
+        assert_eq!(p.include, vec![pat("p1")], "the source replaced everything");
         assert_eq!(p.hooks, vec!["h2"]);
 
         let p = only(&format!(
-            "{base}[sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['p1']\nexclude = ['px']\nhooks = ['h2']\n\
-             inherit_rules = true\ninherit_hooks = true"
+            "{base}[sources.x]\n{URL}\ncategory = 'music'\ninclude = ['p1']\nhooks = ['h2']\ninherit_rules = true\ninherit_hooks = true"
         ));
-        assert_eq!(p.include, vec![pat("d1"), pat("p1")]);
-        assert_eq!(p.exclude, vec![pat("dx"), pat("px")]);
+        assert_eq!(p.include, vec![pat("d1"), pat("c1"), pat("p1")]);
         assert_eq!(p.hooks, vec!["h1", "h2"]);
     }
 
     #[test]
-    fn cleanup_and_embed_merge_key_by_key() {
-        let p = only(
-            "[defaults.cleanup]\nmax_items = 10\nmax_age = '30d'\n[defaults.embed]\ncover = true\n\
-             [sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\n[sources.x.cleanup]\nmax_items = 50\n\
-             [sources.x.embed]\nmetadata = true",
-        );
+    fn tables_merge_key_by_key_across_layers() {
+        let p = only(&format!(
+            "[category.default.cleanup]\nmax_items = 10\nmax_age = '30d'\n[category.default.embed]\ncover = true\n\
+             [category.default.youtube]\napi_key = 'AIza-default'\ndaily_quota = 5000\n\
+             [category.music.youtube]\napi_key = 'AIza-music'\n\
+             [sources.x]\n{URL}\ncategory = 'music'\n[sources.x.cleanup]\nmax_items = 50\n[sources.x.embed]\nmetadata = true"
+        ));
         assert_eq!(p.cleanup.max_items, 50);
         assert_eq!(
             p.cleanup.max_age,
             OptionalDuration(Some(Duration::from_secs(30 * 86400)))
         );
         assert!(p.embed.cover && p.embed.metadata);
+        assert_eq!(p.youtube.api_key.as_deref(), Some("AIza-music"));
+        assert_eq!(
+            p.youtube.daily_quota, 5000,
+            "quota from default, key from the category"
+        );
+    }
+
+    #[test]
+    fn category_youtube_settings() {
+        let c = config(
+            "[category.default.youtube]\napi_key = 'k'\n[category.music.youtube]\nfallback_to_ytdlp = false",
+        );
+        let music = category_youtube(&c, "music");
+        assert_eq!(
+            (music.api_key.as_deref(), music.fallback_to_ytdlp),
+            (Some("k"), false)
+        );
+        assert!(category_youtube(&c, "default").fallback_to_ytdlp);
     }
 }

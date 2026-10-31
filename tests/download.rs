@@ -70,7 +70,7 @@ impl Env {
     /// same playlist).
     fn config(&self, extra: &str) -> String {
         let text = format!(
-            "[library]\nroot = \"{}\"\n{extra}\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
+            "[category.default]\nroot = \"{}\"\n{extra}\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
              [sources.dl]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads\"\nytdlp_args = [\"--write-subs\"]\n",
             self.media().display(),
             test_bin().join("yt-dlp").display()
@@ -81,9 +81,7 @@ impl Env {
     }
 
     fn statuses(&self, source: &str) -> Vec<(String, String, i64)> {
-        let conn =
-            rusqlite::Connection::open(self.path("data/tidepool/libraries/default/state.db"))
-                .unwrap();
+        let conn = rusqlite::Connection::open(self.path("data/tidepool/state.db")).unwrap();
         let mut stmt = conn
             .prepare("SELECT video_id, status, attempts FROM items WHERE source_key = ?1 ORDER BY position")
             .unwrap();
@@ -236,7 +234,7 @@ async fn duplicates_are_linked_and_reset_downloads_again() {
     env.cmd(&["reset", "nope"])
         .assert()
         .code(1)
-        .stderr(contains("no video nope in this library"));
+        .stderr(contains("no video nope in any source"));
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -366,7 +364,7 @@ async fn verbose_shows_config_and_progress() {
     let text = fs::read_to_string(&config).unwrap().replace(
         "ytdlp_args = [\"--write-subs\"]",
         "ytdlp_args = [\"--write-subs\"]\nmin_duration = \"250s\"",
-    ) + "\n[youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n\n[server]\ntoken = \"my-long-secret-token\"\n";
+    ) + "\n[category.default.youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n\n[server]\ntoken = \"my-long-secret-token\"\n";
     fs::write(&config, text).unwrap();
 
     let assert = env
@@ -375,14 +373,14 @@ async fn verbose_shows_config_and_progress() {
         .code(3);
     let stderr = String::from_utf8(assert.get_output().stderr.clone()).unwrap();
     for expected in [
-        "library default: config revision 1, imported from",
+        "config revision 1, imported from",
         &format!(
             "media in {}, work area {}",
             env.media().display(),
             env.media().join(".tidepool-tmp").display()
         ),
         "yt-dlp 2026.10.01 at ",
-        "dl: https://www.youtube.com/playlist?list=PLdownloads → dl/, format bv*+ba/b, output {source_dir}/{upload_date} - {title} [{id}]",
+        "dl: https://www.youtube.com/playlist?list=PLdownloads → dl/ (category default), format bv*+ba/b, output {source_dir}/{upload_date} - {title} [{id}]",
         "dl: filters: min_duration 250s",
         "dl: listing https://www.youtube.com/playlist?list=PLdownloads",
         "dl: listed 4 videos in ",
@@ -411,7 +409,7 @@ async fn verbose_shows_config_and_progress() {
     let stderr = String::from_utf8(assert.get_output().stderr.clone()).unwrap();
     assert!(stderr.contains("yt-dlp command: "), "{stderr}");
     assert!(
-        stderr.contains("effective config (secrets redacted):\n[library]"),
+        stderr.contains("effective config (secrets redacted):\n[general]"),
         "{stderr}"
     );
     assert!(
@@ -436,4 +434,54 @@ async fn verbose_shows_config_and_progress() {
         .assert()
         .success()
         .stderr(contains("downloading “").not().and(contains("DEBUG").not()));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn categories_send_sources_to_their_own_folders() {
+    let env = Env::new().await;
+    let config = env.config("");
+    let music = env.path("music");
+    let text = fs::read_to_string(&config).unwrap()
+        + &format!(
+            "\n[category.music]\nroot = \"{}\"\noutput = \"{{category}}/{{title}} [{{id}}]\"\n\
+             \n[sources.tunes]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\ncategory = \"music\"\n",
+            music.display()
+        );
+    fs::write(&config, text).unwrap();
+
+    env.cmd(&["run", "-s", "tunes", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains("tunes: downloaded “Video okvideo01”"));
+    let tune = music.join("music/Video okvideo01 [okvideo01]");
+    assert!(
+        tune.join("media.mkv").is_file(),
+        "in the music category's root, with its output template"
+    );
+    assert!(!env.media().join("tunes").exists());
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(tune.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(meta["source"]["name"], "tunes");
+
+    // The same video and format in a source of the default category: linked
+    // across roots instead of downloaded again.
+    env.cmd(&["run", "-s", "dl"])
+        .assert()
+        .code(3)
+        .stdout(contains("dl: linked from another source “Video okvideo01”"));
+    let linked = env
+        .media()
+        .join("dl/2026-09-01 - Video okvideo01 [okvideo01]/media.mkv");
+    assert_eq!(
+        fs::metadata(&linked).unwrap().ino(),
+        fs::metadata(tune.join("media.mkv")).unwrap().ino(),
+        "hardlinked"
+    );
+
+    // reset --delete-files finds folders in any root.
+    env.cmd(&["reset", "okvideo01", "--delete-files"])
+        .assert()
+        .success()
+        .stdout(contains(format!("deleted {}", tune.display())));
+    assert!(!tune.exists());
 }

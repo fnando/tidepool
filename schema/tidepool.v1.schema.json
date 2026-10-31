@@ -1,5 +1,134 @@
 {
   "$defs": {
+    "CategoryConfig": {
+      "additionalProperties": false,
+      "description": "`[category.<name>]`: settings shared by the sources that pick it.\n`[category.default]` applies to every source.",
+      "properties": {
+        "cleanup": {
+          "$ref": "#/$defs/CleanupOptions",
+          "description": "Cleanup policies."
+        },
+        "cookies_file": {
+          "description": "Netscape cookies file, for private sources. \"\" = none.",
+          "type": "string"
+        },
+        "cover_name": {
+          "description": "Poster file name without extension; same placeholders as `output`.",
+          "format": "file-name-template",
+          "type": "string"
+        },
+        "cutoff": {
+          "description": "Skip videos published before this: \"30d\", \"2024-01-01\" or \"none\".",
+          "examples": [
+            "30d"
+          ],
+          "format": "cutoff",
+          "type": "string"
+        },
+        "embed": {
+          "$ref": "#/$defs/EmbedOptions",
+          "description": "Metadata embedded in the media file."
+        },
+        "exclude": {
+          "description": "Drop an item if any rule matches. Wins over include.",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "type": "array"
+        },
+        "format": {
+          "description": "yt-dlp format selector (`-f`).",
+          "type": "string"
+        },
+        "hooks": {
+          "description": "Hook names, run in order after each download.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "include": {
+          "description": "Keep an item if any rule matches (empty = keep all).",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "type": "array"
+        },
+        "inherit_hooks": {
+          "description": "Add hooks to the ones inherited instead of replacing them.",
+          "type": "boolean"
+        },
+        "inherit_rules": {
+          "description": "Add include/exclude to the ones inherited (category, then `default`) instead of replacing them.",
+          "type": "boolean"
+        },
+        "keep_raw_info": {
+          "description": "Keep yt-dlp's raw info.json next to metadata.json.",
+          "type": "boolean"
+        },
+        "match_fields": {
+          "description": "Field(s) plain-string rules are tested against.",
+          "items": {
+            "$ref": "#/$defs/RuleField"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "max_duration": {
+          "description": "Skip videos longer than this.",
+          "examples": [
+            "30d"
+          ],
+          "format": "optional-duration",
+          "type": "string"
+        },
+        "merge_output_format": {
+          "description": "Container for merged formats (`--merge-output-format`).",
+          "type": "string"
+        },
+        "min_duration": {
+          "description": "Skip videos shorter than this.",
+          "examples": [
+            "30d"
+          ],
+          "format": "optional-duration",
+          "type": "string"
+        },
+        "output": {
+          "description": "Each video's directory, relative to `root`. Must contain {id}.",
+          "format": "output-template",
+          "type": "string"
+        },
+        "redownload_missing": {
+          "description": "Download again when a downloaded item's media file is gone.",
+          "type": "boolean"
+        },
+        "root": {
+          "description": "Where videos go. Defaults to ~/.local/share/tidepool/media.",
+          "type": "string"
+        },
+        "thumbnail_format": {
+          "$ref": "#/$defs/ThumbnailFormat",
+          "description": "Cover image format."
+        },
+        "tmp_dir": {
+          "description": "Work area, relative to `root` (same filesystem, so the final move is atomic).",
+          "type": "string"
+        },
+        "youtube": {
+          "$ref": "#/$defs/YoutubeOptions",
+          "description": "YouTube Data API settings."
+        },
+        "ytdlp_args": {
+          "description": "Extra yt-dlp arguments, passed through.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "CleanupKeep": {
       "oneOf": [
         {
@@ -73,115 +202,6 @@
       ],
       "type": "string"
     },
-    "Defaults": {
-      "additionalProperties": false,
-      "description": "`[defaults]`: options every source inherits.",
-      "properties": {
-        "cleanup": {
-          "$ref": "#/$defs/CleanupOptions",
-          "description": "Cleanup policies."
-        },
-        "cookies_file": {
-          "description": "Netscape cookies file, for private sources. \"\" = none.",
-          "type": "string"
-        },
-        "cover_name": {
-          "description": "Poster file name without extension; same placeholders as `output`.",
-          "format": "file-name-template",
-          "type": "string"
-        },
-        "cutoff": {
-          "description": "Skip videos published before this: \"30d\", \"2024-01-01\" or \"none\".",
-          "examples": [
-            "30d"
-          ],
-          "format": "cutoff",
-          "type": "string"
-        },
-        "embed": {
-          "$ref": "#/$defs/EmbedOptions",
-          "description": "Metadata embedded in the media file."
-        },
-        "exclude": {
-          "description": "Drop an item if any rule matches. Wins over include.",
-          "items": {
-            "$ref": "#/$defs/Rule"
-          },
-          "type": "array"
-        },
-        "format": {
-          "description": "yt-dlp format selector (`-f`).",
-          "type": "string"
-        },
-        "hooks": {
-          "description": "Hook names, run in order after each download.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "include": {
-          "description": "Keep an item if any rule matches (empty = keep all).",
-          "items": {
-            "$ref": "#/$defs/Rule"
-          },
-          "type": "array"
-        },
-        "keep_raw_info": {
-          "description": "Keep yt-dlp's raw info.json next to metadata.json.",
-          "type": "boolean"
-        },
-        "match_fields": {
-          "description": "Field(s) plain-string rules are tested against.",
-          "items": {
-            "$ref": "#/$defs/RuleField"
-          },
-          "minItems": 1,
-          "type": "array"
-        },
-        "max_duration": {
-          "description": "Skip videos longer than this.",
-          "examples": [
-            "30d"
-          ],
-          "format": "optional-duration",
-          "type": "string"
-        },
-        "merge_output_format": {
-          "description": "Container for merged formats (`--merge-output-format`).",
-          "type": "string"
-        },
-        "min_duration": {
-          "description": "Skip videos shorter than this.",
-          "examples": [
-            "30d"
-          ],
-          "format": "optional-duration",
-          "type": "string"
-        },
-        "output": {
-          "description": "Each video's directory, relative to `root`. Must contain {id}.",
-          "format": "output-template",
-          "type": "string"
-        },
-        "redownload_missing": {
-          "description": "Download again when a downloaded item's media file is gone.",
-          "type": "boolean"
-        },
-        "thumbnail_format": {
-          "$ref": "#/$defs/ThumbnailFormat",
-          "description": "Cover image format."
-        },
-        "ytdlp_args": {
-          "description": "Extra yt-dlp arguments, passed through.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        }
-      },
-      "type": "object"
-    },
     "Duplicates": {
       "description": "Same video in several sources.",
       "enum": [
@@ -250,6 +270,41 @@
       ],
       "type": "object"
     },
+    "GeneralConfig": {
+      "additionalProperties": false,
+      "description": "`[general]`: settings for the whole run.",
+      "properties": {
+        "concurrency": {
+          "default": 2,
+          "description": "Parallel yt-dlp downloads.",
+          "format": "uint32",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "duplicates": {
+          "$ref": "#/$defs/Duplicates",
+          "default": "hardlink",
+          "description": "What to do when the same video is in several sources."
+        },
+        "regex_backtrack_limit": {
+          "default": 1000000,
+          "description": "fancy-regex backtracking step limit per match.",
+          "format": "uint64",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "shutdown_timeout": {
+          "default": "10s",
+          "description": "Grace period for child processes after SIGINT/SIGTERM.",
+          "examples": [
+            "30d"
+          ],
+          "format": "duration",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "HookConfig": {
       "additionalProperties": false,
       "description": "A hook: a command run after a video is downloaded or before it is cleaned up.",
@@ -311,7 +366,7 @@
       "oneOf": [
         {
           "const": "downloaded",
-          "description": "After a video is committed to the library.",
+          "description": "After a video is moved into its folder.",
           "type": "string"
         },
         {
@@ -320,50 +375,6 @@
           "type": "string"
         }
       ]
-    },
-    "LibraryConfig": {
-      "additionalProperties": false,
-      "description": "`[library]`",
-      "properties": {
-        "concurrency": {
-          "default": 2,
-          "description": "Parallel yt-dlp downloads.",
-          "format": "uint32",
-          "minimum": 1,
-          "type": "integer"
-        },
-        "duplicates": {
-          "$ref": "#/$defs/Duplicates",
-          "default": "hardlink",
-          "description": "What to do when the same video is in several sources."
-        },
-        "regex_backtrack_limit": {
-          "default": 1000000,
-          "description": "fancy-regex backtracking step limit per match.",
-          "format": "uint64",
-          "minimum": 1,
-          "type": "integer"
-        },
-        "root": {
-          "description": "Media root. Defaults to ~/.local/share/tidepool/media.",
-          "type": "string"
-        },
-        "shutdown_timeout": {
-          "default": "10s",
-          "description": "Grace period for child processes after SIGINT/SIGTERM.",
-          "examples": [
-            "30d"
-          ],
-          "format": "duration",
-          "type": "string"
-        },
-        "tmp_dir": {
-          "default": ".tidepool-tmp",
-          "description": "Work area, relative to `root` (same filesystem, so the final rename is atomic).",
-          "type": "string"
-        }
-      },
-      "type": "object"
     },
     "OnFailure": {
       "oneOf": [
@@ -464,6 +475,11 @@
       "additionalProperties": false,
       "description": "One source to keep in sync.",
       "properties": {
+        "category": {
+          "description": "The category whose settings this source uses. Defaults to \"default\".",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$",
+          "type": "string"
+        },
         "cleanup": {
           "$ref": "#/$defs/CleanupOptions",
           "description": "Cleanup policies."
@@ -524,11 +540,11 @@
           "type": "array"
         },
         "inherit_hooks": {
-          "description": "Concatenate `[defaults]` hooks instead of replacing them.",
+          "description": "Add hooks to the ones inherited instead of replacing them.",
           "type": "boolean"
         },
         "inherit_rules": {
-          "description": "Concatenate `[defaults]` include/exclude instead of replacing them.",
+          "description": "Add include/exclude to the ones inherited (category, then `default`) instead of replacing them.",
           "type": "boolean"
         },
         "keep_raw_info": {
@@ -572,14 +588,26 @@
           "description": "Download again when a downloaded item's media file is gone.",
           "type": "boolean"
         },
+        "root": {
+          "description": "Where videos go. Defaults to ~/.local/share/tidepool/media.",
+          "type": "string"
+        },
         "thumbnail_format": {
           "$ref": "#/$defs/ThumbnailFormat",
           "description": "Cover image format."
+        },
+        "tmp_dir": {
+          "description": "Work area, relative to `root` (same filesystem, so the final move is atomic).",
+          "type": "string"
         },
         "url": {
           "description": "Where videos come from: a YouTube playlist URL (with `list=`).",
           "format": "source-url",
           "type": "string"
+        },
+        "youtube": {
+          "$ref": "#/$defs/YoutubeOptions",
+          "description": "YouTube Data API settings."
         },
         "ytdlp_args": {
           "description": "Extra yt-dlp arguments, passed through.",
@@ -602,9 +630,9 @@
       ],
       "type": "string"
     },
-    "YoutubeConfig": {
+    "YoutubeOptions": {
       "additionalProperties": false,
-      "description": "`[youtube]`",
+      "description": "`youtube` in a category or source: YouTube Data API settings, merged key\nby key like the other options.",
       "properties": {
         "api_key": {
           "description": "YouTube Data API v3 key. Optional; without it, indexing uses yt-dlp only.",
@@ -612,19 +640,16 @@
           "type": "string"
         },
         "daily_quota": {
-          "default": 10000,
-          "description": "Daily quota of the Google Cloud project.",
+          "description": "Daily quota of the key's Google Cloud project.",
           "format": "uint32",
           "minimum": 1,
           "type": "integer"
         },
         "fallback_to_ytdlp": {
-          "default": true,
           "description": "With an API key: use yt-dlp on quota exhaustion, a rejected key or repeated 5xx.",
           "type": "boolean"
         },
         "quota_warn_at": {
-          "default": 0.8,
           "description": "Warn when this fraction of `daily_quota` is used.",
           "format": "double",
           "maximum": 1.0,
@@ -632,7 +657,6 @@
           "type": "number"
         },
         "requests_per_second": {
-          "default": 5,
           "description": "API request rate limit.",
           "format": "uint32",
           "minimum": 1,
@@ -688,10 +712,26 @@
   "additionalProperties": false,
   "description": "A tidepool config file.",
   "properties": {
-    "defaults": {
-      "$ref": "#/$defs/Defaults",
+    "category": {
+      "additionalProperties": {
+        "$ref": "#/$defs/CategoryConfig"
+      },
       "default": {},
-      "description": "Options every source inherits."
+      "description": "Groups of settings sources pick with `category`; `default` applies to\nevery source, other categories on top of it.",
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9_-]*$"
+      },
+      "type": "object"
+    },
+    "general": {
+      "$ref": "#/$defs/GeneralConfig",
+      "default": {
+        "concurrency": 2,
+        "duplicates": "hardlink",
+        "regex_backtrack_limit": 1000000,
+        "shutdown_timeout": "10s"
+      },
+      "description": "Settings for the whole run: concurrency, duplicates, shutdown."
     },
     "hooks": {
       "additionalProperties": {
@@ -703,17 +743,6 @@
         "pattern": "^[a-z0-9][a-z0-9_-]*$"
       },
       "type": "object"
-    },
-    "library": {
-      "$ref": "#/$defs/LibraryConfig",
-      "default": {
-        "concurrency": 2,
-        "duplicates": "hardlink",
-        "regex_backtrack_limit": 1000000,
-        "shutdown_timeout": "10s",
-        "tmp_dir": ".tidepool-tmp"
-      },
-      "description": "Where media goes and how downloads run."
     },
     "schedule": {
       "$ref": "#/$defs/ScheduleConfig",
@@ -749,16 +778,6 @@
       "maximum": 1,
       "minimum": 1,
       "type": "integer"
-    },
-    "youtube": {
-      "$ref": "#/$defs/YoutubeConfig",
-      "default": {
-        "daily_quota": 10000,
-        "fallback_to_ytdlp": true,
-        "quota_warn_at": 0.8,
-        "requests_per_second": 5
-      },
-      "description": "YouTube Data API settings."
     },
     "ytdlp": {
       "$ref": "#/$defs/YtdlpConfig",

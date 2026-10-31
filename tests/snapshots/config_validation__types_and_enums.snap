@@ -2,17 +2,17 @@
 source: tests/config_validation.rs
 expression: err
 ---
-types_and_enums.toml:2:15 library.concurrency: 0 is less than the minimum of 1
-types_and_enums.toml:3:14 library.duplicates: "move" is not one of "hardlink", "symlink", "copy", "download"
-types_and_enums.toml:6:17 youtube.quota_warn_at: 1.5 is greater than the maximum of 1.0
-types_and_enums.toml:7:11 youtube.api_key: 42 is not of type "string"
-types_and_enums.toml:10:20 defaults.thumbnail_format: "png" is not one of "jpg", "webp", "original"
-types_and_enums.toml:11:16 defaults.match_fields: [] has less than 1 item
-types_and_enums.toml:12:12 defaults.include[0]: must be a regex string or a { field, pattern } table
-types_and_enums.toml:12:25 defaults.include[1].field: "comments" is not one of "title", "description", "channel", "tags", "id"
-types_and_enums.toml:12:54 defaults.include[2]: missing required key "field"
-types_and_enums.toml:15:9 defaults.cleanup.order: "random" is not one of "oldest_downloaded", "oldest_published", "source_position"
-types_and_enums.toml:16:13 defaults.cleanup.max_items: -1 is less than the minimum of 0
+types_and_enums.toml:2:15 general.concurrency: 0 is less than the minimum of 1
+types_and_enums.toml:3:14 general.duplicates: "move" is not one of "hardlink", "symlink", "copy", "download"
+types_and_enums.toml:6:17 category.default.youtube.quota_warn_at: 1.5 is greater than the maximum of 1.0
+types_and_enums.toml:7:11 category.default.youtube.api_key: 42 is not of type "string"
+types_and_enums.toml:10:20 category.default.thumbnail_format: "png" is not one of "jpg", "webp", "original"
+types_and_enums.toml:11:16 category.default.match_fields: [] has less than 1 item
+types_and_enums.toml:12:12 category.default.include[0]: must be a regex string or a { field, pattern } table
+types_and_enums.toml:12:25 category.default.include[1].field: "comments" is not one of "title", "description", "channel", "tags", "id"
+types_and_enums.toml:12:54 category.default.include[2]: missing required key "field"
+types_and_enums.toml:15:9 category.default.cleanup.order: "random" is not one of "oldest_downloaded", "oldest_published", "source_position"
+types_and_enums.toml:16:13 category.default.cleanup.max_items: -1 is less than the minimum of 0
 types_and_enums.toml:19:11 hooks.empty.command: [] has less than 1 item
 types_and_enums.toml:20:14 hooks.empty.on_failure: "explode" is not one of "fail", "warn", "retry"
 types_and_enums.toml:22:1 hooks.missing: missing required key "command"

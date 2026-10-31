@@ -191,7 +191,7 @@ pub fn validator() -> &'static Validator {
 
 /// Root transform: name patterns for `sources` and `hooks`.
 pub(crate) fn transform_root(schema: &mut Schema) {
-    for table in ["sources", "hooks"] {
+    for table in ["sources", "hooks", "category"] {
         if let Some(Value::Object(prop)) = schema.pointer_mut(&format!("/properties/{table}")) {
             prop.insert("propertyNames".into(), json!({ "pattern": KEY_PATTERN }));
         }

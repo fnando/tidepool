@@ -1,4 +1,4 @@
-//! Per-library advisory lock, so overlapping runs never touch the same library.
+//! Advisory lock, so overlapping runs never work on the same state at once.
 
 use std::fs::{File, OpenOptions, TryLockError};
 use std::io::{Read, Seek, SeekFrom, Write};
@@ -13,7 +13,7 @@ pub struct LibraryLock {
 
 #[derive(Debug, thiserror::Error)]
 pub enum LockError {
-    #[error("library is locked by another tidepool process{}", .pid.map(|p| format!(" (pid {p})")).unwrap_or_default())]
+    #[error("another tidepool is running{}; try again when it's done", .pid.map(|p| format!(" (pid {p})")).unwrap_or_default())]
     Held { pid: Option<u32> },
     #[error("cannot lock {path}: {source}")]
     Io {

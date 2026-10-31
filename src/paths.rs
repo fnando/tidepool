@@ -16,9 +16,9 @@ pub struct Dirs {
     pub data_dir: PathBuf,
 }
 
-/// Per-library state paths.
+/// Where tidepool keeps its state, under the data dir.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LibraryPaths {
+pub struct StatePaths {
     pub dir: PathBuf,
     pub state_db: PathBuf,
     pub lock: PathBuf,
@@ -42,12 +42,12 @@ impl Dirs {
         self.config_dir.join("config.toml")
     }
 
-    /// Media root when `library.root` is unset.
+    /// Media root when no category sets `root`.
     pub fn default_media_root(&self) -> PathBuf {
         self.data_dir.join("media")
     }
 
-    /// Managed binaries, shared by all libraries.
+    /// Managed binaries.
     pub fn bin_dir(&self) -> PathBuf {
         self.data_dir.join("bin")
     }
@@ -57,9 +57,9 @@ impl Dirs {
         self.bin_dir().join(format!("yt-dlp-{}", channel.as_str()))
     }
 
-    pub fn library(&self, name: &str) -> LibraryPaths {
-        let dir = self.data_dir.join("libraries").join(name);
-        LibraryPaths {
+    pub fn state(&self) -> StatePaths {
+        let dir = self.data_dir.clone();
+        StatePaths {
             state_db: dir.join("state.db"),
             lock: dir.join("lock"),
             scheduler_lock: dir.join("scheduler.lock"),
@@ -147,21 +147,16 @@ mod tests {
     }
 
     #[test]
-    fn library_paths() {
+    fn state_paths() {
         let dirs = Dirs {
             home: "/h".into(),
             config_dir: "/c/tidepool".into(),
             data_dir: "/d/tidepool".into(),
         };
-        let lib = dirs.library("default");
-        assert_eq!(
-            lib.state_db,
-            PathBuf::from("/d/tidepool/libraries/default/state.db")
-        );
-        assert_eq!(
-            lib.lock,
-            PathBuf::from("/d/tidepool/libraries/default/lock")
-        );
+        let state = dirs.state();
+        assert_eq!(state.state_db, PathBuf::from("/d/tidepool/state.db"));
+        assert_eq!(state.lock, PathBuf::from("/d/tidepool/lock"));
+        assert_eq!(state.hook_logs, PathBuf::from("/d/tidepool/logs/hooks"));
         assert_eq!(
             dirs.default_media_root(),
             PathBuf::from("/d/tidepool/media")

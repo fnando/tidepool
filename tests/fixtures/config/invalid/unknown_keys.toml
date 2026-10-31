@@ -1,4 +1,4 @@
-[library]
+[general]
 concurency = 2
 
 [sources.lofi]

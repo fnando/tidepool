@@ -1,0 +1,26 @@
+[general]
+concurrency = 4
+
+[category.default]
+root = "~/Videos/youtube"
+exclude = ['(?i)#shorts']
+
+[category.default.youtube]
+api_key = "AIzaSyD-1234567890x1Qw"
+
+[category.music]
+root = "~/Music/youtube"
+format = "ba/b"
+inherit_rules = true
+exclude = ['(?i)\blive\b']
+
+[category.music.youtube]
+api_key = "AIzaSyD-0000000000z9Zz"
+
+[sources.lofi]
+url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+category = "music"
+
+[sources.talks]
+url = "https://www.youtube.com/playlist?list=PLyyyyyyyy"
+dir = "lofi"                        # same dir name, different root: fine

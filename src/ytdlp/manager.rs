@@ -2,7 +2,7 @@
 //! GitHub, verify it (signed checksums), install it atomically, keep the
 //! previous version for rollback, and check for updates.
 //!
-//! Files in `~/.local/share/tidepool/bin/`, shared by all libraries:
+//! Files in `~/.local/share/tidepool/bin/`:
 //! `yt-dlp-<channel>` (current), `yt-dlp-<channel>.previous`,
 //! `yt-dlp-<channel>.json` (state) and `update.lock`.
 

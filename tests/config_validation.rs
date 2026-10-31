@@ -60,7 +60,7 @@ fn warnings_are_reported_with_locations() {
     assert_eq!(
         loaded.warnings,
         vec![
-            "c.toml:2:21 warning: youtube.fallback_to_ytdlp: has no effect without api_key: yt-dlp is always the indexer then"
+            "c.toml:2:21 warning: category.default.youtube.fallback_to_ytdlp: has no effect without api_key: yt-dlp is always the indexer then"
         ]
     );
 }

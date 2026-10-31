@@ -31,17 +31,6 @@ pub struct Cli {
     #[arg(long, global = true)]
     pub skip_config_check: bool,
 
-    /// Library to operate on (state in ~/.local/share/tidepool/libraries/<name>/)
-    #[arg(
-        long,
-        short = 'l',
-        env = "TIDEPOOL_LIBRARY",
-        default_value = "default",
-        global = true,
-        value_parser = parse_library_name
-    )]
-    pub library: String,
-
     /// Increase log verbosity (-v, -vv)
     #[arg(short, long, action = ArgAction::Count, global = true)]
     pub verbose: u8,
@@ -70,7 +59,7 @@ pub enum LogFormat {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
-    /// Create a commented config file and the library behind it
+    /// Create a commented config file and start tidepool's state
     Init(InitArgs),
     /// Index only: update the DB with remote items and filter results
     Index(ScopeArgs),
@@ -147,7 +136,7 @@ pub struct DownloadArgs {
     /// Download at most N items
     #[arg(long, value_name = "N")]
     pub limit: Option<u32>,
-    /// Parallel downloads (overrides library.concurrency)
+    /// Parallel downloads (overrides general.concurrency)
     #[arg(long, value_name = "N", value_parser = clap::value_parser!(u32).range(1..))]
     pub concurrency: Option<u32>,
 }
@@ -167,7 +156,7 @@ pub struct ListArgs {
     pub scope: ScopeArgs,
     #[arg(long, value_enum)]
     pub status: Option<ItemStatus>,
-    /// Downloaded items whose media is no longer in the library
+    /// Downloaded items whose media is no longer there
     #[arg(long)]
     pub missing: bool,
     /// Show API quota used today
@@ -320,7 +309,7 @@ pub enum YtdlpCmd {
 }
 
 /// `tidepool init`. The config file goes to the global --config path
-/// (default ~/.config/tidepool/config.toml); --library names the library.
+/// (default ~/.config/tidepool/config.toml).
 #[derive(Debug, Args)]
 pub struct InitArgs {
     /// Replace an existing config file (kept as <file>.bak)
@@ -393,14 +382,6 @@ impl FromStr for SourceRef {
         Err(format!(
             "{s:?} is not a source name, playlist id or playlist URL"
         ))
-    }
-}
-
-fn parse_library_name(s: &str) -> Result<String, String> {
-    if crate::config::is_valid_name(s) {
-        Ok(s.to_string())
-    } else {
-        Err("library names use lowercase letters, digits, '-' and '_'".to_string())
     }
 }
 

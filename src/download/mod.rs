@@ -1,5 +1,5 @@
 //! Downloading: run yt-dlp into a temp dir, add the cover and metadata.json,
-//! and move the result into the library in one rename.
+//! and move the result into its media folder in one rename.
 
 pub mod info;
 pub mod layout;
@@ -31,18 +31,25 @@ use ytdlp::Failure;
 /// Subtitle files yt-dlp may write next to the media.
 const SUBTITLE_EXTENSIONS: [&str; 6] = ["vtt", "srt", "ass", "ssa", "lrc", "ttml"];
 
+/// Where one source's downloads go.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SourcePaths {
+    /// The source's media folder (its category's `root`).
+    pub root: PathBuf,
+    /// Its work area, on the same filesystem as `root`.
+    pub tmp_root: PathBuf,
+    pub cookies: Option<PathBuf>,
+}
+
 /// What every download shares.
 pub struct Context {
-    pub root: PathBuf,
-    pub tmp_root: PathBuf,
     pub ytdlp: PathBuf,
     pub ytdlp_version: Option<String>,
-    pub library: String,
     pub duplicates: Duplicates,
     pub thumbnail_base: String,
     pub backtrack_limit: usize,
     pub http: reqwest::Client,
-    /// Grace period for yt-dlp after SIGTERM (`library.shutdown_timeout`).
+    /// Grace period for yt-dlp after SIGTERM (`general.shutdown_timeout`).
     pub shutdown_timeout: std::time::Duration,
     pub cancel: CancellationToken,
 }
@@ -68,8 +75,8 @@ pub struct Summary {
 struct Job {
     source: Arc<EffectiveSource>,
     queued: QueuedItem,
-    cookies: Option<PathBuf>,
-    /// Another source's directory holding the same video in the same format.
+    paths: SourcePaths,
+    /// Another source's directory (absolute) holding the same video in the same format.
     copy_from: Option<String>,
     now: Timestamp,
 }
@@ -193,7 +200,7 @@ async fn process(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
     // A decision that needed fields the index didn't have.
     let mut info = None;
     if job.queued.status == status::PENDING_CHECK || job.copy_from.is_some() {
-        match ytdlp::video_info(&ctx.ytdlp, video_id, job.cookies.as_deref()).await {
+        match ytdlp::video_info(&ctx.ytdlp, video_id, job.paths.cookies.as_deref()).await {
             Ok(full) => {
                 let merged = merge_details(item, &full);
                 details = Some(merged.clone());
@@ -214,7 +221,10 @@ async fn process(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
         }
     }
 
-    let tmp = ctx.tmp_root.join(format!("{video_id}.{}", source.key));
+    let tmp = job
+        .paths
+        .tmp_root
+        .join(format!("{video_id}.{}", source.key));
     let _ = std::fs::remove_dir_all(&tmp);
     if let Err(err) = std::fs::create_dir_all(&tmp) {
         return (
@@ -248,7 +258,7 @@ async fn assemble(
     // Media: linked from another source, or downloaded.
     let (info, media_name, other) = match (&job.copy_from, info) {
         (Some(other_dir), Some(info)) => {
-            let other = ctx.root.join(other_dir);
+            let other = PathBuf::from(other_dir);
             let previous: serde_json::Value = std::fs::read_to_string(other.join("metadata.json"))
                 .ok()
                 .and_then(|t| serde_json::from_str(&t).ok())
@@ -274,7 +284,7 @@ async fn assemble(
             (info, media, cover)
         }
         _ => {
-            let args = ytdlp::download_args(source, video_id, tmp, job.cookies.as_deref());
+            let args = ytdlp::download_args(source, video_id, tmp, job.paths.cookies.as_deref());
             let media =
                 ytdlp::download(&ctx.ytdlp, &args, label, &ctx.cancel, ctx.shutdown_timeout)
                     .await?;
@@ -305,7 +315,6 @@ async fn assemble(
         source,
         job.queued.source_title.as_deref(),
         job.queued.position,
-        &ctx.library,
     );
     let dir = layout::video_dir(source, &values).map_err(fail)?;
 
@@ -397,7 +406,7 @@ async fn assemble(
         .and_then(|_| file.sync_all())
         .map_err(|e| io_fail("cannot write", &metadata_path, e))?;
 
-    let target = ctx.root.join(&dir);
+    let target = job.paths.root.join(&dir);
     commit(tmp, &target).map_err(|e| io_fail("cannot move the download into", &target, e))?;
     tracing::debug!(
         "{label}: moved into {} ({:.1}s)",
@@ -405,7 +414,7 @@ async fn assemble(
         started.elapsed().as_secs_f64()
     );
     Ok(Outcome::Done {
-        dir: dir.to_string_lossy().into_owned(),
+        dir: target.to_string_lossy().into_owned(),
         media_bytes,
         linked: job.copy_from.is_some(),
     })
@@ -423,9 +432,9 @@ async fn interrupted() -> i32 {
     }
 }
 
-/// Clear the work area and put interrupted downloads back in the queue.
-pub fn recover(state: &State, tmp_root: &Path) -> Result<usize, String> {
-    if tmp_root.exists() {
+/// Clear the work areas and put interrupted downloads back in the queue.
+pub fn recover(state: &State, tmp_roots: &[PathBuf]) -> Result<usize, String> {
+    for tmp_root in tmp_roots.iter().filter(|t| t.exists()) {
         std::fs::remove_dir_all(tmp_root)
             .map_err(|e| format!("cannot clear {}: {e}", tmp_root.display()))?;
     }
@@ -436,7 +445,7 @@ pub fn recover(state: &State, tmp_root: &Path) -> Result<usize, String> {
 pub async fn download_all(
     state: &mut State,
     sources: &[EffectiveSource],
-    cookies: impl Fn(&EffectiveSource) -> Option<PathBuf>,
+    paths: impl Fn(&EffectiveSource) -> Result<SourcePaths, String>,
     ctx: Context,
     options: Options,
     tracker: &mut crate::problems::Tracker,
@@ -444,7 +453,17 @@ pub async fn download_all(
 ) -> Result<Summary, String> {
     let now = options.now;
     let db = |e: rusqlite::Error| format!("state database: {e}");
-    recover(state, &ctx.tmp_root)?;
+    let mut by_source = std::collections::HashMap::new();
+    for source in sources {
+        by_source.insert(
+            source.key.clone(),
+            paths(source).map_err(|e| format!("{}: {e}", source.key))?,
+        );
+    }
+    let mut tmp_roots: Vec<PathBuf> = by_source.values().map(|p| p.tmp_root.clone()).collect();
+    tmp_roots.sort();
+    tmp_roots.dedup();
+    recover(state, &tmp_roots)?;
 
     let keys: Vec<String> = sources.iter().map(|s| s.key.clone()).collect();
     let mut queue = items::download_queue(&state.conn, &keys, now).map_err(db)?;
@@ -470,7 +489,7 @@ pub async fn download_all(
             Duplicates::Download => None,
             _ => items::find_copy(&state.conn, &queued.video_id, &source.format, &source.key)
                 .map_err(db)?
-                .filter(|dir| ctx.root.join(dir).join("metadata.json").is_file()),
+                .filter(|dir| Path::new(dir).join("metadata.json").is_file()),
         };
         items::set_status(
             &state.conn,
@@ -480,7 +499,7 @@ pub async fn download_all(
         )
         .map_err(db)?;
         let job = Job {
-            cookies: cookies(&source),
+            paths: by_source[&source.key].clone(),
             source,
             queued,
             copy_from,
@@ -526,7 +545,7 @@ pub async fn download_all(
                 // writes to the work area while it's cleared.
                 ctx.cancel.cancel();
                 while tasks.join_next().await.is_some() {}
-                recover(state, &ctx.tmp_root)?;
+                recover(state, &tmp_roots)?;
                 summary.interrupted = Some(code);
                 break;
             }
