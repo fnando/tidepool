@@ -53,6 +53,9 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
     if !matches!(cli.command, Command::Problems { .. } | Command::Init(_)) {
         app.show_problem_notices()?;
     }
+    if cli.config.is_none() && !cli.skip_config_check && checks_config_drift(&cli.command) {
+        app.check_config_drift()?;
+    }
     match &cli.command {
         Command::Init(args) => app.init(args, out),
         Command::Config(args) => app.config(args, out),
@@ -69,6 +72,18 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
             let milestone = other.milestone().unwrap_or("a later milestone");
             bail!("this command is not implemented yet (planned for {milestone})")
         }
+    }
+}
+
+/// Commands that halt when the config file has changes that aren't imported.
+/// (`config …` commands never do: they're how drift gets resolved.)
+fn checks_config_drift(command: &Command) -> bool {
+    match command {
+        Command::Run(args) => !args.daemon,
+        Command::Index(_) | Command::Download(_) | Command::Reset(_) | Command::Filter { .. } => {
+            true
+        }
+        _ => false,
     }
 }
 
@@ -630,6 +645,70 @@ impl App<'_> {
     }
 
     /// Before a command: new problems in full, a reminder for known ones.
+    /// Halt when the config file (the one last imported, or the conventional
+    /// one) resolves to something other than the stored config.
+    fn check_config_drift(&self) -> anyhow::Result<()> {
+        use crate::config::store::Source;
+
+        if !self.library.state_db.exists() {
+            return Ok(());
+        }
+        let state = self.open_state()?;
+        let store = ConfigStore::new(&state.conn);
+        let Some(current) = store.current()? else {
+            return Ok(());
+        };
+        let path = store
+            .last_import()?
+            .and_then(|r| r.source_path)
+            .map(PathBuf::from)
+            .filter(|p| p.exists())
+            .unwrap_or_else(|| self.dirs.default_config_file());
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            tracing::debug!("no config file at {} to compare with", path.display());
+            return Ok(());
+        };
+        if crate::config::store::hash(&text) == current.source_hash {
+            return Ok(());
+        }
+        let name = Self::display_path(&path);
+        let skip = format!(
+            "Apply it with `tidepool config import`, or pass --skip-config-check to run with the \
+             stored config (revision {}).",
+            current.rev
+        );
+        let loaded = match load_str(&name, &text) {
+            Ok(loaded) => loaded,
+            Err(err) => bail!(
+                "{name} has changes that aren't applied yet, and it has errors:\n{err}\nFix them, or pass --skip-config-check to run with the stored config (revision {}).",
+                current.rev
+            ),
+        };
+        if loaded.normalized() == current.json {
+            return Ok(()); // only comments or formatting changed
+        }
+        let mut stored: Value = serde_json::from_str(&current.json)?;
+        let mut file = loaded.json;
+        mask_json(&mut stored);
+        mask_json(&mut file);
+        let changes: Vec<String> = key_changes(&stored, &file)
+            .iter()
+            .map(|c| format!("  {c}"))
+            .collect();
+        let mut message = format!(
+            "{name} has changes that aren't applied yet:\n{}\n{skip}",
+            changes.join("\n")
+        );
+        if current.source != Source::Import {
+            message.push_str(&format!(
+                "\nNote: the stored config came from a {} (revision {}); to keep it instead, write it \
+                 back to the file with `tidepool config export --show-secrets > {name}`.",
+                current.source, current.rev
+            ));
+        }
+        bail!(message)
+    }
+
     fn show_problem_notices(&self) -> anyhow::Result<()> {
         if !self.library.state_db.exists() {
             return Ok(());

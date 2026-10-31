@@ -116,6 +116,20 @@ changed. This is handy when you keep the file in a dotfiles repository:
 tidepool filter test "Lofi LIVE radio" --source lofi --config ~/.config/tidepool/config.toml
 ```
 
+If you edit the file and forget to apply it, `run`, `index`, `download`,
+`reset` and `filter test` stop and tell you what changed, so you never run with
+settings you didn't mean:
+
+```
+error: ~/.config/tidepool/config.toml has changes that aren't applied yet:
+  + youtube.api_key = "AIza…x1Qw"
+Apply it with `tidepool config import`, or pass --skip-config-check to run with the stored config (revision 3).
+```
+
+Changes to comments or formatting don't count. Add `--skip-config-check` to run
+with the settings tidepool already has. `tidepool config …` commands are never
+stopped, since they're how you sort it out.
+
 ### Checking for mistakes
 
 ```sh

@@ -26,6 +26,11 @@ pub struct Cli {
     #[arg(long, global = true)]
     pub force_config: bool,
 
+    /// Run with the stored config even if the config file has changes that
+    /// aren't imported yet
+    #[arg(long, global = true)]
+    pub skip_config_check: bool,
+
     /// Library to operate on (state in ~/.local/share/tidepool/libraries/<name>/)
     #[arg(
         long,

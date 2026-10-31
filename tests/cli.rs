@@ -638,3 +638,80 @@ fn index_needs_a_working_ytdlp() {
             "sample: yt-dlp failed: cannot run /nonexistent/yt-dlp",
         ));
 }
+
+#[test]
+fn config_drift_halts_until_applied_or_skipped() {
+    let env = Env::new();
+    let file = env.write_config("c.toml", "");
+    env.cmd(&["config", "import", &file]).assert().success();
+    let run = |args: &[&str]| {
+        let mut all = vec!["filter", "test", "Live set", "-s", "lofi"];
+        all.extend_from_slice(args);
+        env.cmd(&all).assert()
+    };
+    run(&[]).success();
+
+    // Comments and formatting don't count.
+    let text = fs::read_to_string(&file).unwrap();
+    fs::write(&file, format!("# a new comment\n{text}")).unwrap();
+    run(&[]).success();
+
+    // A real change halts, listing it with secrets masked.
+    let text = fs::read_to_string(&file)
+        .unwrap()
+        .replace("AIzaSyD-1234567890x1Qw", "AIzaSyD-0000000000z9Zz")
+        + "enabled = false\n";
+    fs::write(&file, text).unwrap();
+    run(&[]).code(1).stderr(
+        contains(format!("{file} has changes that aren't applied yet"))
+            .and(contains("~ youtube.api_key: \"AIza…x1Qw\" → \"AIza…z9Zz\""))
+            .and(contains("+ sources.lofi.enabled = false"))
+            .and(contains("tidepool config import"))
+            .and(contains("--skip-config-check"))
+            .and(contains("0000000000").not()),
+    );
+    run(&["--skip-config-check"]).success();
+    // Config commands are how you fix it, so they never halt.
+    env.cmd(&["config", "history"]).assert().success();
+    env.cmd(&["config", "diff"]).assert().success();
+    env.cmd(&["config", "import"])
+        .env("TIDEPOOL_CONFIG", &file)
+        .assert()
+        .success();
+    run(&[]).success();
+
+    // A file with errors halts too, and says why.
+    fs::write(&file, fs::read_to_string(&file).unwrap() + "bogus = 1\n").unwrap();
+    run(&[])
+        .code(1)
+        .stderr(contains("has errors").and(contains("unknown key \"bogus\"")));
+}
+
+#[test]
+fn config_drift_after_a_rollback_explains_how_to_keep_it() {
+    let env = Env::new();
+    let file = env.write_config("c.toml", "");
+    env.cmd(&["config", "import", &file]).assert().success();
+    env.write_config("c.toml", "enabled = false\n");
+    env.cmd(&["config", "import", &file]).assert().success();
+    env.cmd(&["config", "rollback", "1"]).assert().success();
+    env.cmd(&["filter", "test", "x", "-s", "lofi"])
+        .assert()
+        .code(1)
+        .stderr(
+            contains("the stored config came from a rollback (revision 3)").and(contains(format!(
+                "tidepool config export --show-secrets > {file}"
+            ))),
+        );
+}
+
+#[test]
+fn config_flag_means_no_drift() {
+    let env = Env::new();
+    let file = env.write_config("c.toml", "");
+    env.cmd(&["config", "import", &file]).assert().success();
+    env.write_config("c.toml", "enabled = false\n");
+    env.cmd(&["filter", "test", "x", "-s", "lofi", "--config", &file])
+        .assert()
+        .success();
+}
