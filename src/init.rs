@@ -111,16 +111,13 @@ interval = "6h"                     # tidepool run: sync + cleanup this often; "
 # Sources to keep in sync (YouTube playlists). Any [defaults] option can be
 # overridden per source.
 
-[sources.sample]                  # one short video, to see tidepool work; replace it with your own
-url = "@SAMPLE_SOURCE_URL@"
-
-# [sources.example]
-# url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # the playlist's URL
-# dir = "example"                   # directory under root; defaults to the key
+[sources.sample]                    # one short video, to see tidepool work; replace it with your own
+url = "@SAMPLE_SOURCE_URL@"   # the playlist's URL
+# dir = "sample"                    # folder under root; defaults to the source name
 # enabled = true                    # disabled sources are skipped
 # inherit_rules = false             # true = add [defaults] include/exclude instead of replacing them
 # inherit_hooks = false             # true = add [defaults] hooks instead of replacing them
-# hooks = ["notify"]
+# hooks = ["notify"]                # hook names, run in order after each download
 "#;
 
 #[cfg(test)]
@@ -224,7 +221,7 @@ mod tests {
             ("EmbedOptions", &["/defaults/embed"]),
             ("CleanupOptions", &["/defaults/cleanup"]),
             ("HookConfig", &["/hooks/notify"]),
-            ("SourceConfig", &["/sources/example"]),
+            ("SourceConfig", &["/sources/sample"]),
         ];
         let defaults_props = props("Defaults");
         for (def, pointers) in where_documented {

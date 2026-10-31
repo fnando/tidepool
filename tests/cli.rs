@@ -377,8 +377,9 @@ fn init_creates_config_and_library() {
     let text = fs::read_to_string(&file).unwrap();
     assert!(text.starts_with("#:schema https://raw.githubusercontent.com/fnando/tidepool/v"));
     assert!(text.contains(
-        "[sources.sample]                  # one short video, to see tidepool work; replace it with your own\n\
-         url = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\""
+        "[sources.sample]                    # one short video, to see tidepool work; replace it with your own\n\
+         url = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"   # the playlist's URL\n\
+         # dir = \"sample\""
     ));
 
     // The library holds the same text as revision 1.
@@ -451,7 +452,7 @@ fn init_print_and_dry_run_create_nothing() {
     env.cmd(&["init", "--print"])
         .assert()
         .success()
-        .stdout(contains("[sources.sample]").and(contains("# [sources.example]")));
+        .stdout(contains("[sources.sample]").and(contains("# inherit_hooks = false")));
     env.cmd(&["init", "--dry-run"])
         .assert()
         .success()
