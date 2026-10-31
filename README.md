@@ -261,6 +261,12 @@ the video quality from `format` (yt-dlp's format selector). A video's folder
 only appears once it's complete, so you never find half-downloaded videos in
 your media folders.
 
+By default, `format` is `"bv*+ba/b/bv*/ba"`: the best video and the best audio
+merged into one file; otherwise the best single file that has both; otherwise
+video alone, or audio alone. So you get the best quality available, and still
+get something when only part of it can be downloaded. To cap the resolution:
+`format = "bv*[height<=1080]+ba/b"`.
+
 To run tidepool on a schedule, call it from cron (or launchd, or a systemd
 timer). `--config` applies your config file first if you changed it:
 

@@ -21,7 +21,7 @@ pub const DEFAULT_CATEGORY: &str = "default";
 
 /// Built-in option values, used when no layer sets one.
 pub mod builtin {
-    pub const FORMAT: &str = "bv*+ba/b";
+    pub const FORMAT: &str = "bv*+ba/b/bv*/ba";
     pub const MERGE_OUTPUT_FORMAT: &str = "mkv";
     pub const OUTPUT: &str = "{source_dir}/{upload_date} - {title} [{id}]";
     pub const COVER_NAME: &str = "{title}-poster";
@@ -293,7 +293,10 @@ mod tests {
         );
         assert!(p.enabled);
         assert_eq!(p.tmp_dir, ".tidepool-tmp");
-        assert_eq!(p.format, builtin::FORMAT);
+        assert_eq!(
+            p.format, "bv*+ba/b/bv*/ba",
+            "best video + audio, then the best single file, then video or audio alone"
+        );
         assert_eq!(p.output, builtin::OUTPUT);
         assert_eq!(p.cover_name, builtin::COVER_NAME);
         assert_eq!(p.match_fields, vec![RuleField::Title]);

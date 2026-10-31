@@ -380,7 +380,7 @@ async fn verbose_shows_config_and_progress() {
             env.media().join(".tidepool-tmp").display()
         ),
         "yt-dlp 2026.10.01 at ",
-        "dl: https://www.youtube.com/playlist?list=PLdownloads → dl/ (category default), format bv*+ba/b, output {source_dir}/{upload_date} - {title} [{id}]",
+        "dl: https://www.youtube.com/playlist?list=PLdownloads → dl/ (category default), format bv*+ba/b/bv*/ba, output {source_dir}/{upload_date} - {title} [{id}]",
         "dl: filters: min_duration 250s",
         "dl: listing https://www.youtube.com/playlist?list=PLdownloads",
         "dl: listed 4 videos in ",
