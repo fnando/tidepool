@@ -1,2 +1,2 @@
 [playlists.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"

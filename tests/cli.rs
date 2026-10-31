@@ -50,7 +50,7 @@ impl Env {
         let text = format!(
             "# my config\n[library]\nroot = \"{}\"\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
              [youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n\n\
-             [playlists.lofi]\nid = \"PLaaaaaaaaaaaa\"\ninclude = ['(?i)\\blive\\b']\nexclude = ['(?i)trailer']\n{extra}",
+             [playlists.lofi]\nsource = \"https://www.youtube.com/playlist?list=PLaaaaaaaaaaaa\"\ninclude = ['(?i)\\blive\\b']\nexclude = ['(?i)trailer']\n{extra}",
             self.path("media").display(),
             ytdlp.display()
         );
@@ -166,7 +166,7 @@ fn invalid_configs_report_file_line_col_and_are_not_stored() {
     let file = env.path("bad.toml");
     fs::write(
         &file,
-        "[library]\nconcurency = 2\n\n[playlists.lofi]\nid = 'PLx'\nmin_duration = 'soon'\n",
+        "[library]\nconcurency = 2\n\n[playlists.lofi]\nsource = 'https://www.youtube.com/playlist?list=PLx'\nmin_duration = 'soon'\n",
     )
     .unwrap();
     let file = file.display().to_string();
@@ -377,7 +377,7 @@ fn init_creates_config_and_library() {
     assert!(text.starts_with("#:schema https://raw.githubusercontent.com/fnando/tidepool/v"));
     assert!(text.contains(
         "[playlists.sample]                  # one short video, to see tidepool work; replace it with your own\n\
-         url = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\""
+         source = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\""
     ));
 
     // The library holds the same text as revision 1.

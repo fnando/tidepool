@@ -3,7 +3,7 @@ concurency = 2
 
 [playlists.lofi]
 urll = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
-id = "PLxxxxxxxx"
+source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
 
 [playlists.lofi.cleanup]
 max_itms = 3

@@ -1,0 +1,8 @@
+[playlists.by_url]
+source = "https://www.youtube.com/playlist?list=PLaaaaaaaa"
+
+[playlists.by_watch_url]
+source = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLbbbbbbbb&index=2"
+
+[playlists.short_host]
+source = "https://youtu.be/dQw4w9WgXcQ?list=PLcccccccc"

@@ -250,8 +250,9 @@ mod tests {
     use super::*;
     use crate::state::State;
 
-    const A: &str = "# my playlists\n[playlists.lofi]\nid = 'PLaaaaaaaa' # comment kept\n";
-    const B: &str = "[playlists.lofi]\nid = 'PLbbbbbbbb'\n";
+    const A: &str = "# my playlists\n[playlists.lofi]\nsource = 'https://www.youtube.com/playlist?list=PLaaaaaaaa' # comment kept\n";
+    const B: &str =
+        "[playlists.lofi]\nsource = 'https://www.youtube.com/playlist?list=PLbbbbbbbb'\n";
 
     fn import(store: &ConfigStore<'_>, path: &str, text: &str) -> Imported {
         store
@@ -273,7 +274,7 @@ mod tests {
         assert_eq!(current.source_path.as_deref(), Some("/c.toml"));
         assert_eq!(
             current.json,
-            r#"{"playlists":{"lofi":{"id":"PLbbbbbbbb"}}}"#
+            r#"{"playlists":{"lofi":{"source":"https://www.youtube.com/playlist?list=PLbbbbbbbb"}}}"#
         );
     }
 

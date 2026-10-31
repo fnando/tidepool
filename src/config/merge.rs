@@ -11,8 +11,8 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 
 use super::duration::Cutoff;
+use super::schema::playlist_id_from_source;
 use super::types::*;
-use crate::cli::playlist_id_from_url;
 
 /// Built-in option values, used when neither the playlist nor `[defaults]` sets one.
 pub mod builtin {
@@ -27,9 +27,10 @@ pub mod builtin {
 pub struct EffectivePlaylist {
     #[serde(skip)]
     pub key: String,
-    /// YouTube playlist id (from `id`, or extracted from `url`).
+    /// YouTube playlist id, from the `list=` parameter of `source`.
+    #[serde(skip)]
     pub id: String,
-    pub url: String,
+    pub source: String,
     pub dir: String,
     pub enabled: bool,
     pub format: String,
@@ -104,19 +105,12 @@ pub fn effective_playlist(key: &str, p: &PlaylistConfig, d: &Defaults) -> Effect
 
     let inherit_rules = p.inherit_rules.unwrap_or(false);
     let inherit_hooks = p.inherit_hooks.unwrap_or(false);
-    let (id, url) = match (&p.id, &p.url) {
-        (Some(id), _) => (
-            id.clone(),
-            format!("https://www.youtube.com/playlist?list={id}"),
-        ),
-        (None, Some(url)) => (playlist_id_from_url(url).unwrap_or_default(), url.clone()),
-        (None, None) => (String::new(), String::new()),
-    };
+    let id = playlist_id_from_source(&p.source).unwrap_or_default();
 
     EffectivePlaylist {
         key: key.to_string(),
         id,
-        url,
+        source: p.source.clone(),
         dir: p.dir.clone().unwrap_or_else(|| key.to_string()),
         enabled: p.enabled.unwrap_or(true),
         format: pick!(format, builtin::FORMAT.into()),
@@ -206,9 +200,9 @@ mod tests {
 
     #[test]
     fn falls_back_to_builtin_defaults() {
-        let p = only("[playlists.lofi]\nid = 'PLx'");
+        let p = only("[playlists.lofi]\nsource = 'https://www.youtube.com/playlist?list=PLx'");
         assert_eq!(p.id, "PLx");
-        assert_eq!(p.url, "https://www.youtube.com/playlist?list=PLx");
+        assert_eq!(p.source, "https://www.youtube.com/playlist?list=PLx");
         assert_eq!(p.dir, "lofi");
         assert!(p.enabled);
         assert_eq!(p.format, builtin::FORMAT);
@@ -223,7 +217,7 @@ mod tests {
 
     #[test]
     fn extracts_id_from_url() {
-        let p = only("[playlists.a]\nurl = 'https://www.youtube.com/watch?v=x&list=PLabc'");
+        let p = only("[playlists.a]\nsource = 'https://www.youtube.com/watch?v=x&list=PLabc'");
         assert_eq!(p.id, "PLabc");
     }
 
@@ -231,7 +225,7 @@ mod tests {
     fn playlist_scalars_override_defaults() {
         let p = only(
             "[defaults]\nformat = 'a'\ncutoff = '30d'\nthumbnail_format = 'webp'\n\
-             [playlists.x]\nid = 'PLx'\nformat = 'b'\ncutoff = 'none'",
+             [playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\nformat = 'b'\ncutoff = 'none'",
         );
         assert_eq!(p.format, "b");
         assert_eq!(p.cutoff.value, Cutoff::None);
@@ -242,7 +236,7 @@ mod tests {
     fn lists_replace_unless_inherited() {
         let base = "[defaults]\ninclude = ['d1']\nexclude = ['dx']\nhooks = ['h1']\n";
         let p = only(&format!(
-            "{base}[playlists.x]\nid = 'PLx'\ninclude = ['p1']\nhooks = ['h2']"
+            "{base}[playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['p1']\nhooks = ['h2']"
         ));
         assert_eq!(p.include, vec![pat("p1")]);
         assert_eq!(
@@ -253,7 +247,7 @@ mod tests {
         assert_eq!(p.hooks, vec!["h2"]);
 
         let p = only(&format!(
-            "{base}[playlists.x]\nid = 'PLx'\ninclude = ['p1']\nexclude = ['px']\nhooks = ['h2']\n\
+            "{base}[playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['p1']\nexclude = ['px']\nhooks = ['h2']\n\
              inherit_rules = true\ninherit_hooks = true"
         ));
         assert_eq!(p.include, vec![pat("d1"), pat("p1")]);
@@ -265,7 +259,7 @@ mod tests {
     fn cleanup_and_embed_merge_key_by_key() {
         let p = only(
             "[defaults.cleanup]\nmax_items = 10\nmax_age = '30d'\n[defaults.embed]\ncover = true\n\
-             [playlists.x]\nid = 'PLx'\n[playlists.x.cleanup]\nmax_items = 50\n\
+             [playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\n[playlists.x.cleanup]\nmax_items = 50\n\
              [playlists.x.embed]\nmetadata = true",
         );
         assert_eq!(p.cleanup.max_items, 50);

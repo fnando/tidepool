@@ -386,19 +386,7 @@
     },
     "PlaylistConfig": {
       "additionalProperties": false,
-      "description": "One playlist to mirror. Exactly one of `url` or `id` is required.",
-      "oneOf": [
-        {
-          "required": [
-            "url"
-          ]
-        },
-        {
-          "required": [
-            "id"
-          ]
-        }
-      ],
+      "description": "One playlist to mirror.",
       "properties": {
         "cleanup": {
           "$ref": "#/$defs/CleanupOptions",
@@ -451,11 +439,6 @@
             "type": "string"
           },
           "type": "array"
-        },
-        "id": {
-          "description": "Bare playlist id, e.g. `PLxxxxxxxx`. Mutually exclusive with `url`.",
-          "pattern": "^[A-Za-z0-9_-]+$",
-          "type": "string"
         },
         "include": {
           "description": "Keep an item if any rule matches (empty = keep all).",
@@ -513,14 +496,14 @@
           "description": "Download again when a downloaded item's media file is gone.",
           "type": "boolean"
         },
+        "source": {
+          "description": "Where videos come from: a playlist URL (anything with `list=`) or a playlist id.",
+          "format": "playlist-source",
+          "type": "string"
+        },
         "thumbnail_format": {
           "$ref": "#/$defs/ThumbnailFormat",
           "description": "Cover image format."
-        },
-        "url": {
-          "description": "Playlist URL (must contain `list=`). Mutually exclusive with `id`.",
-          "pattern": "list=[A-Za-z0-9_-]+",
-          "type": "string"
         },
         "ytdlp_args": {
           "description": "Extra yt-dlp arguments, passed through.",
@@ -530,6 +513,9 @@
           "type": "array"
         }
       },
+      "required": [
+        "source"
+      ],
       "type": "object"
     },
     "RemovedFromPlaylist": {

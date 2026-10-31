@@ -68,8 +68,11 @@ A minimal playlist looks like this:
 
 ```toml
 [playlists.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
 ```
+
+`source` is the playlist's address, as you'd copy it from your browser. A link
+to a video inside a playlist works too, as long as it contains `list=`.
 
 Any setting from `[defaults]` can be changed for a single playlist by adding it
 under that playlist. See [`examples/config.toml`](examples/config.toml) for a
@@ -140,7 +143,7 @@ expressions, tested against the video title by default:
 
 ```toml
 [playlists.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
 include = ['(?i)\blive\b']                 # only videos with "live" in the title
 exclude = ['(?i)\b(trailer|teaser)\b']     # but never trailers or teasers
 ```

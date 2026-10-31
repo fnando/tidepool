@@ -7,16 +7,16 @@ max_duration = "5m"
 command = ["to-h265.sh", "{media_path}"]
 
 [playlists.one]
-id = "PLsamesame"
+source = "https://www.youtube.com/playlist?list=PLsamesame"
 dir = "music"
 hooks = ["transcode", "upload"]
 
 [playlists.two]
-url = "https://www.youtube.com/playlist?list=PLsamesame"
+source = "https://www.youtube.com/playlist?list=PLsamesame"
 dir = "./music"
 
 [playlists.three]
-id = "PLthree"
+source = "https://www.youtube.com/playlist?list=PLthree"
 dir = "../outside"
 max_duration = "1m"
 min_duration = "2m"

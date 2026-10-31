@@ -87,7 +87,7 @@ timeout = "30s"
 on_failure = "warn"
 
 [playlists.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # or id = "PLxxxxxxxx"
+source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # the playlist's URL
 dir = "lofi"                        # defaults to the key
 enabled = true
 include = ['(?i)\blive\b', { field = "channel", pattern = '^Lofi Girl$' }]
@@ -100,7 +100,7 @@ max_age = "30d"
 removed_from_playlist = "remove"
 
 [playlists.talks]
-id = "PLyyyyyyyy"
+source = "https://www.youtube.com/playlist?list=PLyyyyyyyy"
 cutoff = "none"                     # overrides the global 30d: keep the whole back catalogue
 format = "ba/b"                     # audio only
 ytdlp_args = ["-x", "--audio-format", "opus"]

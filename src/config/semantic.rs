@@ -49,10 +49,7 @@ fn check_unique_ids_and_dirs(config: &Config, out: &mut Vec<Diagnostic>) {
     let mut dirs: BTreeMap<String, &str> = BTreeMap::new();
     for (key, playlist) in &config.playlists {
         let effective = effective_playlist(key, playlist, &config.defaults);
-        let id_pointer = format!(
-            "/playlists/{key}/{}",
-            if playlist.id.is_some() { "id" } else { "url" }
-        );
+        let id_pointer = format!("/playlists/{key}/source");
         if let Some(other) = ids.insert(effective.id.clone(), key) {
             out.push(Diagnostic::error(
                 id_pointer,

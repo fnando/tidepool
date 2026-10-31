@@ -223,7 +223,7 @@ mod tests {
     fn effective_config_masks_keys_and_fills_defaults() {
         let config: Config = toml::from_str(
             "[youtube]\napi_key = 'AIzaSyD-1234567890x1Qw'\n[server]\ntoken = 'my-long-secret-token'\n\
-             [playlists.lofi]\nid = 'PLx'",
+             [playlists.lofi]\nsource = 'https://www.youtube.com/playlist?list=PLx'",
         )
         .unwrap();
         let text = EffectiveConfig::new(&config, &dirs(), false).to_toml();

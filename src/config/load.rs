@@ -298,18 +298,6 @@ fn convert(error: &ValidationError<'_>, out: &mut Vec<Diagnostic>) {
                 not_one_of(instance, options.as_array().into_iter().flatten()),
             ));
         }
-        ValidationErrorKind::Pattern { .. } if pointer.ends_with("/url") => {
-            out.push(Diagnostic::error(
-                pointer,
-                format!("{instance} is not a playlist URL: it must contain list=<playlist id>"),
-            ));
-        }
-        ValidationErrorKind::Pattern { .. } if pointer.ends_with("/id") => {
-            out.push(Diagnostic::error(
-                pointer,
-                format!("{instance} is not a playlist id (letters, digits, '-' and '_')"),
-            ));
-        }
         ValidationErrorKind::OneOfNotValid { context }
             if !context.is_empty()
                 && context.iter().all(|b| {
@@ -349,24 +337,6 @@ fn convert(error: &ValidationError<'_>, out: &mut Vec<Diagnostic>) {
         ValidationErrorKind::OneOfNotValid { context }
         | ValidationErrorKind::OneOfMultipleValid { context }
         | ValidationErrorKind::AnyOf { context } => {
-            if is_playlist(&pointer) {
-                let has = |k| instance.get(k).is_some();
-                let message = if has("url") && has("id") {
-                    "set either \"url\" or \"id\", not both"
-                } else {
-                    "missing \"url\" or \"id\": set exactly one"
-                };
-                out.push(Diagnostic::error(pointer.clone(), message));
-                // Report the playlist's other problems too.
-                for branch in context {
-                    for e in branch {
-                        if !matches!(e.kind(), ValidationErrorKind::Required { .. }) {
-                            convert(e, out);
-                        }
-                    }
-                }
-                return;
-            }
             // Pick the branch that matches the value's type (e.g. a rule given
             // as a string vs. as a table) and report its errors.
             let relevant: Vec<_> = context
@@ -401,9 +371,4 @@ fn convert(error: &ValidationError<'_>, out: &mut Vec<Diagnostic>) {
 fn not_one_of<'a>(instance: &Value, options: impl Iterator<Item = &'a Value>) -> String {
     let options: Vec<String> = options.map(Value::to_string).collect();
     format!("{instance} is not one of {}", options.join(", "))
-}
-
-fn is_playlist(pointer: &str) -> bool {
-    let segments = pointer_segments(pointer);
-    segments.len() == 2 && segments[0] == "playlists"
 }

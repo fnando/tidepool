@@ -111,18 +111,15 @@ interval = "6h"                     # tidepool run: sync + cleanup this often; "
 # Playlists to mirror. Any [defaults] option can be overridden per playlist.
 
 [playlists.sample]                  # one short video, to see tidepool work; replace it with your own
-url = "@SAMPLE_PLAYLIST_URL@"
+source = "@SAMPLE_PLAYLIST_URL@"
 
 # [playlists.example]
-# url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+# source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # the playlist's URL
 # dir = "example"                   # directory under root; defaults to the key
 # enabled = true                    # disabled playlists are skipped
 # inherit_rules = false             # true = add [defaults] include/exclude instead of replacing them
 # inherit_hooks = false             # true = add [defaults] hooks instead of replacing them
 # hooks = ["notify"]
-#
-# [playlists.example-by-id]
-# id = "PLyyyyyyyy"                 # a bare playlist id works too
 "#;
 
 #[cfg(test)]
@@ -151,10 +148,7 @@ mod tests {
         );
         let keys: Vec<&String> = config.playlists.keys().collect();
         assert_eq!(keys, ["sample"]);
-        assert_eq!(
-            config.playlists["sample"].url.as_deref(),
-            Some(SAMPLE_PLAYLIST_URL)
-        );
+        assert_eq!(config.playlists["sample"].source, SAMPLE_PLAYLIST_URL);
         assert!(
             text.lines().all(|l| l == l.trim_end()),
             "trailing whitespace"
@@ -197,7 +191,7 @@ mod tests {
         library.root = None;
         assert_eq!(library, crate::config::LibraryConfig::default());
         let plain = PlaylistConfig {
-            id: Some("PLx".into()),
+            source: "https://www.youtube.com/playlist?list=PLx".into(),
             ..PlaylistConfig::default()
         };
         assert_eq!(
@@ -231,10 +225,7 @@ mod tests {
             ("EmbedOptions", &["/defaults/embed"]),
             ("CleanupOptions", &["/defaults/cleanup"]),
             ("HookConfig", &["/hooks/notify"]),
-            (
-                "PlaylistConfig",
-                &["/playlists/example", "/playlists/example-by-id"],
-            ),
+            ("PlaylistConfig", &["/playlists/example"]),
         ];
         let defaults_props = props("Defaults");
         for (def, pointers) in where_documented {

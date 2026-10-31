@@ -33,6 +33,7 @@ pub const FORMATS: &[&str] = &[
     "hook-template",
     "fancy-regex",
     "socket-address",
+    "playlist-source",
 ];
 
 /// Check `value` against one of tidepool's custom formats, explaining failures.
@@ -62,6 +63,7 @@ pub fn check_format(format: &str, value: &str) -> Result<(), String> {
             .map_err(|_| {
                 format!("{value:?} is not an address with a port (e.g. \"127.0.0.1:8787\")")
             }),
+        "playlist-source" => playlist_id_from_source(value).map(drop),
         other => Err(format!("unknown format {other:?}")),
     }
 }
@@ -87,6 +89,34 @@ fn regex_error_detail(error: &fancy_regex::Error) -> String {
         return detail;
     }
     error.to_string()
+}
+
+/// The playlist id in a `source` URL: the `list=` parameter of a YouTube URL.
+/// Only URLs are accepted, so channel URLs can be told apart later.
+pub fn playlist_id_from_source(source: &str) -> Result<String, String> {
+    const HOSTS: [&str; 5] = [
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+        "music.youtube.com",
+        "youtu.be",
+    ];
+    let example = "e.g. \"https://www.youtube.com/playlist?list=PLxxxxxxxx\"";
+    let Some(rest) = source
+        .strip_prefix("https://")
+        .or_else(|| source.strip_prefix("http://"))
+    else {
+        return Err(format!(
+            "{source:?} is not a URL; use the playlist's URL ({example})"
+        ));
+    };
+    let host = rest.split(['/', '?', '#']).next().unwrap_or_default();
+    if !HOSTS.contains(&host.to_ascii_lowercase().as_str()) {
+        return Err(format!("{source:?} is not a YouTube URL ({example})"));
+    }
+    crate::cli::playlist_id_from_url(source).ok_or_else(|| {
+        format!("{source:?} is not a playlist URL: it must contain list=<playlist id>")
+    })
 }
 
 /// Generate the config schema.
@@ -168,14 +198,6 @@ pub(crate) fn transform_root(schema: &mut Schema) {
     }
 }
 
-/// Playlist transform: exactly one of `url` or `id`.
-pub(crate) fn require_url_xor_id(schema: &mut Schema) {
-    schema.insert(
-        "oneOf".into(),
-        json!([{ "required": ["url"] }, { "required": ["id"] }]),
-    );
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -255,5 +277,14 @@ mod tests {
         assert!(check_format("fancy-regex", "(unclosed").is_err());
         assert!(check_format("hook-template", "{media_path}").is_ok());
         assert!(check_format("tag-template", "{media_path}").is_err());
+        let source = |s| check_format("playlist-source", s);
+        assert!(source("https://www.youtube.com/playlist?list=PLabc_-1").is_ok());
+        assert!(source("https://youtube.com/watch?v=x&list=PLa").is_ok());
+        assert!(source("http://music.youtube.com/playlist?list=PLa").is_ok());
+        assert!(source("https://youtu.be/dQw4w9WgXcQ?list=PLa").is_ok());
+        assert!(source("https://youtube.com/watch?v=x").is_err());
+        assert!(source("https://example.com/?list=PLa").is_err());
+        assert!(source("PLabc").is_err(), "bare ids are not accepted");
+        assert!(source("").is_err());
     }
 }

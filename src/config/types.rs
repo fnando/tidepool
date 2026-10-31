@@ -342,17 +342,11 @@ options_struct! {
 }
 
 options_struct! {
-    /// One playlist to mirror. Exactly one of `url` or `id` is required.
-    #[schemars(transform = super::schema::require_url_xor_id)]
+    /// One playlist to mirror.
     pub struct PlaylistConfig {
-        /// Playlist URL (must contain `list=`). Mutually exclusive with `id`.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(regex(pattern = r"list=[A-Za-z0-9_-]+"))]
-        pub url: Option<String>,
-        /// Bare playlist id, e.g. `PLxxxxxxxx`. Mutually exclusive with `url`.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(regex(pattern = r"^[A-Za-z0-9_-]+$"))]
-        pub id: Option<String>,
+        /// Where videos come from: a playlist URL (anything with `list=`) or a playlist id.
+        #[schemars(extend("format" = "playlist-source"))]
+        pub source: String,
         /// Directory under `root`. Defaults to the playlist key.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(length(min = 1))]

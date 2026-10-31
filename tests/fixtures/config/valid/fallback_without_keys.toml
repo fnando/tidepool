@@ -2,4 +2,4 @@
 fallback_to_ytdlp = false
 
 [playlists.lofi]
-id = "PLxxxxxxxx"
+source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"

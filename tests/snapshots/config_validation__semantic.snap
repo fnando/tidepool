@@ -5,7 +5,7 @@ expression: err
 semantic.toml:2:10 defaults.hooks[0]: unknown hook "notify" (defined hooks: transcode)
 semantic.toml:3:16 defaults.min_duration: min_duration must not be greater than max_duration
 semantic.toml:12:23 playlists.one.hooks[1]: unknown hook "upload" (defined hooks: transcode)
-semantic.toml:15:7 playlists.two.url: playlist PLsamesame is already configured as playlists.one
+semantic.toml:15:10 playlists.two.source: playlist PLsamesame is already configured as playlists.one
 semantic.toml:16:7 playlists.two.dir: dir "./music" is also used by playlists.one
 semantic.toml:20:7 playlists.three.dir: dir "../outside" must be a relative path that stays inside library.root
 semantic.toml:22:16 playlists.three.min_duration: min_duration must not be greater than max_duration

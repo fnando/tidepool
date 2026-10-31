@@ -208,8 +208,10 @@ mod tests {
     use proptest::prelude::*;
 
     fn rules(toml: &str) -> RuleSet {
-        let config: crate::config::Config =
-            toml::from_str(&format!("[playlists.x]\nid = 'PLx'\n{toml}")).unwrap();
+        let config: crate::config::Config = toml::from_str(&format!(
+            "[playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\n{toml}"
+        ))
+        .unwrap();
         RuleSet::compile(&effective_playlists(&config)[0], 1_000_000).unwrap()
     }
 
@@ -301,7 +303,7 @@ include = [{ field = "channel", pattern = '^Lofi Girl$' }, 'chill']"#,
     #[test]
     fn backtrack_limit_is_a_filter_error() {
         let config: crate::config::Config =
-            toml::from_str("[playlists.x]\nid = 'PLx'\ninclude = ['(a|a)*\\1b']").unwrap();
+            toml::from_str("[playlists.x]\nsource = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['(a|a)*\\1b']").unwrap();
         let set = RuleSet::compile(&effective_playlists(&config)[0], 100).unwrap();
         let decision = set.decide(&title(&"a".repeat(40)));
         assert!(

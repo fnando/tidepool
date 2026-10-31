@@ -2,4 +2,4 @@
 command = ["true"]
 
 [playlists.Lofi]
-id = "PLxxxxxxxx"
+source = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
