@@ -147,8 +147,8 @@ async fn run_indexes_and_downloads_into_the_library() {
     );
     // Nothing left in the work area, and no raw info JSON kept by default.
     assert!(
-        !env.media().join(".tidepool-tmp").exists()
-            || fs::read_dir(env.media().join(".tidepool-tmp"))
+        !env.media().join("tmp").exists()
+            || fs::read_dir(env.media().join("tmp"))
                 .unwrap()
                 .next()
                 .is_none()
@@ -271,7 +271,7 @@ async fn interrupting_a_download_puts_it_back_in_the_queue() {
     let status = child.wait().unwrap();
     assert_eq!(status.code(), Some(130));
     assert_eq!(env.statuses("dl")[0].1, "pending");
-    let tmp = env.media().join(".tidepool-tmp");
+    let tmp = env.media().join("tmp");
     assert!(
         !tmp.exists() || fs::read_dir(&tmp).unwrap().next().is_none(),
         "work area cleared"
@@ -377,7 +377,7 @@ async fn verbose_shows_config_and_progress() {
         &format!(
             "media in {}, work area {}",
             env.media().display(),
-            env.media().join(".tidepool-tmp").display()
+            env.media().join("tmp").display()
         ),
         "yt-dlp 2026.10.01 at ",
         "dl: https://www.youtube.com/playlist?list=PLdownloads → dl/ (category default), format bv*+ba/b/bv*/ba, output {source_dir}/{upload_date} - {title} [{id}]",

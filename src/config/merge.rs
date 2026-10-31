@@ -25,7 +25,7 @@ pub mod builtin {
     pub const MERGE_OUTPUT_FORMAT: &str = "mkv";
     pub const OUTPUT: &str = "{source_dir}/{upload_date} - {title} [{id}]";
     pub const COVER_NAME: &str = "{title}-poster";
-    pub const TMP_DIR: &str = ".tidepool-tmp";
+    pub const TMP_DIR: &str = "tmp";
 }
 
 /// One source with every option resolved.
@@ -292,7 +292,7 @@ mod tests {
             ("default", "lofi", None)
         );
         assert!(p.enabled);
-        assert_eq!(p.tmp_dir, ".tidepool-tmp");
+        assert_eq!(p.tmp_dir, "tmp");
         assert_eq!(
             p.format, "bv*+ba/b/bv*/ba",
             "best video + audio, then the best single file, then video or audio alone"

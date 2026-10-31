@@ -463,7 +463,7 @@ download's progress, cover and destination:
 ```
 $ tidepool run -v
 DEBUG config revision 2, imported from ~/.config/tidepool/config.toml on 2026-10-31 20:48 UTC
-DEBUG media in ~/.local/share/tidepool/media, work area ~/.local/share/tidepool/media/.tidepool-tmp
+DEBUG media in ~/.local/share/tidepool/media, work area ~/.local/share/tidepool/media/tmp
 DEBUG sample: https://www.youtube.com/playlist?list=PLXLpuA-bwY4s → sample/ (category default), format bv*[height<=360]+ba/b, output {source_dir}/{upload_date} - {title} [{id}]
 DEBUG yt-dlp 2026.10.29.232701 at ~/.local/share/tidepool/bin/yt-dlp-nightly (managed, nightly channel)
 DEBUG sample: listed 1 video in 2.9s

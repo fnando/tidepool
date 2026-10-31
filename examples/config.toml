@@ -36,7 +36,7 @@ read_only_config = false            # true = config editor disabled
 
 [category.default]
 root = "~/Videos/youtube"           # media; default ~/.local/share/tidepool/media
-tmp_dir = ".tidepool-tmp"           # relative to root: same filesystem, atomic move
+tmp_dir = "tmp"                     # relative to root: same filesystem, atomic move
 format = "bv*[height<=1080]+ba/b"
 merge_output_format = "mkv"
 output = "{source_dir}/{upload_date} - {title} [{id}]"  # directory per video

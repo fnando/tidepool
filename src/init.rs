@@ -56,7 +56,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 
 [category.default]
 # root = "~/.local/share/tidepool/media" # where videos go
-# tmp_dir = ".tidepool-tmp"         # work area, relative to root (same filesystem, atomic move)
+# tmp_dir = "tmp"                   # work area, relative to root (same filesystem, atomic move)
 # format = "bv*+ba/b/bv*/ba"        # best video + audio, else best single file, else video or audio alone
 # merge_output_format = "mkv"       # container for merged formats
 # output = "{source_dir}/{upload_date} - {title} [{id}]"   # each video's directory, must contain {id}
