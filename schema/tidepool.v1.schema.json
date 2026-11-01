@@ -128,6 +128,11 @@
           "format": "tmp-dir-template",
           "type": "string"
         },
+        "trash_dir": {
+          "description": "Where cleanup puts removed files until they're deleted for good, a\nfull path ({data_dir} and {media_dir} allowed). Defaults to\n{data_dir}/trash; on the media's disk, moving there is instant.",
+          "format": "trash-dir-template",
+          "type": "string"
+        },
         "youtube": {
           "$ref": "#/$defs/YoutubeOptions",
           "description": "YouTube Data API settings."
@@ -141,6 +146,20 @@
         }
       },
       "type": "object"
+    },
+    "CleanupDelete": {
+      "oneOf": [
+        {
+          "const": "trash",
+          "description": "Into the trash, deleted for good after `trash_for`.",
+          "type": "string"
+        },
+        {
+          "const": "now",
+          "description": "Deleted right away.",
+          "type": "string"
+        }
+      ]
     },
     "CleanupKeep": {
       "oneOf": [
@@ -160,6 +179,10 @@
       "additionalProperties": false,
       "description": "`cleanup`: limits that keep a mirror bounded.",
       "properties": {
+        "delete": {
+          "$ref": "#/$defs/CleanupDelete",
+          "description": "`trash`: removed files wait in `trash_dir` for `trash_for`, and can be restored;\n`now`: they're deleted right away."
+        },
         "keep": {
           "$ref": "#/$defs/CleanupKeep",
           "description": "What to keep of a removed item."
@@ -198,11 +221,19 @@
         },
         "order": {
           "$ref": "#/$defs/CleanupOrder",
-          "description": "Who goes first for count, size and age limits."
+          "description": "Who goes first for the count and size limits."
         },
-        "removed_from_source": {
-          "$ref": "#/$defs/RemovedFromSource",
-          "description": "Videos no longer in the source (or no longer passing the rules)."
+        "trash_for": {
+          "description": "How long removed files stay in the trash.",
+          "examples": [
+            "30d"
+          ],
+          "format": "duration",
+          "type": "string"
+        },
+        "unmatched": {
+          "$ref": "#/$defs/Unmatched",
+          "description": "Downloaded videos your include/exclude rules (or duration limits, cutoff) no\nlonger match."
         }
       },
       "type": "object"
@@ -437,13 +468,6 @@
         }
       ]
     },
-    "RemovedFromSource": {
-      "enum": [
-        "keep",
-        "remove"
-      ],
-      "type": "string"
-    },
     "Rule": {
       "anyOf": [
         {
@@ -655,6 +679,11 @@
           "format": "tmp-dir-template",
           "type": "string"
         },
+        "trash_dir": {
+          "description": "Where cleanup puts removed files until they're deleted for good, a\nfull path ({data_dir} and {media_dir} allowed). Defaults to\n{data_dir}/trash; on the media's disk, moving there is instant.",
+          "format": "trash-dir-template",
+          "type": "string"
+        },
         "urls": {
           "description": "Where videos come from: YouTube playlist URLs (with `list=`) and channel\nURLs (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`: all its uploads).",
           "items": {
@@ -707,6 +736,13 @@
         }
       },
       "type": "object"
+    },
+    "Unmatched": {
+      "enum": [
+        "keep",
+        "remove"
+      ],
+      "type": "string"
     },
     "ValueRule": {
       "additionalProperties": false,

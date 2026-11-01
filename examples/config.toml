@@ -42,6 +42,7 @@ read_only_config = false            # true = config editor disabled
 [category.default]
 media_dir = "~/Videos/youtube"      # {media_dir}; default ~/.local/share/tidepool/media
 tmp_dir = "{data_dir}/tmp"          # downloads in progress; default {data_dir}/tmp
+trash_dir = "{media_dir}/.trash"    # cleaned-up files wait here; default {data_dir}/trash
 format = "bv*[height<=1080]+ba/b"
 merge_output_format = "mkv"
 output_dir = "{media_dir}/{source}/{upload_date} - {title} [{id}]"  # each video's folder, a full path
@@ -76,11 +77,13 @@ tags = { genre = "Music", album_artist = "{channel}" }
 
 [category.default.cleanup]
 max_items = 0                       # 0 = unlimited
-max_age = ""                        # e.g. "30d"
+max_age = ""                        # since downloaded, e.g. "30d"
 max_size = ""                       # e.g. "20GiB"
 order = "oldest_downloaded"         # oldest_downloaded | oldest_published | source_position
-removed_from_source = "keep"        # keep | remove
+unmatched = "keep"                  # keep | remove videos your rules no longer match
 keep = "metadata"                   # nothing | metadata (keep json + cover, drop media)
+delete = "trash"                    # trash (restorable for trash_for) | now
+trash_for = "7d"
 
 [category.audio]                    # only what differs from default
 media_dir = "~/Music/youtube"       # audio goes somewhere else
@@ -119,7 +122,7 @@ hooks = ["transcode", "notify"]
 [sources.lofi.cleanup]
 max_items = 50
 max_age = "30d"
-removed_from_source = "remove"
+unmatched = "remove"
 
 [sources.talks]
 urls = [

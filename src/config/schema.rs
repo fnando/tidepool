@@ -33,6 +33,7 @@ pub const FORMATS: &[&str] = &[
     "subtitle-file-template",
     "metadata-file-template",
     "tmp-dir-template",
+    "trash-dir-template",
     "full-path",
     "tag-template",
     "hook-template",
@@ -61,6 +62,7 @@ pub fn check_format(format: &str, value: &str) -> Result<(), String> {
         "subtitle-file-template" => template(Setting::SubtitleFile),
         "metadata-file-template" => template(Setting::MetadataFile),
         "tmp-dir-template" => template(Setting::TmpDir),
+        "trash-dir-template" => template(Setting::TrashDir),
         "full-path" if placeholders::is_full_path(value) => Ok(()),
         "full-path" => Err(format!(
             "{value:?}: must be a full path: start with /, ~ or $VAR"

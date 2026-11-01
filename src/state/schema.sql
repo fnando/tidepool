@@ -27,7 +27,7 @@ CREATE TABLE items (               -- a video's membership in a source
   missing TEXT,                     -- JSON list of files found missing: media, cover, subtitle:<lang>, metadata
   media_present INTEGER NOT NULL DEFAULT 1, media_bytes INTEGER, downloaded_at TEXT,
   attempts INTEGER NOT NULL DEFAULT 0, next_attempt_at TEXT, last_error TEXT,
-  pinned INTEGER NOT NULL DEFAULT 0, cleaned_up_at TEXT, cleanup_reason TEXT,
+  cleaned_up_at TEXT, cleanup_reason TEXT,
   PRIMARY KEY (source_key, video_id)
 );
 

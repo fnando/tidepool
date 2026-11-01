@@ -34,18 +34,27 @@ pub fn media_dir(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, Strin
 
 /// A source's work area (`tmp_dir`, with `{media_dir}` and `{data_dir}` filled in).
 pub fn tmp_dir(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, String> {
+    work_dir(&source.tmp_dir, Setting::TmpDir, source, dirs)
+}
+
+/// A source's trash (`trash_dir`, with `{media_dir}` and `{data_dir}` filled in).
+pub fn trash_dir(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, String> {
+    work_dir(&source.trash_dir, Setting::TrashDir, source, dirs)
+}
+
+fn work_dir(
+    template: &str,
+    setting: Setting,
+    source: &EffectiveSource,
+    dirs: &Dirs,
+) -> Result<PathBuf, String> {
     let media = media_dir(source, dirs)?;
-    render_path(
-        &source.tmp_dir,
-        Setting::TmpDir,
-        &dirs.home,
-        |name| match name {
-            "media_dir" => Some(media.display().to_string()),
-            "data_dir" => Some(dirs.data_dir.display().to_string()),
-            _ => None,
-        },
-    )
-    .map_err(|e| format!("tmp_dir {e}"))
+    render_path(template, setting, &dirs.home, |name| match name {
+        "media_dir" => Some(media.display().to_string()),
+        "data_dir" => Some(dirs.data_dir.display().to_string()),
+        _ => None,
+    })
+    .map_err(|e| format!("{setting} {e}"))
 }
 
 /// Every media folder the config uses: each category's and each source's,

@@ -28,6 +28,9 @@ pub mod builtin {
     pub const SUBTITLE_FILE: &str = "{output_dir}/{normalized_title}.{lang}.{ext}";
     pub const METADATA_FILE: &str = "{output_dir}/metadata.json";
     pub const TMP_DIR: &str = "{data_dir}/tmp";
+    pub const TRASH_DIR: &str = "{data_dir}/trash";
+    /// How long removed files stay in the trash.
+    pub const TRASH_FOR: std::time::Duration = std::time::Duration::from_secs(7 * 86_400);
 }
 
 /// One YouTube list a source reads: a playlist, or a channel's uploads.
@@ -69,6 +72,7 @@ pub struct EffectiveSource {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub media_dir: Option<String>,
     pub tmp_dir: String,
+    pub trash_dir: String,
     pub format: String,
     pub merge_output_format: String,
     pub output_dir: String,
@@ -122,10 +126,12 @@ pub struct Cleanup {
     pub max_age: OptionalDuration,
     pub max_size: OptionalSize,
     pub order: CleanupOrder,
-    pub removed_from_source: RemovedFromSource,
+    pub unmatched: Unmatched,
     pub keep: CleanupKeep,
     pub marker_file: String,
     pub keep_latest: u32,
+    pub delete: CleanupDelete,
+    pub trash_for: HumanDuration,
 }
 
 /// The category a source uses.
@@ -217,6 +223,7 @@ fn resolve(
         enabled: source.enabled.unwrap_or(true),
         media_dir: layers.iter().rev().find_map(|l| l.media_dir.clone()),
         tmp_dir: pick!(tmp_dir, builtin::TMP_DIR.into()),
+        trash_dir: pick!(trash_dir, builtin::TRASH_DIR.into()),
         format: pick!(format, builtin::FORMAT.into()),
         merge_output_format: pick!(merge_output_format, builtin::MERGE_OUTPUT_FORMAT.into()),
         output_dir: pick!(output_dir, builtin::OUTPUT_DIR.into()),
@@ -253,10 +260,12 @@ fn resolve(
             max_age: table!(cleanup, max_age, OptionalDuration(None)),
             max_size: table!(cleanup, max_size, OptionalSize::default()),
             order: table!(cleanup, order, CleanupOrder::OldestDownloaded),
-            removed_from_source: table!(cleanup, removed_from_source, RemovedFromSource::Keep),
+            unmatched: table!(cleanup, unmatched, Unmatched::Keep),
             keep: table!(cleanup, keep, CleanupKeep::Metadata),
             marker_file: table!(cleanup, marker_file, String::new()),
             keep_latest: table!(cleanup, keep_latest, 0),
+            delete: table!(cleanup, delete, CleanupDelete::Trash),
+            trash_for: table!(cleanup, trash_for, HumanDuration(builtin::TRASH_FOR)),
         },
         youtube: YoutubeConfig {
             api_key: layers

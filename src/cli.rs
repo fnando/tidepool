@@ -83,10 +83,6 @@ pub enum Command {
     },
     /// (Re)apply metadata/cover embedding
     Embed(EmbedArgs),
-    /// Exempt an item from cleanup
-    Pin(VideoArgs),
-    /// Remove a pin
-    Unpin(VideoArgs),
     /// Forget an item so it is downloaded again
     Reset(ResetArgs),
     /// List open problems, or acknowledge one
@@ -116,7 +112,7 @@ impl Command {
             Command::Tools { .. } => None,
             Command::Hooks { .. } => None,
             Command::Embed(_) => None,
-            Command::Cleanup(_) | Command::Pin(_) | Command::Unpin(_) => Some("M5"),
+            Command::Cleanup(_) => Some("M5"),
             Command::List(_) => Some("M6"),
             Command::Run(RunArgs { daemon: true, .. }) => Some("M7"),
         }
@@ -196,12 +192,7 @@ pub struct ConfigArgs {
 #[derive(Debug, Subcommand)]
 pub enum ConfigCmd {
     /// Validate a file (or the current revision) and print the effective config
-    Check {
-        path: Option<PathBuf>,
-        /// Walk the disk and fix size/presence drift
-        #[arg(long)]
-        reconcile: bool,
-    },
+    Check { path: Option<PathBuf> },
     /// Print the JSON Schema for the config file
     Schema,
     /// Validate a file and store it as a new revision. Without a path: the
@@ -256,11 +247,6 @@ pub struct EmbedArgs {
     /// Also take out what's switched off in `embed` (covers, subtitles, chapters, tags)
     #[arg(long)]
     pub remove_disabled: bool,
-}
-
-#[derive(Debug, Args)]
-pub struct VideoArgs {
-    pub video_id: String,
 }
 
 #[derive(Debug, Args)]

@@ -1673,10 +1673,7 @@ impl App<'_> {
                 write!(out, "{}", show(&current.toml))?;
             }
             Some(ConfigCmd::Schema) => write!(out, "{}", schema_json())?,
-            Some(ConfigCmd::Check { path, reconcile }) => {
-                if *reconcile {
-                    bail!("--reconcile is not implemented yet (planned for M5)");
-                }
+            Some(ConfigCmd::Check { path }) => {
                 return self.config_check(path.as_deref(), args.show_secrets, out);
             }
             Some(ConfigCmd::Import { path }) => {

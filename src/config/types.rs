@@ -374,6 +374,12 @@ macro_rules! options_struct {
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "tmp-dir-template"))]
             pub tmp_dir: Option<String>,
+            /// Where cleanup puts removed files until they're deleted for good, a
+            /// full path ({data_dir} and {media_dir} allowed). Defaults to
+            /// {data_dir}/trash; on the media's disk, moving there is instant.
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            #[schemars(extend("format" = "trash-dir-template"))]
+            pub trash_dir: Option<String>,
             /// yt-dlp format selector (`-f`).
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub format: Option<String>,
@@ -462,6 +468,7 @@ macro_rules! options_struct {
                 Options {
                     media_dir: self.media_dir.clone(),
                     tmp_dir: self.tmp_dir.clone(),
+                    trash_dir: self.trash_dir.clone(),
                     format: self.format.clone(),
                     merge_output_format: self.merge_output_format.clone(),
                     output_dir: self.output_dir.clone(),
@@ -608,12 +615,13 @@ pub struct CleanupOptions {
     /// Remove oldest items until media fits; "" = no limit.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub max_size: Option<OptionalSize>,
-    /// Who goes first for count, size and age limits.
+    /// Who goes first for the count and size limits.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub order: Option<CleanupOrder>,
-    /// Videos no longer in the source (or no longer passing the rules).
+    /// Downloaded videos your include/exclude rules (or duration limits, cutoff) no
+    /// longer match.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub removed_from_source: Option<RemovedFromSource>,
+    pub unmatched: Option<Unmatched>,
     /// What to keep of a removed item.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub keep: Option<CleanupKeep>,
@@ -623,6 +631,22 @@ pub struct CleanupOptions {
     /// Protect the newest N items from every other policy.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub keep_latest: Option<u32>,
+    /// `trash`: removed files wait in `trash_dir` for `trash_for`, and can be restored;
+    /// `now`: they're deleted right away.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub delete: Option<CleanupDelete>,
+    /// How long removed files stay in the trash.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trash_for: Option<HumanDuration>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum CleanupDelete {
+    /// Into the trash, deleted for good after `trash_for`.
+    Trash,
+    /// Deleted right away.
+    Now,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -635,7 +659,7 @@ pub enum CleanupOrder {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum RemovedFromSource {
+pub enum Unmatched {
     Keep,
     Remove,
 }

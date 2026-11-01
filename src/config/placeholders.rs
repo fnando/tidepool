@@ -20,6 +20,8 @@ pub enum Setting {
     MetadataFile,
     /// `tmp_dir`: the work area, a full path.
     TmpDir,
+    /// `trash_dir`: where cleanup puts removed files, a full path.
+    TrashDir,
     /// `embed.tags` values.
     Tags,
     /// Hook `command` elements.
@@ -34,7 +36,7 @@ impl Setting {
             Setting::CoverFile => COV,
             Setting::SubtitleFile => SUB,
             Setting::MetadataFile => META,
-            Setting::TmpDir => TMP,
+            Setting::TmpDir | Setting::TrashDir => TMP,
             Setting::Tags => TAG,
             Setting::Hook => HOOK,
         }
@@ -59,6 +61,7 @@ impl Setting {
             Setting::SubtitleFile => "subtitle_file",
             Setting::MetadataFile => "metadata_file",
             Setting::TmpDir => "tmp_dir",
+            Setting::TrashDir => "trash_dir",
             Setting::Tags => "embed.tags",
             Setting::Hook => "hook command",
         }

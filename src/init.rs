@@ -62,6 +62,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 [category.default]
 # media_dir = "~/.local/share/tidepool/media" # where videos go; {media_dir} in output
 # tmp_dir = "{data_dir}/tmp"        # work area for downloads in progress
+# trash_dir = "{data_dir}/trash"    # where `tidepool cleanup` puts removed files; on the media's disk (e.g. "{media_dir}/.trash") moving there is instant
 # format = "bv*+ba/b/bv*/ba"        # best video + audio, else best single file, else video or audio alone
 # merge_output_format = "mkv"       # container for merged formats
 # output_dir = "{media_dir}/{source}/{upload_date} - {title} [{id}]" # each video's folder; {output_dir} below
@@ -97,15 +98,17 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # subtitles = false                 # subtitles from --write-subs; the subtitle files are kept too
 # tags = {}                         # tags to add or replace (with metadata = true), e.g. { genre = "Music", album_artist = "{channel}" }; "" removes one
 
-[category.default.cleanup]          # limits that keep each source bounded
-# max_items = 0                     # keep at most this many videos; 0 = unlimited
-# max_age = ""                      # remove videos older than this, e.g. "30d"
-# max_size = ""                     # remove oldest videos until media fits, e.g. "20GiB"
-# order = "oldest_downloaded"       # oldest_downloaded | oldest_published | source_position
-# removed_from_source = "keep"      # keep | remove videos no longer in the source
-# keep = "metadata"                 # nothing | metadata (keep metadata.json + cover, drop media)
-# marker_file = ""                  # remove videos whose directory contains this file, e.g. ".watched"
+[category.default.cleanup]          # what `tidepool cleanup` removes; nothing unless set
+# max_items = 0                     # keep at most this many videos (and download only the first ones); 0 = unlimited
+# max_age = ""                      # remove videos downloaded longer ago than this, e.g. "30d"
+# max_size = ""                     # remove videos until the source's media fits, e.g. "20GiB"
+# order = "oldest_downloaded"       # who goes first for max_items/max_size: oldest_downloaded | oldest_published | source_position
+# unmatched = "keep"                # keep | remove videos your include/exclude rules no longer match
+# keep = "metadata"                 # nothing | metadata (keep metadata.json + cover, drop media and subtitles)
+# marker_file = ""                  # remove videos whose folder contains this file, e.g. ".watched"
 # keep_latest = 0                   # protect the newest N videos from every other limit
+# delete = "trash"                  # trash: restorable with `tidepool trash restore` for trash_for | now
+# trash_for = "7d"                  # how long removed files stay in trash_dir
 
 [category.music]                    # an example: audio only, for sources with category = "music"
 # media_dir = "~/Music/tidepool"    # e.g. keep music somewhere else
