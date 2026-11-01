@@ -88,6 +88,23 @@ pub fn acquire(path: &Path) -> Result<LibraryLock, LockError> {
     })
 }
 
+/// The PID holding the lock at `path`, if anyone does (without taking it
+/// away from anyone: only a shared hold, let go right away).
+pub fn holder(path: &Path) -> Option<u32> {
+    let mut file = OpenOptions::new().read(true).open(path).ok()?;
+    match file.try_lock_shared() {
+        Ok(()) => {
+            let _ = file.unlock();
+            None
+        }
+        Err(_) => {
+            let mut text = String::new();
+            let _ = file.read_to_string(&mut text);
+            Some(text.trim().parse().unwrap_or(0))
+        }
+    }
+}
+
 /// The library lock shared by the daemon's services: the first to take it
 /// locks the file, the last to let go unlocks it. Services in the same
 /// process never exclude each other; other processes are still excluded.
@@ -144,6 +161,23 @@ pub enum Hold {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn tells_who_holds_a_lock() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("lock");
+        assert_eq!(holder(&path), None, "no file yet");
+        let held = acquire(&path).unwrap();
+        assert_eq!(holder(&path), Some(std::process::id()));
+        drop(held);
+        let free = (0..100).any(|_| {
+            holder(&path).is_none() || {
+                std::thread::sleep(std::time::Duration::from_millis(10));
+                false
+            }
+        });
+        assert!(free);
+    }
 
     #[test]
     fn a_shared_lock_is_held_while_anyone_holds_it() {

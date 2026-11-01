@@ -145,6 +145,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Embed(args) => app.embed(args, out).await,
         Command::Cleanup(scope) => app.cleanup(scope, out).await,
         Command::Trash { cmd } => app.trash(cmd, out),
+        Command::Daemon { cmd } => crate::daemon::control::command(&app, cmd, out).await,
         other => {
             let milestone = other.milestone().unwrap_or("a later milestone");
             bail!("this command is not implemented yet (planned for {milestone})")

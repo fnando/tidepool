@@ -329,3 +329,141 @@ async fn a_sync_is_skipped_while_another_tidepool_runs() {
     let (code, _) = daemon.stop();
     assert_eq!(code, Some(0));
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn daemon_commands_without_a_daemon() {
+    let env = Env::new().await;
+    let config = env.config("1h", "");
+    env.cmd(&["config", "import", &config]).assert().success();
+    env.cmd(&["daemon", "status"])
+        .assert()
+        .success()
+        .stdout("daemon: not running\nsyncer: not running\nprocessor: not running\n");
+    env.cmd(&["daemon", "pause", "syncer"])
+        .assert()
+        .success()
+        .stdout("paused syncer; it stays paused when the daemon starts\n");
+    env.cmd(&["daemon", "pause", "syncer"])
+        .assert()
+        .success()
+        .stdout("syncer is already paused\n");
+    env.cmd(&["daemon", "status"])
+        .assert()
+        .success()
+        .stdout(contains("syncer: paused\n"));
+    env.cmd(&["daemon", "sync"])
+        .assert()
+        .code(1)
+        .stderr(contains("the syncer is paused"));
+    env.cmd(&["daemon", "resume"]).assert().success().stdout(
+        "resumed syncer; it runs when the daemon starts\nprocessor is already not paused\n",
+    );
+    env.cmd(&["daemon", "restart"])
+        .assert()
+        .code(1)
+        .stderr(contains("the daemon isn't running"));
+    env.cmd(&["daemon", "pause", "nope"]).assert().code(2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_paused_syncer_stays_paused_until_resumed() {
+    let env = Env::new().await;
+    let config = env.config("1h", "");
+    env.cmd(&["config", "import", &config]).assert().success();
+    env.cmd(&["daemon", "pause", "syncer"]).assert().success();
+    let daemon = env.daemon(&config, &[]);
+    daemon.wait_for_log("tidepool daemon started");
+    daemon.wait_for("the processor running", || {
+        let out = env.cmd(&["daemon", "status"]).output().unwrap();
+        let out = String::from_utf8_lossy(&out.stdout).into_owned();
+        out.contains("syncer: paused") && out.contains("processor: idle")
+    });
+    std::thread::sleep(Duration::from_secs(1));
+    let rick = env.path("media").join(RICK_DIR);
+    assert!(!rick.exists(), "nothing synced while paused");
+
+    env.cmd(&["daemon", "resume", "syncer"])
+        .assert()
+        .success()
+        .stdout("resumed syncer\n");
+    daemon.wait_for("Rick's video saved", || {
+        rick.join("metadata.json").is_file()
+    });
+
+    env.cmd(&["daemon", "pause", "processor"])
+        .assert()
+        .success()
+        .stdout("paused processor\n");
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0), "{log}");
+    assert!(log.contains("pausing processor"), "{log}");
+    let paused: bool = env
+        .db()
+        .query_row(
+            "SELECT paused FROM daemon_services WHERE name = 'processor'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert!(paused, "still paused for the next start");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn sync_now_and_restart_on_request() {
+    let env = Env::new().await;
+    let config = env.config("1h", "");
+    env.cmd(&["config", "import", &config]).assert().success();
+    let later = jiff::Timestamp::now()
+        .checked_add(jiff::SignedDuration::from_hours(1))
+        .unwrap();
+    env.db()
+        .execute(
+            "INSERT INTO daemon_state (key, value) VALUES ('next_sync_at', ?1)",
+            [later.to_string()],
+        )
+        .unwrap();
+    let daemon = env.daemon(&config, &[]);
+    daemon.wait_for_log("tidepool daemon started");
+    let rick = env.path("media").join(RICK_DIR);
+    assert!(!rick.exists(), "the next sync is an hour away");
+
+    env.cmd(&["daemon", "sync"])
+        .assert()
+        .success()
+        .stdout("syncing now\n");
+    daemon.wait_for("Rick's video saved", || {
+        rick.join("metadata.json").is_file()
+    });
+
+    env.cmd(&["daemon", "restart", "processor"])
+        .assert()
+        .success()
+        .stdout("restarting processor\n");
+    daemon.wait_for("the processor back", || {
+        let out = env.cmd(&["daemon", "status"]).output().unwrap();
+        String::from_utf8_lossy(&out.stdout).contains("processor: idle")
+    });
+    let out = env.cmd(&["daemon", "status"]).output().unwrap();
+    let out = String::from_utf8_lossy(&out.stdout).into_owned();
+    assert!(
+        out.starts_with(&format!("daemon: running (pid {})\n", daemon.child.id())),
+        "{out}"
+    );
+    assert!(out.contains("syncer: idle, next sync at "), "{out}");
+    assert!(out.contains("last sync: "), "{out}");
+    assert!(
+        !out.contains("restarted"),
+        "asked for, not a failure: {out}"
+    );
+    let problems: i64 = env
+        .db()
+        .query_row(
+            "SELECT COUNT(*) FROM problems WHERE kind = 'daemon_service_failed'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(problems, 0);
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0), "{log}");
+}

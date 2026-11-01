@@ -924,7 +924,33 @@ tidepool run --daemon --config ~/.config/tidepool/config.toml
 - **If something goes wrong.** The daemon is made of parts that work
   independently: one syncs, one finishes downloads. If one stops unexpectedly,
   the daemon starts it again on its own (waiting a little longer each time)
-  and `tidepool problems` tells you about it.
+  and `tidepool problems` tells you about it; `tidepool daemon status` shows
+  how often it had to.
+
+**Checking on it and steering it.** The daemon has two parts: the *syncer*
+(checks your sources, downloads, cleans up) and the *processor* (finishes
+downloads and runs hooks). From another terminal:
+
+```sh
+tidepool daemon status             # is it running, what's each part doing, when's the next sync
+tidepool daemon sync               # sync now instead of waiting
+tidepool daemon pause syncer       # stop syncing until you resume it
+tidepool daemon resume syncer
+tidepool daemon restart processor  # stop a part and start it again
+```
+
+Leave out the part's name to pause, resume or restart both. A paused part
+stays paused, even if the daemon restarts, until you resume it; you can pause
+or resume while the daemon isn't running too. Pausing lets the part wind down
+what it's doing first, like Ctrl-C does.
+
+```
+$ tidepool daemon status
+daemon: running (pid 79820)
+syncer: idle, next sync at 2026-11-01 18:40
+processor: idle
+last sync: 2026-11-01 12:30, took 2m
+```
 
 To start it with your computer, use a systemd user service (`tidepool init`
 prints one with the right paths):

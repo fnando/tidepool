@@ -100,8 +100,13 @@ pub enum Command {
         #[command(subcommand)]
         cmd: ToolsCmd,
     },
-    /// Sync every source once; --daemon keeps syncing and serves the web UI
+    /// Sync every source once; --daemon keeps syncing in the background
     Run(RunArgs),
+    /// See and control the background daemon (`tidepool run --daemon`)
+    Daemon {
+        #[command(subcommand)]
+        cmd: DaemonCmd,
+    },
 }
 
 impl Command {
@@ -115,6 +120,7 @@ impl Command {
             Command::Hooks { .. } => None,
             Command::Embed(_) => None,
             Command::Cleanup(_) | Command::Trash { .. } => None,
+            Command::Daemon { .. } => None,
             Command::List(_) => Some("M6"),
         }
     }
@@ -309,6 +315,29 @@ pub enum TrashCmd {
     },
     /// Delete everything in the trash now
     Empty,
+}
+
+#[derive(Debug, Clone, Subcommand)]
+pub enum DaemonCmd {
+    /// Whether it's running, and what each part is doing
+    Status,
+    /// Stop a part (or every part) until you resume it, even across restarts
+    Pause { service: Option<DaemonService> },
+    /// Start a paused part (or every part) again
+    Resume { service: Option<DaemonService> },
+    /// Stop a part (or every part) and start it again
+    Restart { service: Option<DaemonService> },
+    /// Sync now instead of waiting for the schedule
+    Sync,
+}
+
+/// A part of the daemon.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum DaemonService {
+    /// Checks sources, downloads, cleans up
+    Syncer,
+    /// Finishes downloads and runs queued hooks
+    Processor,
 }
 
 #[derive(Debug, Clone, Subcommand)]

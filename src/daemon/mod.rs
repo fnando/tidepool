@@ -3,6 +3,7 @@
 //! restarts a service that stops unexpectedly, and stops everything on
 //! SIGINT/SIGTERM.
 
+pub mod control;
 pub mod schedule;
 pub mod service;
 
@@ -30,8 +31,29 @@ struct Slot {
     handle: Option<Handle>,
     /// Unexpected stops in a row.
     failures: u32,
-    /// When to start it again after one.
+    /// When to start it (again).
     restart_at: Option<Instant>,
+    /// Asked to stop, and why.
+    stopping: Option<Stopping>,
+}
+
+/// Why the supervisor stopped a service.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Stopping {
+    Pause,
+    Restart,
+}
+
+impl Slot {
+    /// Ask it to stop what it's doing and end (`why` decides what's next).
+    fn stop(&mut self, why: Stopping) {
+        if let Some(handle) = &self.handle
+            && self.stopping.is_none()
+        {
+            handle.shutdown.stop(143);
+            self.stopping = Some(why);
+        }
+    }
 }
 
 pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
@@ -90,8 +112,18 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
             handle: None,
             failures: 0,
             restart_at: Some(Instant::now()),
+            stopping: None,
         })
         .collect();
+    // Requests made while no daemon was running.
+    for request in store::waiting_requests(&state.conn)? {
+        store::answer(
+            &state.conn,
+            request.id,
+            "ignored: the daemon wasn't running",
+            jiff::Timestamp::now(),
+        )?;
+    }
     tracing::info!(
         "tidepool daemon started (pid {}): syncing every {}",
         std::process::id(),
@@ -113,38 +145,64 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
             tracing::info!("applying config revision {rev}");
             config_tx.send_replace(rev);
         }
+        for request in store::waiting_requests(&state.conn)? {
+            let answer = handle_request(&request, &mut slots, &signals, &state)?;
+            tracing::info!("{answer}");
+            store::answer(&state.conn, request.id, &answer, now)?;
+        }
         for slot in &mut slots {
             let name = slot.service.name();
+            // `tidepool daemon pause|resume`.
+            let paused = store::service(&state.conn, name)?.paused;
+            if paused {
+                slot.restart_at = None;
+                if slot.handle.is_some() && slot.stopping.is_none() {
+                    tracing::info!("pausing {name}");
+                    slot.stop(Stopping::Pause);
+                }
+            } else if slot.handle.is_none() && slot.restart_at.is_none() {
+                tracing::info!("resuming {name}");
+                slot.restart_at = Some(Instant::now());
+            }
             if slot.handle.as_ref().is_some_and(Handle::is_finished) {
                 let handle = slot.handle.take().expect("checked");
                 let ran = handle.started.elapsed();
-                let why = match handle.join() {
-                    Err(e) => e,
-                    Ok(()) => "it stopped by itself".into(),
-                };
-                if app.shutdown.is_stopping() {
-                    continue;
+                let result = handle.join();
+                match slot.stopping.take() {
+                    Some(Stopping::Pause) => {
+                        store::set_status(&state.conn, name, "paused", None, now)?;
+                        tracing::info!("{name} is paused");
+                        continue;
+                    }
+                    Some(Stopping::Restart) => {
+                        slot.restart_at = Some(Instant::now());
+                    }
+                    None if app.shutdown.is_stopping() => continue,
+                    None => {
+                        let why = match result {
+                            Err(e) => e,
+                            Ok(()) => "it stopped by itself".into(),
+                        };
+                        slot.failures = if ran >= schedule::HEALTHY_AFTER {
+                            1
+                        } else {
+                            slot.failures + 1
+                        };
+                        let delay = schedule::restart_delay(slot.failures);
+                        tracing::error!(
+                            "{name} stopped unexpectedly ({why}); restarting it in {}",
+                            crate::config::types::format_duration(delay)
+                        );
+                        failed(&state, slot.service, &why, now)?;
+                        slot.restart_at = Some(Instant::now() + delay);
+                    }
                 }
-                slot.failures = if ran >= schedule::HEALTHY_AFTER {
-                    1
-                } else {
-                    slot.failures + 1
-                };
-                let delay = schedule::restart_delay(slot.failures);
-                tracing::error!(
-                    "{name} stopped unexpectedly ({why}); restarting it in {}",
-                    crate::config::types::format_duration(delay)
-                );
-                failed(&state, slot.service, &why, now)?;
-                slot.restart_at = Some(Instant::now() + delay);
+            }
+            if paused && slot.handle.is_none() && slot.stopping.is_none() {
+                store::set_status(&state.conn, name, "paused", None, now)?;
             }
             if slot.handle.is_none() && slot.restart_at.is_some_and(|at| at <= Instant::now()) {
                 slot.restart_at = None;
-                if store::service(&state.conn, name)?.paused {
-                    store::set_status(&state.conn, name, "paused", None, now)?;
-                    tracing::info!("{name} is paused");
-                    continue;
-                }
                 let handle = service::spawn(
                     slot.service,
                     cli.clone(),
@@ -195,6 +253,60 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
     }
     tracing::info!("tidepool daemon stopped");
     Ok(exit::OK)
+}
+
+/// Do what `tidepool daemon restart|sync` asked; returns the answer.
+fn handle_request(
+    request: &store::Request,
+    slots: &mut [Slot],
+    signals: &Signals,
+    state: &State,
+) -> anyhow::Result<String> {
+    let targets: Vec<Service> = match request.service.as_deref() {
+        None => Service::ALL.to_vec(),
+        Some(name) => match Service::parse(name) {
+            Some(service) => vec![service],
+            None => return Ok(format!("there's no service {name:?}")),
+        },
+    };
+    match request.action.as_str() {
+        "sync" => {
+            if store::service(&state.conn, Service::Syncer.name())?.paused {
+                return Ok("the syncer is paused; resume it first".into());
+            }
+            signals.sync_now.notify_one();
+            Ok("syncing now".into())
+        }
+        "restart" => {
+            let mut restarted = Vec::new();
+            let mut paused = Vec::new();
+            for slot in slots.iter_mut().filter(|s| targets.contains(&s.service)) {
+                let name = slot.service.name();
+                if store::service(&state.conn, name)?.paused {
+                    paused.push(name);
+                } else if slot.handle.is_some() {
+                    slot.stop(Stopping::Restart);
+                    restarted.push(name);
+                } else {
+                    slot.restart_at = Some(Instant::now());
+                    restarted.push(name);
+                }
+            }
+            let mut parts = Vec::new();
+            if !restarted.is_empty() {
+                parts.push(format!("restarting {}", restarted.join(" and ")));
+            }
+            if !paused.is_empty() {
+                parts.push(format!(
+                    "{} {} paused (resume it first)",
+                    paused.join(" and "),
+                    if paused.len() == 1 { "is" } else { "are" }
+                ));
+            }
+            Ok(parts.join("; "))
+        }
+        other => Ok(format!("unknown request {other:?}")),
+    }
 }
 
 /// Take the library lock, waiting while a `tidepool run` from cron (or a

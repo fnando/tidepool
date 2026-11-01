@@ -132,6 +132,63 @@ pub fn failed(conn: &Connection, name: &str, error: &str, now: Timestamp) -> rus
     Ok(())
 }
 
+/// Something `tidepool daemon` asked the running daemon to do.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Request {
+    pub id: i64,
+    /// `None`: every service.
+    pub service: Option<String>,
+    /// `restart` or `sync`.
+    pub action: String,
+}
+
+pub fn request(
+    conn: &Connection,
+    service: Option<&str>,
+    action: &str,
+    now: Timestamp,
+) -> rusqlite::Result<i64> {
+    conn.execute(
+        "INSERT INTO daemon_requests (service, action, created_at) VALUES (?1, ?2, ?3)",
+        params![service, action, now.to_string()],
+    )?;
+    Ok(conn.last_insert_rowid())
+}
+
+/// Requests not answered yet, oldest first.
+pub fn waiting_requests(conn: &Connection) -> rusqlite::Result<Vec<Request>> {
+    let mut stmt = conn.prepare(
+        "SELECT id, service, action FROM daemon_requests WHERE done_at IS NULL ORDER BY id",
+    )?;
+    stmt.query_map([], |r| {
+        Ok(Request {
+            id: r.get(0)?,
+            service: r.get(1)?,
+            action: r.get(2)?,
+        })
+    })?
+    .collect()
+}
+
+pub fn answer(conn: &Connection, id: i64, result: &str, now: Timestamp) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE daemon_requests SET done_at = ?2, result = ?3 WHERE id = ?1",
+        params![id, now.to_string(), result],
+    )?;
+    Ok(())
+}
+
+/// The daemon's answer to a request, once it's given.
+pub fn answer_of(conn: &Connection, id: i64) -> rusqlite::Result<Option<String>> {
+    conn.query_row(
+        "SELECT result FROM daemon_requests WHERE id = ?1 AND done_at IS NOT NULL",
+        [id],
+        |r| r.get(0),
+    )
+    .optional()
+    .map(Option::flatten)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -154,5 +211,24 @@ mod tests {
         assert!(row.paused, "a pause outlives restarts");
         assert_eq!(row.status.as_deref(), Some("restarting"));
         assert_eq!((row.restarts, row.last_error.as_deref()), (1, Some("boom")));
+    }
+
+    #[test]
+    fn requests_wait_for_an_answer() {
+        let state = State::open_in_memory().unwrap();
+        let conn = &state.conn;
+        let now = Timestamp::now();
+        let id = request(conn, Some("syncer"), "restart", now).unwrap();
+        request(conn, None, "sync", now).unwrap();
+        let waiting = waiting_requests(conn).unwrap();
+        assert_eq!(waiting.len(), 2);
+        assert_eq!(waiting[0].service.as_deref(), Some("syncer"));
+        assert_eq!(answer_of(conn, id).unwrap(), None);
+        answer(conn, id, "restarted syncer", now).unwrap();
+        assert_eq!(
+            answer_of(conn, id).unwrap().as_deref(),
+            Some("restarted syncer")
+        );
+        assert_eq!(waiting_requests(conn).unwrap().len(), 1);
     }
 }
