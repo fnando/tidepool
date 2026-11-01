@@ -460,6 +460,10 @@ pub async fn index_source(
             .collect::<Vec<_>>()
             .join(" and ")
     );
+    let decisions = limit_downloads(&state.conn, source, &merged, |item| {
+        rules.decide(&Fields::from_item(item))
+    })
+    .map_err(|e| IndexFailure::Failed(format!("state database: {e}")))?;
     let hash = rules_hash(source);
     let ids = source.ids();
     let failed_ids: Vec<String> = lists
@@ -479,7 +483,12 @@ pub async fn index_source(
         &mut state.conn,
         &record,
         &merged,
-        |item| rules.decide(&Fields::from_item(item)),
+        |item| {
+            decisions
+                .get(&item.video_id)
+                .cloned()
+                .unwrap_or_else(|| rules.decide(&Fields::from_item(item)))
+        },
         now,
     )
     .map_err(|e| IndexFailure::Failed(format!("cannot record the index: {e}")))?;
@@ -501,6 +510,51 @@ pub async fn index_source(
         })
         .collect();
     Ok(summary)
+}
+
+/// The rules' decision for each listed video, with `cleanup.max_items`
+/// applied: in listing order, every video the rules keep (or that's been
+/// downloaded, or cleaned up) takes a place, and new ones past the first
+/// `max_items` aren't downloaded: cleanup would remove them right away.
+fn limit_downloads(
+    conn: &rusqlite::Connection,
+    source: &EffectiveSource,
+    list: &RemoteList,
+    decide: impl Fn(&crate::index::RemoteItem) -> crate::filter::Decision,
+) -> rusqlite::Result<HashMap<String, crate::filter::Decision>> {
+    use crate::filter::{Decision, Structural};
+    let max = source.cleanup.max_items;
+    let statuses = if max > 0 {
+        items::statuses(conn, &source.key)?
+    } else {
+        HashMap::new()
+    };
+    let mut taken = 0;
+    let mut out = HashMap::new();
+    for item in &list.items {
+        let status = statuses.get(&item.video_id).map(String::as_str);
+        if status.is_some_and(|s| !status::UNDECIDED.contains(&s)) {
+            // Downloaded, downloading, failed or cleaned up: its place is taken.
+            if status != Some(status::UNAVAILABLE) {
+                taken += 1;
+            }
+            continue;
+        }
+        let decision = decide(item);
+        let wanted = matches!(decision, Decision::Keep { .. } | Decision::Deferred { .. });
+        let decision = if wanted && max > 0 && taken >= max {
+            Decision::Structural {
+                reason: Structural::BeyondMaxItems { max },
+            }
+        } else {
+            if wanted {
+                taken += 1;
+            }
+            decision
+        };
+        out.insert(item.video_id.clone(), decision);
+    }
+    Ok(out)
 }
 
 /// What went wrong with a source's lists; each URL is named when there are

@@ -184,6 +184,11 @@ pub enum Structural {
         published_at: Timestamp,
         cutoff: Timestamp,
     },
+    /// Past the first `max` videos of the source (`cleanup.max_items`):
+    /// cleanup would remove it right away.
+    BeyondMaxItems {
+        max: u32,
+    },
 }
 
 /// Why an item is kept or dropped. Stored in the DB and shown by
@@ -233,6 +238,9 @@ impl Decision {
             Decision::Structural {
                 reason: Structural::BeforeCutoff { .. },
             } => "published before the cutoff",
+            Decision::Structural {
+                reason: Structural::BeyondMaxItems { .. },
+            } => "beyond max_items",
             Decision::Deferred { .. } => "checked before download",
             Decision::FilterError { .. } => "rule error",
         }
@@ -259,6 +267,9 @@ impl fmt::Display for Decision {
                 }
                 Structural::TooLong { duration, max } => {
                     write!(f, "drop (too long: {duration}s > {max}s)")
+                }
+                Structural::BeyondMaxItems { max } => {
+                    write!(f, "drop (beyond max_items: only the first {max} are kept)")
                 }
                 Structural::BeforeCutoff {
                     published_at,

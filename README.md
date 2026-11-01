@@ -638,7 +638,10 @@ max_age = "30d"       # remove videos downloaded more than 30 days ago
 | `order` | `"oldest_downloaded"` | who's oldest for `max_items` and `max_size`: `oldest_downloaded`, `oldest_published` or `source_position` (furthest down the playlist or channel first) |
 
 A video goes when any limit says so, unless `keep_latest` protects it or a
-`before_cleanup` hook keeps it.
+`before_cleanup` hook keeps it. With `max_items`, tidepool also only downloads
+the first that many videos of the source, in the playlist's order (newest first
+for a channel), instead of downloading everything and removing the rest; the
+others show up as skipped, "beyond max_items".
 
 What's removed:
 

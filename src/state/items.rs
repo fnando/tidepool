@@ -1343,6 +1343,13 @@ pub fn reset_interrupted(conn: &Connection) -> rusqlite::Result<usize> {
     )
 }
 
+/// Every item's status in a source.
+pub fn statuses(conn: &Connection, source_key: &str) -> rusqlite::Result<HashMap<String, String>> {
+    let mut stmt = conn.prepare("SELECT video_id, status FROM items WHERE source_key = ?1")?;
+    stmt.query_map([source_key], |r| Ok((r.get(0)?, r.get(1)?)))?
+        .collect()
+}
+
 /// A downloaded video, as cleanup sees it.
 #[derive(Debug, Clone)]
 pub struct Kept {

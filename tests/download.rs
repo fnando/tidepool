@@ -1753,9 +1753,12 @@ async fn cleanup_moves_videos_to_the_trash_and_back() {
 #[tokio::test(flavor = "multi_thread")]
 async fn the_trash_empties_itself() {
     let env = Env::new().await;
-    let config = hooks_config(&env, "[category.default.cleanup]\nmax_items = 1", "");
+    let config = env.config("");
     env.cmd(&["run", "--config", &config]).assert().code(3);
-    env.cmd(&["cleanup"]).assert().success();
+    let config = hooks_config(&env, "[category.default.cleanup]\nmax_items = 1", "");
+    env.cmd(&["cleanup", "--config", &config])
+        .assert()
+        .success();
     let trash = env.path("data/tidepool/trash");
     assert!(trash.join("dl").is_dir());
     // Not yet.
@@ -1772,4 +1775,27 @@ async fn the_trash_empties_itself() {
     env.cmd(&["trash", "list"])
         .assert()
         .stdout(contains("the trash is empty"));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn max_items_limits_what_gets_downloaded() {
+    let env = Env::new().await;
+    let config = hooks_config(&env, "[category.default.cleanup]\nmax_items = 1", "");
+    env.cmd(&["index", "-v", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains("1 to download").and(contains("beyond max_items")))
+        .stderr(contains(
+            "drop (beyond max_items: only the first 1 are kept)",
+        ));
+    let statuses = env.statuses("dl");
+    assert_eq!(statuses[0].1, "pending", "the first in the playlist");
+    assert!(statuses[1..].iter().all(|(_, s, _)| s == "filtered"));
+
+    // A bigger limit lets the next ones in.
+    let config = hooks_config(&env, "[category.default.cleanup]\nmax_items = 2", "");
+    env.cmd(&["index", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains("2 to download"));
 }
