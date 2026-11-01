@@ -8,6 +8,8 @@
 //!   `inherit_rules` (include/exclude) or `inherit_hooks` (hooks), which add
 //!   to it instead.
 
+use std::collections::BTreeMap;
+
 use serde::Serialize;
 
 use super::duration::Cutoff;
@@ -111,6 +113,7 @@ pub struct Embed {
     pub cover: bool,
     pub chapters: bool,
     pub subtitles: bool,
+    pub tags: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -243,6 +246,7 @@ fn resolve(
             cover: table!(embed, cover, false),
             chapters: table!(embed, chapters, false),
             subtitles: table!(embed, subtitles, false),
+            tags: table!(embed, tags, BTreeMap::new()),
         },
         cleanup: Cleanup {
             max_items: table!(cleanup, max_items, 0),

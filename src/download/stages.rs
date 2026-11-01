@@ -11,6 +11,7 @@ use super::thumbnail::CoverFormat;
 use super::ytdlp::Failure;
 use super::{fail, place};
 use crate::config::merge::EffectiveSource;
+use crate::config::placeholders::{self, Setting};
 use crate::config::{Duplicates, HookConfig, HookType, OnFailure};
 use crate::hooks;
 use crate::state::items::VideoFiles;
@@ -330,13 +331,15 @@ impl Stage<'_> {
     }
 
     /// The tags `embed.metadata` writes.
-    pub fn tags(&self, info: &VideoInfo) -> BTreeMap<String, String> {
+    /// tidepool's own, then `embed.tags` on top: rendered with `values`; an
+    /// empty value removes the tag (names match in any case).
+    pub fn tags(&self, info: &VideoInfo, values: &Values) -> BTreeMap<String, String> {
         let url = info
             .webpage_url
             .clone()
             .unwrap_or_else(|| format!("https://www.youtube.com/watch?v={}", info.id));
         let description = info.description.clone().filter(|d| !d.is_empty());
-        [
+        let mut tags = [
             ("title", Some(info.title.clone())),
             ("artist", info.channel.clone()),
             ("album_artist", info.channel.clone()),
@@ -353,7 +356,21 @@ impl Stage<'_> {
         ]
         .into_iter()
         .filter_map(|(key, value)| value.map(|v| (key.to_string(), v)))
-        .collect()
+        .collect::<BTreeMap<_, _>>();
+        for (key, template) in &self.source.embed.tags {
+            // Validated with the config; a template that isn't is used as is.
+            let value = match placeholders::validate(template, Setting::Tags) {
+                Ok(segments) => placeholders::render(&segments, Setting::Tags, |name| {
+                    values.get(name).map(str::to_string)
+                }),
+                Err(_) => template.clone(),
+            };
+            tags.retain(|k, _| !k.eq_ignore_ascii_case(key));
+            if !value.is_empty() {
+                tags.insert(key.clone(), value);
+            }
+        }
+        tags
     }
 }
 

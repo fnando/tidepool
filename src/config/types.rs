@@ -302,6 +302,13 @@ fn hook_command_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
     })
 }
 
+fn tags_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    schemars::json_schema!({
+        "type": "object",
+        "additionalProperties": { "type": "string", "format": "tag-template" },
+    })
+}
+
 fn default_hook_timeout() -> HumanDuration {
     HumanDuration(Duration::from_secs(600))
 }
@@ -581,6 +588,11 @@ pub struct EmbedOptions {
     /// Languages from --sub-langs.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub subtitles: Option<bool>,
+    /// Tags to add or replace, e.g. `{ MUSICBRAINZ_ARTISTID = "…", album_artist = "{channel}" }`;
+    /// an empty value removes the tag. Applied before `embed` hooks.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(schema_with = "tags_schema")]
+    pub tags: Option<BTreeMap<String, String>>,
 }
 
 /// `cleanup`: limits that keep a mirror bounded.

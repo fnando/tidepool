@@ -95,6 +95,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # cover = false                     # the poster, as in cover_file (not for webm, opus or ogg)
 # chapters = false                  # chapter markers
 # subtitles = false                 # subtitles from --write-subs; the subtitle files are kept too
+# tags = {}                         # tags to add or replace (with metadata = true), e.g. { genre = "Music", album_artist = "{channel}" }; "" removes one
 
 [category.default.cleanup]          # limits that keep each source bounded
 # max_items = 0                     # keep at most this many videos; 0 = unlimited

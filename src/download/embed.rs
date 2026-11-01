@@ -387,6 +387,16 @@ pub async fn embed(
             kept + added
         ));
     }
+    // Containers only keep the tags they know (mp4 drops the rest without
+    // a word); say which didn't make it. ogg/opus keep tags on the audio
+    // stream, where they're all kept.
+    if container != Container::Other {
+        for key in request.tags.keys() {
+            if !after.tag_names.contains(&key.to_ascii_lowercase()) {
+                skipped.push(format!("tag {key} (a .{ext} file can't hold it)"));
+            }
+        }
+    }
     Ok(Some(Output {
         path: output,
         embedded,
@@ -413,6 +423,8 @@ struct Streams {
     chapters: usize,
     /// Global tags, not counting the ones muxers write themselves.
     tags: usize,
+    /// Every global tag's name, lowercased.
+    tag_names: Vec<String>,
 }
 
 impl Streams {
@@ -483,11 +495,15 @@ where
         }
     }
     streams.chapters = json["chapters"].as_array().map_or(0, Vec::len);
-    streams.tags = json["format"]["tags"].as_object().map_or(0, |tags| {
-        tags.keys()
-            .filter(|k| !MUXER_TAGS.contains(&k.to_ascii_lowercase().as_str()))
-            .count()
-    });
+    streams.tag_names = json["format"]["tags"]
+        .as_object()
+        .map(|tags| tags.keys().map(|k| k.to_ascii_lowercase()).collect())
+        .unwrap_or_default();
+    streams.tags = streams
+        .tag_names
+        .iter()
+        .filter(|k| !MUXER_TAGS.contains(&k.as_str()))
+        .count();
     if streams.total == 0 {
         return Err(format!("ffprobe found no streams in {}", file.display()));
     }
@@ -647,6 +663,59 @@ mod tests {
             ";FFMETADATA1\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=0\nEND=500\ntitle=Intro\\; \\= \\#1\n\
              [CHAPTER]\nTIMEBASE=1/1000\nSTART=500\nEND=1000\ntitle=Outro\n"
         );
+    }
+
+    #[tokio::test]
+    async fn says_which_tags_a_file_cant_hold() {
+        let (Some(ffmpeg), Some(ffprobe)) = (tool("ffmpeg"), tool("ffprobe")) else {
+            eprintln!("skipped: ffmpeg not installed");
+            return;
+        };
+        let dir = tempfile::tempdir().unwrap();
+        let mut tags = tags();
+        tags.insert("MUSICBRAINZ_ARTISTID".into(), "abc".into());
+        for (name, kept) in [("media.mp4", false), ("media.mkv", true)] {
+            let media = sample(dir.path(), name, true);
+            let request = Request {
+                media: &media,
+                tags: tags.clone(),
+                cover: None,
+                chapters: &[],
+                subtitles: Vec::new(),
+                remove: Embedded::default(),
+            };
+            let out = embed(
+                &ffmpeg,
+                &ffprobe,
+                &request,
+                &Shutdown::default(),
+                Duration::from_secs(5),
+            )
+            .await
+            .unwrap()
+            .unwrap();
+            let json = probe_json(&out.path);
+            let has = json["format"]["tags"]
+                .as_object()
+                .unwrap()
+                .keys()
+                .any(|k| k.eq_ignore_ascii_case("musicbrainz_artistid"));
+            assert_eq!(has, kept, "{name}");
+            let ext = name.rsplit('.').next().unwrap();
+            let warning = format!("tag MUSICBRAINZ_ARTISTID (a .{ext} file can't hold it)");
+            assert_eq!(
+                out.skipped.contains(&warning),
+                !kept,
+                "{name}: {:?}",
+                out.skipped
+            );
+            assert_eq!(
+                out.skipped.len(),
+                usize::from(!kept),
+                "{name}: only that one"
+            );
+            std::fs::remove_file(&out.path).unwrap();
+        }
     }
 
     #[tokio::test]

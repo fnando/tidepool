@@ -1460,7 +1460,8 @@ async fn embed_applies_the_current_settings_to_downloaded_videos() {
     );
     let config = hooks_config(
         &env,
-        "hooks = [\"upper\"]\n[category.default.embed]\nmetadata = true\ncover = true\nchapters = true",
+        "hooks = [\"upper\"]\n[category.default.embed]\nmetadata = true\ncover = true\nchapters = true\n\
+         tags = { MUSICBRAINZ_ARTISTID = \"abc-123\", album_artist = \"{channel} (YouTube)\", GENRE = \"\" }",
         &format!(
             "[hooks.upper]\ntype = \"embed\"\ncommand = [\"{}\"]\n",
             upper.display()
@@ -1494,10 +1495,14 @@ async fn embed_applies_the_current_settings_to_downloaded_videos() {
             .count()
     };
     let json = ffprobe_json(&media);
+    let tags = &json["format"]["tags"];
+    assert_eq!(tags["title"], "LOUD", "the embed hook ran");
+    assert_eq!(tags["MUSICBRAINZ_ARTISTID"], "abc-123", "embed.tags added");
     assert_eq!(
-        json["format"]["tags"]["title"], "LOUD",
-        "the embed hook ran"
+        tags["ALBUM_ARTIST"], "Rick Astley (YouTube)",
+        "with placeholders"
     );
+    assert!(tags.get("GENRE").is_none(), "an empty value removes it");
     assert_eq!(covers(&json), 1);
     assert!(!json["chapters"].as_array().unwrap().is_empty());
 

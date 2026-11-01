@@ -242,7 +242,7 @@ async fn reprocess(
         .map_err(|f| f.message)?;
 
     let mut data = hooks::EmbedData {
-        tags: stage.tags(info),
+        tags: stage.tags(info, values),
         cover: raw.cover.clone(),
         chapters: info.chapters.clone().unwrap_or_default(),
         subtitles: raw.subtitles.clone(),

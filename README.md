@@ -425,6 +425,21 @@ subtitles = true    # subtitles you asked yt-dlp for (with --write-subs)
 | `cover` | the poster, the same image as `cover_file` |
 | `chapters` | the video's chapters |
 | `subtitles` | the subtitles; the separate subtitle files are kept too |
+| `tags` | your own tags, added to (or replacing) the ones above; needs `metadata = true` |
+
+`tags` takes fixed text or `{placeholders}` (not file paths), and an empty
+value leaves a tag out. Set it for a category, or per source, for example to
+mark whose music videos a source holds:
+
+```toml
+[sources.afi.embed]
+tags = { MUSICBRAINZ_ARTISTID = "…", album_artist = "{channel}", genre = "" }
+```
+
+A source's `tags` replace its category's. Not every file type keeps every
+tag: mp4 files only keep the usual ones (title, artist, album, date, …), so a
+tag like `MUSICBRAINZ_ARTISTID` needs mkv. tidepool tells you when a tag
+couldn't be saved.
 
 Embedding needs `ffmpeg` and never re-encodes: the video and audio are copied
 as they are. Some file types can't hold everything: webm, opus and ogg files
