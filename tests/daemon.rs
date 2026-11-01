@@ -61,6 +61,7 @@ impl Env {
     fn config(&self, interval: &str, extra: &str) -> String {
         let text = format!(
             "[schedule]\ninterval = \"{interval}\"\n\n\
+             [server]\nlisten = \"127.0.0.1:0\"\n\n\
              [category.default]\nmedia_dir = \"{}\"\n\n\
              [tools.deno]\nmanaged = false\n\n\
              [tools.yt-dlp]\nmanaged = false\npath = \"{}\"\n\n\
@@ -199,7 +200,7 @@ async fn syncs_right_away_then_on_schedule_and_stops_cleanly() {
         .unwrap()
         .map(Result::unwrap)
         .collect();
-    assert_eq!(statuses, ["stopped", "stopped"]);
+    assert_eq!(statuses, ["stopped", "stopped", "stopped"]);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -220,14 +221,18 @@ async fn one_daemon_at_a_time() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn the_daemon_needs_a_schedule() {
+async fn the_daemon_needs_a_schedule_or_the_web_ui() {
     let env = Env::new().await;
     let config = env.config("", "");
+    let text = fs::read_to_string(&config)
+        .unwrap()
+        .replace("[server]\n", "[server]\nenabled = false\n");
+    fs::write(&config, text).unwrap();
     env.cmd(&["config", "import", &config]).assert().success();
     env.cmd(&["run", "--daemon", "--config", &config])
         .assert()
         .code(1)
-        .stderr(contains("schedule.interval is empty"));
+        .stderr(contains("schedule.interval is empty and the web UI is off"));
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -357,10 +362,9 @@ async fn daemon_commands_without_a_daemon() {
     let env = Env::new().await;
     let config = env.config("1h", "");
     env.cmd(&["config", "import", &config]).assert().success();
-    env.cmd(&["daemon", "status"])
-        .assert()
-        .success()
-        .stdout("daemon: not running\nsyncer: not running\nprocessor: not running\n");
+    env.cmd(&["daemon", "status"]).assert().success().stdout(
+        "daemon: not running\nsyncer: not running\nprocessor: not running\nserver: not running\n",
+    );
     env.cmd(&["daemon", "pause", "syncer"])
         .assert()
         .success()
@@ -378,7 +382,8 @@ async fn daemon_commands_without_a_daemon() {
         .code(1)
         .stderr(contains("the syncer is paused"));
     env.cmd(&["daemon", "resume"]).assert().success().stdout(
-        "resumed syncer; it runs when the daemon starts\nprocessor is already not paused\n",
+        "resumed syncer; it runs when the daemon starts\nprocessor is already not paused\n\
+         server is already not paused\n",
     );
     env.cmd(&["daemon", "restart"])
         .assert()
@@ -556,4 +561,77 @@ async fn the_config_file_must_match_the_stored_config() {
     let (code, log) = daemon.stop();
     assert_eq!(code, Some(0));
     assert!(log.contains("as config revision 2"), "{log}");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_web_ui_shows_the_daemon_and_syncs_on_request() {
+    let env = Env::new().await;
+    // No schedule: only the web UI (or `tidepool daemon sync`) starts a sync.
+    let config = env.config("", "");
+    let daemon = env.daemon(&config, &[]);
+    daemon.wait_for_log("web UI at http://127.0.0.1:");
+    let url = daemon
+        .log()
+        .lines()
+        .find_map(|l| {
+            l.split("web UI at ")
+                .nth(1)
+                .map(str::trim)
+                .map(str::to_string)
+        })
+        .unwrap();
+    let http = reqwest::Client::new();
+    let page = http.get(&url).send().await.unwrap().text().await.unwrap();
+    assert!(page.contains("No schedule"), "{page}");
+    assert!(page.contains("<strong>dl</strong>"), "{page}");
+
+    let answer: serde_json::Value = http
+        .post(format!("{url}/api/v1/sync"))
+        .header("content-type", "application/json")
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(answer["message"], "Syncing now.");
+    daemon.wait_for("both videos saved", || {
+        env.db()
+            .query_row(
+                "SELECT COUNT(*) FROM items WHERE status = 'done'",
+                [],
+                |r| r.get::<_, i64>(0),
+            )
+            .unwrap()
+            == 2
+    });
+    let status: serde_json::Value = http
+        .get(format!("{url}/api/v1/status"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(status["sources"][0]["counts"]["downloaded"], 2);
+    let out = env.cmd(&["daemon", "status"]).output().unwrap();
+    let out = String::from_utf8_lossy(&out.stdout).into_owned();
+    assert!(
+        out.contains(&format!("server: running, listening on {url}")),
+        "{out}"
+    );
+
+    // Switched off in the config: the web UI stops, the rest goes on.
+    let text = fs::read_to_string(&config)
+        .unwrap()
+        .replace("[server]\n", "[server]\nenabled = false\n");
+    fs::write(&config, text).unwrap();
+    env.cmd(&["config", "import", &config]).assert().success();
+    daemon.wait_for_log("server is off");
+    assert!(
+        http.get(&url).send().await.is_err(),
+        "not listening anymore"
+    );
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0), "{log}");
 }

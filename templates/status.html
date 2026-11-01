@@ -1,0 +1,78 @@
+<div id="status" hx-get="/fragments/status" hx-trigger="every 5s" hx-swap="outerHTML">
+  {% if let Some(message) = message %}<p class="flash" role="status">{{ message }}</p>{% endif %}
+
+  <section>
+    <div class="row">
+      <h2>Daemon</h2>
+      <div class="actions">
+        <button hx-post="/actions/sync" hx-target="#status" hx-swap="outerHTML">Sync now</button>
+        <button class="secondary" hx-post="/actions/cleanup" hx-target="#status" hx-swap="outerHTML">Clean up now</button>
+      </div>
+    </div>
+    <p class="muted">
+      {% if let Some(next) = status.next_sync %}Next sync at {{ next }}.{% else %}No schedule: syncs only when asked.{% endif %}
+      {% if let Some(last) = status.last_sync %}Last sync ended at {{ last }}.{% endif %}
+      {% if status.waiting_downloads > 0 %}{{ status.waiting_downloads }} downloads to finish.{% endif %}
+      {% if status.waiting_hooks > 0 %}{{ status.waiting_hooks }} hooks to run.{% endif %}
+    </p>
+    <table class="compact">
+      <thead><tr><th>Part</th><th>Status</th><th>Doing</th><th></th></tr></thead>
+      <tbody>
+      {% for service in status.services %}
+        <tr>
+          <td>{{ service.name }}</td>
+          <td><span class="pill st-{{ service.status }}">{{ service.status }}</span>
+            {% if service.restarts > 0 %}<small class="muted" title="{{ service.last_error.as_deref().unwrap_or_default() }}">restarted {{ service.restarts }}×</small>{% endif %}</td>
+          <td>{{ service.activity.as_deref().unwrap_or_default() }}</td>
+          <td class="end">
+            {% if service.paused %}
+            <button class="outline small" hx-post="/actions/services/{{ service.name }}/resume" hx-target="#status" hx-swap="outerHTML">Resume</button>
+            {% else %}
+            <button class="outline secondary small" hx-post="/actions/services/{{ service.name }}/pause" hx-target="#status" hx-swap="outerHTML">Pause</button>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  {% if !status.problems.is_empty() %}
+  <section>
+    <h2>Problems</h2>
+    {% for problem in status.problems %}
+    <article class="problem"><strong>{{ problem.title }}</strong><pre>{{ problem.text }}</pre></article>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <section>
+    <h2>Sources</h2>
+    {% if status.sources.is_empty() %}
+    <p>No sources yet; add one under <code>[sources.&lt;name&gt;]</code> in your config.</p>
+    {% else %}
+    <table class="compact">
+      <thead><tr>
+        <th>Source</th><th class="num">Downloaded</th><th class="num">Waiting</th><th class="num">Skipped</th>
+        <th class="num">Failed</th><th class="num">Cleaned up</th><th class="num">Disk</th><th>Checked</th>
+      </tr></thead>
+      <tbody>
+      {% for source in status.sources %}
+        <tr{% if !source.enabled %} class="disabled"{% endif %}>
+          <td><strong>{{ source.name }}</strong>
+            {% if let Some(title) = source.title %}<br><small class="muted">{{ title }}</small>{% endif %}
+            {% if !source.enabled %}<br><small class="muted">disabled</small>{% endif %}</td>
+          <td class="num">{{ source.count("downloaded") }}</td>
+          <td class="num">{{ source.count("waiting") }}</td>
+          <td class="num">{{ source.count("skipped") }}</td>
+          <td class="num">{% if source.count("failed") + source.count("unavailable") > 0 %}<span class="pill st-failed">{{ source.count("failed") + source.count("unavailable") }}</span>{% else %}0{% endif %}</td>
+          <td class="num">{{ source.count("cleaned_up") }}</td>
+          <td class="num">{{ source.disk }}{% if let Some(max) = source.max_size %}<small class="muted"> / {{ max }}</small>{% endif %}</td>
+          <td><small>{{ source.last_indexed.as_deref().unwrap_or("never") }}</small></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+</div>

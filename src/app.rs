@@ -64,6 +64,8 @@ pub(crate) enum Role {
     Syncer,
     /// The daemon's processor: process downloads, run queued hooks.
     Processor,
+    /// The daemon's web UI.
+    Server,
 }
 
 impl<'a> App<'a> {
@@ -1446,7 +1448,11 @@ impl App<'_> {
 
     /// `tidepool cleanup`: remove what the sources' `cleanup` limits no
     /// longer allow (to the trash, or deleted); `--dry-run` only says what.
-    async fn cleanup(&self, scope: &ScopeArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
+    pub(crate) async fn cleanup(
+        &self,
+        scope: &ScopeArgs,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<i32> {
         use crate::cleanup::{Candidate, files_to_remove, plan, remove};
         use crate::download::human_bytes;
         use crate::state::items;

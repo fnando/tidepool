@@ -8,8 +8,9 @@ keep, and your own scripts can tidy up tags, convert files or send
 notifications along the way.
 
 > **Early days.** tidepool can keep your sources downloaded, run your own
-> scripts, clean up, and keep doing all of that in the background. The web
-> interface isn't available yet.
+> scripts, clean up, and keep doing all of that in the background, with a web
+> page to keep an eye on it. Editing your config in the browser isn't
+> available yet.
 
 Works on Linux and macOS.
 
@@ -947,6 +948,8 @@ tidepool daemon resume syncer
 tidepool daemon restart processor  # stop a part and start it again
 ```
 
+(The web interface is a third part, `server`.)
+
 Leave out the part's name to pause, resume or restart both. A paused part
 stays paused, even if the daemon restarts, until you resume it; you can pause
 or resume while the daemon isn't running too. Pausing lets the part wind down
@@ -971,15 +974,36 @@ Restart=on-failure
 
 ### The web interface
 
-The web interface is coming soon, but you can already choose its settings. By
-default it listens on `http://127.0.0.1:8787`, so only your own computer can
-reach it. To reach it from other machines, change `listen` and set a `token` (a
-password); tidepool won't accept other addresses without one:
+While `tidepool run --daemon` runs, it also serves a web page at
+`http://127.0.0.1:8787` with what it's doing: each part's status, the next and
+last sync, and per source how many videos are downloaded, waiting, skipped,
+failed and cleaned up, and how much disk they use. Buttons sync or clean up
+right away, and pause or resume each part. The page keeps itself up to date.
+
+With the web interface on, `schedule.interval` can be empty: tidepool then
+only syncs when you ask (the button, or `tidepool daemon sync`). Set
+`enabled = false` under `[server]` to turn the web interface off; changes to
+`[server]` apply as soon as you import them.
+
+By default only your own computer can reach it. To reach it from other
+machines, change `listen` and set a `token` (a password); tidepool won't
+accept other addresses without one. The page asks for the token once and
+remembers it:
 
 ```toml
 [server]
 listen = "0.0.0.0:8787"
 token = "a long random secret"
+```
+
+**For scripts**, the same information is at `/api/v1/status` (JSON), and
+`POST` to `/api/v1/sync`, `/api/v1/cleanup` or
+`/api/v1/services/<syncer|processor|server>/<pause|resume>` does the same as
+the buttons. Send `Content-Type: application/json`, or the token as
+`Authorization: Bearer <token>`:
+
+```sh
+curl -X POST -H 'Content-Type: application/json' http://127.0.0.1:8787/api/v1/sync
 ```
 
 ## Seeing more (or less)

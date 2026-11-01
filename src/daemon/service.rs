@@ -23,15 +23,18 @@ pub enum Service {
     Syncer,
     /// Finishes downloads (hooks, embedding, saving) and runs queued hooks.
     Processor,
+    /// The web UI (when `server.enabled`).
+    Server,
 }
 
 impl Service {
-    pub const ALL: [Service; 2] = [Service::Syncer, Service::Processor];
+    pub const ALL: [Service; 3] = [Service::Syncer, Service::Processor, Service::Server];
 
     pub fn name(self) -> &'static str {
         match self {
             Service::Syncer => "syncer",
             Service::Processor => "processor",
+            Service::Server => "server",
         }
     }
 
@@ -43,6 +46,7 @@ impl Service {
         match self {
             Service::Syncer => Role::Syncer,
             Service::Processor => Role::Processor,
+            Service::Server => Role::Server,
         }
     }
 }
@@ -55,6 +59,8 @@ pub struct Signals {
     pub fetched: Arc<Notify>,
     /// Sync now instead of waiting for the schedule.
     pub sync_now: Arc<Notify>,
+    /// Clean up now (the syncer does it).
+    pub cleanup_now: Arc<Notify>,
     /// The current config revision; changes when a new one is stored.
     pub config: watch::Receiver<i64>,
 }
@@ -107,6 +113,7 @@ pub fn spawn(
             let span = match service {
                 Service::Syncer => tracing::info_span!("syncer"),
                 Service::Processor => tracing::info_span!("processor"),
+                Service::Server => tracing::info_span!("server"),
             };
             runtime
                 .block_on(
@@ -123,6 +130,7 @@ pub fn spawn(
                         match service {
                             Service::Syncer => syncer(&app, signals).await,
                             Service::Processor => processor(&app, signals).await,
+                            Service::Server => server(&app, signals).await,
                         }
                     }
                     .instrument(span),
@@ -200,6 +208,17 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
         tokio::select! {
             _ = tokio::time::sleep(wait.min(Duration::from_secs(86400 * 365))) => {}
             _ = signals.sync_now.notified() => {}
+            _ = signals.cleanup_now.notified() => {
+                let now = jiff::Timestamp::now();
+                let state = app.open_state()?;
+                store::set_status(&state.conn, name, "running", Some("cleaning up"), now)?;
+                let scope = crate::cli::ScopeArgs { sources: Vec::new() };
+                if let Err(e) = app.cleanup(&scope, &mut out).await {
+                    tracing::error!("cleanup failed: {e:#}");
+                }
+                out.flush()?;
+                continue;
+            }
             changed = signals.config.changed() => {
                 if changed.is_err() {
                     return Ok(());
@@ -288,6 +307,35 @@ async fn processor(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
             _ = app.shutdown.stopping() => return Ok(()),
         }
     }
+}
+
+/// Serve the web UI until stopped (a new `[server]` config restarts it).
+async fn server(app: &App<'_>, signals: Signals) -> anyhow::Result<()> {
+    let state = app.open_state()?;
+    let config = app.current_config(&state)?.config;
+    let listener = tokio::net::TcpListener::bind(&config.server.listen)
+        .await
+        .map_err(|e| anyhow::anyhow!("cannot listen on {}: {e}", config.server.listen))?;
+    let addr = listener.local_addr()?;
+    let web = Arc::new(crate::web::Web::new(
+        app.paths.state_db.clone(),
+        &config.server,
+        addr,
+        signals.sync_now.clone(),
+        signals.cleanup_now.clone(),
+    ));
+    let url = format!("http://{addr}");
+    tracing::info!("web UI at {url}");
+    store::set_status(
+        &state.conn,
+        Service::Server.name(),
+        "running",
+        Some(&format!("listening on {url}")),
+        jiff::Timestamp::now(),
+    )?;
+    drop(state);
+    crate::web::serve(web, listener, app.shutdown.clone()).await?;
+    Ok(())
 }
 
 /// What commands print, as log lines (the daemon has no terminal).

@@ -340,6 +340,8 @@ pub enum DaemonService {
     Syncer,
     /// Finishes downloads and runs queued hooks
     Processor,
+    /// The web UI
+    Server,
 }
 
 #[derive(Debug, Clone, Subcommand)]

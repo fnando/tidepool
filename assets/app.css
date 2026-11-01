@@ -1,0 +1,19 @@
+/* tidepool's few additions to Pico. */
+.row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.actions { display: flex; gap: .5rem; }
+.actions button, button.small { width: auto; margin: 0; padding: .3rem .8rem; font-size: .875rem; }
+.muted { color: var(--pico-muted-color); }
+.end { text-align: right; }
+table.compact th, table.compact td { padding: .35rem .5rem; font-size: .9rem; }
+table.compact .num { text-align: right; font-variant-numeric: tabular-nums; }
+tr.disabled td { opacity: .6; }
+.pill { display: inline-block; padding: 0 .5rem; border-radius: 1rem; font-size: .8rem;
+        background: var(--pico-secondary-background); color: var(--pico-secondary-inverse); }
+.st-running { background: #2e7d32; color: #fff; }
+.st-idle { background: #546e7a; color: #fff; }
+.st-paused, .st-restarting { background: #ef6c00; color: #fff; }
+.st-failed, .st-stopped { background: #c62828; color: #fff; }
+.flash { padding: .5rem .75rem; border-left: 4px solid var(--pico-primary); background: var(--pico-card-background-color); }
+.flash.error { border-color: #c62828; }
+.problem pre { white-space: pre-wrap; margin: .5rem 0 0; font-size: .85rem; }
+.login { max-width: 24rem; margin: 3rem auto; }

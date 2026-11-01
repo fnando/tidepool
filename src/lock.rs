@@ -193,7 +193,14 @@ mod tests {
             "b still holds it"
         );
         drop(b);
-        assert!(acquire(&path).is_ok(), "released by the last one");
+        // A spawned child may hold a copy of the descriptor for a moment.
+        let released = (0..100).any(|_| {
+            acquire(&path).is_ok() || {
+                std::thread::sleep(std::time::Duration::from_millis(10));
+                false
+            }
+        });
+        assert!(released, "released by the last one");
     }
 
     #[test]

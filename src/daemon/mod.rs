@@ -36,6 +36,8 @@ struct Slot {
     restart_at: Option<Instant>,
     /// Asked to stop, and why.
     stopping: Option<Stopping>,
+    /// Whether the config wants it (`server.enabled` for the server).
+    enabled: bool,
 }
 
 /// Why the supervisor stopped a service.
@@ -73,12 +75,14 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
     };
     startup::check(app, &state, mismatch)?;
     let config = app.current_config(&state)?.config;
-    let Some(interval) = config.schedule.interval.0 else {
+    let interval = config.schedule.interval.0;
+    if interval.is_none() && !config.server.enabled {
         bail!(
-            "schedule.interval is empty, so the daemon has nothing to do; set it \
-             (e.g. interval = \"6h\" under [schedule]) and import the config"
+            "schedule.interval is empty and the web UI is off, so the daemon has nothing to \
+             do; set the interval (e.g. interval = \"6h\" under [schedule]) and import the config"
         );
-    };
+    }
+    let mut server = config.server.clone();
 
     // Whatever a crash left behind, while nothing else works on the library.
     let library = lock::Shared::new(&app.paths.lock);
@@ -101,6 +105,7 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
         library,
         fetched: Arc::new(Notify::new()),
         sync_now: Arc::new(Notify::new()),
+        cleanup_now: Arc::new(Notify::new()),
         config: config_rx,
     };
     let cli = Arc::new(app.cli.clone());
@@ -112,6 +117,7 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
             failures: 0,
             restart_at: Some(Instant::now()),
             stopping: None,
+            enabled: service != Service::Server || server.enabled,
         })
         .collect();
     // Requests made while no daemon was running.
@@ -124,9 +130,15 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
         )?;
     }
     tracing::info!(
-        "tidepool daemon started (pid {}): syncing every {}",
+        "tidepool daemon started (pid {}): {}",
         std::process::id(),
-        crate::config::types::format_duration(interval)
+        match interval {
+            Some(every) => format!(
+                "syncing every {}",
+                crate::config::types::format_duration(every)
+            ),
+            None => "no schedule; syncing only when asked".into(),
+        }
     );
 
     let mut poll = tokio::time::interval(POLL);
@@ -143,6 +155,17 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
             revision = rev;
             tracing::info!("applying config revision {rev}");
             config_tx.send_replace(rev);
+            // A new address, token or switch: the web UI starts over.
+            let now_server = app.current_config(&state)?.config.server;
+            if now_server != server {
+                server = now_server;
+                for slot in slots.iter_mut().filter(|s| s.service == Service::Server) {
+                    slot.enabled = server.enabled;
+                    if server.enabled {
+                        slot.stop(Stopping::Restart);
+                    }
+                }
+            }
         }
         for request in store::waiting_requests(&state.conn)? {
             let answer = handle_request(&request, &mut slots, &signals, &state)?;
@@ -151,8 +174,8 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
         }
         for slot in &mut slots {
             let name = slot.service.name();
-            // `tidepool daemon pause|resume`.
-            let paused = store::service(&state.conn, name)?.paused;
+            // `tidepool daemon pause|resume`, or switched off in the config.
+            let paused = store::service(&state.conn, name)?.paused || !slot.enabled;
             if paused {
                 slot.restart_at = None;
                 if slot.handle.is_some() && slot.stopping.is_none() {
@@ -169,8 +192,9 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
                 let result = handle.join();
                 match slot.stopping.take() {
                     Some(Stopping::Pause) => {
-                        store::set_status(&state.conn, name, "paused", None, now)?;
-                        tracing::info!("{name} is paused");
+                        let status = if slot.enabled { "paused" } else { "off" };
+                        store::set_status(&state.conn, name, status, None, now)?;
+                        tracing::info!("{name} is {status}");
                         continue;
                     }
                     Some(Stopping::Restart) => {
@@ -198,7 +222,8 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
                 }
             }
             if paused && slot.handle.is_none() && slot.stopping.is_none() {
-                store::set_status(&state.conn, name, "paused", None, now)?;
+                let status = if slot.enabled { "paused" } else { "off" };
+                store::set_status(&state.conn, name, status, None, now)?;
             }
             if slot.handle.is_none() && slot.restart_at.is_some_and(|at| at <= Instant::now()) {
                 slot.restart_at = None;
@@ -340,11 +365,14 @@ async fn wait_for_library(
 /// the middle of.
 fn failed(state: &State, service: Service, why: &str, now: jiff::Timestamp) -> anyhow::Result<()> {
     store::failed(&state.conn, service.name(), why, now)?;
-    let (from, to) = match service {
-        Service::Syncer => (status::DOWNLOADING, status::PENDING),
-        Service::Processor => (status::PROCESSING, status::FETCHED),
+    let interrupted = match service {
+        Service::Syncer => Some((status::DOWNLOADING, status::PENDING)),
+        Service::Processor => Some((status::PROCESSING, status::FETCHED)),
+        Service::Server => None,
     };
-    items::reset_status(&state.conn, from, to)?;
+    if let Some((from, to)) = interrupted {
+        items::reset_status(&state.conn, from, to)?;
+    }
     crate::problems::record(
         &state.conn,
         Kind::ServiceFailed,
