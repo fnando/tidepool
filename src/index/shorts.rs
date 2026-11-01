@@ -63,7 +63,8 @@ impl ShortsCheck {
     /// i.e. the item would say if it had been streamed) a regular video.
     /// Videos longer than a Short can be skip the check.
     pub async fn classify(&self, items: &mut [RemoteItem], live_known: bool, shutdown: &Shutdown) {
-        for item in items.iter_mut().filter(|i| i.kind.is_none()) {
+        // Streamed (or a Premiere): yt-dlp decides before download.
+        for item in items.iter_mut().filter(|i| i.kind.is_none() && !i.streamed) {
             if shutdown.is_stopping() {
                 return;
             }
@@ -135,6 +136,7 @@ mod tests {
             availability: crate::index::Availability::Public,
             thumbnails: vec![],
             kind: None,
+            streamed: false,
         }
     }
 

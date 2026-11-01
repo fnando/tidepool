@@ -223,12 +223,14 @@ pub enum ConfigCmd {
 
 #[derive(Debug, Subcommand)]
 pub enum FilterCmd {
-    /// Show which include/exclude rule matches a title for a source
+    /// Show which rules match a video tidepool knows (by id), or a title
     Test {
-        title: String,
-        /// Source whose rules to test (name, playlist id or URL)
+        /// A video id (tested with everything known about it) or a title
+        video: String,
+        /// Source whose rules to test (name, playlist id or URL); for a video id,
+        /// every source it's in when left out
         #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
-        source: SourceRef,
+        source: Option<SourceRef>,
     },
 }
 

@@ -84,7 +84,11 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Init(args) => app.init(args, out),
         Command::Config(args) => app.config(args, out),
         Command::Filter {
-            cmd: FilterCmd::Test { title, source },
+            cmd:
+                FilterCmd::Test {
+                    video: title,
+                    source,
+                },
         } => app.filter_test(title, source, out),
         Command::Tools { cmd } => app.tools(cmd, out).await,
         Command::Index(scope) => app.index(scope, out).await,
@@ -2392,62 +2396,157 @@ impl App<'_> {
 
     fn filter_test(
         &self,
-        title: &str,
-        source: &SourceRef,
+        video: &str,
+        source: &Option<SourceRef>,
         out: &mut dyn Write,
     ) -> anyhow::Result<i32> {
+        use crate::state::items;
+
         let state = self.open_state()?;
         let loaded = self.current_config(&state)?;
         let sources = effective_sources(&loaded.config);
-        let source = resolve_source(source, &sources)?;
         let limit =
             usize::try_from(loaded.config.general.regex_backtrack_limit).unwrap_or(usize::MAX);
-        let rules =
-            RuleSet::compile(source, limit, jiff::Timestamp::now()).map_err(anyhow::Error::msg)?;
-        // A bare title has no duration or date: test only the include/exclude rules.
+        let now = jiff::Timestamp::now();
+
+        // A video tidepool knows: everything stored about it, in each source.
+        let known = items::videos(&state.conn, &[video.to_string()])?;
+        if let Some(item) = known.get(video) {
+            let statuses = items::item_statuses(&state.conn, video)?;
+            let picked: Vec<&EffectiveSource> = match source {
+                Some(r) => vec![resolve_source(r, &sources)?],
+                None => sources
+                    .iter()
+                    .filter(|s| statuses.iter().any(|(key, _)| *key == s.key))
+                    .collect(),
+            };
+            describe_video(out, item)?;
+            if picked.is_empty() {
+                writeln!(out, "in no configured source; pass --source to test one")?;
+            }
+            for source in picked {
+                let rules = RuleSet::compile(source, limit, now).map_err(anyhow::Error::msg)?;
+                let status = statuses
+                    .iter()
+                    .find(|(key, _)| *key == source.key)
+                    .map(|(_, status)| status.replace('_', " "))
+                    .unwrap_or_else(|| "not in this source".into());
+                writeln!(out, "\nsource {} ({status})", source.key)?;
+                write_rules(out, &rules, &Fields::from_item(item))?;
+            }
+            return Ok(exit::OK);
+        }
+
+        // A title: only the include/exclude rules (no duration or date).
+        let Some(source) = source else {
+            bail!(
+                "{video:?} isn't a video tidepool knows; to test it as a title, pass --source <name>"
+            );
+        };
+        let source = resolve_source(source, &sources)?;
+        let rules = RuleSet::compile(source, limit, now).map_err(anyhow::Error::msg)?;
         let rules = RuleSet {
             min_duration: None,
             max_duration: None,
             cutoff: None,
             ..rules
         };
-        let item = Fields {
-            title: Some(title),
-            ..Fields::default()
-        };
-
         writeln!(out, "source {} ({})", source.key, source.ids().join(", "))?;
-        if rules.include.is_empty() && rules.exclude.is_empty() {
-            writeln!(out, "  no include/exclude rules")?;
-        }
-        for rule in rules.include.iter().chain(&rules.exclude) {
-            let fields: Vec<String> = rule
-                .fields
-                .iter()
-                .map(|f| format!("{f:?}").to_lowercase())
-                .collect();
-            let result = match rule.test(&item) {
-                Match::Yes => "match".to_string(),
-                Match::No => "no match".to_string(),
-                Match::Unknown(field) => format!(
-                    "not evaluated (needs {})",
-                    format!("{field:?}").to_lowercase()
-                ),
-                Match::Error(e) => format!("error: {e}"),
-            };
-            writeln!(
-                out,
-                "  {}[{}] {:?} on {}: {result}",
-                rule.list,
-                rule.index,
-                rule.source,
-                fields.join(", ")
-            )?;
-        }
-        let decision = rules.decide(&item);
-        writeln!(out, "decision: {decision}")?;
+        write_rules(
+            out,
+            &rules,
+            &Fields {
+                title: Some(video),
+                ..Fields::default()
+            },
+        )?;
         Ok(exit::OK)
     }
+}
+
+/// What's stored about a video, the fields rules look at.
+fn describe_video(out: &mut dyn Write, item: &crate::index::RemoteItem) -> std::io::Result<()> {
+    writeln!(out, "{} “{}”", item.video_id, item.title)?;
+    let unknown = || "not known yet".to_string();
+    let kind = item
+        .kind
+        .map(|k| k.as_str().to_string())
+        .unwrap_or_else(|| "not known yet (checked before download)".into());
+    // 4m26s, 1h2m3s.
+    let duration = item
+        .duration
+        .map(|d| {
+            let (h, m, s) = (d / 3600, d % 3600 / 60, d % 60);
+            match (h, m) {
+                (0, 0) => format!("{s}s"),
+                (0, _) => format!("{m}m{s}s"),
+                _ => format!("{h}h{m}m{s}s"),
+            }
+        })
+        .unwrap_or_else(unknown);
+    let published = item
+        .published_at
+        .map(|t| t.strftime("%Y-%m-%d").to_string())
+        .unwrap_or_else(unknown);
+    writeln!(
+        out,
+        "  channel: {}",
+        item.channel.as_deref().unwrap_or("not known yet")
+    )?;
+    writeln!(out, "  kind: {kind}")?;
+    writeln!(out, "  duration: {duration}")?;
+    writeln!(out, "  published: {published}")?;
+    writeln!(out, "  availability: {}", item.availability.as_str())?;
+    match &item.tags {
+        Some(tags) if !tags.is_empty() => writeln!(out, "  tags: {}", tags.join(", "))?,
+        Some(_) => writeln!(out, "  tags: none")?,
+        None => writeln!(out, "  tags: not known yet")?,
+    }
+    let description = match item.description.as_deref() {
+        None => "not known yet".to_string(),
+        Some("") => "none".to_string(),
+        Some(d) => {
+            let first = d.lines().next().unwrap_or_default();
+            if d.lines().count() > 1 || first.chars().count() > 80 {
+                format!("{}…", first.chars().take(80).collect::<String>())
+            } else {
+                first.to_string()
+            }
+        }
+    };
+    writeln!(out, "  description: {description}")
+}
+
+/// Each rule's result for `item`, then the decision.
+fn write_rules(out: &mut dyn Write, rules: &RuleSet, item: &Fields<'_>) -> std::io::Result<()> {
+    if rules.include.is_empty() && rules.exclude.is_empty() {
+        writeln!(out, "  no include/exclude rules")?;
+    }
+    for rule in rules.include.iter().chain(&rules.exclude) {
+        let fields: Vec<String> = rule
+            .fields
+            .iter()
+            .map(|f| format!("{f:?}").to_lowercase())
+            .collect();
+        let result = match rule.test(item) {
+            Match::Yes => "match".to_string(),
+            Match::No => "no match".to_string(),
+            Match::Unknown(field) => format!(
+                "not evaluated (needs {})",
+                format!("{field:?}").to_lowercase()
+            ),
+            Match::Error(e) => format!("error: {e}"),
+        };
+        writeln!(
+            out,
+            "  {}[{}] {:?} on {}: {result}",
+            rule.list,
+            rule.index,
+            rule.source,
+            fields.join(", ")
+        )?;
+    }
+    writeln!(out, "decision: {}", rules.decide(item))
 }
 
 /// Find the configured source a `--source` value refers to.

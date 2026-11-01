@@ -82,6 +82,9 @@ pub struct RemoteItem {
     pub thumbnails: Vec<Thumbnail>,
     /// Regular video, Short or live stream; `None` until it's known.
     pub kind: Option<VideoKind>,
+    /// The API shows live-stream details: a past stream, or a Premiere (a
+    /// video aired at a set time). Only yt-dlp tells which, before download.
+    pub streamed: bool,
 }
 
 /// Shorts are at most 3 minutes long.

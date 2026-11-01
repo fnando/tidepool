@@ -461,6 +461,7 @@ pub fn remote_item(entry: &Entry, position: u32, video: Option<&Video>) -> Remot
             availability: entry.availability,
             thumbnails: Vec::new(),
             kind: None,
+            streamed: false,
         };
     };
     let availability = match (entry.availability, video.broadcast) {
@@ -482,14 +483,17 @@ pub fn remote_item(entry: &Entry, position: u32, video: Option<&Video>) -> Remot
         published_at: video.published_at.or(entry.published_at),
         availability,
         thumbnails: video.thumbnails.clone(),
+        // Live-stream details mean a stream or a Premiere (which counts as a
+        // video): yt-dlp settles it. Scheduled and live ones aren't known yet.
         kind: if video.was_live || video.broadcast.is_some() {
-            Some(VideoKind::Live)
+            None
         } else if video.duration.is_some_and(|d| d > SHORTS_MAX_SECONDS) {
             Some(VideoKind::Video)
         } else {
             // Short or not: only YouTube's /shorts/ page tells.
             None
         },
+        streamed: video.was_live,
     }
 }
 

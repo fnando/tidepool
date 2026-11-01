@@ -437,14 +437,6 @@ pub async fn index_source(
         for item in merged.items.iter_mut().filter(|i| i.kind.is_none()) {
             item.kind = known.get(&item.video_id).copied();
         }
-        for item in merged.items.iter_mut().filter(|i| i.kind.is_none()) {
-            if matches!(
-                item.availability,
-                crate::index::Availability::Live | crate::index::Availability::Upcoming
-            ) {
-                item.kind = Some(crate::index::VideoKind::Live);
-            }
-        }
         crate::index::shorts::ShortsCheck::default()
             .classify(&mut merged.items, hows == ["api"], shutdown)
             .await;

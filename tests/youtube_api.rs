@@ -280,17 +280,51 @@ async fn kind_rules_skip_shorts_and_live_streams() {
         count("SELECT COUNT(*) FROM videos WHERE kind = 'short'"),
         109
     );
-    assert_eq!(count("SELECT COUNT(*) FROM videos WHERE kind = 'live'"), 19);
+    // Past streams and Premieres look the same through the API: yt-dlp
+    // tells them apart before download. Scheduled ones aren't known yet.
+    assert_eq!(count("SELECT COUNT(*) FROM videos WHERE kind = 'live'"), 0);
+    assert_eq!(
+        count("SELECT COUNT(*) FROM items WHERE status = 'pending_check'"),
+        17
+    );
+    assert_eq!(
+        count("SELECT COUNT(*) FROM items WHERE status = 'filtered'"),
+        109 + 2,
+        "Shorts, and the 2 scheduled streams (not available yet)"
+    );
     assert_eq!(
         count("SELECT COUNT(*) FROM items WHERE status = 'pending'"),
-        587 - 109 - 19,
-        "Shorts and streams skipped"
+        587 - 109 - 2 - 17
     );
     assert_eq!(
         shorts.received_requests().await.unwrap().len(),
         179,
-        "only videos of 3 minutes or less that aren't streams are checked"
+        "only videos of 3 minutes or less without live-stream details are checked"
     );
+
+    // Why each one is where it is.
+    let out = env
+        .cmd(&["filter", "test", "dJkbfKpZdWM"])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let out = String::from_utf8(out).unwrap();
+    assert!(out.contains("dJkbfKpZdWM “"), "{out}");
+    assert!(
+        out.contains("kind: not known yet (checked before download)"),
+        "{out}"
+    );
+    assert!(out.contains("duration: 4m26s"), "{out}");
+    assert!(out.contains("source supercombo (pending check)"), "{out}");
+    assert!(out.contains("not evaluated (needs kind)"), "{out}");
+    env.cmd(&["filter", "test", "nope"])
+        .assert()
+        .failure()
+        .stderr(contains(
+            "isn't a video tidepool knows; to test it as a title, pass --source",
+        ));
 
     // Known kinds aren't checked again.
     env.cmd(&["index"])

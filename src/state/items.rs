@@ -274,6 +274,7 @@ mod tests {
                 height: Some(360),
             }],
             kind: None,
+            streamed: false,
         }
     }
 
@@ -674,6 +675,7 @@ pub fn download_queue(
                         .and_then(|t| serde_json::from_str(&t).ok())
                         .unwrap_or_default(),
                     kind: kind.as_deref().and_then(crate::index::VideoKind::parse),
+                    streamed: false,
                 },
                 video_id,
             })
@@ -1245,6 +1247,7 @@ fn videos_where(
                         .get::<_, Option<String>>(10)?
                         .as_deref()
                         .and_then(crate::index::VideoKind::parse),
+                    streamed: false,
                 })
             })
             .optional()?;
@@ -1341,6 +1344,14 @@ pub fn reset_interrupted(conn: &Connection) -> rusqlite::Result<usize> {
         "UPDATE items SET status = 'pending' WHERE status = 'downloading'",
         [],
     )
+}
+
+/// A video's status in each source it's in: `(source, status)`.
+pub fn item_statuses(conn: &Connection, video_id: &str) -> rusqlite::Result<Vec<(String, String)>> {
+    let mut stmt = conn
+        .prepare("SELECT source_key, status FROM items WHERE video_id = ?1 ORDER BY source_key")?;
+    stmt.query_map([video_id], |r| Ok((r.get(0)?, r.get(1)?)))?
+        .collect()
 }
 
 /// Every item's status in a source.
@@ -1525,6 +1536,7 @@ mod download_tests {
                 height: None,
             }],
             kind: None,
+            streamed: false,
         }
     }
 

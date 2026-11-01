@@ -726,14 +726,38 @@ exclude = [{ field = "kind", value = "short" }, { field = "kind", value = "live"
 ```
 
 The fields are `title`, `description`, `channel`, `tags` and `id`, plus `kind`:
-whether a video is a regular `video`, a `short` or a `live` stream (including
-past and scheduled ones). `kind` only works with `value`. It's handy for
-channels, which include everything they upload: the example above keeps only
-regular videos. tidepool asks YouTube which videos are Shorts, so it's exact,
-not a guess from their length; it only asks for videos of 3 minutes or less,
-and only once per video.
+whether a video is a regular `video`, a `short` or a `live` stream (past ones;
+a scheduled stream is decided once it has aired). A Premiere, a video
+YouTube airs at a set time, is a `video`. `kind` only works with `value`. It's
+handy for channels, which include everything they upload: the example above
+keeps only regular videos. tidepool asks YouTube which videos are Shorts, so
+it's exact, not a guess from their length; it only asks for videos of 3
+minutes or less, and only once per video. Telling a past stream from a
+Premiere takes a closer look at the video, so those are decided just before
+download.
 
-Try a title against a source's rules:
+To see why a video was skipped (or kept), test it by its id: tidepool shows
+what it knows about the video and each rule's result, for every source it's
+in (or the one you give with `--source`):
+
+```sh
+tidepool filter test dJkbfKpZdWM
+```
+
+```
+dJkbfKpZdWM “Supercombo, @kamaitachi - Infame (Clipe Oficial)”
+  channel: Supercombo
+  kind: video
+  duration: 4m26s
+  published: 2023-03-31
+  ...
+source supercombo (pending)
+  exclude[0] "kind = \"short\"" on kind: no match
+  exclude[1] "kind = \"live\"" on kind: no match
+decision: keep (no include rules)
+```
+
+Or try a title against a source's rules:
 
 ```sh
 tidepool filter test "Lofi LIVE radio" --source lofi
