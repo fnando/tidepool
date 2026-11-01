@@ -1265,6 +1265,23 @@ impl App<'_> {
                 })
                 .collect();
             let victims = plan(&source.cleanup, &candidates, now);
+            // With --dry-run, a line per source: how many go and how many stay.
+            let tally = format!(
+                "{}: {} {}: {}, {} stay",
+                source.key,
+                kept.len(),
+                if kept.len() == 1 { "video" } else { "videos" },
+                if victims.is_empty() {
+                    "none would be removed".to_string()
+                } else {
+                    format!(
+                        "{} would be removed ({})",
+                        victims.len(),
+                        human_bytes(victims.iter().map(|(i, _)| kept[*i].media_bytes).sum())
+                    )
+                },
+                kept.len() - victims.len()
+            );
             let trash_root =
                 crate::config::check::trash_dir(source, &self.dirs).map_err(anyhow::Error::msg)?;
             for (i, reason) in victims {
@@ -1351,6 +1368,9 @@ impl App<'_> {
                         writeln!(out, "{label}: {e}")?;
                     }
                 }
+            }
+            if dry_run {
+                writeln!(out, "{tally}")?;
             }
         }
         let hooks_failed = tracker.has_failures();

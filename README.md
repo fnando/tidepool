@@ -656,7 +656,7 @@ its folder, and the folder goes once it's empty. A cleaned-up video isn't
 downloaded again (`tidepool reset <video id>` makes it downloadable again).
 
 ```sh
-tidepool cleanup --dry-run     # what would go, without removing anything
+tidepool cleanup --dry-run     # what would go (and how many stay, per source), without removing anything
 tidepool cleanup               # every source (or --source <name>)
 tidepool trash list            # what's in the trash, and until when
 tidepool trash restore dQw4w9WgXcQ
