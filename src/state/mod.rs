@@ -9,7 +9,12 @@ use rusqlite_migration::{M, Migrations};
 
 pub mod items;
 
-const MIGRATION_LIST: &[M<'static>] = &[M::up(include_str!("schema.sql"))];
+const MIGRATION_LIST: &[M<'static>] = &[
+    M::up(include_str!("schema.sql")),
+    // Which version of the kind logic decided `videos.kind`; see
+    // `items::KIND_VERSION`. Kinds from before are decided again.
+    M::up("ALTER TABLE videos ADD COLUMN kind_version INTEGER;"),
+];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_LIST);
 
 #[derive(Debug, thiserror::Error)]
@@ -75,6 +80,35 @@ mod tests {
     #[test]
     fn migrations_are_valid() {
         assert!(MIGRATIONS.validate().is_ok());
+    }
+
+    #[test]
+    fn kinds_from_before_are_decided_again() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("state.db");
+        // A database from before kinds had a version, with a Premiere stored
+        // as a live stream.
+        {
+            let mut conn = Connection::open(&path).unwrap();
+            Migrations::from_slice(&MIGRATION_LIST[..1])
+                .to_latest(&mut conn)
+                .unwrap();
+            conn.execute(
+                "INSERT INTO videos (id, title, kind) VALUES ('dJkbfKpZdWM', 'Infame', 'live')",
+                [],
+            )
+            .unwrap();
+        }
+        let state = State::open(&path).unwrap();
+        let ids = vec!["dJkbfKpZdWM".to_string()];
+        assert!(
+            items::known_kinds(&state.conn, &ids).unwrap().is_empty(),
+            "not trusted: decided again"
+        );
+        assert_eq!(
+            items::videos(&state.conn, &ids).unwrap()["dJkbfKpZdWM"].kind,
+            None
+        );
     }
 
     #[test]

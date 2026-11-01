@@ -564,6 +564,21 @@ mod tests {
     }
 }
 
+/// The version of how tidepool decides a video's kind. Bump it when that
+/// changes (e.g. Premieres stopped counting as live streams in 2): kinds
+/// stored by an older version count as unknown, and are decided again.
+pub const KIND_VERSION: i64 = 2;
+
+/// `videos.kind` when the current kind logic decided it; `NULL` otherwise.
+fn trusted_kind(table: &str) -> String {
+    let prefix = if table.is_empty() {
+        String::new()
+    } else {
+        format!("{table}.")
+    };
+    format!("CASE WHEN {prefix}kind_version = {KIND_VERSION} THEN {prefix}kind END")
+}
+
 fn upsert_video(conn: &Connection, item: &RemoteItem, now: &str) -> rusqlite::Result<()> {
     let tags = item
         .tags
@@ -573,8 +588,8 @@ fn upsert_video(conn: &Connection, item: &RemoteItem, now: &str) -> rusqlite::Re
         .then(|| serde_json::to_string(&item.thumbnails).expect("thumbnails serialize"));
     conn.execute(
         "INSERT INTO videos (id, title, channel, channel_id, description, tags_json, duration_s,
-           published_at, availability, thumbs_json, updated_at, kind)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
+           published_at, availability, thumbs_json, updated_at, kind, kind_version)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)
          ON CONFLICT(id) DO UPDATE SET title = excluded.title,
            channel = COALESCE(excluded.channel, videos.channel),
            channel_id = COALESCE(excluded.channel_id, videos.channel_id),
@@ -585,6 +600,8 @@ fn upsert_video(conn: &Connection, item: &RemoteItem, now: &str) -> rusqlite::Re
            availability = excluded.availability,
            thumbs_json = COALESCE(excluded.thumbs_json, videos.thumbs_json),
            updated_at = excluded.updated_at,
+           kind_version = CASE WHEN excluded.kind IS NOT NULL THEN excluded.kind_version
+             ELSE videos.kind_version END,
            kind = COALESCE(excluded.kind, videos.kind)",
         params![
             item.video_id,
@@ -599,6 +616,7 @@ fn upsert_video(conn: &Connection, item: &RemoteItem, now: &str) -> rusqlite::Re
             thumbs,
             now,
             item.kind.map(|k| k.as_str()),
+            item.kind.map(|_| KIND_VERSION),
         ],
     )?;
     Ok(())
@@ -631,17 +649,18 @@ pub fn download_queue(
     sources: &[String],
     now: Timestamp,
 ) -> rusqlite::Result<Vec<QueuedItem>> {
-    let mut stmt = conn.prepare(
+    let mut stmt = conn.prepare(&format!(
         "SELECT i.video_id, i.position, i.status, i.attempts, s.title, v.title, v.channel, v.channel_id,
                 v.description, v.tags_json, v.duration_s, v.published_at, v.availability, v.thumbs_json,
-                v.kind
+                {}
          FROM items i JOIN videos v ON v.id = i.video_id JOIN sources s ON s.key = i.source_key
          WHERE i.source_key = ?1 AND i.in_remote = 1
            AND (i.status IN ('pending', 'pending_check')
                 OR (i.status = 'failed' AND i.attempts < ?3
                     AND (i.next_attempt_at IS NULL OR i.next_attempt_at <= ?2)))
          ORDER BY i.position",
-    )?;
+        trusted_kind("v")
+    ))?;
     let mut queue = Vec::new();
     for key in sources {
         let rows = stmt.query_map(params![key, sql_time(now), MAX_ATTEMPTS], |r| {
@@ -1216,8 +1235,9 @@ fn videos_where(
 ) -> rusqlite::Result<std::collections::HashMap<String, RemoteItem>> {
     let mut stmt = conn.prepare(&format!(
         "SELECT id, title, channel, channel_id, description, tags_json, duration_s, published_at,
-           availability, thumbs_json, kind
-         FROM videos WHERE id = ?1 {condition}"
+           availability, thumbs_json, {}
+         FROM videos WHERE id = ?1 {condition}",
+        trusted_kind("")
     ))?;
     let mut out = std::collections::HashMap::new();
     for id in ids {
@@ -1263,7 +1283,10 @@ pub fn known_kinds(
     conn: &Connection,
     ids: &[String],
 ) -> rusqlite::Result<std::collections::HashMap<String, crate::index::VideoKind>> {
-    let mut stmt = conn.prepare("SELECT kind FROM videos WHERE id = ?1 AND kind IS NOT NULL")?;
+    let mut stmt = conn.prepare(&format!(
+        "SELECT kind FROM videos WHERE id = ?1 AND kind IS NOT NULL AND {} IS NOT NULL",
+        trusted_kind("")
+    ))?;
     let mut out = std::collections::HashMap::new();
     for id in ids {
         let kind: Option<String> = stmt.query_row([id], |r| r.get(0)).optional()?;
