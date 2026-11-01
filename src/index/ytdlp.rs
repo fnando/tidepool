@@ -125,13 +125,14 @@ pub fn list_args(url: &str, cookies_file: Option<&Path>) -> Vec<String> {
 
 /// List a source with yt-dlp.
 pub async fn list(
-    ytdlp: &Path,
+    ytdlp: &crate::tools::Ytdlp,
     url: &str,
     cookies_file: Option<&Path>,
 ) -> Result<RemoteList, IndexError> {
     let args = list_args(url, cookies_file);
     tracing::trace!("yt-dlp command: {} {}", ytdlp.display(), args.join(" "));
-    let output = tokio::process::Command::new(ytdlp)
+    let output = ytdlp
+        .command()
         .args(&args)
         .kill_on_drop(true)
         .output()
@@ -247,7 +248,9 @@ mod tests {
 
     #[tokio::test]
     async fn runs_the_fake_ytdlp() {
-        let fake = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/bin/yt-dlp");
+        let fake = crate::tools::Ytdlp::new(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/bin/yt-dlp"),
+        );
         let remote = list(
             &fake,
             "https://www.youtube.com/playlist?list=PLXLpuA-bwY4s",

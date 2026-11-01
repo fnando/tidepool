@@ -1,0 +1,12 @@
+---
+source: tests/config_validation.rs
+expression: err
+---
+tools_and_youtube.toml:2:11 tools.yt-dlp.channel: "beta" is not one of "stable", "nightly", "master"
+tools_and_youtube.toml:3:16 tools.yt-dlp.update_check: "often" is not a valid duration (e.g. "30d", "12h", "1h30m")
+tools_and_youtube.toml:4:1 tools.yt-dlp.ytdlp_path: unknown key "ytdlp_path"
+tools_and_youtube.toml:7:16 tools.deno.update_check: "sometimes" is not a valid duration (e.g. "30d", "12h", "1h30m")
+tools_and_youtube.toml:8:8 tools.deno.path: must not be empty (remove it to use the default)
+tools_and_youtube.toml:10:8 tools.node: unknown key "node"
+tools_and_youtube.toml:14:1 category.default.youtube.api_keys: unknown key "api_keys"
+tools_and_youtube.toml:15:11 category.default.youtube.api_key: must not be empty (remove it to use the default)

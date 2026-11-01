@@ -52,6 +52,11 @@ impl Dirs {
         self.data_dir.join("bin")
     }
 
+    /// The managed Deno binary.
+    pub fn managed_deno(&self) -> PathBuf {
+        self.bin_dir().join("deno")
+    }
+
     /// The managed yt-dlp binary for a release channel.
     pub fn managed_ytdlp(&self, channel: crate::config::YtdlpChannel) -> PathBuf {
         self.bin_dir().join(format!("yt-dlp-{}", channel.as_str()))

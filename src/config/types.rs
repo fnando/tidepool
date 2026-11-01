@@ -26,9 +26,9 @@ pub struct Config {
     /// Settings for the whole run: concurrency, duplicates, shutdown.
     #[serde(default)]
     pub general: GeneralConfig,
-    /// The yt-dlp binary: managed by tidepool, or your own.
+    /// The tools tidepool runs: yt-dlp and Deno.
     #[serde(default)]
-    pub ytdlp: YtdlpConfig,
+    pub tools: ToolsConfig,
     /// Scheduling for `tidepool run --daemon`.
     #[serde(default)]
     pub schedule: ScheduleConfig,
@@ -84,7 +84,41 @@ pub enum Duplicates {
     Download,
 }
 
-/// `[ytdlp]`
+/// `[tools]`
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields, default)]
+pub struct ToolsConfig {
+    /// yt-dlp: managed by tidepool (default) or your own binary.
+    #[serde(rename = "yt-dlp")]
+    pub ytdlp: YtdlpConfig,
+    /// Deno, the JavaScript runtime yt-dlp needs for YouTube.
+    pub deno: DenoConfig,
+}
+
+/// `[tools.deno]`
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields, default)]
+pub struct DenoConfig {
+    /// tidepool downloads Deno 2.x and keeps it updated.
+    pub managed: bool,
+    /// How often to look for a new release.
+    pub update_check: HumanDuration,
+    /// Deno executable; only used when `managed = false`.
+    #[schemars(length(min = 1))]
+    pub path: String,
+}
+
+impl Default for DenoConfig {
+    fn default() -> Self {
+        Self {
+            managed: true,
+            update_check: HumanDuration(Duration::from_secs(86400)),
+            path: "deno".into(),
+        }
+    }
+}
+
+/// `[tools.yt-dlp]`
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields, default)]
 pub struct YtdlpConfig {

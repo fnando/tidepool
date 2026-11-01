@@ -35,11 +35,16 @@ version = 1
 # regex_backtrack_limit = 1000000   # fancy-regex step limit per match
 # shutdown_timeout = "10s"          # grace period for child processes after SIGINT/SIGTERM
 
-[ytdlp]
+[tools.yt-dlp]
 # managed = true                    # tidepool downloads yt-dlp and keeps it updated
 # channel = "nightly"               # stable | nightly | master
 # update_check = "1h"               # how often to look for a new yt-dlp release
 # path = "yt-dlp"                   # your own yt-dlp; only used when managed = false
+
+[tools.deno]                        # the JavaScript runtime yt-dlp needs for YouTube
+# managed = true                    # tidepool downloads Deno 2.x and keeps it updated
+# update_check = "1d"               # how often to look for a new Deno release
+# path = "deno"                     # your own deno; only used when managed = false
 
 [schedule]
 interval = "6h"                     # tidepool run --daemon: sync + cleanup this often; "" = off
@@ -141,7 +146,7 @@ mod tests {
     use super::*;
     use crate::config::merge::effective_source;
     use crate::config::schema::generate;
-    use crate::config::{Config, GeneralConfig, ServerConfig, SourceConfig, YtdlpConfig, load_str};
+    use crate::config::{Config, GeneralConfig, ServerConfig, SourceConfig, ToolsConfig, load_str};
     use serde_json::Value;
 
     #[test]
@@ -197,7 +202,7 @@ mod tests {
 
         // Commented values are the built-in defaults.
         assert_eq!(config.general, GeneralConfig::default());
-        assert_eq!(config.ytdlp, YtdlpConfig::default());
+        assert_eq!(config.tools, ToolsConfig::default());
         assert_eq!(config.server, ServerConfig::default());
         let plain = SourceConfig {
             url: "https://www.youtube.com/playlist?list=PLx".into(),
@@ -234,7 +239,9 @@ mod tests {
         let where_documented: &[(&str, &[&str])] = &[
             ("", &[""]),
             ("GeneralConfig", &["/general"]),
-            ("YtdlpConfig", &["/ytdlp"]),
+            ("ToolsConfig", &["/tools"]),
+            ("YtdlpConfig", &["/tools/yt-dlp"]),
+            ("DenoConfig", &["/tools/deno"]),
             ("ScheduleConfig", &["/schedule"]),
             ("ServerConfig", &["/server"]),
             ("CategoryConfig", &["/category/default"]),

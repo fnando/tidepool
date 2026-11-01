@@ -15,8 +15,9 @@ Works on Linux and macOS.
 
 - [`ffmpeg`](https://ffmpeg.org) (including `ffprobe`), e.g.
   `brew install ffmpeg` or `apt install ffmpeg`.
-- [`yt-dlp`](https://github.com/yt-dlp/yt-dlp): you don't need to install it;
-  tidepool downloads it and keeps it up to date (see [yt-dlp](#yt-dlp)).
+- [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) and [Deno](https://deno.com)
+  (which yt-dlp needs for YouTube): you don't need to install them; tidepool
+  downloads them and keeps them up to date (see [Tools](#tools)).
 
 ## Installation
 
@@ -101,7 +102,7 @@ any text editor. Its sections:
 | Section | What it's for |
 | --- | --- |
 | `[general]` | How many downloads run at once, and other settings for the whole run |
-| `[ytdlp]` | Which yt-dlp to use and how it's kept up to date |
+| `[tools.yt-dlp]`, `[tools.deno]` | Which yt-dlp and Deno to use and how they're kept up to date |
 | `[schedule]` | How often to sync in the background |
 | `[server]` | The web interface |
 | `[category.<name>]` | Where videos go and how they're downloaded, named and filtered; see [Categories](#categories) |
@@ -556,41 +557,54 @@ The config file is created so only you can read it. If you create it some
 other way and it holds a key or token, `config check` warns you if other users
 can read it.
 
-### yt-dlp
+### Tools
 
-tidepool downloads [yt-dlp](https://github.com/yt-dlp/yt-dlp) the first time
-it's needed and keeps it up to date, checking for a new release at most once an
-hour. Before installing a release, it checks that the release was signed by the
-yt-dlp project and that the file wasn't altered, so a tampered download is
-never used.
+tidepool downloads [yt-dlp](https://github.com/yt-dlp/yt-dlp) and
+[Deno](https://deno.com) the first time they're needed, and keeps them up to
+date. Deno is the JavaScript runtime yt-dlp needs to download from YouTube.
+
+- **yt-dlp** is checked for a new release at most once an hour. Before
+  installing one, tidepool checks that it was signed by the yt-dlp project and
+  that the file wasn't altered, so a tampered download is never used.
+- **Deno** is checked once a day. tidepool installs the newest 2.x release
+  (yt-dlp needs at least 2.3.0) and checks it against the checksum published
+  with the release. Deno doesn't sign its releases, so this catches broken
+  downloads, but not a release that was tampered with on GitHub itself.
 
 | Command | What it does |
 | --- | --- |
-| `tidepool ytdlp status` | Show the installed version, where it is, and when tidepool last checked for updates |
-| `tidepool ytdlp update` | Check for a new release now and install it |
-| `tidepool ytdlp rollback` | Go back to the version you had before the last update. The release you rolled back from is skipped until a newer one comes out |
+| `tidepool tools status` | Show each tool's version, where it is, and when tidepool last checked for updates |
+| `tidepool tools update [yt-dlp \| deno]` | Check for new releases now and install them (both, or one) |
+| `tidepool tools rollback <yt-dlp \| deno>` | Go back to the version you had before the last update. The release you rolled back from is skipped until a newer one comes out |
 
 By default tidepool follows yt-dlp's *nightly* releases, which is what the
 yt-dlp project recommends, since YouTube changes often. To follow the regular
 releases instead, or check less often:
 
 ```toml
-[ytdlp]
+[tools.yt-dlp]
 channel = "stable"         # stable | nightly | master
 update_check = "1d"
 ```
 
-#### Using your own yt-dlp
+#### Using your own
 
-If you'd rather install and update yt-dlp yourself:
+If you'd rather install and update them yourself:
 
 ```toml
-[ytdlp]
+[tools.yt-dlp]
 managed = false
 path = "/usr/local/bin/yt-dlp"
+
+[tools.deno]
+managed = false
+path = "/opt/homebrew/bin/deno"   # or leave out path to use the deno on your PATH
 ```
 
-tidepool then uses that copy as it is, and never updates it.
+tidepool then uses those copies as they are, and never updates them. To use
+another JavaScript runtime instead of Deno (Node, for example), set
+`managed = false` in `[tools.deno]` and pass yt-dlp's own option in a category:
+`ytdlp_args = ["--js-runtimes", "node"]`.
 
 ### The web interface
 

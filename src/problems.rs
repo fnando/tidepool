@@ -32,10 +32,12 @@ pub enum Kind {
     RegexLimit,
     /// A hook failed.
     HookFailing,
+    /// The managed Deno couldn't be installed or updated.
+    DenoFailed,
 }
 
 impl Kind {
-    pub const ALL: [Kind; 11] = [
+    pub const ALL: [Kind; 12] = [
         Kind::Extraction,
         Kind::BotCheck,
         Kind::RateLimited,
@@ -47,6 +49,7 @@ impl Kind {
         Kind::UpdateFailed,
         Kind::RegexLimit,
         Kind::HookFailing,
+        Kind::DenoFailed,
     ];
 
     pub fn as_str(self) -> &'static str {
@@ -62,6 +65,7 @@ impl Kind {
             Kind::UpdateFailed => "ytdlp_update_failed",
             Kind::RegexLimit => "regex_limit",
             Kind::HookFailing => "hook_failing",
+            Kind::DenoFailed => "deno_failed",
         }
     }
 
@@ -82,6 +86,9 @@ impl Kind {
             Kind::UpdateFailed => "yt-dlp couldn't be updated",
             Kind::RegexLimit => "a rule is too slow (regex limit reached)",
             Kind::HookFailing => "a hook is failing",
+            Kind::DenoFailed => {
+                "Deno (the JavaScript runtime yt-dlp needs) couldn't be installed or updated"
+            }
         }
     }
 
@@ -94,6 +101,7 @@ impl Kind {
                 | Kind::UpdateFailed
                 | Kind::RegexLimit
                 | Kind::HookFailing
+                | Kind::DenoFailed
         )
     }
 
@@ -137,8 +145,9 @@ impl Kind {
             Kind::RateLimited => "lower general.concurrency or run tidepool less often; downloads are retried later".into(),
             Kind::Missing => "install yt-dlp, or set ytdlp.managed = true so tidepool downloads it".into(),
             Kind::SourceFailed => "check the source's url: the playlist may have been deleted or made private (private playlists need cookies_file)".into(),
-            Kind::UpdateFailed => format!("tidepool keeps using {version}; check your network, or run `tidepool ytdlp update`"),
+            Kind::UpdateFailed => format!("tidepool keeps using {version}; check your network, or run `tidepool tools update yt-dlp`"),
             Kind::RegexLimit => "simplify the rule, or raise general.regex_backtrack_limit; affected videos are held until then".into(),
+            Kind::DenoFailed => "check your network, or run `tidepool tools update deno`; without Deno, YouTube downloads may fail. To use your own, set managed = false in [tools.deno]".into(),
             Kind::HookFailing => "see the hook's log in ~/.local/share/tidepool/logs/hooks/<video_id>.log; after fixing it, run `tidepool hooks run <video_id>` (videos whose download failed are retried on later runs)".into(),
         }
     }

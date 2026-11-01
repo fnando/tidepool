@@ -10,7 +10,9 @@ use serde::Serialize;
 use super::diff::mask_secret;
 use super::merge::{DEFAULT_CATEGORY, EffectiveSource, category_settings, effective_sources};
 use super::placeholders::{Setting, render_path};
-use super::types::{Config, GeneralConfig, HookConfig, ScheduleConfig, ServerConfig, YtdlpConfig};
+use super::types::{
+    Config, GeneralConfig, HookConfig, ScheduleConfig, ServerConfig, ToolsConfig, YtdlpConfig,
+};
 use crate::paths::{Dirs, expand};
 
 /// Something found while checking the environment.
@@ -78,11 +80,11 @@ pub fn check_environment(config: &Config, dirs: &Dirs, config_file: Option<&Path
     out
 }
 
-/// yt-dlp (unless managed and not downloaded yet) and ffmpeg/ffprobe.
+/// yt-dlp and Deno (unless managed and not downloaded yet) and ffmpeg/ffprobe.
 pub fn check_tools(config: &Config, dirs: &Dirs) -> Vec<Finding> {
     let mut out = Vec::new();
 
-    let ytdlp = &config.ytdlp;
+    let ytdlp = &config.tools.ytdlp;
     if ytdlp.managed {
         let managed = dirs.managed_ytdlp(ytdlp.channel);
         out.push(match tool_version(&managed.to_string_lossy(), "--version") {
@@ -97,7 +99,34 @@ pub fn check_tools(config: &Config, dirs: &Dirs) -> Vec<Finding> {
         out.push(match tool_version(path, "--version") {
             Ok(version) => Finding::Ok(format!("yt-dlp {version} ({path})")),
             Err(e) => Finding::Error(format!(
-                "yt-dlp: cannot run {path:?} (ytdlp.path): {e}; install yt-dlp or set ytdlp.managed = true"
+                "yt-dlp: cannot run {path:?} (tools.yt-dlp.path): {e}; install yt-dlp or set managed = true in [tools.yt-dlp]"
+            )),
+        });
+    }
+
+    // yt-dlp needs a JavaScript runtime for YouTube.
+    let deno = &config.tools.deno;
+    let deno_version = |path: &str| {
+        // "deno 2.9.8 (stable, release, aarch64-apple-darwin)" → "deno 2.9.8"
+        tool_version(path, "--version")
+            .map(|v| v.split_whitespace().take(2).collect::<Vec<_>>().join(" "))
+    };
+    if deno.managed {
+        let managed = dirs.managed_deno();
+        out.push(match deno_version(&managed.to_string_lossy()) {
+            Ok(version) => Finding::Ok(format!("{version} (managed, {})", managed.display())),
+            Err(_) => Finding::Ok(
+                "Deno (the JavaScript runtime yt-dlp needs for YouTube) is managed by tidepool and will be downloaded on first use".into(),
+            ),
+        });
+    } else {
+        let path = &deno.path;
+        out.push(match deno_version(path) {
+            Ok(version) => Finding::Ok(format!("{version} ({path})")),
+            Err(e) => Finding::Warning(format!(
+                "Deno: cannot run {path:?} (tools.deno.path): {e}; yt-dlp needs a JavaScript runtime \
+                 for YouTube: install Deno, set managed = true in [tools.deno], or point yt-dlp at \
+                 another runtime with ytdlp_args = [\"--js-runtimes\", \"node\"]"
             )),
         });
     }
@@ -212,7 +241,7 @@ fn check_writable(root: &Path) -> Result<(), String> {
 #[derive(Debug, Serialize)]
 pub struct EffectiveConfig {
     pub general: GeneralConfig,
-    pub ytdlp: YtdlpConfig,
+    pub tools: ToolsConfig,
     pub schedule: ScheduleConfig,
     pub server: ServerConfig,
     pub hooks: BTreeMap<String, HookConfig>,
@@ -239,7 +268,7 @@ impl EffectiveConfig {
             .collect();
         Self {
             general: config.general.clone(),
-            ytdlp: config.ytdlp.clone(),
+            tools: config.tools.clone(),
             schedule: config.schedule.clone(),
             server,
             hooks: config.hooks.clone(),
@@ -316,7 +345,7 @@ mod tests {
     #[test]
     fn missing_ytdlp_is_an_error() {
         let config: Config = toml::from_str(
-            "[ytdlp]\nmanaged = false\npath = '/nonexistent/yt-dlp'\n[category.default]\nmedia_dir = '/tmp'",
+            "[tools.yt-dlp]\nmanaged = false\npath = '/nonexistent/yt-dlp'\n[category.default]\nmedia_dir = '/tmp'",
         )
         .unwrap();
         let findings = check_environment(&config, &dirs(), None);

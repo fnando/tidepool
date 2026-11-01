@@ -8,7 +8,7 @@ use serde_json::Value;
 
 use crate::cli::{
     Cli, Command, ConfigArgs, ConfigCmd, DownloadArgs, FilterCmd, HooksCmd, InitArgs, ResetArgs,
-    RunArgs, ScopeArgs, SourceRef, YtdlpCmd,
+    RunArgs, ScopeArgs, SourceRef, ToolsCmd,
 };
 use crate::config::check::{EffectiveConfig, Finding, check_environment, media_dir, tmp_dir};
 use crate::config::diff::{key_changes, mask_json, mask_toml, text_diff};
@@ -62,7 +62,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Filter {
             cmd: FilterCmd::Test { title, source },
         } => app.filter_test(title, source, out),
-        Command::Ytdlp { cmd } => app.ytdlp(cmd, out).await,
+        Command::Tools { cmd } => app.tools(cmd, out).await,
         Command::Index(scope) => app.index(scope, out).await,
         Command::Download(args) => app.download(args, out).await,
         Command::Run(args) if !args.daemon => app.run_once(args, out).await,
@@ -103,7 +103,7 @@ fn uses_stored_config(command: &Command) -> bool {
                 | Some(ConfigCmd::Check { path: None, .. })
         ),
         Command::Filter { .. }
-        | Command::Ytdlp { .. }
+        | Command::Tools { .. }
         | Command::Index(_)
         | Command::Download(_)
         | Command::Reset(_)
@@ -255,62 +255,103 @@ impl App<'_> {
         }
     }
 
-    /// The yt-dlp to run: the managed one (downloaded or updated if needed)
-    /// or `ytdlp.path`. Failed update checks become a problem.
+    /// The yt-dlp to run, with the Deno it should use: the managed ones
+    /// (downloaded or updated if needed) or your own. Failed installs and
+    /// update checks become problems.
     async fn ytdlp_binary(
         &self,
         state: &State,
         config: &crate::config::Config,
-    ) -> anyhow::Result<PathBuf> {
-        use crate::problems::{Kind, record, resolve};
-        use crate::ytdlp::manager::{Manager, UpdateOutcome};
+    ) -> anyhow::Result<crate::tools::Ytdlp> {
+        use crate::problems::Kind;
+        use crate::tools::manager::Tool;
 
-        let ytdlp = &config.ytdlp;
-        if !ytdlp.managed {
+        let ytdlp = &config.tools.ytdlp;
+        let path = if ytdlp.managed {
+            let ensured = self
+                .ensure_tool(
+                    state,
+                    Tool::Ytdlp(ytdlp.channel),
+                    ytdlp.update_check.0,
+                    Kind::UpdateFailed,
+                )
+                .await?;
+            log_ytdlp(
+                &ensured,
+                &format!("managed, {} channel", ytdlp.channel.as_str()),
+            );
+            ensured
+        } else {
             let path = PathBuf::from(&ytdlp.path);
             log_ytdlp(&path, "your own; tidepool doesn't update it");
-            return Ok(path);
-        }
+            path
+        };
+
+        let deno = &config.tools.deno;
+        let deno = if deno.managed {
+            match self
+                .ensure_tool(state, Tool::Deno, deno.update_check.0, Kind::DenoFailed)
+                .await
+            {
+                Ok(path) => {
+                    tracing::debug!("Deno at {} (managed)", path.display());
+                    Some(path)
+                }
+                // yt-dlp still runs; YouTube may not work without it.
+                Err(err) => {
+                    tracing::warn!("{err}; yt-dlp runs without a JavaScript runtime");
+                    None
+                }
+            }
+        } else if deno.path == "deno" {
+            // yt-dlp finds a `deno` on PATH by itself.
+            None
+        } else {
+            Some(PathBuf::from(&deno.path))
+        };
+        Ok(crate::tools::Ytdlp { path, deno })
+    }
+
+    /// A managed tool, installed or updated when due. Failures are recorded
+    /// as `problem`; a successful check resolves it.
+    async fn ensure_tool(
+        &self,
+        state: &State,
+        tool: crate::tools::manager::Tool,
+        update_check: std::time::Duration,
+        problem: crate::problems::Kind,
+    ) -> anyhow::Result<PathBuf> {
+        use crate::problems::{record, resolve};
+        use crate::tools::manager::{Manager, UpdateOutcome};
+
         let now = jiff::Timestamp::now();
         let manager = Manager::new(&self.dirs);
-        let version = manager.state(ytdlp.channel).map(|s| s.version);
-        let ensured = match manager
-            .ensure(ytdlp.channel, ytdlp.update_check.0, now)
-            .await
-        {
+        let version = manager.state(tool).map(|s| s.version);
+        let fail = |message: &str| {
+            record(
+                &state.conn,
+                problem,
+                1,
+                message,
+                version.as_deref(),
+                &Default::default(),
+                &problem.hint(version.as_deref(), true),
+                now,
+            )
+        };
+        let ensured = match manager.ensure(tool, update_check, now).await {
             Ok(ensured) => ensured,
             Err(err) => {
-                let message = err.to_string();
-                let hint = Kind::UpdateFailed.hint(version.as_deref(), true);
-                record(
-                    &state.conn,
-                    Kind::UpdateFailed,
-                    1,
-                    &message,
-                    version.as_deref(),
-                    &Default::default(),
-                    &hint,
-                    now,
-                )?;
+                fail(&err.to_string())?;
                 return Err(err.into());
             }
         };
         if let Some(warning) = &ensured.warning {
             tracing::warn!("{warning}");
-            let hint = Kind::UpdateFailed.hint(version.as_deref(), true);
-            record(
-                &state.conn,
-                Kind::UpdateFailed,
-                1,
-                warning,
-                version.as_deref(),
-                &Default::default(),
-                &hint,
-                now,
-            )?;
+            fail(warning)?;
         }
         if let Some(outcome) = ensured.outcome {
-            resolve(&state.conn, Kind::UpdateFailed, now)?;
+            resolve(&state.conn, problem, now)?;
             match outcome {
                 UpdateOutcome::Installed { .. } | UpdateOutcome::Updated { .. } => {
                     tracing::info!("{outcome}")
@@ -318,10 +359,6 @@ impl App<'_> {
                 _ => tracing::debug!("{outcome}"),
             }
         }
-        log_ytdlp(
-            &ensured.path,
-            &format!("managed, {} channel", ytdlp.channel.as_str()),
-        );
         Ok(ensured.path)
     }
 
@@ -332,18 +369,22 @@ impl App<'_> {
         state: &State,
         config: &crate::config::Config,
         tracker: crate::problems::Tracker,
-        ytdlp: &Path,
+        ytdlp: &crate::tools::Ytdlp,
     ) -> anyhow::Result<()> {
-        let managed = config.ytdlp.managed;
+        let managed = config.tools.ytdlp.managed;
         if managed && tracker.wants_update() {
-            let manager = crate::ytdlp::manager::Manager::new(&self.dirs);
+            let manager = crate::tools::manager::Manager::new(&self.dirs);
             let hour = std::time::Duration::from_secs(3600);
             match manager
-                .ensure(config.ytdlp.channel, hour, jiff::Timestamp::now())
+                .ensure(
+                    crate::tools::manager::Tool::Ytdlp(config.tools.ytdlp.channel),
+                    hour,
+                    jiff::Timestamp::now(),
+                )
                 .await
             {
                 Ok(ensured) => {
-                    if let Some(outcome @ crate::ytdlp::manager::UpdateOutcome::Updated { .. }) =
+                    if let Some(outcome @ crate::tools::manager::UpdateOutcome::Updated { .. }) =
                         ensured.outcome
                     {
                         tracing::info!("{outcome}; failed videos are retried on the next run");
@@ -352,7 +393,7 @@ impl App<'_> {
                 Err(err) => tracing::warn!("could not check for a yt-dlp update: {err}"),
             }
         }
-        let version = crate::ytdlp::manager::tool_version(ytdlp).ok();
+        let version = crate::tools::manager::tool_version(ytdlp.as_path()).ok();
         tracker.finish(
             &state.conn,
             version.as_deref(),
@@ -398,7 +439,7 @@ impl App<'_> {
         state: &mut State,
         config: &crate::config::Config,
         sources: &[EffectiveSource],
-        ytdlp: &Path,
+        ytdlp: &crate::tools::Ytdlp,
         tracker: &mut crate::problems::Tracker,
         out: &mut dyn Write,
     ) -> anyhow::Result<usize> {
@@ -436,7 +477,7 @@ impl App<'_> {
         state: &mut State,
         config: &crate::config::Config,
         sources: &[EffectiveSource],
-        ytdlp: PathBuf,
+        ytdlp: crate::tools::Ytdlp,
         limit: Option<usize>,
         concurrency: Option<u32>,
         tracker: &mut crate::problems::Tracker,
@@ -457,7 +498,7 @@ impl App<'_> {
             ffmpeg: "ffmpeg".into(),
             ffprobe: "ffprobe".into(),
             dirs: self.dirs.clone(),
-            ytdlp_version: crate::ytdlp::manager::tool_version(&ytdlp).ok(),
+            ytdlp_version: crate::tools::manager::tool_version(ytdlp.as_path()).ok(),
             ytdlp,
             duplicates: config.general.duplicates,
             thumbnail_base,
@@ -961,88 +1002,142 @@ impl App<'_> {
         }
     }
 
-    async fn ytdlp(&self, cmd: &YtdlpCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
-        use crate::ytdlp::manager::Manager;
+    async fn tools(&self, cmd: &ToolsCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
+        use crate::cli::ToolName;
+        use crate::tools::manager::{Manager, Tool};
 
         let config = self.config_or_defaults()?;
-        let ytdlp = &config.ytdlp;
-        if !ytdlp.managed {
-            if !matches!(cmd, YtdlpCmd::Status) {
-                bail!(
-                    "ytdlp.managed = false: tidepool doesn't update your yt-dlp; update it yourself \
-                     (e.g. `yt-dlp -U`, pip or brew), or set ytdlp.managed = true"
-                );
-            }
-            let version = crate::ytdlp::manager::tool_version(Path::new(&ytdlp.path))
-                .map_err(|e| anyhow::anyhow!("cannot run {:?} (ytdlp.path): {e}", ytdlp.path))?;
-            writeln!(
-                out,
-                "yt-dlp {version} at {} (ytdlp.managed = false: tidepool doesn't update it)",
-                ytdlp.path
-            )?;
-            return Ok(exit::OK);
-        }
-
+        let tools = &config.tools;
         let manager = Manager::new(&self.dirs);
-        let channel = ytdlp.channel;
         let when = |t: jiff::Timestamp| t.strftime("%Y-%m-%d %H:%M:%S UTC").to_string();
+        // (tool, managed, your own path, update interval, what it's for)
+        let describe = |name: ToolName| match name {
+            ToolName::Ytdlp => (
+                Tool::Ytdlp(tools.ytdlp.channel),
+                tools.ytdlp.managed,
+                tools.ytdlp.path.as_str(),
+                tools.ytdlp.update_check.0,
+                format!("{} channel", tools.ytdlp.channel.as_str()),
+                "yt-dlp",
+            ),
+            ToolName::Deno => (
+                Tool::Deno,
+                tools.deno.managed,
+                tools.deno.path.as_str(),
+                tools.deno.update_check.0,
+                "2.x, the JavaScript runtime yt-dlp needs for YouTube".to_string(),
+                "deno",
+            ),
+        };
+        let own = |name: &str, table: &str| {
+            format!(
+                "managed = false in [tools.{table}]: tidepool doesn't update your {name}; update it \
+                 yourself, or set managed = true"
+            )
+        };
         match cmd {
-            YtdlpCmd::Status => {
-                let path = manager.binary(channel);
-                let Some(state) = manager.state(channel).filter(|_| path.exists()) else {
+            ToolsCmd::Status => {
+                for name in [ToolName::Ytdlp, ToolName::Deno] {
+                    let (tool, managed, path, every, what, table) = describe(name);
+                    let label = tool.name();
+                    if !managed {
+                        match crate::tools::manager::tool_version(Path::new(path)) {
+                            Ok(line) => {
+                                // yt-dlp prints "2026.10.01"; Deno "deno 2.9.8 (…)".
+                                let version = match tool {
+                                    Tool::Deno => line.split_whitespace().nth(1).unwrap_or(&line),
+                                    Tool::Ytdlp(_) => &line,
+                                };
+                                writeln!(
+                                    out,
+                                    "{label} {version} at {path} (your own; tidepool doesn't update it)"
+                                )?
+                            }
+                            Err(e) => writeln!(
+                                out,
+                                "{label}: cannot run {path:?} (tools.{table}.path): {e}"
+                            )?,
+                        }
+                        continue;
+                    }
+                    let binary = manager.binary(tool);
+                    let Some(state) = manager.state(tool).filter(|_| binary.exists()) else {
+                        writeln!(
+                            out,
+                            "{label} isn't downloaded yet (managed, {what}); it's downloaded on \
+                             first use, or run `tidepool tools update {table}`"
+                        )?;
+                        continue;
+                    };
+                    writeln!(out, "{label} {} (managed, {what})", state.version)?;
+                    writeln!(out, "  path: {}", binary.display())?;
+                    writeln!(out, "  installed: {}", when(state.installed_at))?;
                     writeln!(
                         out,
-                        "yt-dlp isn't downloaded yet (managed, {} channel); it's downloaded on first use, \
-                         or run `tidepool ytdlp update`",
-                        channel.as_str()
+                        "  last update check: {} (checks every {})",
+                        when(state.last_check_at),
+                        crate::config::types::format_duration(every)
                     )?;
-                    return Ok(exit::OK);
+                    if let Some(previous) = &state.previous_version {
+                        writeln!(
+                            out,
+                            "  previous version: {previous} (`tidepool tools rollback {table}` restores it)"
+                        )?;
+                    }
+                    if let Some(skipped) = &state.skip_version {
+                        writeln!(
+                            out,
+                            "  {skipped} was rolled back; staying on {} until a newer release",
+                            state.version
+                        )?;
+                    }
+                }
+            }
+            ToolsCmd::Update { tool: requested } => {
+                let names = match requested {
+                    Some(name) => vec![*name],
+                    None => vec![ToolName::Ytdlp, ToolName::Deno],
                 };
-                writeln!(
-                    out,
-                    "yt-dlp {} (managed, {} channel)",
-                    state.version,
-                    channel.as_str()
-                )?;
-                writeln!(out, "path: {}", path.display())?;
-                writeln!(out, "installed: {}", when(state.installed_at))?;
-                writeln!(
-                    out,
-                    "last update check: {} (checks every {})",
-                    when(state.last_check_at),
-                    crate::config::types::format_duration(ytdlp.update_check.0)
-                )?;
-                if let Some(previous) = &state.previous_version {
-                    writeln!(
-                        out,
-                        "previous version: {previous} (`tidepool ytdlp rollback` restores it)"
-                    )?;
+                let mut failed = false;
+                for name in names {
+                    let (tool, managed, _, _, _, table) = describe(name);
+                    if !managed {
+                        if requested.is_some() {
+                            bail!("{}", own(tool.name(), table));
+                        }
+                        writeln!(
+                            out,
+                            "{} is your own (managed = false in [tools.{table}]); skipped",
+                            tool.name()
+                        )?;
+                        continue;
+                    }
+                    if self.cli.dry_run {
+                        writeln!(out, "dry run: would check for a newer {}", tool.name())?;
+                        continue;
+                    }
+                    match manager.update(tool, jiff::Timestamp::now()).await {
+                        Ok(outcome) => writeln!(out, "{outcome}")?,
+                        Err(e) => {
+                            failed = true;
+                            writeln!(out, "{}: {e}", tool.name())?;
+                        }
+                    }
                 }
-                if let Some(skipped) = &state.skip_version {
-                    writeln!(
-                        out,
-                        "{skipped} was rolled back; staying on {} until a newer release",
-                        state.version
-                    )?;
+                if failed {
+                    return Ok(exit::PARTIAL);
                 }
             }
-            YtdlpCmd::Update => {
-                if self.cli.dry_run {
-                    writeln!(
-                        out,
-                        "dry run: would check {} for a newer release",
-                        channel.repository()
-                    )?;
-                    return Ok(exit::OK);
+            ToolsCmd::Rollback { tool: name } => {
+                let (tool, managed, _, _, _, table) = describe(*name);
+                if !managed {
+                    bail!("{}", own(tool.name(), table));
                 }
-                let outcome = manager.update(channel, jiff::Timestamp::now()).await?;
-                writeln!(out, "{outcome}")?;
-            }
-            YtdlpCmd::Rollback => {
-                let (from, to) = manager.rollback(channel)?;
+                let (from, to) = manager.rollback(tool)?;
                 writeln!(
                     out,
-                    "rolled back yt-dlp {from} → {to}; {from} won't be installed again until a newer release"
+                    "rolled back {} {from} → {to}; {from} won't be installed again until a newer release",
+                    tool.name()
                 )?;
             }
         }
@@ -1679,7 +1774,7 @@ fn colorize_diff(diff: &str) -> String {
 /// `-v`: which yt-dlp runs.
 fn log_ytdlp(path: &Path, how: &str) {
     if tracing::enabled!(tracing::Level::DEBUG) {
-        let version = crate::ytdlp::manager::tool_version(path)
+        let version = crate::tools::manager::tool_version(path)
             .unwrap_or_else(|e| format!("(not runnable: {e})"));
         tracing::debug!("yt-dlp {version} at {} ({how})", path.display());
     }

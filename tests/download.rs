@@ -70,7 +70,7 @@ impl Env {
     /// same playlist).
     fn config(&self, extra: &str) -> String {
         let text = format!(
-            "[category.default]\nmedia_dir = \"{}\"\n{extra}\n\n[ytdlp]\nmanaged = false\npath = \"{}\"\n\n\
+            "[category.default]\nmedia_dir = \"{}\"\n{extra}\n\n[tools.deno]\nmanaged = false\n\n[tools.yt-dlp]\nmanaged = false\npath = \"{}\"\n\n\
              [sources.dl]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads\"\nytdlp_args = [\"--write-subs\"]\n",
             self.media().display(),
             test_bin().join("yt-dlp").display()
@@ -1073,7 +1073,7 @@ printf '{"files": {"media": "%s"}}' "$new""#,
     );
     let text = fs::read_to_string(&config)
         .unwrap()
-        .replace("[ytdlp]", "hooks = [\"remux\"]\n\n[ytdlp]")
+        .replace("[tools.deno]", "hooks = [\"remux\"]\n\n[tools.deno]")
         + &format!(
             "\n[hooks.remux]\ntype = \"downloaded\"\ncommand = [\"{}\"]\n",
             remux.display()
@@ -1099,4 +1099,41 @@ printf '{"files": {"media": "%s"}}' "$new""#,
         .assert()
         .success()
         .stdout(contains(format!("{title}.mp4")));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn ytdlp_gets_the_configured_deno() {
+    let env = Env::new().await;
+    let log = env.path("ytdlp.log");
+    // Your own Deno at a path: every yt-dlp call is told about it.
+    let config = env.config("");
+    let text = fs::read_to_string(&config).unwrap().replace(
+        "[tools.deno]\nmanaged = false",
+        "[tools.deno]\nmanaged = false\npath = \"/opt/deno/bin/deno\"",
+    );
+    fs::write(&config, &text).unwrap();
+    let mut cmd = env.cmd(&["run", "-s", "dl", "--config", &config]);
+    cmd.env("TIDEPOOL_FAKE_YTDLP_LOG", &log);
+    cmd.assert().code(3);
+    let calls = fs::read_to_string(&log).unwrap();
+    let calls: Vec<&str> = calls.lines().filter(|l| !l.contains("--version")).collect();
+    assert!(!calls.is_empty());
+    for call in &calls {
+        assert!(
+            call.starts_with("--js-runtimes deno:/opt/deno/bin/deno "),
+            "{call}"
+        );
+    }
+
+    // `path = "deno"` (the default): yt-dlp finds it on PATH by itself.
+    fs::write(&config, text.replace("path = \"/opt/deno/bin/deno\"", "")).unwrap();
+    fs::remove_file(&log).unwrap();
+    env.cmd(&["reset", "okvideo01", "--config", &config])
+        .assert()
+        .success();
+    let mut cmd = env.cmd(&["download"]);
+    cmd.env("TIDEPOOL_FAKE_YTDLP_LOG", &log);
+    cmd.assert().success();
+    let calls = fs::read_to_string(&log).unwrap();
+    assert!(!calls.contains("--js-runtimes"), "{calls}");
 }

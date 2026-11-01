@@ -215,6 +215,33 @@
       ],
       "type": "string"
     },
+    "DenoConfig": {
+      "additionalProperties": false,
+      "description": "`[tools.deno]`",
+      "properties": {
+        "managed": {
+          "default": true,
+          "description": "tidepool downloads Deno 2.x and keeps it updated.",
+          "type": "boolean"
+        },
+        "path": {
+          "default": "deno",
+          "description": "Deno executable; only used when `managed = false`.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "update_check": {
+          "default": "1d",
+          "description": "How often to look for a new release.",
+          "examples": [
+            "30d"
+          ],
+          "format": "duration",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "Duplicates": {
       "description": "Same video in several sources.",
       "enum": [
@@ -649,6 +676,32 @@
       ],
       "type": "object"
     },
+    "ToolsConfig": {
+      "additionalProperties": false,
+      "description": "`[tools]`",
+      "properties": {
+        "deno": {
+          "$ref": "#/$defs/DenoConfig",
+          "default": {
+            "managed": true,
+            "path": "deno",
+            "update_check": "1d"
+          },
+          "description": "Deno, the JavaScript runtime yt-dlp needs for YouTube."
+        },
+        "yt-dlp": {
+          "$ref": "#/$defs/YtdlpConfig",
+          "default": {
+            "channel": "nightly",
+            "managed": true,
+            "path": "yt-dlp",
+            "update_check": "1h"
+          },
+          "description": "yt-dlp: managed by tidepool (default) or your own binary."
+        }
+      },
+      "type": "object"
+    },
     "YoutubeOptions": {
       "additionalProperties": false,
       "description": "`youtube` in a category or source: YouTube Data API settings, merged key\nby key like the other options.",
@@ -695,7 +748,7 @@
     },
     "YtdlpConfig": {
       "additionalProperties": false,
-      "description": "`[ytdlp]`",
+      "description": "`[tools.yt-dlp]`",
       "properties": {
         "channel": {
           "$ref": "#/$defs/YtdlpChannel",
@@ -791,22 +844,29 @@
       },
       "type": "object"
     },
+    "tools": {
+      "$ref": "#/$defs/ToolsConfig",
+      "default": {
+        "deno": {
+          "managed": true,
+          "path": "deno",
+          "update_check": "1d"
+        },
+        "yt-dlp": {
+          "channel": "nightly",
+          "managed": true,
+          "path": "yt-dlp",
+          "update_check": "1h"
+        }
+      },
+      "description": "The tools tidepool runs: yt-dlp and Deno."
+    },
     "version": {
       "description": "Config format version. Optional; when set, must be 1.",
       "format": "uint32",
       "maximum": 1,
       "minimum": 1,
       "type": "integer"
-    },
-    "ytdlp": {
-      "$ref": "#/$defs/YtdlpConfig",
-      "default": {
-        "channel": "nightly",
-        "managed": true,
-        "path": "yt-dlp",
-        "update_check": "1h"
-      },
-      "description": "The yt-dlp binary: managed by tidepool, or your own."
     }
   },
   "title": "tidepool config",

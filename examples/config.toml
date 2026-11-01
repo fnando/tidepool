@@ -16,11 +16,16 @@ duplicates = "hardlink"             # same video in several sources: hardlink | 
 regex_backtrack_limit = 1000000     # fancy-regex step limit per match
 shutdown_timeout = "10s"            # grace period for child processes after SIGINT/SIGTERM
 
-[ytdlp]
+[tools.yt-dlp]
 managed = true                      # tidepool downloads yt-dlp and keeps it updated
 channel = "nightly"                 # stable | nightly | master (nightly is what yt-dlp recommends)
 update_check = "1h"                 # how often to look for a new release (one GitHub API call)
 path = "yt-dlp"                     # only used when managed = false
+
+[tools.deno]                        # the JavaScript runtime yt-dlp needs for YouTube
+managed = true                      # tidepool downloads Deno 2.x and keeps it updated
+update_check = "1d"
+path = "deno"                       # only used when managed = false
 
 [schedule]
 interval = "6h"                     # tidepool run --daemon: sync + cleanup this often; "" = off

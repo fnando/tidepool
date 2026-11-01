@@ -94,10 +94,10 @@ pub enum Command {
         #[command(subcommand)]
         cmd: Option<ProblemsCmd>,
     },
-    /// Inspect, update or roll back the managed yt-dlp binary
-    Ytdlp {
+    /// Inspect, update or roll back yt-dlp and Deno
+    Tools {
         #[command(subcommand)]
-        cmd: YtdlpCmd,
+        cmd: ToolsCmd,
     },
     /// Sync every source once; --daemon keeps syncing and serves the web UI
     Run(RunArgs),
@@ -113,7 +113,7 @@ impl Command {
             | Command::Reset(_)
             | Command::Run(RunArgs { daemon: false, .. }) => None,
             Command::Problems { .. } => None,
-            Command::Ytdlp { .. } => None,
+            Command::Tools { .. } => None,
             Command::Hooks { .. } => None,
             Command::Embed(_) => Some("M4"),
             Command::Cleanup(_) | Command::Pin(_) | Command::Unpin(_) => Some("M5"),
@@ -310,13 +310,21 @@ pub enum ProblemsCmd {
 }
 
 #[derive(Debug, Subcommand)]
-pub enum YtdlpCmd {
-    /// Path, version, channel and last update check
+pub enum ToolsCmd {
+    /// Versions, paths and the last update checks
     Status,
-    /// Check for a new release now
-    Update,
-    /// Restore the previous binary until the next release
-    Rollback,
+    /// Check for new releases now (both tools, or one)
+    Update { tool: Option<ToolName> },
+    /// Restore a tool's previous version until its next release
+    Rollback { tool: ToolName },
+}
+
+/// A tool tidepool manages.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum ToolName {
+    #[value(name = "yt-dlp")]
+    Ytdlp,
+    Deno,
 }
 
 /// `tidepool init`. The config file goes to the global --config path
@@ -464,7 +472,10 @@ mod tests {
     #[test]
     fn server_command_is_gone() {
         assert!(Cli::try_parse_from(["tidepool", "server"]).is_err());
-        assert!(Cli::try_parse_from(["tidepool", "ytdlp", "status"]).is_ok());
+        assert!(Cli::try_parse_from(["tidepool", "tools", "status"]).is_ok());
+        assert!(Cli::try_parse_from(["tidepool", "tools", "update", "deno"]).is_ok());
+        assert!(Cli::try_parse_from(["tidepool", "tools", "rollback", "yt-dlp"]).is_ok());
+        assert!(Cli::try_parse_from(["tidepool", "tools", "rollback"]).is_err());
         assert!(Cli::try_parse_from(["tidepool", "problems", "ack", "3"]).is_ok());
         assert!(Cli::try_parse_from(["tidepool", "problems"]).is_ok());
     }

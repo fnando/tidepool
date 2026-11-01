@@ -1,5 +1,9 @@
-[ytdlp]
+[tools.yt-dlp]
 managed = false
 path = "/usr/local/bin/yt-dlp"
 channel = "stable"
 update_check = "6h"
+
+[tools.deno]
+managed = false
+path = "/opt/homebrew/bin/deno"

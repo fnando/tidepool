@@ -17,7 +17,7 @@ pub enum VerifyError {
     Key(String),
     #[error("SHA2-256SUMS has no valid signature from the yt-dlp signing key")]
     BadSignature,
-    #[error("SHA2-256SUMS has no checksum for {0}")]
+    #[error("the release has no checksum for {0}")]
     MissingChecksum(String),
     #[error("checksum mismatch for {asset}: expected {expected}, got {actual}")]
     ChecksumMismatch {
@@ -84,6 +84,15 @@ pub fn checksum_for(sums: &str, asset: &str) -> Result<String, VerifyError> {
         .find(|(_, name)| name.trim_start().trim_start_matches('*') == asset)
         .map(|(hash, _)| hash.to_ascii_lowercase())
         .filter(|hash| hash.len() == 64 && hash.chars().all(|c| c.is_ascii_hexdigit()))
+        .ok_or_else(|| VerifyError::MissingChecksum(asset.to_string()))
+}
+
+/// The SHA-256 in a single-file checksum (Deno's `<asset>.sha256sum`):
+/// the first 64-hex-digit word.
+pub fn single_checksum(text: &str, asset: &str) -> Result<String, VerifyError> {
+    text.split_whitespace()
+        .find(|w| w.len() == 64 && w.chars().all(|c| c.is_ascii_hexdigit()))
+        .map(str::to_ascii_lowercase)
         .ok_or_else(|| VerifyError::MissingChecksum(asset.to_string()))
 }
 

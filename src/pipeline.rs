@@ -1,6 +1,6 @@
 //! The sync pipeline's stages, shared by `index` and `run`.
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use jiff::Timestamp;
 use sha2::{Digest, Sha256};
@@ -44,7 +44,7 @@ pub async fn index_source(
     config: &Config,
     source: &EffectiveSource,
     dirs: &Dirs,
-    ytdlp_path: &Path,
+    ytdlp_path: &crate::tools::Ytdlp,
     now: Timestamp,
 ) -> Result<IndexSummary, String> {
     let cookies = cookies_file(source, dirs)?;

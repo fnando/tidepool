@@ -1,4 +1,4 @@
-//! Which yt-dlp release binary fits this machine, and comparing versions.
+//! Which release binaries fit this machine, and comparing versions.
 
 use std::cmp::Ordering;
 use std::path::Path;
@@ -13,9 +13,30 @@ pub fn asset_name(os: &str, arch: &str, musl: bool) -> Result<&'static str, Stri
         ("linux", "aarch64", true) => Ok("yt-dlp_musllinux_aarch64"),
         _ => Err(format!(
             "no yt-dlp release binary for {os}/{arch}; install yt-dlp yourself and set \
-             ytdlp.managed = false with ytdlp.path pointing to it"
+             managed = false in [tools.yt-dlp] with path pointing to it"
         )),
     }
+}
+
+/// Deno's release target for an OS/architecture (glibc only).
+pub fn deno_target(os: &str, arch: &str, musl: bool) -> Result<&'static str, String> {
+    match (os, arch, musl) {
+        ("macos", "aarch64", _) => Ok("aarch64-apple-darwin"),
+        ("macos", "x86_64", _) => Ok("x86_64-apple-darwin"),
+        ("linux", "x86_64", false) => Ok("x86_64-unknown-linux-gnu"),
+        ("linux", "aarch64", false) => Ok("aarch64-unknown-linux-gnu"),
+        _ => Err(format!(
+            "no Deno release binary for {os}/{arch}{}; install Deno (or another runtime yt-dlp \
+             supports) yourself and set managed = false in [tools.deno]",
+            if musl { " (musl)" } else { "" }
+        )),
+    }
+}
+
+/// Deno's release asset for the machine tidepool runs on.
+pub fn current_deno_asset() -> Result<String, String> {
+    deno_target(std::env::consts::OS, std::env::consts::ARCH, is_musl())
+        .map(|t| format!("deno-{t}.zip"))
 }
 
 /// The asset for the machine tidepool runs on.
@@ -78,7 +99,20 @@ mod tests {
             Ok("yt-dlp_musllinux_aarch64")
         );
         let err = asset_name("freebsd", "x86_64", false).unwrap_err();
-        assert!(err.contains("ytdlp.managed = false"), "{err}");
+        assert!(err.contains("managed = false in [tools.yt-dlp]"), "{err}");
+        assert_eq!(
+            deno_target("macos", "aarch64", false),
+            Ok("aarch64-apple-darwin")
+        );
+        assert_eq!(
+            deno_target("linux", "x86_64", false),
+            Ok("x86_64-unknown-linux-gnu")
+        );
+        let err = deno_target("linux", "x86_64", true).unwrap_err();
+        assert!(
+            err.contains("musl") && err.contains("[tools.deno]"),
+            "{err}"
+        );
         assert!(asset_name("linux", "arm", false).is_err());
     }
 

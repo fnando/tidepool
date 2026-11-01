@@ -164,14 +164,15 @@ fn cancelled() -> Failure {
 /// fires, yt-dlp is stopped (SIGTERM, then SIGKILL after `grace`) and this
 /// returns only after it exited, so nothing writes to the work area anymore.
 pub async fn download(
-    ytdlp: &Path,
+    ytdlp: &crate::tools::Ytdlp,
     args: &[String],
     label: &str,
     cancel: &CancellationToken,
     grace: Duration,
 ) -> Result<PathBuf, Failure> {
     tracing::trace!("yt-dlp command: {} {}", ytdlp.display(), args.join(" "));
-    let mut child = tokio::process::Command::new(ytdlp)
+    let mut child = ytdlp
+        .command()
         .args(args)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -233,7 +234,7 @@ pub async fn download(
 /// Full details for one video (`yt-dlp -J`), used for decisions that need
 /// fields the index didn't have.
 pub async fn video_info(
-    ytdlp: &Path,
+    ytdlp: &crate::tools::Ytdlp,
     video_id: &str,
     cookies: Option<&Path>,
 ) -> Result<VideoInfo, Failure> {
@@ -247,7 +248,8 @@ pub async fn video_info(
         args.extend(["--cookies".into(), cookies.display().to_string()]);
     }
     args.extend(["--".into(), watch_url(video_id)]);
-    let output = tokio::process::Command::new(ytdlp)
+    let output = ytdlp
+        .command()
         .args(&args)
         .kill_on_drop(true)
         .output()

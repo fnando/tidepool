@@ -56,7 +56,7 @@ pub struct Context {
     pub ffprobe: PathBuf,
     /// For `~` and `{data_dir}` in `output`.
     pub dirs: crate::paths::Dirs,
-    pub ytdlp: PathBuf,
+    pub ytdlp: crate::tools::Ytdlp,
     pub ytdlp_version: Option<String>,
     pub duplicates: Duplicates,
     pub thumbnail_base: String,

@@ -1,9 +1,15 @@
-[ytdlp]
+[tools.yt-dlp]
 channel = "beta"
 update_check = "often"
 ytdlp_path = "yt-dlp"
 
+[tools.deno]
+update_check = "sometimes"
+path = ""
+
+[tools.node]
+managed = true
+
 [category.default.youtube]
 api_keys = ["AIza"]
 api_key = ""
-
