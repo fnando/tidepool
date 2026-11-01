@@ -428,7 +428,8 @@ subtitles = true    # subtitles you asked yt-dlp for (with --write-subs)
 | `tags` | your own tags, added to (or replacing) the ones above; needs `metadata = true` |
 
 `tags` takes fixed text or `{placeholders}` (not file paths), and an empty
-value leaves a tag out. Set it for a category, or per source, for example to
+value leaves a tag out, also taking it off the video and audio tracks inside the
+file (e.g. `HANDLER_NAME = ""`; mp4 files always keep that one). Set it for a category, or per source, for example to
 mark whose music videos a source holds:
 
 ```toml

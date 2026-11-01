@@ -65,6 +65,9 @@ pub struct Request<'a> {
     /// What to take out of the file when this pass doesn't add it (covers,
     /// subtitles, chapters or tags embedded before).
     pub remove: Embedded,
+    /// Tags to take out of the file and every stream in it (`embed.tags`
+    /// set to ""), e.g. `HANDLER_NAME`, which each stream carries.
+    pub clear: Vec<String>,
 }
 
 /// What ended up in the file, recorded in metadata.json.
@@ -296,6 +299,21 @@ pub async fn embed(
         args.extend(["-metadata".into(), format!("{key}={value}")]);
         embedded.metadata = true;
     }
+    // Tags to clear, wherever the file has them.
+    for key in &request.clear {
+        let name = key.to_ascii_lowercase();
+        let global = before.tag_names.contains(&name);
+        let streams = before.stream_tag_names.contains(&name);
+        if global {
+            args.extend(["-metadata".into(), format!("{key}=")]);
+        }
+        if streams {
+            args.extend(["-metadata:s".into(), format!("{key}=")]);
+        }
+        if global || streams {
+            embedded.metadata = true;
+        }
+    }
 
     if !embedded.any() && !removed.any() {
         return Ok(None);
@@ -397,6 +415,14 @@ pub async fn embed(
             }
         }
     }
+    // Some containers write a few stream tags on their own (mp4's
+    // handler name): say so when one couldn't be cleared.
+    for key in &request.clear {
+        let name = key.to_ascii_lowercase();
+        if after.tag_names.contains(&name) || after.stream_tag_names.contains(&name) {
+            skipped.push(format!("removing tag {key} (a .{ext} file always has it)"));
+        }
+    }
     Ok(Some(Output {
         path: output,
         embedded,
@@ -425,6 +451,8 @@ struct Streams {
     tags: usize,
     /// Every global tag's name, lowercased.
     tag_names: Vec<String>,
+    /// Every stream tag's name, lowercased.
+    stream_tag_names: Vec<String>,
 }
 
 impl Streams {
@@ -451,7 +479,7 @@ where
         "-v",
         "error",
         "-show_entries",
-        "stream=index,codec_type,codec_name:stream_disposition=attached_pic:stream_tags=mimetype:format_tags",
+        "stream=index,codec_type,codec_name:stream_disposition=attached_pic:stream_tags:format_tags",
         "-show_chapters",
         "-of",
         "json",
@@ -472,6 +500,16 @@ where
         .map_err(|e| format!("ffprobe's output for {} isn't JSON: {e}", file.display()))?;
     let mut streams = Streams::default();
     for stream in json["streams"].as_array().into_iter().flatten() {
+        for key in stream["tags"]
+            .as_object()
+            .into_iter()
+            .flat_map(|t| t.keys())
+        {
+            let key = key.to_ascii_lowercase();
+            if !streams.stream_tag_names.contains(&key) {
+                streams.stream_tag_names.push(key);
+            }
+        }
         let picture = stream["disposition"]["attached_pic"] == 1;
         streams.total += 1;
         match stream["codec_type"].as_str().unwrap_or_default() {
@@ -683,6 +721,7 @@ mod tests {
                 chapters: &[],
                 subtitles: Vec::new(),
                 remove: Embedded::default(),
+                clear: Vec::new(),
             };
             let out = embed(
                 &ffmpeg,
@@ -719,6 +758,87 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn clears_tags_from_the_file_and_its_streams() {
+        let (Some(ffmpeg), Some(ffprobe)) = (tool("ffmpeg"), tool("ffprobe")) else {
+            eprintln!("skipped: ffmpeg not installed");
+            return;
+        };
+        let dir = tempfile::tempdir().unwrap();
+        // Like yt-dlp's merge of YouTube's mp4 parts: a handler name per stream.
+        let src = sample(dir.path(), "src.mp4", true);
+        let media = dir.path().join("media.mkv");
+        assert!(
+            Command::new("ffmpeg")
+                .args(["-hide_banner", "-loglevel", "error", "-i"])
+                .arg(&src)
+                .args([
+                    "-c",
+                    "copy",
+                    "-metadata:s",
+                    "handler_name=ISO Media file produced by Google Inc."
+                ])
+                .arg(&media)
+                .status()
+                .unwrap()
+                .success()
+        );
+        let handler = |file: &Path| {
+            probe_json(file)["streams"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|s| {
+                    s["tags"]
+                        .as_object()
+                        .is_some_and(|t| t.keys().any(|k| k.eq_ignore_ascii_case("handler_name")))
+                })
+                .count()
+        };
+        assert_eq!(handler(&media), 2);
+        let request = Request {
+            media: &media,
+            tags: BTreeMap::new(),
+            cover: None,
+            chapters: &[],
+            subtitles: Vec::new(),
+            remove: Embedded::default(),
+            clear: vec!["HANDLER_NAME".into()],
+        };
+        let out = embed(
+            &ffmpeg,
+            &ffprobe,
+            &request,
+            &Shutdown::default(),
+            Duration::from_secs(5),
+        )
+        .await
+        .unwrap()
+        .expect("a pass, only to clear the tag");
+        assert_eq!(handler(&out.path), 0);
+        assert!(out.skipped.is_empty(), "{:?}", out.skipped);
+
+        // Already gone: nothing to do.
+        let media = dir.path().join("again.mkv");
+        std::fs::rename(&out.path, &media).unwrap();
+        let request = Request {
+            media: &media,
+            ..request
+        };
+        assert!(
+            embed(
+                &ffmpeg,
+                &ffprobe,
+                &request,
+                &Shutdown::default(),
+                Duration::from_secs(5)
+            )
+            .await
+            .unwrap()
+            .is_none()
+        );
+    }
+
+    #[tokio::test]
     async fn removes_what_is_switched_off() {
         let (Some(ffmpeg), Some(ffprobe)) = (tool("ffmpeg"), tool("ffprobe")) else {
             eprintln!("skipped: ffmpeg not installed");
@@ -739,6 +859,7 @@ mod tests {
             chapters: &chapters,
             subtitles: vec![(sub, "en".into())],
             remove: Embedded::default(),
+            clear: Vec::new(),
         };
         let full = embed(&ffmpeg, &ffprobe, &everything, &shutdown, grace)
             .await
@@ -762,6 +883,7 @@ mod tests {
             chapters: &[],
             subtitles: Vec::new(),
             remove: Embedded::default(),
+            clear: Vec::new(),
         };
         assert!(
             embed(&ffmpeg, &ffprobe, &nothing, &shutdown, grace)
@@ -819,6 +941,7 @@ mod tests {
             chapters: &chapters,
             subtitles: vec![(sub, "en".into())],
             remove: Embedded::default(),
+            clear: Vec::new(),
         };
         let out = embed(
             &ffmpeg,
@@ -884,6 +1007,7 @@ mod tests {
             chapters: &[],
             subtitles: vec![],
             remove: Embedded::default(),
+            clear: Vec::new(),
         };
         let out = embed(
             &ffmpeg,
@@ -918,6 +1042,7 @@ mod tests {
             chapters: &chapters,
             subtitles: vec![(sub, "en".into())],
             remove: Embedded::default(),
+            clear: Vec::new(),
         };
         let out = embed(
             &ffmpeg,
@@ -955,6 +1080,7 @@ mod tests {
             chapters: &[],
             subtitles: vec![],
             remove: Embedded::default(),
+            clear: Vec::new(),
         };
         assert!(
             embed(
@@ -1001,6 +1127,7 @@ mod tests {
                     chapters: &chapters,
                     subtitles: vec![(sub.clone(), "en".into())],
                     remove: Embedded::default(),
+                    clear: Vec::new(),
                 };
                 let out = embed(
                     &ffmpeg,
@@ -1064,6 +1191,7 @@ mod tests {
             chapters: &[],
             subtitles: vec![],
             remove: Embedded::default(),
+            clear: Vec::new(),
         };
         let err = embed(
             &ffmpeg,

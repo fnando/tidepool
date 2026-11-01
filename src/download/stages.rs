@@ -214,6 +214,17 @@ impl Stage<'_> {
             } else {
                 Vec::new()
             },
+            // `embed.tags` set to "": out of the file, streams included.
+            clear: if settings.metadata {
+                settings
+                    .tags
+                    .iter()
+                    .filter(|(_, value)| value.trim().is_empty())
+                    .map(|(key, _)| key.clone())
+                    .collect()
+            } else {
+                Vec::new()
+            },
             remove: if remove_disabled {
                 embed::Embedded {
                     metadata: !settings.metadata,
