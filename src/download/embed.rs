@@ -62,6 +62,9 @@ pub struct Request<'a> {
     pub chapters: &'a [Chapter],
     /// `(file, language)` for each subtitle (`subtitles`).
     pub subtitles: Vec<(PathBuf, String)>,
+    /// What to take out of the file when this pass doesn't add it (covers,
+    /// subtitles, chapters or tags embedded before).
+    pub remove: Embedded,
 }
 
 /// What ended up in the file, recorded in metadata.json.
@@ -85,6 +88,8 @@ impl Embedded {
 pub struct Output {
     pub path: PathBuf,
     pub embedded: Embedded,
+    /// What was taken out (see `Request::remove`).
+    pub removed: Embedded,
     pub skipped: Vec<String>,
 }
 
@@ -137,28 +142,63 @@ pub async fn embed(
         container.takes_subtitle(&sub_ext)
     });
     let new_chapters = !request.chapters.is_empty();
-    let mut kept = before.real_video + before.audio + before.attachment;
+    let remove = &request.remove;
+    let removed = Embedded {
+        cover: remove.cover
+            && !new_cover
+            && (before.pictures > 0 || before.image_attachments() > 0),
+        subtitles: remove.subtitles && !new_subtitles && before.subtitle > 0,
+        chapters: remove.chapters && !new_chapters && before.chapters > 0,
+        metadata: remove.metadata && request.tags.is_empty() && before.tags > 0,
+    };
+    let drop_cover = new_cover || removed.cover;
+    let drop_chapters = new_chapters || removed.chapters;
+    // Matroska keeps a cover as an attachment, but ffmpeg reads it as a
+    // picture stream and would write it back as a video track: a cover that
+    // stays is copied out and attached again.
+    let keep_mkv_cover = container == Container::Matroska && !drop_cover && before.pictures > 0;
+    let mut kept = before.real_video + before.audio;
     let mut inputs: Vec<Vec<String>> = vec![vec!["-i".into(), path_arg(request.media)]];
     let mut args: Vec<String> = Vec::new();
     let mut map = |spec: &str| args.extend(["-map".into(), format!("0:{spec}?")]);
-    if new_cover {
+    if drop_cover || keep_mkv_cover {
         map("V"); // video without attached pictures
     } else {
         map("v");
         kept += before.pictures;
     }
     map("a");
-    if !new_subtitles {
+    if !(new_subtitles || removed.subtitles) {
         map("s");
         kept += before.subtitle;
     }
     // mp4 stores chapters as a data track; new chapters bring their own.
-    if !(new_chapters && matches!(container, Container::Mp4 | Container::M4a)) {
+    if !(drop_chapters && matches!(container, Container::Mp4 | Container::M4a)) {
         map("d");
         kept += before.data;
     }
-    map("t");
-    if !request.tags.is_empty() {
+    // Attachments this pass keeps; new ones are numbered after them.
+    let mut attachments = 0;
+    if drop_cover && before.image_attachments() > 0 {
+        // A Matroska cover is an image attachment: keep the others (fonts…).
+        for (n, _) in before
+            .attachments
+            .iter()
+            .enumerate()
+            .filter(|(_, image)| !**image)
+        {
+            map(&format!("t:{n}"));
+            attachments += 1;
+        }
+    } else {
+        map("t");
+        attachments = before.attachments.len();
+    }
+    kept += attachments;
+    if removed.chapters {
+        args.extend(["-map_chapters".into(), "-1".into()]);
+    }
+    if !request.tags.is_empty() || removed.metadata {
         // Exactly the given tags: drop the file's global ones (stream and
         // chapter metadata stay).
         args.extend(["-map_metadata:g".into(), "-1".into()]);
@@ -200,14 +240,8 @@ pub async fn embed(
                     CoverFormat::Png => ("image/png", "cover.png"),
                     CoverFormat::Webp => ("image/webp", "cover.webp"),
                 };
-                args.extend([
-                    "-attach".into(),
-                    path_arg(cover),
-                    "-metadata:s:t:0".into(),
-                    format!("mimetype={mime}"),
-                    "-metadata:s:t:0".into(),
-                    format!("filename={name}"),
-                ]);
+                args.extend(attach(cover, mime, name, attachments));
+                attachments += 1;
                 added += 1;
                 embedded.cover = true;
             }
@@ -263,8 +297,48 @@ pub async fn embed(
         embedded.metadata = true;
     }
 
-    if !embedded.any() {
+    if !embedded.any() && !removed.any() {
         return Ok(None);
+    }
+    if keep_mkv_cover && let Some((index, codec)) = &before.first_picture {
+        let (ext, mime) = if codec == "png" {
+            ("png", "image/png")
+        } else {
+            ("jpg", "image/jpeg")
+        };
+        let kept_cover = dir.join(format!("kept-cover.{ext}"));
+        let copied = run(
+            ffmpeg,
+            ["-hide_banner", "-nostdin", "-loglevel", "error", "-y", "-i"]
+                .into_iter()
+                .map(Into::into)
+                .chain([
+                    path_arg(request.media).into(),
+                    "-map".into(),
+                    format!("0:{index}").into(),
+                    "-c".into(),
+                    "copy".into(),
+                    "-frames:v".into(),
+                    "1".into(),
+                    path_arg(&kept_cover).into(),
+                ])
+                .collect(),
+        )
+        .await?;
+        if !copied.status.success() {
+            return Err(format!(
+                "cannot copy the cover out of {}: {}",
+                request.media.display(),
+                String::from_utf8_lossy(&copied.stderr).trim()
+            ));
+        }
+        args.extend(attach(
+            &kept_cover,
+            mime,
+            &format!("cover.{ext}"),
+            attachments,
+        ));
+        kept += 1;
     }
 
     args.extend(["-c".into(), "copy".into()]);
@@ -316,11 +390,12 @@ pub async fn embed(
     Ok(Some(Output {
         path: output,
         embedded,
+        removed,
         skipped,
     }))
 }
 
-/// Stream counts, by type.
+/// What a file holds, by stream type.
 #[derive(Debug, Default)]
 struct Streams {
     total: usize,
@@ -328,11 +403,32 @@ struct Streams {
     real_video: usize,
     /// Attached pictures (covers), in any container.
     pictures: usize,
+    /// The first attached picture: its stream index and codec.
+    first_picture: Option<(usize, String)>,
     audio: usize,
     subtitle: usize,
     data: usize,
-    attachment: usize,
+    /// Each attachment, in order: whether it's an image (a Matroska cover).
+    attachments: Vec<bool>,
+    chapters: usize,
+    /// Global tags, not counting the ones muxers write themselves.
+    tags: usize,
 }
+
+impl Streams {
+    fn image_attachments(&self) -> usize {
+        self.attachments.iter().filter(|image| **image).count()
+    }
+}
+
+/// Global tags ffmpeg and the muxers write on their own.
+const MUXER_TAGS: [&str; 5] = [
+    "encoder",
+    "major_brand",
+    "minor_version",
+    "compatible_brands",
+    "creation_time",
+];
 
 async fn probe<F, Fut>(ffprobe: &Path, file: &Path, run: &F) -> Result<Streams, String>
 where
@@ -343,9 +439,10 @@ where
         "-v",
         "error",
         "-show_entries",
-        "stream=codec_type:stream_disposition=attached_pic",
+        "stream=index,codec_type,codec_name:stream_disposition=attached_pic:stream_tags=mimetype:format_tags",
+        "-show_chapters",
         "-of",
-        "csv=p=0",
+        "json",
     ]
     .into_iter()
     .map(Into::into)
@@ -359,29 +456,54 @@ where
             String::from_utf8_lossy(&result.stderr).trim()
         ));
     }
+    let json: serde_json::Value = serde_json::from_slice(&result.stdout)
+        .map_err(|e| format!("ffprobe's output for {} isn't JSON: {e}", file.display()))?;
     let mut streams = Streams::default();
-    for line in String::from_utf8_lossy(&result.stdout).lines() {
-        let mut fields = line.trim().split(',');
-        let kind = fields.next().unwrap_or_default();
-        if kind.is_empty() {
-            continue;
-        }
-        let picture = fields.next() == Some("1");
+    for stream in json["streams"].as_array().into_iter().flatten() {
+        let picture = stream["disposition"]["attached_pic"] == 1;
         streams.total += 1;
-        match kind {
-            "video" if picture => streams.pictures += 1,
+        match stream["codec_type"].as_str().unwrap_or_default() {
+            "video" if picture => {
+                streams.pictures += 1;
+                if streams.first_picture.is_none() {
+                    let index = stream["index"].as_u64().unwrap_or_default() as usize;
+                    let codec = stream["codec_name"].as_str().unwrap_or_default();
+                    streams.first_picture = Some((index, codec.to_string()));
+                }
+            }
             "video" => streams.real_video += 1,
             "audio" => streams.audio += 1,
             "subtitle" => streams.subtitle += 1,
             "data" => streams.data += 1,
-            "attachment" => streams.attachment += 1,
+            "attachment" => {
+                let mime = stream["tags"]["mimetype"].as_str().unwrap_or_default();
+                streams.attachments.push(mime.starts_with("image/"));
+            }
             _ => {}
         }
     }
+    streams.chapters = json["chapters"].as_array().map_or(0, Vec::len);
+    streams.tags = json["format"]["tags"].as_object().map_or(0, |tags| {
+        tags.keys()
+            .filter(|k| !MUXER_TAGS.contains(&k.to_ascii_lowercase().as_str()))
+            .count()
+    });
     if streams.total == 0 {
         return Err(format!("ffprobe found no streams in {}", file.display()));
     }
     Ok(streams)
+}
+
+/// `-attach` arguments for an image, the `n`th attachment of the output.
+fn attach(path: &Path, mime: &str, name: &str, n: usize) -> Vec<String> {
+    vec![
+        "-attach".into(),
+        path_arg(path),
+        format!("-metadata:s:t:{n}"),
+        format!("mimetype={mime}"),
+        format!("-metadata:s:t:{n}"),
+        format!("filename={name}"),
+    ]
 }
 
 /// ffmpeg reads `-i -foo` as an option; keep paths unambiguous.
@@ -528,6 +650,88 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn removes_what_is_switched_off() {
+        let (Some(ffmpeg), Some(ffprobe)) = (tool("ffmpeg"), tool("ffprobe")) else {
+            eprintln!("skipped: ffmpeg not installed");
+            return;
+        };
+        let dir = tempfile::tempdir().unwrap();
+        let shutdown = Shutdown::default();
+        let grace = Duration::from_secs(5);
+        let media = sample(dir.path(), "media.mp4", true);
+        let jpg = cover(dir.path(), "jpg", image::ImageFormat::Jpeg);
+        let sub = dir.path().join("media.en.vtt");
+        std::fs::write(&sub, "WEBVTT\n\n00:00.000 --> 00:00.900\nHello\n").unwrap();
+        let chapters = chapters();
+        let everything = Request {
+            media: &media,
+            tags: tags(),
+            cover: Some((&jpg, CoverFormat::Jpg)),
+            chapters: &chapters,
+            subtitles: vec![(sub, "en".into())],
+            remove: Embedded::default(),
+        };
+        let full = embed(&ffmpeg, &ffprobe, &everything, &shutdown, grace)
+            .await
+            .unwrap()
+            .unwrap();
+        let all = Embedded {
+            metadata: true,
+            cover: true,
+            chapters: true,
+            subtitles: true,
+        };
+        assert_eq!(full.embedded, all);
+        let media = dir.path().join("again.mp4");
+        std::fs::rename(&full.path, &media).unwrap();
+
+        // Nothing to add or remove: nothing to do.
+        let nothing = Request {
+            media: &media,
+            tags: BTreeMap::new(),
+            cover: None,
+            chapters: &[],
+            subtitles: Vec::new(),
+            remove: Embedded::default(),
+        };
+        assert!(
+            embed(&ffmpeg, &ffprobe, &nothing, &shutdown, grace)
+                .await
+                .unwrap()
+                .is_none()
+        );
+
+        let strip = Request {
+            remove: all.clone(),
+            ..nothing
+        };
+        let out = embed(&ffmpeg, &ffprobe, &strip, &shutdown, grace)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(out.removed, all);
+        assert_eq!(out.embedded, Embedded::default());
+        let json = probe_json(&out.path);
+        let kinds: Vec<&str> = json["streams"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| s["codec_type"].as_str().unwrap())
+            .collect();
+        assert_eq!(
+            kinds,
+            ["video", "audio"],
+            "no cover, subtitles or chapter track"
+        );
+        assert!(json["chapters"].as_array().unwrap().is_empty());
+        let tags = json["format"]["tags"].as_object().unwrap();
+        assert!(
+            !tags.contains_key("title") && !tags.contains_key("artist"),
+            "{tags:?}"
+        );
+    }
+
+    #[tokio::test]
     async fn embeds_everything_into_mp4() {
         let (Some(ffmpeg), Some(ffprobe)) = (tool("ffmpeg"), tool("ffprobe")) else {
             eprintln!("skipped: ffmpeg not installed");
@@ -545,6 +749,7 @@ mod tests {
             cover: Some((&webp, CoverFormat::Webp)),
             chapters: &chapters,
             subtitles: vec![(sub, "en".into())],
+            remove: Embedded::default(),
         };
         let out = embed(
             &ffmpeg,
@@ -609,6 +814,7 @@ mod tests {
             cover: Some((&jpg, CoverFormat::Jpg)),
             chapters: &[],
             subtitles: vec![],
+            remove: Embedded::default(),
         };
         let out = embed(
             &ffmpeg,
@@ -642,6 +848,7 @@ mod tests {
             cover: Some((&jpg, CoverFormat::Jpg)),
             chapters: &chapters,
             subtitles: vec![(sub, "en".into())],
+            remove: Embedded::default(),
         };
         let out = embed(
             &ffmpeg,
@@ -678,6 +885,7 @@ mod tests {
             cover: None,
             chapters: &[],
             subtitles: vec![],
+            remove: Embedded::default(),
         };
         assert!(
             embed(
@@ -723,6 +931,7 @@ mod tests {
                     cover: Some((&jpg, CoverFormat::Jpg)),
                     chapters: &chapters,
                     subtitles: vec![(sub.clone(), "en".into())],
+                    remove: Embedded::default(),
                 };
                 let out = embed(
                     &ffmpeg,
@@ -785,6 +994,7 @@ mod tests {
             cover: None,
             chapters: &[],
             subtitles: vec![],
+            remove: Embedded::default(),
         };
         let err = embed(
             &ffmpeg,

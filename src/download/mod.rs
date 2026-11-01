@@ -579,7 +579,13 @@ async fn assemble(
         .embed_hooks(&mut data, &values, &context, tmp, &raw, hook_runs)
         .await?;
     let embedding = stage
-        .embed(&raw.media, &data, job.copy_from.as_ref(), ctx.duplicates)
+        .embed(
+            &raw.media,
+            &data,
+            job.copy_from.as_ref(),
+            ctx.duplicates,
+            false,
+        )
         .await;
 
     let media_bytes = std::fs::metadata(&raw.media)

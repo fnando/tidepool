@@ -115,7 +115,7 @@ impl Command {
             Command::Problems { .. } => None,
             Command::Tools { .. } => None,
             Command::Hooks { .. } => None,
-            Command::Embed(_) => Some("M4"),
+            Command::Embed(_) => None,
             Command::Cleanup(_) | Command::Pin(_) | Command::Unpin(_) => Some("M5"),
             Command::List(_) => Some("M6"),
             Command::Run(RunArgs { daemon: true, .. }) => Some("M7"),
@@ -171,17 +171,8 @@ pub struct ListArgs {
 pub enum HooksCmd {
     /// Run hooks again on videos already downloaded
     Run {
-        /// Only these videos
-        video_ids: Vec<String>,
-        /// Every downloaded video
-        #[arg(long)]
-        all: bool,
-        /// Only videos of these sources: name, playlist id or URL; repeatable
-        #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
-        sources: Vec<SourceRef>,
-        /// Only videos of sources in this category; repeatable
-        #[arg(long = "category", value_name = "NAME")]
-        categories: Vec<String>,
+        #[command(flatten)]
+        select: VideoSelection,
         /// Only this hook; repeatable
         #[arg(long = "hook", value_name = "NAME")]
         hooks: Vec<String>,
@@ -242,20 +233,29 @@ pub enum FilterCmd {
     },
 }
 
+/// Which downloaded videos a command works on.
 #[derive(Debug, Args)]
-#[group(required = true, multiple = false)]
-pub struct EmbedTarget {
-    pub video_id: Option<String>,
-    #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
-    pub source: Option<SourceRef>,
+pub struct VideoSelection {
+    /// Only these videos
+    pub video_ids: Vec<String>,
+    /// Every downloaded video
     #[arg(long)]
     pub all: bool,
+    /// Only videos of these sources: name, playlist id or URL; repeatable
+    #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
+    pub sources: Vec<SourceRef>,
+    /// Only videos of sources in this category; repeatable
+    #[arg(long = "category", value_name = "NAME")]
+    pub categories: Vec<String>,
 }
 
 #[derive(Debug, Args)]
 pub struct EmbedArgs {
     #[command(flatten)]
-    pub target: EmbedTarget,
+    pub select: VideoSelection,
+    /// Also take out what's switched off in `embed` (covers, subtitles, chapters, tags)
+    #[arg(long)]
+    pub remove_disabled: bool,
 }
 
 #[derive(Debug, Args)]

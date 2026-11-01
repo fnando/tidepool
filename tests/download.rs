@@ -1413,3 +1413,127 @@ async fn ctrl_c_while_checking_sources() {
         assert!(!alive(pid), "nothing left running ({pid})");
     }
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn embed_applies_the_current_settings_to_downloaded_videos() {
+    let env = Env::new().await;
+    let Some(bin) = real_ffmpeg_bin(&env) else {
+        eprintln!("skipped: ffmpeg not installed");
+        return;
+    };
+    let sample = env.path("sample.mkv");
+    assert!(
+        std::process::Command::new(bin.join("ffmpeg"))
+            .args(["-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i"])
+            .arg("testsrc=size=64x36:rate=10:duration=1")
+            .args(["-f", "lavfi", "-i", "sine=duration=1"])
+            .arg(&sample)
+            .status()
+            .unwrap()
+            .success()
+    );
+    let path = format!("{}:/usr/bin:/bin", bin.display());
+    let run = |args: &[&str]| {
+        let mut cmd = env.cmd(args);
+        cmd.env("PATH", &path).env("TIDEPOOL_FAKE_MEDIA", &sample);
+        cmd
+    };
+    // Downloaded with nothing embedded.
+    let config = env.config("");
+    run(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    run(&["embed"])
+        .assert()
+        .failure()
+        .stderr(contains("pick the videos"));
+    run(&["embed", "dQw4w9WgXcQ"]).assert().success().stdout(contains(
+        "dl: nothing to embed (every embed option is off; --remove-disabled takes out what's in the files)",
+    ));
+
+    // Turned on later, with an embed hook: backfilled.
+    let upper = script(
+        &env,
+        "upper.sh",
+        r#"cat > /dev/null; printf '{"tags": {"title": "LOUD"}}'"#,
+    );
+    let config = hooks_config(
+        &env,
+        "hooks = [\"upper\"]\n[category.default.embed]\nmetadata = true\ncover = true\nchapters = true",
+        &format!(
+            "[hooks.upper]\ntype = \"embed\"\ncommand = [\"{}\"]\n",
+            upper.display()
+        ),
+    );
+    run(&["embed", "dQw4w9WgXcQ", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains(
+            "dl: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”: embedded tags, cover, chapters",
+        ))
+        .stdout(contains("embedded 1 video"));
+    let rick = env.media().join(RICK_DIR);
+    let media =
+        rick.join("Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mkv");
+    // Covers, and the video tracks a cover must not turn into.
+    let covers = |json: &serde_json::Value| {
+        json["streams"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|s| s["tags"]["mimetype"] == "image/jpeg")
+            .count()
+    };
+    let video_tracks = |json: &serde_json::Value| {
+        json["streams"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|s| s["codec_type"] == "video" && s["disposition"]["attached_pic"] != 1)
+            .count()
+    };
+    let json = ffprobe_json(&media);
+    assert_eq!(
+        json["format"]["tags"]["title"], "LOUD",
+        "the embed hook ran"
+    );
+    assert_eq!(covers(&json), 1);
+    assert!(!json["chapters"].as_array().unwrap().is_empty());
+
+    // Again: one cover, not two.
+    run(&["embed", "dQw4w9WgXcQ"]).assert().success();
+    assert_eq!(covers(&ffprobe_json(&media)), 1, "covers don't pile up");
+
+    // Turned off: kept unless asked to remove.
+    let text = fs::read_to_string(&config)
+        .unwrap()
+        .replace("cover = true", "cover = false");
+    fs::write(&config, text).unwrap();
+    run(&["embed", "dQw4w9WgXcQ", "--config", &config])
+        .assert()
+        .success();
+    let json = ffprobe_json(&media);
+    assert_eq!(covers(&json), 1, "kept, still an attachment");
+    assert_eq!(video_tracks(&json), 1, "not a second video track");
+    run(&["embed", "--all", "--remove-disabled"])
+        .assert()
+        .success()
+        .stdout(contains("embedded tags, chapters; removed cover"));
+    let json = ffprobe_json(&media);
+    assert_eq!(covers(&json), 0, "the cover was taken out");
+    assert!(
+        !json["chapters"].as_array().unwrap().is_empty(),
+        "chapters stay"
+    );
+    assert_eq!(
+        json["streams"].as_array().unwrap().len(),
+        2,
+        "video and audio"
+    );
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(rick.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(
+        meta["embedded"],
+        serde_json::json!({ "metadata": true, "cover": false, "chapters": true, "subtitles": false })
+    );
+}

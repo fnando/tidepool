@@ -171,16 +171,18 @@ impl Stage<'_> {
     /// Embed what the source's `embed` settings ask for into `media` (in the
     /// work area), from `data`. Never fails: problems become a warning and
     /// `embed_error` in metadata.json. `shared` is another source's files
-    /// when `media` is a linked duplicate of them.
+    /// when `media` is a linked duplicate of them. With `remove_disabled`,
+    /// what's switched off is also taken out of the file.
     pub async fn embed(
         &self,
         media: &Path,
         data: &hooks::EmbedData,
         shared: Option<&VideoFiles>,
         duplicates: Duplicates,
+        remove_disabled: bool,
     ) -> Embedding {
         let settings = &self.source.embed;
-        if !embedding_on(self.source) {
+        if !embedding_on(self.source) && !remove_disabled {
             return Embedding::default();
         }
         let label = self.label;
@@ -211,6 +213,16 @@ impl Stage<'_> {
             } else {
                 Vec::new()
             },
+            remove: if remove_disabled {
+                embed::Embedded {
+                    metadata: !settings.metadata,
+                    cover: !settings.cover,
+                    chapters: !settings.chapters,
+                    subtitles: !settings.subtitles,
+                }
+            } else {
+                embed::Embedded::default()
+            },
         };
         if settings.cover && cover.is_none() {
             tracing::warn!("{label}: no cover to embed");
@@ -237,9 +249,14 @@ impl Stage<'_> {
                 };
                 match result {
                     Ok(()) => {
-                        tracing::debug!("{label}: embedded {:?}", out.embedded);
+                        tracing::debug!(
+                            "{label}: embedded {:?}, removed {:?}",
+                            out.embedded,
+                            out.removed
+                        );
                         Embedding {
                             embedded: out.embedded,
+                            removed: out.removed,
                             error: None,
                             relink: shared.is_some()
                                 && symlinked.is_none()
@@ -350,6 +367,8 @@ pub fn embedding_on(source: &EffectiveSource) -> bool {
 #[derive(Debug, Default)]
 pub struct Embedding {
     pub embedded: embed::Embedded,
+    /// What was taken out of the file (`remove_disabled`).
+    pub removed: embed::Embedded,
     pub error: Option<String>,
     /// The media was a hardlinked duplicate and got new tags: point the
     /// other source's path at the new file once it's placed.

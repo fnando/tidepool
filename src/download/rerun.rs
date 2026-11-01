@@ -1,4 +1,5 @@
-//! `tidepool hooks run`: run hooks again on videos already downloaded.
+//! `tidepool hooks run` and `tidepool embed`: run hooks (or embedding)
+//! again on videos already downloaded.
 //!
 //! `downloaded` and `embed` hooks work on copies of the placed files in the
 //! work area (then the files are embedded again and moved back, the same
@@ -18,8 +19,21 @@ use crate::hooks;
 use crate::paths::Dirs;
 use crate::state::items::{Downloaded, Subtitle, VideoFiles};
 
+/// What a re-run does.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Mode {
+    /// `hooks run`: the chosen hooks. The files are reprocessed when
+    /// `downloaded` or `embed` hooks are among them.
+    Hooks,
+    /// `tidepool embed`: the `embed` hooks, then embedding with the current
+    /// settings; with `remove_disabled`, what's switched off is taken out.
+    /// No `finished` hooks.
+    Embed { remove_disabled: bool },
+}
+
 /// What every re-run shares.
 pub struct Shared<'a> {
+    pub mode: Mode,
     pub hooks: &'a BTreeMap<String, HookConfig>,
     pub hook_logs: &'a Path,
     pub dirs: &'a Dirs,
@@ -52,6 +66,8 @@ pub struct Rerun {
     pub hook_runs: Vec<hooks::Report>,
     /// Why the files couldn't be reprocessed (they're left as they were).
     pub error: Option<String>,
+    /// What embedding did, when the files were reprocessed.
+    pub embedding: Option<super::stages::Embedding>,
 }
 
 pub async fn rerun(shared: &Shared<'_>, video: &Video<'_>) -> Rerun {
@@ -92,7 +108,8 @@ pub async fn rerun(shared: &Shared<'_>, video: &Video<'_>) -> Rerun {
         ..Rerun::default()
     };
 
-    if stage.has(HookType::Downloaded) || stage.has(HookType::Embed) {
+    let embed_mode = matches!(shared.mode, Mode::Embed { .. });
+    if embed_mode || stage.has(HookType::Downloaded) || stage.has(HookType::Embed) {
         let tmp = video
             .tmp_root
             .join(format!("{}.{}", video.item.video_id, source.key));
@@ -110,7 +127,10 @@ pub async fn rerun(shared: &Shared<'_>, video: &Video<'_>) -> Rerun {
         .await;
         let _ = std::fs::remove_dir_all(&tmp);
         match reprocessed {
-            Ok(new) => result.files = Some(new),
+            Ok((files, bytes, embedding)) => {
+                result.files = Some((files, bytes));
+                result.embedding = Some(embedding);
+            }
             Err(e) => {
                 // Like a failed download: nothing changed, no finished hooks.
                 result.hook_runs = hook_runs;
@@ -120,6 +140,10 @@ pub async fn rerun(shared: &Shared<'_>, video: &Video<'_>) -> Rerun {
         }
     }
 
+    if embed_mode {
+        result.hook_runs = hook_runs;
+        return result;
+    }
     let (mut placed, bytes) = match result.files.take() {
         Some(new) => new,
         None => (files.clone(), media_size(files)),
@@ -161,7 +185,8 @@ fn read_metadata(video: &Video<'_>) -> Result<(serde_json::Value, VideoInfo), St
 }
 
 /// Copy the placed files to the work area, run `downloaded` and `embed`
-/// hooks, embed again and move everything back. Returns the new locations.
+/// hooks, embed again and move everything back. Returns the new locations
+/// and what embedding did.
 #[allow(clippy::too_many_arguments)]
 async fn reprocess(
     shared: &Shared<'_>,
@@ -172,7 +197,7 @@ async fn reprocess(
     meta: &serde_json::Value,
     tmp: &Path,
     hook_runs: &mut Vec<hooks::Report>,
-) -> Result<(VideoFiles, u64), String> {
+) -> Result<(VideoFiles, u64, super::stages::Embedding), String> {
     let files = &video.item.files;
     let source = video.source;
     std::fs::create_dir_all(tmp).map_err(|e| format!("cannot create {}: {e}", tmp.display()))?;
@@ -226,8 +251,14 @@ async fn reprocess(
         .embed_hooks(&mut data, values, &context, tmp, &raw, hook_runs)
         .await
         .map_err(|f| f.message)?;
+    let remove_disabled = matches!(
+        shared.mode,
+        Mode::Embed {
+            remove_disabled: true
+        }
+    );
     let embedding = stage
-        .embed(&raw.media, &data, None, shared.duplicates)
+        .embed(&raw.media, &data, None, shared.duplicates, remove_disabled)
         .await;
 
     // Back where they were; a new media type gets the new extension.
@@ -317,5 +348,5 @@ async fn reprocess(
             );
         }
     }
-    Ok((new, media_bytes))
+    Ok((new, media_bytes, embedding))
 }

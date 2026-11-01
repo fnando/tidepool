@@ -435,6 +435,29 @@ If embedding fails, you keep the file as downloaded, with a warning.
 When the same video is in two sources and shares one file (see `duplicates`),
 the file carries the album and track of the source that downloaded it last.
 
+#### Embedding into videos you already have
+
+Changing `embed` only affects new downloads. To bring videos you already have
+up to date, for example after turning `cover` on or adding an `embed` hook, use
+`tidepool embed`. It picks videos the same way as `tidepool hooks run`:
+
+```sh
+tidepool embed --all                     # every downloaded video
+tidepool embed --source lofi             # one source (repeatable)
+tidepool embed --category music          # every source in a category
+tidepool embed dQw4w9WgXcQ okvideo01     # these videos
+```
+
+It runs the source's `embed` hooks, then writes what your `embed` settings
+turn on. Turning an option off doesn't take anything out of the files you
+already have; add `--remove-disabled` for that, e.g. with `cover = false`,
+`tidepool embed --all --remove-disabled` takes the covers out:
+
+```text
+lofi: “Some title”: embedded tags, chapters; removed cover
+embedded 1 video
+```
+
 ### Missing files
 
 Each run checks that every file of the videos you've downloaded is still
