@@ -592,9 +592,13 @@ pub fn describe_index(key: &str, summary: &IndexSummary) -> String {
     if check > 0 {
         parts.push(format!("{check} to check before download"));
     }
-    let downloaded = summary.count(status::DONE) + summary.count(status::DOWNLOADED);
+    let downloaded = summary.count(status::DONE);
     if downloaded > 0 {
         parts.push(format!("{downloaded} already downloaded"));
+    }
+    let waiting = summary.count(status::FETCHED) + summary.count(status::PROCESSING);
+    if waiting > 0 {
+        parts.push(format!("{waiting} downloaded, waiting to be processed"));
     }
     let skipped = summary.count(status::FILTERED);
     if skipped > 0 {

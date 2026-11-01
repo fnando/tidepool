@@ -14,6 +14,9 @@ const MIGRATION_LIST: &[M<'static>] = &[
     // Which version of the kind logic decided `videos.kind`; see
     // `items::KIND_VERSION`. Kinds from before are decided again.
     M::up("ALTER TABLE videos ADD COLUMN kind_version INTEGER;"),
+    // When a video's download finished (status `fetched`), so they're
+    // processed in that order.
+    M::up("ALTER TABLE items ADD COLUMN fetched_at TEXT;"),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_LIST);
 
@@ -151,6 +154,39 @@ mod tests {
             items::videos(&state.conn, &ids).unwrap()["dJkbfKpZdWM"].kind,
             None
         );
+    }
+
+    #[test]
+    fn databases_from_before_fetching_was_separate_upgrade() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("state.db");
+        {
+            let mut conn = Connection::open(&path).unwrap();
+            Migrations::from_slice(&MIGRATION_LIST[..2])
+                .to_latest(&mut conn)
+                .unwrap();
+        }
+        let state = State::open(&path).unwrap();
+        state
+            .conn
+            .execute("INSERT INTO sources (key, lists) VALUES ('lofi', '[]')", [])
+            .unwrap();
+        state
+            .conn
+            .execute("INSERT INTO videos (id, title) VALUES ('a', 'A')", [])
+            .unwrap();
+        state
+            .conn
+            .execute(
+                "INSERT INTO items (source_key, video_id, position, in_remote, status)
+                 VALUES ('lofi', 'a', 1, 1, 'pending')",
+                [],
+            )
+            .unwrap();
+        items::mark_fetched(&state.conn, "lofi", "a", jiff::Timestamp::now()).unwrap();
+        let queue = items::process_queue(&state.conn, &["lofi".to_string()]).unwrap();
+        assert_eq!(queue.len(), 1);
+        assert!(queue[0].fetched_at.is_some());
     }
 
     #[test]

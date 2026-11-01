@@ -598,6 +598,10 @@ impl App<'_> {
         let options = Options {
             limit,
             concurrency: concurrency.unwrap_or(config.general.concurrency) as usize,
+            process_concurrency: config.general.process_concurrency as usize,
+            fetch: true,
+            process: true,
+            recover: true,
             now: jiff::Timestamp::now(),
         };
         let dirs = &self.dirs;
@@ -614,7 +618,7 @@ impl App<'_> {
                 .map_err(anyhow::Error::msg)?;
         if summary.interrupted.is_none() {
             summary.hooks_failed += self
-                .retry_hooks(state, config, sources, tracker, out)
+                .run_hook_queue(state, config, sources, tracker, out)
                 .await?;
             summary.interrupted = self.shutdown.code();
         }
@@ -667,9 +671,10 @@ impl App<'_> {
         Ok(summary)
     }
 
-    /// Try again the failed `finished` hooks of `sources` that are due (see
-    /// `items::hook_retry_wait`); returns how many failed again.
-    async fn retry_hooks(
+    /// Run the `finished` hooks of `sources` that are due: queued for videos
+    /// just saved, or failed before and due for a retry (see
+    /// `items::hook_retry_wait`). Returns how many hooks failed.
+    async fn run_hook_queue(
         &self,
         state: &State,
         config: &crate::config::Config,
@@ -679,7 +684,7 @@ impl App<'_> {
     ) -> anyhow::Result<usize> {
         use crate::state::items;
         let due: Vec<(String, String, Vec<String>)> =
-            items::due_hook_retries(&state.conn, jiff::Timestamp::now())?
+            items::due_hooks(&state.conn, jiff::Timestamp::now())?
                 .into_iter()
                 .filter(|(source, _, _)| sources.iter().any(|s| &s.key == source))
                 .collect();
@@ -743,13 +748,25 @@ impl App<'_> {
             if names.is_empty() {
                 continue;
             }
+            // Every one queued, not run yet: a first run, quiet when it works.
+            let first = names.iter().all(|h| {
+                items::hook_status(&state.conn, source_key, video_id, h)
+                    .ok()
+                    .flatten()
+                    .as_deref()
+                    == Some("pending")
+            });
             let (title, problems) = rerun.video(item, source, &names).await?;
+            let hook_failures = problems.iter().filter(|p| *p != "stopped").count();
+            failed += hook_failures;
+            if first {
+                continue;
+            }
             let label = format!("{source_key}: “{title}”");
             if problems.is_empty() {
                 writeln!(out, "{label}: hook {} worked this time", names.join(", "))?;
                 continue;
             }
-            failed += 1;
             let gave_up: Vec<&str> = names
                 .iter()
                 .filter(|h| {
@@ -1336,6 +1353,16 @@ impl App<'_> {
                     )?;
                     removed += 1;
                     freed += k.media_bytes;
+                    continue;
+                }
+                // A `finished` hook may still be working with the files.
+                let waiting = items::waiting_hooks(&state.conn, &source.key, &k.video_id)?;
+                if !waiting.is_empty() {
+                    writeln!(
+                        out,
+                        "{label}: kept for now: hook {} hasn't run yet",
+                        waiting.join(", ")
+                    )?;
                     continue;
                 }
                 if let Some(why) = self

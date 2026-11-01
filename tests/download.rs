@@ -282,6 +282,155 @@ async fn interrupting_a_download_puts_it_back_in_the_queue() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn slow_processing_doesnt_hold_up_downloads() {
+    let env = Env::new().await;
+    // The first video's processing waits for the next download, one at a
+    // time each: that only works if downloading goes on meanwhile.
+    let marker = env.path("first");
+    let wait = script(
+        &env,
+        "wait.sh",
+        &format!(
+            r#"cat > /dev/null
+[ -e '{m}' ] && exit 0
+touch '{m}'
+tmp=$(dirname "$(dirname "$TIDEPOOL_OUTPUT_DIR")")
+mine=$(basename "$(dirname "$TIDEPOOL_OUTPUT_DIR")")
+for i in $(seq 100); do
+  for f in "$tmp"/*/fetched/media.*; do
+    case "$f" in "$tmp/$mine/"*) ;; *) [ -e "$f" ] && exit 0 ;; esac
+  done
+  sleep 0.05
+done
+echo "no other download while processing" >&2; exit 1"#,
+            m = marker.display()
+        ),
+    );
+    let config = hooks_config(
+        &env,
+        "hooks = [\"wait\"]",
+        &format!(
+            "[hooks.wait]\ntype = \"downloaded\"\ncommand = [\"{}\"]\n",
+            wait.display()
+        ),
+    );
+    let text = fs::read_to_string(&config).unwrap().replace(
+        "[tools.deno]",
+        "[general]\nconcurrency = 1\nprocess_concurrency = 1\n\n[tools.deno]",
+    );
+    fs::write(&config, text).unwrap();
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3)
+        .stdout(contains("downloaded 2 videos"));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn interrupted_processing_resumes_without_downloading_again() {
+    let env = Env::new().await;
+    let marker = env.path("stopped-once");
+    // The first time: stop tidepool while it processes Rick's video.
+    let stop = script(
+        &env,
+        "stop.sh",
+        &format!(
+            r#"cat > /dev/null
+[ "$TIDEPOOL_VIDEO_ID" = dQw4w9WgXcQ ] || exit 0
+[ -e '{m}' ] && exit 0
+touch '{m}'; kill -TERM $PPID; sleep 5"#,
+            m = marker.display()
+        ),
+    );
+    let config = hooks_config(
+        &env,
+        "hooks = [\"stop\"]",
+        &format!(
+            "[hooks.stop]\ntype = \"downloaded\"\ncommand = [\"{}\"]\n",
+            stop.display()
+        ),
+    );
+    let log = env.path("ytdlp.log");
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .env("TIDEPOOL_FAKE_YTDLP_LOG", &log)
+        .assert()
+        .code(143);
+    let rick = env
+        .statuses("dl")
+        .into_iter()
+        .find(|(id, _, _)| id == "dQw4w9WgXcQ")
+        .unwrap();
+    assert_eq!(rick.1, "fetched");
+    assert!(
+        env.path("data/tidepool/tmp/dQw4w9WgXcQ.dl/fetched")
+            .is_dir()
+    );
+    assert!(!env.media().join(RICK_DIR).exists());
+
+    fs::remove_file(&log).unwrap();
+    env.cmd(&["download"])
+        .env("TIDEPOOL_FAKE_YTDLP_LOG", &log)
+        .assert()
+        .stdout(contains("dl: downloaded “Rick Astley"));
+    let calls = fs::read_to_string(&log).unwrap_or_default();
+    assert!(
+        !calls.contains("dQw4w9WgXcQ"),
+        "not downloaded again: {calls}"
+    );
+    assert!(env.media().join(RICK_DIR).is_dir());
+    assert!(!env.path("data/tidepool/tmp/dQw4w9WgXcQ.dl").exists());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_fetched_video_without_its_download_is_downloaded_again() {
+    let env = Env::new().await;
+    let config = env.config("");
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    let db = rusqlite::Connection::open(env.path("data/tidepool/state.db")).unwrap();
+    db.execute(
+        "UPDATE items SET status = 'fetched' WHERE video_id = 'dQw4w9WgXcQ'",
+        [],
+    )
+    .unwrap();
+    let log = env.path("ytdlp.log");
+    env.cmd(&["download"])
+        .env("TIDEPOOL_FAKE_YTDLP_LOG", &log)
+        .assert()
+        .stdout(contains("dl: downloaded “Rick Astley"));
+    assert!(fs::read_to_string(&log).unwrap().contains("dQw4w9WgXcQ"));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn cleanup_waits_for_finished_hooks() {
+    let env = Env::new().await;
+    let config = env.config("");
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    let db = rusqlite::Connection::open(env.path("data/tidepool/state.db")).unwrap();
+    for video in ["dQw4w9WgXcQ", "okvideo01"] {
+        db.execute(
+            "INSERT INTO hook_runs (source_key, video_id, hook, type, status, retries, next_attempt_at)
+             VALUES ('dl', ?1, 'notify', 'finished', 'retrying', 1, '2999-01-01T00:00:00Z')",
+            [video],
+        )
+        .unwrap();
+    }
+    let config = hooks_config(&env, "[category.default.cleanup]\nmax_items = 1", "");
+    env.cmd(&["cleanup", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains("kept for now: hook notify hasn't run yet"));
+    assert!(env.media().join(RICK_DIR).join("metadata.json").is_file());
+    assert!(
+        env.media()
+            .join("dl/2026-09-01 - Video okvideo01 [okvideo01]/metadata.json")
+            .is_file()
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn recurring_failures_become_problems_until_work_succeeds_again() {
     let env = Env::new().await;
     let config = env.config("");

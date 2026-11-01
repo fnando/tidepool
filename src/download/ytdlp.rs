@@ -232,7 +232,7 @@ pub async fn video_info(
     cookies: Option<&Path>,
     shutdown: &Shutdown,
     grace: Duration,
-) -> Result<VideoInfo, Failure> {
+) -> Result<(VideoInfo, String), Failure> {
     let mut args = vec![
         "-J".to_string(),
         "--no-playlist".into(),
@@ -256,10 +256,12 @@ pub async fn video_info(
     if !output.status.success() {
         return Err(classify(&String::from_utf8_lossy(&output.stderr)));
     }
-    VideoInfo::parse(&String::from_utf8_lossy(&output.stdout)).map_err(|message| Failure {
+    let text = String::from_utf8_lossy(&output.stdout).into_owned();
+    let info = VideoInfo::parse(&text).map_err(|message| Failure {
         permanent: false,
         message,
-    })
+    })?;
+    Ok((info, text))
 }
 
 #[cfg(test)]

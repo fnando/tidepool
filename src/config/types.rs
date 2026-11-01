@@ -54,6 +54,10 @@ pub struct GeneralConfig {
     /// Parallel yt-dlp downloads.
     #[schemars(range(min = 1))]
     pub concurrency: u32,
+    /// Videos processed at once after downloading: hooks (a transcode, …),
+    /// embedding, saving.
+    #[schemars(range(min = 1))]
+    pub process_concurrency: u32,
     /// What to do when the same video is in several sources.
     pub duplicates: Duplicates,
     /// fancy-regex backtracking step limit per match.
@@ -67,6 +71,7 @@ impl Default for GeneralConfig {
     fn default() -> Self {
         Self {
             concurrency: 2,
+            process_concurrency: 1,
             duplicates: Duplicates::Hardlink,
             regex_backtrack_limit: 1_000_000,
             shutdown_timeout: HumanDuration(Duration::from_secs(10)),

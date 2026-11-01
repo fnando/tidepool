@@ -18,7 +18,10 @@ pub mod status {
     pub const FILTERED: &str = "filtered";
     pub const FILTER_ERROR: &str = "filter_error";
     pub const DOWNLOADING: &str = "downloading";
-    pub const DOWNLOADED: &str = "downloaded";
+    /// Downloaded into its work area, waiting to be processed.
+    pub const FETCHED: &str = "fetched";
+    /// Being processed: hooks, embedding, placing.
+    pub const PROCESSING: &str = "processing";
     pub const DONE: &str = "done";
     pub const FAILED: &str = "failed";
     pub const UNAVAILABLE: &str = "unavailable";
@@ -640,6 +643,8 @@ pub struct QueuedItem {
     pub attempts: i64,
     pub source_title: Option<String>,
     pub item: RemoteItem,
+    /// When its download finished (status `fetched`).
+    pub fetched_at: Option<String>,
 }
 
 /// Videos to download for these sources, in source order then position:
@@ -649,21 +654,58 @@ pub fn download_queue(
     sources: &[String],
     now: Timestamp,
 ) -> rusqlite::Result<Vec<QueuedItem>> {
+    queue_where(
+        conn,
+        sources,
+        "i.in_remote = 1
+           AND (i.status IN ('pending', 'pending_check')
+                OR (i.status = 'failed' AND i.attempts < ?3
+                    AND (i.next_attempt_at IS NULL OR i.next_attempt_at <= ?2)))",
+        "i.position",
+        now,
+    )
+}
+
+/// Videos downloaded into their work area and waiting to be processed, in
+/// the order they were fetched.
+pub fn process_queue(conn: &Connection, sources: &[String]) -> rusqlite::Result<Vec<QueuedItem>> {
+    let mut queue = queue_where(
+        conn,
+        sources,
+        "i.status = 'fetched'",
+        "i.fetched_at, i.position",
+        Timestamp::now(),
+    )?;
+    // Across sources too.
+    queue.sort_by(|a, b| a.fetched_at.cmp(&b.fetched_at));
+    Ok(queue)
+}
+
+/// Queued items of `sources` matching `condition` (`?1` is the source,
+/// and it may use `?2`, now, and `?3`, the attempt limit), in `order`
+/// within each source.
+fn queue_where(
+    conn: &Connection,
+    sources: &[String],
+    condition: &str,
+    order: &str,
+    now: Timestamp,
+) -> rusqlite::Result<Vec<QueuedItem>> {
     let mut stmt = conn.prepare(&format!(
         "SELECT i.video_id, i.position, i.status, i.attempts, s.title, v.title, v.channel, v.channel_id,
                 v.description, v.tags_json, v.duration_s, v.published_at, v.availability, v.thumbs_json,
-                {}
+                {}, i.fetched_at
          FROM items i JOIN videos v ON v.id = i.video_id JOIN sources s ON s.key = i.source_key
-         WHERE i.source_key = ?1 AND i.in_remote = 1
-           AND (i.status IN ('pending', 'pending_check')
-                OR (i.status = 'failed' AND i.attempts < ?3
-                    AND (i.next_attempt_at IS NULL OR i.next_attempt_at <= ?2)))
-         ORDER BY i.position",
+         WHERE i.source_key = ?1 AND {condition}
+         ORDER BY {order}",
         trusted_kind("v")
     ))?;
     let mut queue = Vec::new();
+    let (time, limit) = (sql_time(now), MAX_ATTEMPTS);
+    let used = stmt.parameter_count();
     for key in sources {
-        let rows = stmt.query_map(params![key, sql_time(now), MAX_ATTEMPTS], |r| {
+        let all: [&dyn rusqlite::ToSql; 3] = [key, &time, &limit];
+        let rows = stmt.query_map(&all[..used], |r| {
             let video_id: String = r.get(0)?;
             let position: u32 = r.get(1)?;
             let tags: Option<String> = r.get(9)?;
@@ -697,6 +739,7 @@ pub fn download_queue(
                     streamed: false,
                 },
                 video_id,
+                fetched_at: r.get(15)?,
             })
         })?;
         for row in rows {
@@ -939,7 +982,7 @@ pub fn find_copy(
     Ok(conn
         .query_row(
             "SELECT files FROM items WHERE video_id = ?1 AND format = ?2 AND source_key != ?3
-               AND status IN ('done', 'downloaded') AND files IS NOT NULL AND media_present = 1
+               AND status = 'done' AND files IS NOT NULL AND media_present = 1
              ORDER BY downloaded_at LIMIT 1",
             params![video_id, format, except_source],
             |r| r.get(0),
@@ -997,6 +1040,17 @@ fn jitter() -> u32 {
 /// failed `finished` hook is tried again later (see [`hook_retry_wait`]),
 /// until it fails for good.
 pub fn record_hook_run(conn: &Connection, run: &HookRun) -> rusqlite::Result<()> {
+    let (previous, previous_status): (u32, Option<String>) = conn
+        .query_row(
+            "SELECT retries, status FROM hook_runs
+             WHERE source_key = ?1 AND video_id = ?2 AND hook = ?3 AND type = ?4",
+            params![run.source_key, run.video_id, run.hook, run.kind],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .optional()?
+        .unwrap_or((0, None));
+    // A queued hook's first run isn't a retry.
+    let retry = run.retry && previous_status.as_deref() != Some("pending");
     conn.execute(
         "INSERT INTO hook_attempts (source_key, video_id, hook, type, ok, exit_code, attempts,
            started_at, finished_at, error, retry)
@@ -1012,18 +1066,9 @@ pub fn record_hook_run(conn: &Connection, run: &HookRun) -> rusqlite::Result<()>
             run.started_at,
             run.finished_at,
             run.error,
-            run.retry,
+            retry,
         ],
     )?;
-    let previous: u32 = conn
-        .query_row(
-            "SELECT retries FROM hook_runs
-             WHERE source_key = ?1 AND video_id = ?2 AND hook = ?3 AND type = ?4",
-            params![run.source_key, run.video_id, run.hook, run.kind],
-            |r| r.get(0),
-        )
-        .optional()?
-        .unwrap_or(0);
     let finished_at: Option<Timestamp> = run.finished_at.parse().ok();
     let later = |seconds: u64| {
         finished_at
@@ -1040,10 +1085,15 @@ pub fn record_hook_run(conn: &Connection, run: &HookRun) -> rusqlite::Result<()>
         // downloaded/embed: the download failed, and is retried as a whole.
         ("failed", 0, None)
     } else if stopped {
-        // Not the hook's fault: on the next run, same count.
-        ("retrying", if run.retry { previous } else { 0 }, later(0))
+        // Not the hook's fault: on the next run, same count (still a first
+        // run if it was one).
+        (
+            if retry { "retrying" } else { "pending" },
+            if retry { previous } else { 0 },
+            later(0),
+        )
     } else {
-        let retries = if run.retry { previous + 1 } else { 0 };
+        let retries = if retry { previous + 1 } else { 0 };
         match hook_retry_wait(retries, jitter()) {
             Some(wait) => ("retrying", retries, later(wait)),
             None => ("failed", retries, None),
@@ -1093,15 +1143,15 @@ pub fn hook_status(
     .optional()
 }
 
-/// `finished` hooks due for an automatic retry, per video:
-/// `(source_key, video_id, hooks)`.
-pub fn due_hook_retries(
+/// `finished` hooks due to run, per video: queued (`pending`) or waiting
+/// for an automatic retry. `(source_key, video_id, hooks)`.
+pub fn due_hooks(
     conn: &Connection,
     now: Timestamp,
 ) -> rusqlite::Result<Vec<(String, String, Vec<String>)>> {
     let mut stmt = conn.prepare(
         "SELECT source_key, video_id, hook, next_attempt_at FROM hook_runs
-         WHERE status = 'retrying' AND type = 'finished'
+         WHERE status IN ('pending', 'retrying') AND type = 'finished'
          ORDER BY source_key, video_id, hook",
     )?;
     let rows = stmt.query_map([], |r| {
@@ -1129,6 +1179,22 @@ pub fn due_hook_retries(
     Ok(due)
 }
 
+/// A video's `finished` hooks that haven't run yet, or will run again.
+pub fn waiting_hooks(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+) -> rusqlite::Result<Vec<String>> {
+    let mut stmt = conn.prepare(
+        "SELECT hook FROM hook_runs
+         WHERE source_key = ?1 AND video_id = ?2 AND type = 'finished'
+           AND status IN ('pending', 'retrying')
+         ORDER BY hook",
+    )?;
+    stmt.query_map(params![source_key, video_id], |r| r.get(0))?
+        .collect()
+}
+
 /// The hooks whose last run failed (and may be waiting for a retry) for one
 /// video in one source.
 pub fn failed_hooks(
@@ -1137,7 +1203,8 @@ pub fn failed_hooks(
     video_id: &str,
 ) -> rusqlite::Result<HashSet<String>> {
     let mut stmt = conn.prepare(
-        "SELECT hook FROM hook_runs WHERE source_key = ?1 AND video_id = ?2 AND status != 'ok'",
+        "SELECT hook FROM hook_runs
+         WHERE source_key = ?1 AND video_id = ?2 AND status IN ('failed', 'retrying')",
     )?;
     stmt.query_map(params![source_key, video_id], |r| r.get(0))?
         .collect()
@@ -1155,7 +1222,7 @@ pub struct Downloaded {
 pub fn downloaded(conn: &Connection, sources: &[String]) -> rusqlite::Result<Vec<Downloaded>> {
     let mut stmt = conn.prepare(
         "SELECT source_key, video_id, files FROM items
-         WHERE status IN ('done', 'downloaded') AND files IS NOT NULL
+         WHERE status = 'done' AND files IS NOT NULL
          ORDER BY source_key, position",
     )?;
     let rows = stmt.query_map([], |r| {
@@ -1363,10 +1430,62 @@ pub fn add_quota(
 /// After a crash or an interrupt: downloads that didn't finish go back to
 /// `pending`. Returns how many.
 pub fn reset_interrupted(conn: &Connection) -> rusqlite::Result<usize> {
-    conn.execute(
+    Ok(conn.execute(
         "UPDATE items SET status = 'pending' WHERE status = 'downloading'",
         [],
-    )
+    )? + conn.execute(
+        "UPDATE items SET status = 'fetched' WHERE status = 'processing'",
+        [],
+    )?)
+}
+
+/// A video's download is in its work area, waiting to be processed.
+pub fn mark_fetched(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    now: Timestamp,
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE items SET status = 'fetched', fetched_at = ?3
+         WHERE source_key = ?1 AND video_id = ?2",
+        params![source_key, video_id, now.to_string()],
+    )?;
+    Ok(())
+}
+
+/// Fetched videos of `sources`: `(source, video)`.
+pub fn fetched(conn: &Connection, sources: &[String]) -> rusqlite::Result<Vec<(String, String)>> {
+    let mut stmt = conn.prepare(
+        "SELECT source_key, video_id FROM items WHERE source_key = ?1 AND status = 'fetched'",
+    )?;
+    let mut out = Vec::new();
+    for key in sources {
+        for row in stmt.query_map([key], |r| Ok((r.get(0)?, r.get(1)?)))? {
+            out.push(row?);
+        }
+    }
+    Ok(out)
+}
+
+/// Queue a placed video's `finished` hooks, to run in this order.
+pub fn queue_hooks(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    hooks: &[String],
+    now: Timestamp,
+) -> rusqlite::Result<()> {
+    for hook in hooks {
+        conn.execute(
+            "INSERT INTO hook_runs (source_key, video_id, hook, type, status, retries, next_attempt_at)
+             VALUES (?1, ?2, ?3, 'finished', 'pending', 0, ?4)
+             ON CONFLICT (source_key, video_id, hook, type) DO UPDATE SET
+               status = 'pending', retries = 0, next_attempt_at = excluded.next_attempt_at",
+            params![source_key, video_id, hook, now.to_string()],
+        )?;
+    }
+    Ok(())
 }
 
 /// A video's status in each source it's in: `(source, status)`.
@@ -1398,7 +1517,7 @@ pub struct Kept {
 pub fn kept(conn: &Connection, source_key: &str) -> rusqlite::Result<Vec<Kept>> {
     let mut stmt = conn.prepare(
         "SELECT video_id, position, files, media_bytes, downloaded_at FROM items
-         WHERE source_key = ?1 AND status IN ('done', 'downloaded') AND files IS NOT NULL
+         WHERE source_key = ?1 AND status = 'done' AND files IS NOT NULL
          ORDER BY position",
     )?;
     let rows = stmt.query_map([source_key], |r| {

@@ -31,6 +31,7 @@ version = 1
 
 [general]                           # settings for the whole run
 # concurrency = 2                   # parallel yt-dlp downloads
+# process_concurrency = 1           # videos processed at once after downloading (hooks, embedding)
 # duplicates = "hardlink"           # same video in several sources: hardlink | symlink | copy | download
 # regex_backtrack_limit = 1000000   # fancy-regex step limit per match
 # shutdown_timeout = "10s"          # grace period for child processes after SIGINT/SIGTERM

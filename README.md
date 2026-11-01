@@ -378,12 +378,22 @@ longer each time, up to 5 attempts. Videos that can't be downloaded at all
 marked unavailable and not tried again. Either way, the other videos still
 download, and the command ends with exit code 3.
 
+**Downloading, then finishing.** Each video is downloaded into a work folder
+first, then finished: its hooks run, tags and the cover are written into the
+file, and everything is saved into your library. Finishing happens alongside
+the downloads, so a slow hook (converting a video, say) never holds up the
+next download. `general.process_concurrency` says how many videos are finished
+at once (default 1, since converting videos keeps the computer busy); your
+library only ever gets finished videos.
+
 **Stopping.** Ctrl-C stops cleanly: no new downloads start, and the ones in
 progress get a moment to wind down (10 seconds, or `general.shutdown_timeout`)
 before they're stopped. Videos that finished in the meantime are kept;
-unfinished ones are discarded and downloaded again on the next run. Press
-Ctrl-C a second time to stop right away. Hooks and anything else tidepool
-started stop with it, so nothing keeps running in the background.
+unfinished downloads are discarded and downloaded again on the next run. A
+video that was downloaded but not finished yet is finished on the next run,
+without downloading it again. Press Ctrl-C a second time to stop right away.
+Hooks and anything else tidepool started stop with it, so nothing keeps running
+in the background.
 
 **Downloading only what's waiting.** `tidepool download` downloads videos
 already found by `tidepool run` or `tidepool index`, without checking the
@@ -691,7 +701,8 @@ deleted for good the next time you run `tidepool run`, `download` or
 video goes, with its files and the reason as JSON on its input. Printing
 `{"keep": true}` keeps the video this time; printing nothing lets it go. Every
 `before_cleanup` hook gets asked, and if one fails or times out the video is
-kept too, and `tidepool problems` tells you.
+kept too, and `tidepool problems` tells you. A video whose `finished` hooks
+haven't run yet (or are waiting to be tried again) is also kept for now.
 
 ### Problems
 

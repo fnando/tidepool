@@ -349,6 +349,13 @@
           "default": "hardlink",
           "description": "What to do when the same video is in several sources."
         },
+        "process_concurrency": {
+          "default": 1,
+          "description": "Videos processed at once after downloading: hooks (a transcode, …),\nembedding, saving.",
+          "format": "uint32",
+          "minimum": 1,
+          "type": "integer"
+        },
         "regex_backtrack_limit": {
           "default": 1000000,
           "description": "fancy-regex backtracking step limit per match.",
@@ -866,6 +873,7 @@
       "default": {
         "concurrency": 2,
         "duplicates": "hardlink",
+        "process_concurrency": 1,
         "regex_backtrack_limit": 1000000,
         "shutdown_timeout": "10s"
       },

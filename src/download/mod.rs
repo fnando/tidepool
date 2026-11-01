@@ -71,7 +71,16 @@ pub struct Context {
 
 pub struct Options {
     pub limit: Option<usize>,
+    /// Downloads at once.
     pub concurrency: usize,
+    /// Videos processed at once (hooks, embedding, placing).
+    pub process_concurrency: usize,
+    /// Download what's queued.
+    pub fetch: bool,
+    /// Process what's downloaded (including what this run downloads).
+    pub process: bool,
+    /// Clean up after a crash first: work areas, interrupted videos.
+    pub recover: bool,
     /// The run's clock: retry times, cutoffs, timestamps.
     pub now: Timestamp,
 }
@@ -101,6 +110,11 @@ struct Job {
 }
 
 enum Outcome {
+    /// Downloaded into the work area, waiting to be processed.
+    Fetched {
+        bytes: u64,
+    },
+    /// Processed and placed.
     Done {
         files: items::VideoFiles,
         /// The metadata.json written, kept as a copy to restore it.
@@ -110,9 +124,20 @@ enum Outcome {
     },
     Skipped(Decision),
     Failed(Failure),
+    /// Processing was cut short by Ctrl-C or `kill`; the download stays in
+    /// the work area.
+    Stopped,
+}
+
+/// Which half of a video's way into the library a task did.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Phase {
+    Fetch,
+    Process,
 }
 
 struct Finished {
+    phase: Phase,
     source_key: String,
     /// How often this video failed before this attempt.
     previous_attempts: i64,
@@ -125,6 +150,8 @@ struct Finished {
     details: Option<RemoteItem>,
     /// Every hook that ran.
     hook_runs: Vec<hooks::Report>,
+    /// The source's `finished` hooks, queued once the video is placed.
+    finished_hooks: Vec<String>,
 }
 
 /// A hook report as stored in `hook_runs`.
@@ -291,16 +318,29 @@ fn is_work_folder(name: &str) -> bool {
             .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '_')
 }
 
-async fn process(
-    job: &Job,
-    ctx: &Context,
-    hook_runs: &mut Vec<hooks::Report>,
-) -> (Outcome, Option<RemoteItem>) {
+/// A video's work area: `<tmp_root>/<video_id>.<source>`. Fetching leaves
+/// the download in `fetched/`; processing works on a copy in `process/`, so
+/// it can start over from `fetched/` after a crash or Ctrl-C.
+pub fn work_area(tmp_root: &Path, video_id: &str, source_key: &str) -> PathBuf {
+    tmp_root.join(format!("{video_id}.{source_key}"))
+}
+
+/// What fetching knows that processing needs, kept in the work area.
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+struct FetchNote {
+    /// Another source's files the download was linked from.
+    copy_from: Option<items::VideoFiles>,
+}
+
+const FETCH_NOTE: &str = "fetch.json";
+const INFO_JSON: &str = "ytdlp.info.json";
+
+/// Download a video into its work area (or link another source's copy).
+async fn fetch(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
     let source = &job.source;
     let item = &job.queued.item;
     let video_id = &job.queued.video_id;
     let mut details = None;
-    let started = std::time::Instant::now();
     let label = format!("{}: “{}”", source.key, item.title);
     tracing::debug!("{}: downloading “{}” [{video_id}]", source.key, item.title);
     if job.queued.status == status::PENDING_CHECK {
@@ -314,7 +354,7 @@ async fn process(
     }
 
     // A decision that needed fields the index didn't have.
-    let mut info = None;
+    let mut info_json = None;
     if job.queued.status == status::PENDING_CHECK || job.copy_from.is_some() {
         match ytdlp::video_info(
             &ctx.ytdlp,
@@ -325,7 +365,7 @@ async fn process(
         )
         .await
         {
-            Ok(full) => {
+            Ok((full, text)) => {
                 let mut merged = merge_details(item, &full);
                 // Not a stream and short enough: is it a Short?
                 if merged.kind.is_none() && full.live_status.as_deref() == Some("not_live") {
@@ -334,7 +374,7 @@ async fn process(
                         .await;
                 }
                 details = Some(merged.clone());
-                info = Some(full);
+                info_json = Some(text);
                 if job.queued.status == status::PENDING_CHECK {
                     let rules = match RuleSet::compile(source, ctx.backtrack_limit, job.now) {
                         Ok(rules) => rules,
@@ -351,60 +391,60 @@ async fn process(
         }
     }
 
-    let tmp = job
-        .paths
-        .tmp_root
-        .join(format!("{video_id}.{}", source.key));
-    let _ = std::fs::remove_dir_all(&tmp);
-    if let Err(err) = std::fs::create_dir_all(&tmp) {
+    let work = work_area(&job.paths.tmp_root, video_id, &source.key);
+    let fetched = work.join("fetched");
+    let _ = std::fs::remove_dir_all(&work);
+    if let Err(err) = std::fs::create_dir_all(&fetched) {
         return (
-            Outcome::Failed(io_fail("cannot create", &tmp, err)),
+            Outcome::Failed(io_fail("cannot create", &fetched, err)),
             details,
         );
     }
-    let result = assemble(job, ctx, &tmp, info, &mut details, started, hook_runs).await;
+    let result = fetch_files(job, ctx, &fetched, info_json, &mut details, &label).await;
     if result.is_err() {
-        let _ = std::fs::remove_dir_all(&tmp);
+        let _ = std::fs::remove_dir_all(&work);
     }
     match result {
-        Ok(outcome) => (outcome, details),
+        Ok(bytes) => (Outcome::Fetched { bytes }, details),
         Err(failure) => (Outcome::Failed(failure), details),
     }
 }
 
-/// Fill `tmp` with the media, subtitles, cover and metadata, then place
-/// each file at its destination.
-async fn assemble(
+/// The media and subtitles, linked from another source or downloaded, into
+/// `fetched` as `media.<ext>` and `media.<lang>.<ext>`, with yt-dlp's info
+/// JSON. Returns the media's size.
+async fn fetch_files(
     job: &Job,
     ctx: &Context,
-    tmp: &Path,
-    info: Option<VideoInfo>,
+    fetched: &Path,
+    info_json: Option<String>,
     details: &mut Option<RemoteItem>,
-    started: std::time::Instant,
-    hook_runs: &mut Vec<hooks::Report>,
-) -> Result<Outcome, Failure> {
+    label: &str,
+) -> Result<u64, Failure> {
     let source = &job.source;
-    let label = &format!("{}: “{}”", source.key, job.queued.item.title);
     let video_id = &job.queued.video_id;
-
-    // Media and subtitles: linked from another source, or downloaded. In the
-    // work area they're named `media.<ext>` and `media.<lang>.<ext>`.
-    let (info, other_cover) = match (&job.copy_from, info) {
-        (Some(other), Some(info)) => {
+    match (&job.copy_from, info_json) {
+        (Some(other), Some(text)) => {
             let ext = extension_of(&other.media);
             let media = PathBuf::from(&other.media);
-            link(&media, &tmp.join(format!("media.{ext}")), ctx.duplicates)
-                .map_err(|e| io_fail("cannot link", &media, e))?;
+            link(
+                &media,
+                &fetched.join(format!("media.{ext}")),
+                ctx.duplicates,
+            )
+            .map_err(|e| io_fail("cannot link", &media, e))?;
             for sub in &other.subtitles {
                 let path = PathBuf::from(&sub.path);
                 let name = format!("media.{}.{}", sub.lang, extension_of(&sub.path));
-                link(&path, &tmp.join(name), ctx.duplicates)
+                link(&path, &fetched.join(name), ctx.duplicates)
                     .map_err(|e| io_fail("cannot link", &path, e))?;
             }
-            (info, other.cover.clone().map(PathBuf::from))
+            let info_path = fetched.join(INFO_JSON);
+            std::fs::write(&info_path, text).map_err(|e| io_fail("cannot write", &info_path, e))?;
         }
         _ => {
-            let args = ytdlp::download_args(source, video_id, tmp, job.paths.cookies.as_deref());
+            let args =
+                ytdlp::download_args(source, video_id, fetched, job.paths.cookies.as_deref());
             let media = ytdlp::download(
                 &ctx.ytdlp,
                 &args,
@@ -413,33 +453,39 @@ async fn assemble(
                 ctx.shutdown_timeout,
             )
             .await?;
-            let info_path = tmp.join("ytdlp.info.json");
+            let info_path = fetched.join(INFO_JSON);
             let text = std::fs::read_to_string(&info_path)
                 .map_err(|e| io_fail("cannot read", &info_path, e))?;
             let info = VideoInfo::parse(&text).map_err(fail)?;
             *details = Some(merge_details(&job.queued.item, &info));
-            if !source.keep_raw_info {
-                let _ = std::fs::remove_file(&info_path);
-            }
             let name = media
                 .file_name()
                 .map(|n| n.to_string_lossy().into_owned())
                 .unwrap_or_default();
-            if !tmp.join(&name).is_file() {
+            if !fetched.join(&name).is_file() {
                 return Err(fail(format!(
                     "yt-dlp reported {} but it isn't in the work area",
                     media.display()
                 )));
             }
-            (info, None)
         }
+    }
+    let note = FetchNote {
+        copy_from: job.copy_from.clone(),
     };
+    let note_path = fetched.join(FETCH_NOTE);
+    std::fs::write(&note_path, serde_json::to_vec(&note).expect("JSON"))
+        .map_err(|e| io_fail("cannot write", &note_path, e))?;
+    let (media, _) = work_files(fetched)?;
+    Ok(std::fs::metadata(&media).map(|m| m.len()).unwrap_or(0))
+}
 
-    // What's in the work area now.
+/// The media file and subtitles in a work folder.
+fn work_files(dir: &Path) -> Result<(PathBuf, Vec<hooks::Subtitle>), Failure> {
     let mut media = None;
     let mut subtitles: Vec<hooks::Subtitle> = Vec::new();
-    for entry in std::fs::read_dir(tmp)
-        .map_err(|e| io_fail("cannot read", tmp, e))?
+    for entry in std::fs::read_dir(dir)
+        .map_err(|e| io_fail("cannot read", dir, e))?
         .flatten()
     {
         let name = entry.file_name().to_string_lossy().into_owned();
@@ -457,6 +503,95 @@ async fn assemble(
     }
     subtitles.sort_by(|a, b| a.lang.cmp(&b.lang));
     let media = media.ok_or_else(|| fail("no media file in the work area"))?;
+    Ok((media, subtitles))
+}
+
+/// Process a fetched video: hooks, embedding, placing. It works on a copy of
+/// `fetched/` (hardlinks; symlinks stay symlinks), so `fetched/` is still
+/// there if it's cut short. Done or failed, the work area goes; stopped, the
+/// download stays for the next run.
+async fn process(
+    job: &mut Job,
+    ctx: &Context,
+    hook_runs: &mut Vec<hooks::Report>,
+) -> (Outcome, Option<RemoteItem>) {
+    let video_id = &job.queued.video_id;
+    let work = work_area(&job.paths.tmp_root, video_id, &job.source.key);
+    let fetched = work.join("fetched");
+    let scratch = work.join("process");
+    let prepared = (|| {
+        let _ = std::fs::remove_dir_all(&scratch);
+        std::fs::create_dir_all(&scratch).map_err(|e| io_fail("cannot create", &scratch, e))?;
+        let entries = std::fs::read_dir(&fetched).map_err(|_| {
+            fail("its download is gone from the work area; it will be downloaded again")
+        })?;
+        for entry in entries.flatten() {
+            stage_copy(&entry.path(), &scratch.join(entry.file_name()))
+                .map_err(|e| io_fail("cannot copy", &entry.path(), e))?;
+        }
+        let note: FetchNote = std::fs::read(scratch.join(FETCH_NOTE))
+            .ok()
+            .and_then(|b| serde_json::from_slice(&b).ok())
+            .unwrap_or_default();
+        let info_path = scratch.join(INFO_JSON);
+        let text = std::fs::read_to_string(&info_path)
+            .map_err(|e| io_fail("cannot read", &info_path, e))?;
+        Ok::<_, Failure>((note, VideoInfo::parse(&text).map_err(fail)?))
+    })();
+    let (note, info) = match prepared {
+        Ok(found) => found,
+        Err(failure) => {
+            let _ = std::fs::remove_dir_all(&work);
+            return (Outcome::Failed(failure), None);
+        }
+    };
+    job.copy_from = note.copy_from;
+    let details = Some(merge_details(&job.queued.item, &info));
+    let result = assemble(job, ctx, &scratch, info, details.as_ref(), hook_runs).await;
+    match result {
+        Err(_) if ctx.shutdown.is_stopping() => {
+            let _ = std::fs::remove_dir_all(&scratch);
+            (Outcome::Stopped, None)
+        }
+        Ok(outcome) => {
+            let _ = std::fs::remove_dir_all(&work);
+            (outcome, None)
+        }
+        Err(failure) => {
+            let _ = std::fs::remove_dir_all(&work);
+            (Outcome::Failed(failure), None)
+        }
+    }
+}
+
+/// Put `src` at `dest` for processing without copying its data.
+fn stage_copy(src: &Path, dest: &Path) -> std::io::Result<()> {
+    match std::fs::read_link(src) {
+        Ok(target) => std::os::unix::fs::symlink(target, dest),
+        Err(_) => std::fs::hard_link(src, dest).or_else(|_| std::fs::copy(src, dest).map(drop)),
+    }
+}
+
+/// Process the fetched files in `tmp`: hooks, cover, embedding, metadata,
+/// then place everything (metadata last) and run `finished` hooks.
+async fn assemble(
+    job: &Job,
+    ctx: &Context,
+    tmp: &Path,
+    info: VideoInfo,
+    details: Option<&RemoteItem>,
+    hook_runs: &mut Vec<hooks::Report>,
+) -> Result<Outcome, Failure> {
+    let started = std::time::Instant::now();
+    let source = &job.source;
+    let label = &format!("{}: “{}”", source.key, job.queued.item.title);
+    let video_id = &job.queued.video_id;
+    let other_cover = job
+        .copy_from
+        .as_ref()
+        .and_then(|other| other.cover.clone())
+        .map(PathBuf::from);
+    let (media, subtitles) = work_files(tmp)?;
 
     let stage = stages::Stage {
         source,
@@ -519,10 +654,7 @@ async fn assemble(
         tracing::debug!("{label}: cover linked from {}", other_cover.display());
         cover_file = Some(cover_tmp);
     } else {
-        let thumbs = details
-            .as_ref()
-            .map(|d| d.thumbnails.clone())
-            .unwrap_or_default();
+        let thumbs = details.map(|d| d.thumbnails.clone()).unwrap_or_default();
         let urls = thumbnail::candidates(video_id, &thumbs, &ctx.thumbnail_base, cover_format);
         match thumbnail::fetch_largest(&ctx.http, &urls, cover_format).await {
             Some(found) => {
@@ -666,10 +798,6 @@ async fn assemble(
         started.elapsed().as_secs_f64()
     );
 
-    stage
-        .finished_hooks(&values, &files, &context, hook_runs)
-        .await;
-
     let metadata = std::fs::read_to_string(&files.metadata).unwrap_or(json);
     Ok(Outcome::Done {
         files,
@@ -702,25 +830,54 @@ fn extension_of(path: &str) -> String {
         .unwrap_or_default()
 }
 
-/// Clear the work areas and put interrupted downloads back in the queue.
-/// Only the folders tidepool creates there are removed, so a `tmp_dir`
+/// After a crash: interrupted videos go back (downloads to the queue,
+/// processing to `fetched`), fetched downloads whose work area is gone are
+/// downloaded again, and the work areas are cleared except for fetched
+/// downloads. Only the folders tidepool creates are touched, so a `tmp_dir`
 /// pointing somewhere shared never loses anything else.
-pub fn recover(state: &State, tmp_roots: &[PathBuf]) -> Result<usize, String> {
-    for tmp_root in tmp_roots.iter().filter(|t| t.is_dir()) {
+pub fn recover(state: &State, by_source: &BTreeMap<String, SourcePaths>) -> Result<usize, String> {
+    let db = |e: rusqlite::Error| format!("state database: {e}");
+    let mut reset = items::reset_interrupted(&state.conn).map_err(db)?;
+    let keys: Vec<String> = by_source.keys().cloned().collect();
+    for (source, video) in items::fetched(&state.conn, &keys).map_err(db)? {
+        let work = work_area(&by_source[&source].tmp_root, &video, &source);
+        if !work.join("fetched").is_dir() {
+            items::set_status(&state.conn, &source, &video, status::PENDING).map_err(db)?;
+            reset += 1;
+        }
+    }
+    let mut tmp_roots: Vec<&PathBuf> = by_source.values().map(|p| &p.tmp_root).collect();
+    tmp_roots.sort();
+    tmp_roots.dedup();
+    for tmp_root in tmp_roots.into_iter().filter(|t| t.is_dir()) {
         let entries = std::fs::read_dir(tmp_root)
             .map_err(|e| format!("cannot clear {}: {e}", tmp_root.display()))?;
         for entry in entries.flatten() {
-            let name = entry.file_name();
-            if is_work_folder(&name.to_string_lossy()) && entry.path().is_dir() {
-                std::fs::remove_dir_all(entry.path())
-                    .map_err(|e| format!("cannot clear {}: {e}", entry.path().display()))?;
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if !is_work_folder(&name) || !entry.path().is_dir() {
+                continue;
+            }
+            let (video, source) = name.split_once('.').expect("a work folder");
+            let fetched = items::item_statuses(&state.conn, video)
+                .map_err(db)?
+                .iter()
+                .any(|(s, st)| s == source && st == status::FETCHED);
+            let clear = if fetched {
+                entry.path().join("process")
+            } else {
+                entry.path()
+            };
+            if clear.exists() {
+                std::fs::remove_dir_all(&clear)
+                    .map_err(|e| format!("cannot clear {}: {e}", clear.display()))?;
             }
         }
     }
-    items::reset_interrupted(&state.conn).map_err(|e| e.to_string())
+    Ok(reset)
 }
 
-/// Download everything queued for `sources`.
+/// Download what's queued for `sources` and process what's downloaded,
+/// at the same time: each download is processed as soon as it's done.
 pub async fn download_all(
     state: &mut State,
     sources: &[EffectiveSource],
@@ -732,41 +889,94 @@ pub async fn download_all(
 ) -> Result<Summary, String> {
     let now = options.now;
     let db = |e: rusqlite::Error| format!("state database: {e}");
-    let mut by_source = std::collections::HashMap::new();
+    let mut by_source = BTreeMap::new();
     for source in sources {
         by_source.insert(
             source.key.clone(),
             paths(source).map_err(|e| format!("{}: {e}", source.key))?,
         );
     }
-    let mut tmp_roots: Vec<PathBuf> = by_source.values().map(|p| p.tmp_root.clone()).collect();
-    tmp_roots.sort();
-    tmp_roots.dedup();
-    recover(state, &tmp_roots)?;
-    let mut summary = Summary {
-        missing: missing::check(state, sources, &by_source, &ctx, out).await?,
-        ..Summary::default()
-    };
+    if options.recover {
+        recover(state, &by_source)?;
+    }
+    let mut summary = Summary::default();
+    if options.fetch {
+        let by_source: std::collections::HashMap<_, _> = by_source
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        summary.missing = missing::check(state, sources, &by_source, &ctx, out).await?;
+    }
 
     let keys: Vec<String> = sources.iter().map(|s| s.key.clone()).collect();
-    let mut queue = items::download_queue(&state.conn, &keys, now).map_err(db)?;
+    let mut queue = if options.fetch {
+        items::download_queue(&state.conn, &keys, now).map_err(db)?
+    } else {
+        Vec::new()
+    };
     if let Some(limit) = options.limit {
         queue.truncate(limit);
     }
-    if queue.is_empty() {
+    let waiting = if options.process {
+        items::process_queue(&state.conn, &keys).map_err(db)?
+    } else {
+        Vec::new()
+    };
+    if queue.is_empty() && waiting.is_empty() {
         return Ok(summary);
     }
 
     let ctx = Arc::new(ctx);
-    let semaphore = Arc::new(Semaphore::new(options.concurrency.max(1)));
+    let fetch_slots = Arc::new(Semaphore::new(options.concurrency.max(1)));
+    let process_slots = Arc::new(Semaphore::new(options.process_concurrency.max(1)));
     let sources: Vec<Arc<EffectiveSource>> = sources.iter().cloned().map(Arc::new).collect();
-    let mut tasks = JoinSet::new();
-    for queued in queue {
-        let source = sources
+    let source_of = |key: &str| {
+        sources
             .iter()
-            .find(|s| s.key == queued.source_key)
+            .find(|s| s.key == key)
             .expect("queued for a known source")
-            .clone();
+            .clone()
+    };
+    let mut fetches: JoinSet<(Finished, Job)> = JoinSet::new();
+    let mut processes: JoinSet<Finished> = JoinSet::new();
+    let spawn_process = |state: &State, processes: &mut JoinSet<Finished>, mut job: Job| {
+        items::set_status(
+            &state.conn,
+            &job.queued.source_key,
+            &job.queued.video_id,
+            status::PROCESSING,
+        )?;
+        let (ctx, slots) = (ctx.clone(), process_slots.clone());
+        processes.spawn(async move {
+            let mut hook_runs = Vec::new();
+            let outcome = tokio::select! {
+                permit = slots.acquire_owned() => {
+                    let _permit = permit.expect("semaphore open");
+                    if ctx.shutdown.is_stopping() {
+                        Outcome::Stopped
+                    } else {
+                        process(&mut job, &ctx, &mut hook_runs).await.0
+                    }
+                }
+                _ = ctx.shutdown.stopping() => Outcome::Stopped,
+            };
+            finished(Phase::Process, &job, &ctx, outcome, None, hook_runs)
+        });
+        Ok::<_, rusqlite::Error>(())
+    };
+
+    for queued in waiting {
+        let job = Job {
+            paths: by_source[&queued.source_key].clone(),
+            source: source_of(&queued.source_key),
+            queued,
+            copy_from: None,
+            now,
+        };
+        spawn_process(state, &mut processes, job).map_err(db)?;
+    }
+    for queued in queue {
+        let source = source_of(&queued.source_key);
         let copy_from = match ctx.duplicates {
             Duplicates::Download => None,
             _ => items::find_copy(&state.conn, &queued.video_id, &source.format, &source.key)
@@ -787,59 +997,107 @@ pub async fn download_all(
             copy_from,
             now,
         };
-        let (ctx, semaphore) = (ctx.clone(), semaphore.clone());
-        tasks.spawn(async move {
-            let _permit = tokio::select! {
-                permit = semaphore.acquire_owned() => permit.expect("semaphore open"),
-                _ = ctx.shutdown.stopping() => return None,
+        let (ctx, slots) = (ctx.clone(), fetch_slots.clone());
+        fetches.spawn(async move {
+            let (outcome, details) = tokio::select! {
+                permit = slots.acquire_owned() => {
+                    let _permit = permit.expect("semaphore open");
+                    if ctx.shutdown.is_stopping() {
+                        (Outcome::Stopped, None)
+                    } else {
+                        fetch(&job, &ctx).await
+                    }
+                }
+                _ = ctx.shutdown.stopping() => (Outcome::Stopped, None),
             };
-            if ctx.shutdown.is_stopping() {
-                return None;
-            }
-            let mut hook_runs = Vec::new();
-            let (outcome, details) = process(&job, &ctx, &mut hook_runs).await;
-            let title = details
-                .as_ref()
-                .map(|d| d.title.clone())
-                .unwrap_or_else(|| job.queued.item.title.clone());
-            Some(Finished {
-                previous_attempts: job.queued.attempts,
-                source_key: job.queued.source_key,
-                format: job.source.format.clone(),
-                video_id: job.queued.video_id,
-                title,
-                outcome,
-                details,
-                hook_runs,
-            })
+            let f = finished(Phase::Fetch, &job, &ctx, outcome, details, Vec::new());
+            (f, job)
         });
     }
 
     loop {
+        if fetches.is_empty() && processes.is_empty() {
+            break;
+        }
         tokio::select! {
-            finished = tasks.join_next() => {
-                let Some(finished) = finished else { break };
-                let Ok(Some(f)) = finished else { continue };
+            Some(done) = fetches.join_next(), if !fetches.is_empty() => {
+                let Ok((f, job)) = done else { continue };
+                let fetched = matches!(f.outcome, Outcome::Fetched { .. });
+                record(state, &f, now, &mut summary, tracker, out).map_err(db)?;
+                if fetched && options.process {
+                    spawn_process(state, &mut processes, job).map_err(db)?;
+                }
+            }
+            Some(done) = processes.join_next(), if !processes.is_empty() => {
+                let Ok(f) = done else { continue };
                 record(state, &f, now, &mut summary, tracker, out).map_err(db)?;
             }
             _ = ctx.shutdown.stopping() => {
-                // Running processes are being stopped; wait for every task,
-                // so nothing writes to the work area while it's cleared.
-                // Downloads that finished in the meantime still count.
-                while let Some(finished) = tasks.join_next().await {
-                    if let Ok(Some(f)) = finished
-                        && matches!(f.outcome, Outcome::Done { .. })
-                    {
-                        record(state, &f, now, &mut summary, tracker, out).map_err(db)?;
+                // Running processes are being stopped; wait for every task.
+                // What finished in the meantime still counts; the rest goes
+                // back to where it was.
+                while let Some(done) = fetches.join_next().await {
+                    if let Ok((f, _)) = done {
+                        record_stopping(state, f, now, &mut summary, tracker, out).map_err(db)?;
                     }
                 }
-                recover(state, &tmp_roots)?;
+                while let Some(done) = processes.join_next().await {
+                    if let Ok(f) = done {
+                        record_stopping(state, f, now, &mut summary, tracker, out).map_err(db)?;
+                    }
+                }
                 summary.interrupted = ctx.shutdown.code();
                 break;
             }
         }
     }
     Ok(summary)
+}
+
+/// What a task did, for `record`.
+fn finished(
+    phase: Phase,
+    job: &Job,
+    ctx: &Context,
+    outcome: Outcome,
+    details: Option<RemoteItem>,
+    hook_runs: Vec<hooks::Report>,
+) -> Finished {
+    let title = details
+        .as_ref()
+        .map(|d| d.title.clone())
+        .unwrap_or_else(|| job.queued.item.title.clone());
+    Finished {
+        phase,
+        previous_attempts: job.queued.attempts,
+        source_key: job.queued.source_key.clone(),
+        format: job.source.format.clone(),
+        video_id: job.queued.video_id.clone(),
+        title,
+        outcome,
+        details,
+        hook_runs,
+        finished_hooks: hooks::of_type(&job.source.hooks, &ctx.hooks, HookType::Finished)
+            .map(|(name, _)| name.to_string())
+            .collect(),
+    }
+}
+
+/// While stopping: what finished counts; anything cut short goes back to
+/// where it was (downloads to the queue, processing to `fetched`).
+fn record_stopping(
+    state: &State,
+    mut f: Finished,
+    now: Timestamp,
+    summary: &mut Summary,
+    tracker: &mut crate::problems::Tracker,
+    out: &mut dyn Write,
+) -> rusqlite::Result<()> {
+    if let Outcome::Failed(_) | Outcome::Skipped(_) = f.outcome {
+        f.outcome = Outcome::Stopped;
+        f.hook_runs.clear();
+    }
+    record(state, &f, now, summary, tracker, out)
 }
 
 fn record(
@@ -862,15 +1120,20 @@ fn record(
             Ok(_) => tracker.hook_succeeded(),
             // Stopped by Ctrl-C: not the hook's fault.
             Err(e) if e == "stopped" => {}
-            Err(e) => {
-                tracker.hook_failed(&f.source_key, &report.name, e);
-                if report.kind == HookType::Finished {
-                    summary.hooks_failed += 1;
-                }
-            }
+            Err(e) => tracker.hook_failed(&f.source_key, &report.name, e),
         }
     }
     match &f.outcome {
+        Outcome::Fetched { bytes } => {
+            items::mark_fetched(&state.conn, &f.source_key, &f.video_id, now)?;
+            tracker.download_succeeded();
+            tracing::debug!(
+                "{}: fetched “{}” ({})",
+                f.source_key,
+                f.title,
+                human_bytes(*bytes)
+            );
+        }
         Outcome::Done {
             files,
             metadata,
@@ -887,6 +1150,13 @@ fn record(
                     format: &f.format,
                     media_bytes: *media_bytes,
                 },
+                now,
+            )?;
+            items::queue_hooks(
+                &state.conn,
+                &f.source_key,
+                &f.video_id,
+                &f.finished_hooks,
                 now,
             )?;
             summary.downloaded += 1;
@@ -936,6 +1206,13 @@ fn record(
                     failure.message
                 );
             }
+        }
+        Outcome::Stopped => {
+            let back = match f.phase {
+                Phase::Fetch => status::PENDING,
+                Phase::Process => status::FETCHED,
+            };
+            items::set_status(&state.conn, &f.source_key, &f.video_id, back)?;
         }
     }
     Ok(())
