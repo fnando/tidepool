@@ -106,6 +106,14 @@ mod tests {
             other => panic!("expected Held, got {other:?}"),
         }
         drop(held);
-        assert!(acquire(&path).is_ok(), "released on drop");
+        // Other tests spawn processes; a child holds a copy of the lock's file
+        // descriptor until it execs, so the release can lag a moment.
+        let released = (0..100).any(|_| {
+            acquire(&path).is_ok() || {
+                std::thread::sleep(std::time::Duration::from_millis(10));
+                false
+            }
+        });
+        assert!(released, "released on drop");
     }
 }
