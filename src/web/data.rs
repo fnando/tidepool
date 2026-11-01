@@ -180,3 +180,234 @@ pub fn status(conn: &Connection, config: &Config) -> rusqlite::Result<Status> {
         )?,
     })
 }
+
+/// Statuses in each group the source page filters by.
+pub const GROUPS: [(&str, &str); 6] = [
+    ("downloaded", "Downloaded"),
+    ("waiting", "Waiting"),
+    ("skipped", "Skipped"),
+    ("failed", "Failed"),
+    ("unavailable", "Unavailable"),
+    ("cleaned_up", "Cleaned up"),
+];
+
+fn statuses_of(group: &str) -> &'static [&'static str] {
+    match group {
+        "downloaded" => &["done"],
+        "waiting" => &[
+            "pending",
+            "pending_check",
+            "downloading",
+            "fetched",
+            "processing",
+        ],
+        "skipped" => &["filtered", "filter_error"],
+        "failed" => &["failed"],
+        "unavailable" => &["unavailable"],
+        "cleaned_up" => &["cleaned_up"],
+        _ => &[],
+    }
+}
+
+/// One video in a source's list.
+#[derive(Debug, Clone, Serialize)]
+pub struct VideoRow {
+    pub video_id: String,
+    pub title: String,
+    pub status: String,
+    /// Why it's in that status: the rule that dropped it, the error, …
+    pub why: Option<String>,
+    /// Published (`YYYY-MM-DD`).
+    pub date: Option<String>,
+    pub size: Option<String>,
+}
+
+/// Why a video is where it is, in words.
+fn why(
+    status: &str,
+    decision: Option<&str>,
+    error: Option<String>,
+    cleanup: Option<String>,
+) -> Option<String> {
+    match status {
+        "filtered" | "filter_error" | "pending_check" => decision
+            .and_then(crate::filter::Decision::from_json)
+            .map(|d| d.to_string()),
+        "failed" | "unavailable" => error,
+        "cleaned_up" => cleanup,
+        "fetched" | "processing" => Some("downloaded, being finished".into()),
+        _ => None,
+    }
+}
+
+/// A page of `source`'s videos: in `group` (all when `None`), with
+/// `query` in the title, in source order. Returns the rows and how many
+/// match in all.
+pub fn videos(
+    conn: &Connection,
+    source: &str,
+    group: Option<&str>,
+    query: Option<&str>,
+    page: usize,
+    per_page: usize,
+) -> rusqlite::Result<(Vec<VideoRow>, usize)> {
+    let mut filter = String::from("i.source_key = ?1");
+    if let Some(group) = group {
+        let list: Vec<String> = statuses_of(group)
+            .iter()
+            .map(|s| format!("'{s}'"))
+            .collect();
+        let list = if list.is_empty() {
+            "''".to_string()
+        } else {
+            list.join(", ")
+        };
+        filter.push_str(&format!(" AND i.status IN ({list})"));
+    }
+    let like = query.map(str::trim).filter(|q| !q.is_empty()).map(|q| {
+        format!(
+            "%{}%",
+            q.replace('\\', "\\\\")
+                .replace('%', "\\%")
+                .replace('_', "\\_")
+        )
+    });
+    if like.is_some() {
+        filter.push_str(" AND (v.title LIKE ?2 ESCAPE '\\' OR i.video_id LIKE ?2 ESCAPE '\\')");
+    }
+    let from = format!("FROM items i JOIN videos v ON v.id = i.video_id WHERE {filter}");
+    let params: Vec<&dyn rusqlite::ToSql> = match &like {
+        Some(like) => vec![&source, like],
+        None => vec![&source],
+    };
+    let total: i64 = conn.query_row(&format!("SELECT COUNT(*) {from}"), &params[..], |r| {
+        r.get(0)
+    })?;
+    let mut stmt = conn.prepare(&format!(
+        "SELECT i.video_id, v.title, i.status, i.decision, i.last_error, i.cleanup_reason,
+                v.published_at, i.media_bytes
+         {from} ORDER BY i.position LIMIT {per_page} OFFSET {}",
+        page.saturating_sub(1) * per_page
+    ))?;
+    let rows = stmt
+        .query_map(&params[..], |r| {
+            let status: String = r.get(2)?;
+            let decision: Option<String> = r.get(3)?;
+            let published: Option<String> = r.get(6)?;
+            let bytes: Option<i64> = r.get(7)?;
+            Ok(VideoRow {
+                video_id: r.get(0)?,
+                title: r.get::<_, Option<String>>(1)?.unwrap_or_default(),
+                why: why(&status, decision.as_deref(), r.get(4)?, r.get(5)?),
+                date: published.map(|p| p.chars().take(10).collect()),
+                size: bytes
+                    .filter(|_| status == "done")
+                    .map(|b| human_bytes(b.max(0) as u64)),
+                status,
+            })
+        })?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    Ok((rows, total.max(0) as usize))
+}
+
+/// A `finished`/other hook's latest run for a video.
+#[derive(Debug, Clone, Serialize)]
+pub struct HookRunRow {
+    pub hook: String,
+    pub kind: String,
+    pub status: String,
+    pub finished_at: Option<String>,
+    pub error: Option<String>,
+    pub next_attempt_at: Option<String>,
+}
+
+/// Everything the video page shows.
+#[derive(Debug, Clone, Serialize)]
+pub struct VideoDetail {
+    pub source: String,
+    pub video_id: String,
+    pub title: String,
+    pub status: String,
+    pub why: Option<String>,
+    /// Each rule's verdict, as `tidepool filter test` shows it.
+    pub explanation: String,
+    pub files: Vec<String>,
+    pub hook_runs: Vec<HookRunRow>,
+    pub in_trash: bool,
+}
+
+/// `None` when `source` doesn't have the video.
+pub fn video(
+    conn: &Connection,
+    config: &Config,
+    source: &str,
+    video_id: &str,
+) -> anyhow::Result<Option<VideoDetail>> {
+    use rusqlite::OptionalExtension;
+    let Some((title, status, decision, error, cleanup, files)) = conn
+        .query_row(
+            "SELECT v.title, i.status, i.decision, i.last_error, i.cleanup_reason, i.files
+             FROM items i JOIN videos v ON v.id = i.video_id
+             WHERE i.source_key = ?1 AND i.video_id = ?2",
+            [source, video_id],
+            |r| {
+                Ok((
+                    r.get::<_, Option<String>>(0)?,
+                    r.get::<_, String>(1)?,
+                    r.get::<_, Option<String>>(2)?,
+                    r.get::<_, Option<String>>(3)?,
+                    r.get::<_, Option<String>>(4)?,
+                    r.get::<_, Option<String>>(5)?,
+                ))
+            },
+        )
+        .optional()?
+    else {
+        return Ok(None);
+    };
+    let mut explanation = Vec::new();
+    crate::app::explain_video(conn, config, video_id, Some(source), &mut explanation)?;
+    let files = files
+        .and_then(|f| serde_json::from_str::<crate::state::items::VideoFiles>(&f).ok())
+        .map(|f| f.paths().into_iter().map(str::to_string).collect())
+        .unwrap_or_default();
+    let mut stmt = conn.prepare(
+        "SELECT hook, type, status, finished_at, error, next_attempt_at FROM hook_runs
+         WHERE source_key = ?1 AND video_id = ?2 ORDER BY type, hook",
+    )?;
+    let hook_runs = stmt
+        .query_map([source, video_id], |r| {
+            Ok(HookRunRow {
+                hook: r.get(0)?,
+                kind: r.get(1)?,
+                status: r.get(2)?,
+                finished_at: r.get(3)?,
+                error: r.get(4)?,
+                next_attempt_at: r.get(5)?,
+            })
+        })?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    let in_trash: i64 = conn.query_row(
+        "SELECT COUNT(*) FROM trash WHERE source_key = ?1 AND video_id = ?2",
+        [source, video_id],
+        |r| r.get(0),
+    )?;
+    Ok(Some(VideoDetail {
+        source: source.to_string(),
+        video_id: video_id.to_string(),
+        title: title.unwrap_or_default(),
+        why: why(&status, decision.as_deref(), error, cleanup),
+        status,
+        explanation: String::from_utf8_lossy(&explanation).trim().to_string(),
+        files,
+        hook_runs,
+        in_trash: in_trash > 0,
+    }))
+}
+
+/// The last `lines` lines of a video's hook log, if it has one.
+pub fn log_tail(path: &std::path::Path, lines: usize) -> Option<String> {
+    let text = std::fs::read_to_string(path).ok()?;
+    let all: Vec<&str> = text.lines().collect();
+    Some(all[all.len().saturating_sub(lines)..].join("\n"))
+}

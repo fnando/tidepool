@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block title %}{{ video.title }} · tidepool{% endblock %}
+{% block content %}
+<p><a href="/sources/{{ video.source }}">← {{ video.source }}</a></p>
+<hgroup>
+  <h2>{{ video.title }}</h2>
+  <p><a href="https://www.youtube.com/watch?v={{ video.video_id }}" rel="noreferrer">{{ video.video_id }}</a>
+    · <span class="pill st-{{ video.status }}">{{ video.status }}</span>
+    {% if let Some(why) = video.why %}· {{ why }}{% endif %}</p>
+</hgroup>
+
+{% include "jobs.html" %}
+
+<section>
+  <h3>Rules</h3>
+  <pre>{{ video.explanation }}</pre>
+</section>
+
+{% if !video.files.is_empty() %}
+<section>
+  <h3>Files</h3>
+  <ul>{% for file in video.files %}<li><code>{{ file }}</code></li>{% endfor %}</ul>
+</section>
+{% endif %}
+
+{% if !video.hook_runs.is_empty() %}
+<section>
+  <h3>Hooks</h3>
+  <table class="compact">
+    <thead><tr><th>Hook</th><th>Type</th><th>Status</th><th>Last run</th><th>Error</th></tr></thead>
+    <tbody>
+    {% for run in video.hook_runs %}
+      <tr>
+        <td>{{ run.hook }}</td><td>{{ run.kind }}</td>
+        <td><span class="pill st-{{ run.status }}">{{ run.status }}</span>
+          {% if let Some(next) = run.next_attempt_at %}<br><small class="muted">next try {{ next }}</small>{% endif %}</td>
+        <td><small>{{ run.finished_at.as_deref().unwrap_or_default() }}</small></td>
+        <td><small>{{ run.error.as_deref().unwrap_or_default() }}</small></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if let Some(log) = log %}
+  <details><summary>Hook log (last lines)</summary><pre>{{ log }}</pre></details>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

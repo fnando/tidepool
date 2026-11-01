@@ -59,7 +59,7 @@
       <tbody>
       {% for source in status.sources %}
         <tr{% if !source.enabled %} class="disabled"{% endif %}>
-          <td><strong>{{ source.name }}</strong>
+          <td><a href="/sources/{{ source.name }}"><strong>{{ source.name }}</strong></a>
             {% if let Some(title) = source.title %}<br><small class="muted">{{ title }}</small>{% endif %}
             {% if !source.enabled %}<br><small class="muted">disabled</small>{% endif %}</td>
           <td class="num">{{ source.count("downloaded") }}</td>

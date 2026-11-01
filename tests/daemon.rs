@@ -635,3 +635,78 @@ async fn the_web_ui_shows_the_daemon_and_syncs_on_request() {
     let (code, log) = daemon.stop();
     assert_eq!(code, Some(0), "{log}");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn work_asked_on_a_video_page_is_done_by_the_processor() {
+    let env = Env::new().await;
+    let config = env.config("1h", "");
+    let daemon = env.daemon(&config, &[]);
+    daemon.wait_for_log("web UI at http://127.0.0.1:");
+    let url = daemon
+        .log()
+        .lines()
+        .find_map(|l| {
+            l.split("web UI at ")
+                .nth(1)
+                .map(str::trim)
+                .map(str::to_string)
+        })
+        .unwrap();
+    let rick = env.path("media").join(RICK_DIR);
+    daemon.wait_for("Rick's video saved", || {
+        rick.join("metadata.json").is_file()
+    });
+
+    let http = reqwest::Client::new();
+    let page = http
+        .get(format!("{url}/sources/dl/videos/dQw4w9WgXcQ"))
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+    assert!(page.contains("Download again"), "{page}");
+    let csrf = page
+        .split("\"X-CSRF-Token\": \"")
+        .nth(1)
+        .and_then(|rest| rest.split('"').next())
+        .unwrap()
+        .to_string();
+    let answer = http
+        .post(format!("{url}/sources/dl/videos/dQw4w9WgXcQ/reset_delete"))
+        .header("x-csrf-token", &csrf)
+        .send()
+        .await
+        .unwrap();
+    assert!(answer.status().is_success());
+    assert!(answer.text().await.unwrap().contains("Deleting its files"));
+    let result = || -> Option<(bool, String)> {
+        env.db()
+            .query_row(
+                "SELECT ok, result FROM daemon_jobs WHERE done_at IS NOT NULL",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .ok()
+    };
+    daemon.wait_for("the job done", || result().is_some());
+    let (ok, text) = result().unwrap();
+    assert!(ok, "{text}");
+    assert!(text.contains("reset dQw4w9WgXcQ in dl"), "{text}");
+    assert!(!rick.join("metadata.json").exists(), "files deleted");
+    let page = http
+        .get(format!("{url}/sources/dl/videos/dQw4w9WgXcQ"))
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+    assert!(
+        page.contains("pending") && page.contains("reset dQw4w9WgXcQ in dl"),
+        "{page}"
+    );
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0), "{log}");
+}

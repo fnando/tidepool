@@ -66,7 +66,7 @@ impl Fields<'_> {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum List {
     Include,
@@ -147,7 +147,7 @@ pub fn field_name(field: RuleField) -> &'static str {
 }
 
 /// A field a decision is waiting for.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Needs {
     Field(RuleField),
@@ -166,7 +166,7 @@ impl fmt::Display for Needs {
 }
 
 /// A drop that has nothing to do with include/exclude rules.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case", tag = "kind")]
 pub enum Structural {
     Unavailable {
@@ -193,7 +193,7 @@ pub enum Structural {
 
 /// Why an item is kept or dropped. Stored in the DB and shown by
 /// `tidepool list` and `tidepool filter test`.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case", tag = "decision")]
 pub enum Decision {
     /// Kept; `include` is the matching include rule, if any.
@@ -248,6 +248,10 @@ impl Decision {
 
     pub fn to_json(&self) -> String {
         serde_json::to_string(self).expect("decision serializes")
+    }
+
+    pub fn from_json(json: &str) -> Option<Self> {
+        serde_json::from_str(json).ok()
     }
 }
 

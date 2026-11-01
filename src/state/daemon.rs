@@ -189,6 +189,97 @@ pub fn answer_of(conn: &Connection, id: i64) -> rusqlite::Result<Option<String>>
     .map(Option::flatten)
 }
 
+/// Work asked for one video, done by the processor.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct Job {
+    pub id: i64,
+    /// `hooks`, `embed`, `reset`, `reset_delete` or `restore`.
+    pub action: String,
+    pub source_key: String,
+    pub video_id: String,
+    pub created_at: String,
+    pub done_at: Option<String>,
+    pub ok: Option<bool>,
+    pub result: Option<String>,
+}
+
+pub const JOB_ACTIONS: [&str; 5] = ["hooks", "embed", "reset", "reset_delete", "restore"];
+
+pub fn add_job(
+    conn: &Connection,
+    action: &str,
+    source_key: &str,
+    video_id: &str,
+    now: Timestamp,
+) -> rusqlite::Result<i64> {
+    conn.execute(
+        "INSERT INTO daemon_jobs (action, source_key, video_id, created_at)
+         VALUES (?1, ?2, ?3, ?4)",
+        params![action, source_key, video_id, now.to_string()],
+    )?;
+    Ok(conn.last_insert_rowid())
+}
+
+const JOB_COLUMNS: &str = "id, action, source_key, video_id, created_at, done_at, ok, result";
+
+fn job_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<Job> {
+    Ok(Job {
+        id: r.get(0)?,
+        action: r.get(1)?,
+        source_key: r.get(2)?,
+        video_id: r.get(3)?,
+        created_at: r.get(4)?,
+        done_at: r.get(5)?,
+        ok: r.get(6)?,
+        result: r.get(7)?,
+    })
+}
+
+/// Jobs not done yet, oldest first.
+pub fn waiting_jobs(conn: &Connection) -> rusqlite::Result<Vec<Job>> {
+    let mut stmt = conn.prepare(&format!(
+        "SELECT {JOB_COLUMNS} FROM daemon_jobs WHERE done_at IS NULL ORDER BY id"
+    ))?;
+    stmt.query_map([], job_row)?.collect()
+}
+
+/// A video's latest jobs, newest first.
+pub fn jobs_for(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    limit: usize,
+) -> rusqlite::Result<Vec<Job>> {
+    let mut stmt = conn.prepare(&format!(
+        "SELECT {JOB_COLUMNS} FROM daemon_jobs WHERE source_key = ?1 AND video_id = ?2
+         ORDER BY id DESC LIMIT ?3"
+    ))?;
+    stmt.query_map(params![source_key, video_id, limit as i64], job_row)?
+        .collect()
+}
+
+pub fn start_job(conn: &Connection, id: i64, now: Timestamp) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE daemon_jobs SET started_at = ?2 WHERE id = ?1",
+        params![id, now.to_string()],
+    )?;
+    Ok(())
+}
+
+pub fn finish_job(
+    conn: &Connection,
+    id: i64,
+    ok: bool,
+    result: &str,
+    now: Timestamp,
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE daemon_jobs SET done_at = ?2, ok = ?3, result = ?4 WHERE id = ?1",
+        params![id, now.to_string(), ok, result],
+    )?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -211,6 +302,25 @@ mod tests {
         assert!(row.paused, "a pause outlives restarts");
         assert_eq!(row.status.as_deref(), Some("restarting"));
         assert_eq!((row.restarts, row.last_error.as_deref()), (1, Some("boom")));
+    }
+
+    #[test]
+    fn jobs_wait_until_done() {
+        let state = State::open_in_memory().unwrap();
+        let conn = &state.conn;
+        let now = Timestamp::now();
+        let id = add_job(conn, "hooks", "lofi", "a", now).unwrap();
+        add_job(conn, "embed", "lofi", "b", now).unwrap();
+        assert_eq!(waiting_jobs(conn).unwrap().len(), 2);
+        start_job(conn, id, now).unwrap();
+        finish_job(conn, id, true, "ran notify", now).unwrap();
+        let waiting = waiting_jobs(conn).unwrap();
+        assert_eq!((waiting.len(), waiting[0].action.as_str()), (1, "embed"));
+        let done = &jobs_for(conn, "lofi", "a", 5).unwrap()[0];
+        assert_eq!(
+            (done.ok, done.result.as_deref()),
+            (Some(true), Some("ran notify"))
+        );
     }
 
     #[test]

@@ -980,6 +980,16 @@ last sync, and per source how many videos are downloaded, waiting, skipped,
 failed and cleaned up, and how much disk they use. Buttons sync or clean up
 right away, and pause or resume each part. The page keeps itself up to date.
 
+Click a source to see its videos, 50 at a time: filter by status
+(downloaded, waiting, skipped, failed, unavailable, cleaned up), search titles
+or ids, and see why each one is where it is (the rule that skipped it, the
+error that failed it, why cleanup removed it). Click a video for everything
+about it: what each of your rules says about it (like `tidepool filter
+test`), its files, its hooks and their log, and buttons to run its hooks
+again, embed again, download it again (optionally deleting its files first),
+or restore it from the trash. That work happens in the background; the page
+shows how it went.
+
 With the web interface on, `schedule.interval` can be empty: tidepool then
 only syncs when you ask (the button, or `tidepool daemon sync`). Set
 `enabled = false` under `[server]` to turn the web interface off; changes to

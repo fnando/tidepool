@@ -17,3 +17,12 @@ tr.disabled td { opacity: .6; }
 .flash.error { border-color: #c62828; }
 .problem pre { white-space: pre-wrap; margin: .5rem 0 0; font-size: .85rem; }
 .login { max-width: 24rem; margin: 3rem auto; }
+.filters { display: flex; gap: .5rem; align-items: center; }
+.filters select, .filters input, .filters button { margin: 0; width: auto; }
+.filters input { flex: 1; }
+.pages { display: flex; gap: 1rem; justify-content: center; margin: 1rem 0; }
+#jobs .actions { flex-wrap: wrap; margin-bottom: 1rem; }
+pre { white-space: pre-wrap; font-size: .85rem; }
+.st-done, .st-ok { background: #2e7d32; color: #fff; }
+.st-retrying, .st-pending, .st-fetched, .st-processing, .st-downloading { background: #546e7a; color: #fff; }
+.st-unavailable, .st-cleaned_up, .st-filtered { background: var(--pico-secondary-background); }

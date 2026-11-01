@@ -275,6 +275,7 @@ async fn processor(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
             Some("processing"),
             jiff::Timestamp::now(),
         )?;
+        run_jobs(app, &state).await?;
         let wait = match app.process_once(&mut out).await {
             Ok(Some(_)) => {
                 let now = jiff::Timestamp::now();
@@ -309,6 +310,83 @@ async fn processor(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
     }
 }
 
+/// Do the work the web UI asked for (run hooks, embed, download again,
+/// restore), one video at a time, keeping what each printed as its result.
+async fn run_jobs(app: &App<'_>, state: &crate::state::State) -> anyhow::Result<()> {
+    use crate::cli::{EmbedArgs, HooksCmd, ResetArgs, SourceRef, TrashCmd, VideoSelection};
+
+    for job in store::waiting_jobs(&state.conn)? {
+        if app.shutdown.is_stopping() {
+            break;
+        }
+        store::start_job(&state.conn, job.id, jiff::Timestamp::now())?;
+        tracing::info!("{}: {} for {}", job.source_key, job.action, job.video_id);
+        let select = || VideoSelection {
+            video_ids: vec![job.video_id.clone()],
+            all: false,
+            sources: vec![SourceRef::Key(job.source_key.clone())],
+            categories: Vec::new(),
+        };
+        let mut out: Vec<u8> = Vec::new();
+        let result = match job.action.as_str() {
+            "hooks" => {
+                let cmd = HooksCmd::Run {
+                    select: select(),
+                    hooks: Vec::new(),
+                    failed: false,
+                };
+                app.hooks(&cmd, &mut out).await
+            }
+            "embed" => {
+                let args = EmbedArgs {
+                    select: select(),
+                    remove_disabled: false,
+                };
+                app.embed(&args, &mut out).await
+            }
+            "reset" | "reset_delete" => {
+                let args = ResetArgs {
+                    video_id: job.video_id.clone(),
+                    delete_files: job.action == "reset_delete",
+                };
+                app.reset(&args, &mut out)
+            }
+            "restore" => {
+                let cmd = TrashCmd::Restore {
+                    video_ids: vec![job.video_id.clone()],
+                    sources: vec![SourceRef::Key(job.source_key.clone())],
+                };
+                app.trash(&cmd, &mut out)
+            }
+            other => Err(anyhow::anyhow!("unknown job {other:?}")),
+        };
+        let printed = String::from_utf8_lossy(&out).trim().to_string();
+        let (ok, text) = match result {
+            Ok(0) => (true, printed),
+            Ok(_) => (false, printed),
+            Err(e) if printed.is_empty() => (false, format!("{e:#}")),
+            Err(e) => (false, format!("{printed}\n{e:#}")),
+        };
+        if ok {
+            tracing::info!(
+                "{}: {} for {}: {text}",
+                job.source_key,
+                job.action,
+                job.video_id
+            );
+        } else {
+            tracing::warn!(
+                "{}: {} for {} failed: {text}",
+                job.source_key,
+                job.action,
+                job.video_id
+            );
+        }
+        store::finish_job(&state.conn, job.id, ok, &text, jiff::Timestamp::now())?;
+    }
+    Ok(())
+}
+
 /// Serve the web UI until stopped (a new `[server]` config restarts it).
 async fn server(app: &App<'_>, signals: Signals) -> anyhow::Result<()> {
     let state = app.open_state()?;
@@ -319,10 +397,14 @@ async fn server(app: &App<'_>, signals: Signals) -> anyhow::Result<()> {
     let addr = listener.local_addr()?;
     let web = Arc::new(crate::web::Web::new(
         app.paths.state_db.clone(),
+        app.paths.hook_logs.clone(),
         &config.server,
         addr,
-        signals.sync_now.clone(),
-        signals.cleanup_now.clone(),
+        crate::web::Wake {
+            sync_now: signals.sync_now.clone(),
+            cleanup_now: signals.cleanup_now.clone(),
+            processor: signals.fetched.clone(),
+        },
     ));
     let url = format!("http://{addr}");
     tracing::info!("web UI at {url}");

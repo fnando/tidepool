@@ -1226,7 +1226,7 @@ impl App<'_> {
     }
 
     /// `tidepool reset <video>`: download it again on the next run.
-    fn reset(&self, args: &ResetArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
+    pub(crate) fn reset(&self, args: &ResetArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
         let state = self.open_state()?;
         self.current_config(&state)?;
         let _lock = self.lock()?;
@@ -1261,7 +1261,7 @@ impl App<'_> {
     }
 
     /// `tidepool hooks run`: run hooks again on videos already downloaded.
-    async fn hooks(&self, cmd: &HooksCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
+    pub(crate) async fn hooks(&self, cmd: &HooksCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
         let HooksCmd::Run {
             select,
             hooks: only_hooks,
@@ -1370,7 +1370,7 @@ impl App<'_> {
 
     /// `tidepool embed`: embed again (after the `embed` hooks) with the
     /// current settings.
-    async fn embed(
+    pub(crate) async fn embed(
         &self,
         args: &crate::cli::EmbedArgs,
         out: &mut dyn Write,
@@ -1767,7 +1767,11 @@ impl App<'_> {
     }
 
     /// `tidepool trash list | restore | empty`.
-    fn trash(&self, cmd: &crate::cli::TrashCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
+    pub(crate) fn trash(
+        &self,
+        cmd: &crate::cli::TrashCmd,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<i32> {
         use crate::cli::TrashCmd;
         use crate::download::human_bytes;
         use crate::state::items;
@@ -2649,8 +2653,6 @@ impl App<'_> {
         source: &Option<SourceRef>,
         out: &mut dyn Write,
     ) -> anyhow::Result<i32> {
-        use crate::state::items;
-
         let state = self.open_state()?;
         let loaded = self.current_config(&state)?;
         let sources = effective_sources(&loaded.config);
@@ -2659,30 +2661,11 @@ impl App<'_> {
         let now = jiff::Timestamp::now();
 
         // A video tidepool knows: everything stored about it, in each source.
-        let known = items::videos(&state.conn, &[video.to_string()])?;
-        if let Some(item) = known.get(video) {
-            let statuses = items::item_statuses(&state.conn, video)?;
-            let picked: Vec<&EffectiveSource> = match source {
-                Some(r) => vec![resolve_source(r, &sources)?],
-                None => sources
-                    .iter()
-                    .filter(|s| statuses.iter().any(|(key, _)| *key == s.key))
-                    .collect(),
-            };
-            describe_video(out, item)?;
-            if picked.is_empty() {
-                writeln!(out, "in no configured source; pass --source to test one")?;
-            }
-            for source in picked {
-                let rules = RuleSet::compile(source, limit, now).map_err(anyhow::Error::msg)?;
-                let status = statuses
-                    .iter()
-                    .find(|(key, _)| *key == source.key)
-                    .map(|(_, status)| status.replace('_', " "))
-                    .unwrap_or_else(|| "not in this source".into());
-                writeln!(out, "\nsource {} ({status})", source.key)?;
-                write_rules(out, &rules, &Fields::from_item(item))?;
-            }
+        let only = match source {
+            Some(r) => Some(resolve_source(r, &sources)?.key.clone()),
+            None => None,
+        };
+        if explain_video(&state.conn, &loaded.config, video, only.as_deref(), out)? {
             return Ok(exit::OK);
         }
 
@@ -2711,6 +2694,49 @@ impl App<'_> {
         )?;
         Ok(exit::OK)
     }
+}
+
+/// Everything stored about a known video, and each rule's verdict in each
+/// source it's in (or only in `only`). `false` when tidepool doesn't know it.
+pub(crate) fn explain_video(
+    conn: &rusqlite::Connection,
+    config: &crate::config::Config,
+    video: &str,
+    only: Option<&str>,
+    out: &mut dyn Write,
+) -> anyhow::Result<bool> {
+    use crate::state::items;
+
+    let known = items::videos(conn, &[video.to_string()])?;
+    let Some(item) = known.get(video) else {
+        return Ok(false);
+    };
+    let sources = effective_sources(config);
+    let limit = usize::try_from(config.general.regex_backtrack_limit).unwrap_or(usize::MAX);
+    let now = jiff::Timestamp::now();
+    let statuses = items::item_statuses(conn, video)?;
+    let picked: Vec<&EffectiveSource> = sources
+        .iter()
+        .filter(|s| match only {
+            Some(key) => s.key == key,
+            None => statuses.iter().any(|(key, _)| *key == s.key),
+        })
+        .collect();
+    describe_video(out, item)?;
+    if picked.is_empty() {
+        writeln!(out, "in no configured source; pass --source to test one")?;
+    }
+    for source in picked {
+        let rules = RuleSet::compile(source, limit, now).map_err(anyhow::Error::msg)?;
+        let status = statuses
+            .iter()
+            .find(|(key, _)| *key == source.key)
+            .map(|(_, status)| status.replace('_', " "))
+            .unwrap_or_else(|| "not in this source".into());
+        writeln!(out, "\nsource {} ({status})", source.key)?;
+        write_rules(out, &rules, &Fields::from_item(item))?;
+    }
+    Ok(true)
 }
 
 /// What's stored about a video, the fields rules look at.

@@ -41,15 +41,26 @@ pub struct Web {
     hosts: Vec<String>,
     sync_now: Arc<Notify>,
     cleanup_now: Arc<Notify>,
+    /// Wakes the processor (it does the work asked on video pages).
+    processor: Arc<Notify>,
+    /// Where hook logs are (`<video_id>.log`).
+    hook_logs: PathBuf,
+}
+
+/// The daemon's signals the web UI uses.
+pub struct Wake {
+    pub sync_now: Arc<Notify>,
+    pub cleanup_now: Arc<Notify>,
+    pub processor: Arc<Notify>,
 }
 
 impl Web {
     pub fn new(
         db: PathBuf,
+        hook_logs: PathBuf,
         server: &ServerConfig,
         addr: SocketAddr,
-        sync_now: Arc<Notify>,
-        cleanup_now: Arc<Notify>,
+        wake: Wake,
     ) -> Self {
         let port = addr.port();
         let hosts = if addr.ip().is_loopback() {
@@ -66,8 +77,10 @@ impl Web {
             token: server.token.clone(),
             csrf: random_hex(16),
             hosts,
-            sync_now,
-            cleanup_now,
+            sync_now: wake.sync_now,
+            cleanup_now: wake.cleanup_now,
+            processor: wake.processor,
+            hook_logs,
         }
     }
 
@@ -121,6 +134,10 @@ pub fn router(web: Arc<Web>) -> Router {
         .route("/actions/sync", post(action_sync))
         .route("/actions/cleanup", post(action_cleanup))
         .route("/actions/services/{name}/{action}", post(action_service))
+        .route("/sources/{name}", get(source_page))
+        .route("/sources/{name}/videos/{id}", get(video_page))
+        .route("/sources/{name}/videos/{id}/jobs", get(jobs_fragment))
+        .route("/sources/{name}/videos/{id}/{action}", post(video_action))
         .route("/login", get(login_page).post(login))
         .route("/assets/{file}", get(asset))
         .route("/api/v1/status", get(api_status))
@@ -286,6 +303,263 @@ async fn api_service(
         )
             .into_response()),
     }
+}
+
+const PER_PAGE: usize = 50;
+
+#[derive(Deserialize, Default)]
+struct ListQuery {
+    status: Option<String>,
+    q: Option<String>,
+    page: Option<usize>,
+}
+
+struct GroupOption {
+    key: &'static str,
+    label: &'static str,
+    count: i64,
+    selected: bool,
+}
+
+#[derive(Template)]
+#[template(path = "source.html")]
+struct SourcePage {
+    csrf: String,
+    name: String,
+    title: Option<String>,
+    status: String,
+    query: String,
+    groups: Vec<GroupOption>,
+    all_count: i64,
+    rows: Vec<data::VideoRow>,
+    page: usize,
+    pages: usize,
+    total: usize,
+}
+
+impl SourcePage {
+    fn page_link(&self, page: usize) -> String {
+        format!(
+            "/sources/{}?status={}&q={}&page={page}",
+            encode(&self.name),
+            encode(&self.status),
+            encode(&self.query)
+        )
+    }
+}
+
+/// Percent-encode for a URL path segment or query value.
+fn encode(text: &str) -> String {
+    text.bytes()
+        .map(|b| match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                (b as char).to_string()
+            }
+            _ => format!("%{b:02X}"),
+        })
+        .collect()
+}
+
+fn not_found(what: &str) -> Response {
+    (StatusCode::NOT_FOUND, format!("no {what}")).into_response()
+}
+
+async fn source_page(
+    State(web): State<Arc<Web>>,
+    Path(name): Path<String>,
+    axum::extract::Query(query): axum::extract::Query<ListQuery>,
+) -> Result<Response, WebError> {
+    let status = query
+        .status
+        .filter(|s| data::GROUPS.iter().any(|(key, _)| key == s))
+        .unwrap_or_default();
+    let text = query.q.unwrap_or_default();
+    let page = query.page.unwrap_or(1).max(1);
+    let csrf = web.csrf.clone();
+    let found = web
+        .db(move |conn| {
+            let (_, loaded) = ConfigStore::new(conn).load_current()?;
+            if !crate::config::merge::effective_sources(&loaded.config)
+                .iter()
+                .any(|s| s.key == name)
+            {
+                return Ok(None);
+            }
+            let title: Option<String> = conn
+                .query_row("SELECT title FROM sources WHERE key = ?1", [&name], |r| {
+                    r.get(0)
+                })
+                .unwrap_or(None);
+            let mut counts: std::collections::HashMap<&'static str, i64> = Default::default();
+            let mut stmt = conn.prepare(
+                "SELECT status, COUNT(*) FROM items WHERE source_key = ?1 GROUP BY status",
+            )?;
+            for row in stmt.query_map([&name], |r| {
+                Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)?))
+            })? {
+                let (s, n) = row?;
+                *counts.entry(data::group(&s)).or_default() += n;
+            }
+            let (rows, total) = data::videos(
+                conn,
+                &name,
+                (!status.is_empty()).then_some(status.as_str()),
+                Some(text.as_str()),
+                page,
+                PER_PAGE,
+            )?;
+            Ok(Some(SourcePage {
+                csrf,
+                groups: data::GROUPS
+                    .iter()
+                    .map(|(key, label)| GroupOption {
+                        key,
+                        label,
+                        count: counts.get(key).copied().unwrap_or(0),
+                        selected: status == *key,
+                    })
+                    .collect(),
+                all_count: counts.values().sum(),
+                title,
+                rows,
+                page,
+                pages: total.div_ceil(PER_PAGE).max(1),
+                total,
+                status,
+                query: text,
+                name,
+            }))
+        })
+        .await?;
+    match found {
+        Some(page) => Ok(render(page)?.into_response()),
+        None => Ok(not_found("such source")),
+    }
+}
+
+#[derive(Template)]
+#[template(path = "video.html")]
+struct VideoPage {
+    csrf: String,
+    video: data::VideoDetail,
+    jobs: Vec<store::Job>,
+    busy: bool,
+    message: Option<String>,
+    log: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "jobs.html")]
+struct JobsFragment {
+    video: data::VideoDetail,
+    jobs: Vec<store::Job>,
+    busy: bool,
+    message: Option<String>,
+}
+
+/// A video and its latest jobs, if `source` has it.
+async fn video_and_jobs(
+    web: &Arc<Web>,
+    source: String,
+    id: String,
+) -> Result<Option<(data::VideoDetail, Vec<store::Job>)>, WebError> {
+    web.db(move |conn| {
+        let (_, loaded) = ConfigStore::new(conn).load_current()?;
+        let Some(video) = data::video(conn, &loaded.config, &source, &id)? else {
+            return Ok(None);
+        };
+        let jobs = store::jobs_for(conn, &source, &id, 10)?;
+        Ok(Some((video, jobs)))
+    })
+    .await
+}
+
+async fn video_page(
+    State(web): State<Arc<Web>>,
+    Path((source, id)): Path<(String, String)>,
+) -> Result<Response, WebError> {
+    let Some((video, jobs)) = video_and_jobs(&web, source, id.clone()).await? else {
+        return Ok(not_found("such video in this source"));
+    };
+    let log = data::log_tail(&web.hook_logs.join(format!("{id}.log")), 40);
+    Ok(render(VideoPage {
+        csrf: web.csrf.clone(),
+        busy: jobs.iter().any(|j| j.done_at.is_none()),
+        video,
+        jobs,
+        message: None,
+        log,
+    })?
+    .into_response())
+}
+
+async fn jobs_fragment(
+    State(web): State<Arc<Web>>,
+    Path((source, id)): Path<(String, String)>,
+) -> Result<Response, WebError> {
+    jobs_response(&web, source, id, None).await
+}
+
+async fn jobs_response(
+    web: &Arc<Web>,
+    source: String,
+    id: String,
+    message: Option<String>,
+) -> Result<Response, WebError> {
+    let Some((video, jobs)) = video_and_jobs(web, source, id).await? else {
+        return Ok(not_found("such video in this source"));
+    };
+    Ok(render(JobsFragment {
+        busy: jobs.iter().any(|j| j.done_at.is_none()),
+        video,
+        jobs,
+        message,
+    })?
+    .into_response())
+}
+
+/// Queue work on a video for the processor.
+async fn video_action(
+    State(web): State<Arc<Web>>,
+    Path((source, id, action)): Path<(String, String, String)>,
+) -> Result<Response, WebError> {
+    if !store::JOB_ACTIONS.contains(&action.as_str()) {
+        return Ok(not_found("such action"));
+    }
+    let (s, v, a) = (source.clone(), id.clone(), action.clone());
+    let queued = web
+        .db(move |conn| {
+            let known: i64 = conn.query_row(
+                "SELECT COUNT(*) FROM items WHERE source_key = ?1 AND video_id = ?2",
+                [&s, &v],
+                |r| r.get(0),
+            )?;
+            if known == 0 {
+                return Ok(None);
+            }
+            store::add_job(conn, &a, &s, &v, jiff::Timestamp::now())?;
+            Ok(Some(
+                store::service(conn, Service::Processor.name())?.paused,
+            ))
+        })
+        .await?;
+    let Some(paused) = queued else {
+        return Ok(not_found("such video in this source"));
+    };
+    web.processor.notify_one();
+    let what = match action.as_str() {
+        "hooks" => "Running its hooks again",
+        "embed" => "Embedding again",
+        "reset" => "Putting it back in the download queue",
+        "reset_delete" => "Deleting its files and putting it back in the download queue",
+        _ => "Restoring it from the trash",
+    };
+    let message = if paused {
+        format!("{what} once the processor is resumed.")
+    } else {
+        format!("{what}.")
+    };
+    jobs_response(&web, source, id, Some(message)).await
 }
 
 async fn login_page(State(web): State<Arc<Web>>) -> Result<Html<String>, WebError> {
@@ -466,10 +740,14 @@ mod tests {
         };
         let web = Arc::new(Web::new(
             db.clone(),
+            dir.path().join("logs"),
             &server,
             "127.0.0.1:8787".parse().unwrap(),
-            Arc::new(Notify::new()),
-            Arc::new(Notify::new()),
+            Wake {
+                sync_now: Arc::new(Notify::new()),
+                cleanup_now: Arc::new(Notify::new()),
+                processor: Arc::new(Notify::new()),
+            },
         ));
         Setup { _dir: dir, web, db }
     }
@@ -512,6 +790,149 @@ mod tests {
 
     fn post(uri: &str) -> axum::http::request::Builder {
         Request::builder().method(Method::POST).uri(uri)
+    }
+
+    /// Videos in `lofi`: a downloaded one, one an exclude rule dropped, a
+    /// failed one, and 60 waiting.
+    fn seed(db: &std::path::Path) {
+        let state = Db::open(db).unwrap();
+        let conn = &state.conn;
+        conn.execute(
+            "INSERT INTO sources (key, lists, title) VALUES ('lofi', '[]', 'Lofi Girl')",
+            [],
+        )
+        .unwrap();
+        let files = serde_json::json!({"dir": "/m/lofi/a", "media": "/m/lofi/a/a.mkv", "metadata": "/m/lofi/a/metadata.json"});
+        let dropped = crate::filter::Decision::Excluded { rule: 0 }.to_json();
+        let add = |id: String,
+                       title: &str,
+                       position: i64,
+                       status: &str,
+                       extra: (&str, Option<String>)| {
+            conn.execute(
+                "INSERT INTO videos (id, title, published_at) VALUES (?1, ?2, '2026-09-01T00:00:00Z')",
+                rusqlite::params![id, title],
+            )
+            .unwrap();
+            conn.execute(
+                &format!(
+                    "INSERT INTO items (source_key, video_id, position, in_remote, status, {})
+                     VALUES ('lofi', ?1, ?2, 1, ?3, ?4)",
+                    extra.0
+                ),
+                rusqlite::params![id, position, status, extra.1],
+            )
+            .unwrap();
+        };
+        add(
+            "aaaaaaaaaaa".into(),
+            "Rainy beats",
+            1,
+            "done",
+            ("files", Some(files.to_string())),
+        );
+        add(
+            "bbbbbbbbbbb".into(),
+            "Lofi trailer",
+            2,
+            "filtered",
+            ("decision", Some(dropped)),
+        );
+        add(
+            "ccccccccccc".into(),
+            "Broken upload",
+            3,
+            "failed",
+            ("last_error", Some("HTTP 429".into())),
+        );
+        for n in 0..60 {
+            add(
+                format!("w{n:010}"),
+                &format!("Waiting {n}"),
+                10 + n,
+                "pending",
+                ("last_error", None),
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn a_source_lists_its_videos_with_filters_and_pages() {
+        let s = setup("");
+        seed(&s.db);
+        let (status, _, body) = send(&s.web, get("/sources/lofi")).await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        assert!(body.contains("Lofi Girl") && body.contains("Rainy beats"));
+        assert!(body.contains("Page 1 of 2 · 63 videos"), "{body}");
+        assert!(body.contains("Skipped (1)") && body.contains("Waiting (60)"));
+        assert!(
+            body.contains("/sources/lofi?status=&#38;q=&#38;page=2"),
+            "{body}"
+        );
+        assert!(!body.contains("Waiting 59"), "on page 2");
+
+        let (_, _, body) = send(&s.web, get("/sources/lofi?status=skipped")).await;
+        assert!(body.contains("Lofi trailer") && !body.contains("Rainy beats"));
+        assert!(body.contains("drop (matches exclude[0])"), "why: {body}");
+        let (_, _, body) = send(&s.web, get("/sources/lofi?status=failed")).await;
+        assert!(body.contains("HTTP 429"));
+        let (_, _, body) = send(&s.web, get("/sources/lofi?q=RAINY")).await;
+        assert!(body.contains("Rainy beats") && !body.contains("Broken upload"));
+        assert!(body.contains("1 videos") || body.contains("Page 1 of 1"));
+        let (_, _, body) = send(&s.web, get("/sources/lofi?q=100%25")).await;
+        assert!(body.contains("No videos match"), "a % is searched as is");
+
+        let (status, _, _) = send(&s.web, get("/sources/nope")).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn a_video_page_explains_it_and_queues_work() {
+        let s = setup("");
+        seed(&s.db);
+        let (status, _, body) = send(&s.web, get("/sources/lofi/videos/aaaaaaaaaaa")).await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        assert!(
+            body.contains("Rainy beats") && body.contains("source lofi (done)"),
+            "{body}"
+        );
+        assert!(body.contains("/m/lofi/a/a.mkv"));
+        assert!(
+            body.contains("Run hooks again") && body.contains("Delete files and download again")
+        );
+        assert!(!body.contains("Restore from trash"), "not in the trash");
+
+        let (status, _, body) = send(
+            &s.web,
+            post("/sources/lofi/videos/aaaaaaaaaaa/hooks")
+                .header("x-csrf-token", s.web.csrf.as_str()),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(
+            body.contains("Running its hooks again.") && body.contains("waiting"),
+            "{body}"
+        );
+        assert!(body.contains("every 2s"), "refreshes until it's done");
+        tokio::time::timeout(
+            std::time::Duration::from_secs(1),
+            s.web.processor.notified(),
+        )
+        .await
+        .expect("the processor was woken");
+        let state = Db::open(&s.db).unwrap();
+        let jobs = store::waiting_jobs(&state.conn).unwrap();
+        assert_eq!((jobs.len(), jobs[0].action.as_str()), (1, "hooks"));
+
+        let (status, _, _) = send(
+            &s.web,
+            post("/sources/lofi/videos/aaaaaaaaaaa/explode")
+                .header("x-csrf-token", s.web.csrf.as_str()),
+        )
+        .await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        let (status, _, _) = send(&s.web, get("/sources/lofi/videos/zzzzzzzzzzz")).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
     }
 
     #[tokio::test]

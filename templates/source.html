@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block title %}{{ name }} · tidepool{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>{{ name }}</h2>
+  {% if let Some(title) = title %}<p class="muted">{{ title }}</p>{% endif %}
+</hgroup>
+
+<form method="get" action="/sources/{{ name }}" class="filters">
+  <select name="status" aria-label="Status" onchange="this.form.submit()">
+    <option value=""{% if status.is_empty() %} selected{% endif %}>All ({{ all_count }})</option>
+    {% for group in groups %}
+    <option value="{{ group.key }}"{% if group.selected %} selected{% endif %}>{{ group.label }} ({{ group.count }})</option>
+    {% endfor %}
+  </select>
+  <input type="search" name="q" value="{{ query }}" placeholder="Search titles or ids" aria-label="Search">
+  <button type="submit" class="secondary">Filter</button>
+</form>
+
+{% if rows.is_empty() %}
+<p>No videos{% if !status.is_empty() || !query.is_empty() %} match{% endif %}.</p>
+{% else %}
+<table class="compact">
+  <thead><tr><th>Video</th><th>Status</th><th>Why</th><th>Published</th><th class="num">Size</th></tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr>
+      <td><a href="/sources/{{ name }}/videos/{{ row.video_id }}">{{ row.title }}</a><br><small class="muted">{{ row.video_id }}</small></td>
+      <td><span class="pill st-{{ row.status }}">{{ row.status }}</span></td>
+      <td><small>{{ row.why.as_deref().unwrap_or_default() }}</small></td>
+      <td><small>{{ row.date.as_deref().unwrap_or_default() }}</small></td>
+      <td class="num"><small>{{ row.size.as_deref().unwrap_or_default() }}</small></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<nav class="pages">
+  {% if page > 1 %}<a href="{{ self.page_link(page - 1) }}">← Newer</a>{% endif %}
+  <span class="muted">Page {{ page }} of {{ pages }} · {{ total }} videos</span>
+  {% if page < pages %}<a href="{{ self.page_link(page + 1) }}">Older →</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

@@ -40,6 +40,17 @@ const MIGRATION_LIST: &[M<'static>] = &[
            done_at TEXT, result TEXT
          );",
     ),
+    // Work the web UI asks the daemon to do for one video (run hooks, embed,
+    // download again, restore from the trash).
+    M::up(
+        "CREATE TABLE daemon_jobs (
+           id INTEGER PRIMARY KEY,
+           action TEXT NOT NULL,        -- hooks, embed, reset, reset_delete, restore
+           source_key TEXT NOT NULL, video_id TEXT NOT NULL,
+           created_at TEXT NOT NULL, started_at TEXT, done_at TEXT,
+           ok INTEGER, result TEXT
+         );",
+    ),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_LIST);
 
