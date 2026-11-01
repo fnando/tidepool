@@ -20,8 +20,6 @@ pub enum Setting {
     MetadataFile,
     /// `tmp_dir`: the work area, a full path.
     TmpDir,
-    /// `embed.tags` values.
-    Tags,
     /// Hook `command` elements.
     Hook,
 }
@@ -35,7 +33,6 @@ impl Setting {
             Setting::SubtitleFile => SUB,
             Setting::MetadataFile => META,
             Setting::TmpDir => TMP,
-            Setting::Tags => TAG,
             Setting::Hook => HOOK,
         }
     }
@@ -59,7 +56,6 @@ impl Setting {
             Setting::SubtitleFile => "subtitle_file",
             Setting::MetadataFile => "metadata_file",
             Setting::TmpDir => "tmp_dir",
-            Setting::Tags => "embed.tags",
             Setting::Hook => "hook command",
         }
     }
@@ -73,7 +69,6 @@ impl fmt::Display for Setting {
 
 const OUT_DIR: u8 = 1;
 const OUT_FILE: u8 = 2;
-const TAG: u8 = 4;
 const HOOK: u8 = 8;
 const TMP: u8 = 16;
 const COV: u8 = 32;
@@ -83,7 +78,7 @@ const META: u8 = 128;
 const PATHS: u8 = OUT_DIR | OUT_FILE | COV | SUB | META;
 /// The files inside (or relative to) `output_dir`.
 const FILES: u8 = OUT_FILE | COV | SUB | META;
-const ALL: u8 = PATHS | TAG | HOOK;
+const ALL: u8 = PATHS | HOOK;
 
 /// Poster extensions `cover_file` may end with.
 pub const COVER_EXTENSIONS: [&str; 4] = ["jpg", "jpeg", "png", "webp"];
@@ -130,7 +125,7 @@ pub const PLACEHOLDERS: &[Placeholder] = &[
     ph!("position", true, ALL, Some("TIDEPOOL_POSITION")),
     ph!("source", false, ALL, Some("TIDEPOOL_SOURCE")),
     ph!("source_title", false, ALL, Some("TIDEPOOL_SOURCE_TITLE")),
-    ph!("url", false, TAG | HOOK, Some("TIDEPOOL_URL")),
+    ph!("url", false, HOOK, Some("TIDEPOOL_URL")),
     ph!("category", false, ALL, Some("TIDEPOOL_CATEGORY")),
     ph!("media_dir", false, PATHS | TMP, None),
     ph!("data_dir", false, PATHS | TMP, None),
@@ -395,7 +390,8 @@ pub fn render_path(
     let expanded = crate::paths::expand(template, home)?;
     let expanded = expanded.to_string_lossy();
     let segments = validate(&expanded, setting).map_err(|e| format!("{template:?}: {e}"))?;
-    let rendered = render(&segments, Setting::Tags, value);
+    // Values used as given: the path is a setting, not a file name.
+    let rendered = render(&segments, Setting::Hook, value);
     let mut path = PathBuf::from("/");
     for component in Path::new(&rendered).components() {
         match component {
@@ -477,7 +473,6 @@ mod tests {
             ("{output_dir}/{normalized_title}.{lang}.{ext}", SubtitleFile),
             ("{output_dir}/metadata.json", MetadataFile),
             ("{data_dir}/tmp", TmpDir),
-            ("{channel}", Tags),
             ("{output_file}", Hook),
             ("{output_dir}/x", Hook),
             ("{cover_file} {metadata_file}", Hook),

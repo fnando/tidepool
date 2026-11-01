@@ -72,8 +72,6 @@ metadata = true                     # title, channel, date, description, URL, al
 cover = true                        # same image as the poster file
 chapters = true
 subtitles = true                    # languages from --sub-langs
-info_json = false                   # attach metadata.json (mkv/mka only)
-tags = { genre = "Music", album_artist = "{channel}" }
 
 [category.default.cleanup]
 max_items = 0                       # 0 = unlimited

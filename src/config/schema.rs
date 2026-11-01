@@ -34,7 +34,6 @@ pub const FORMATS: &[&str] = &[
     "metadata-file-template",
     "tmp-dir-template",
     "full-path",
-    "tag-template",
     "hook-template",
     "fancy-regex",
     "socket-address",
@@ -65,7 +64,6 @@ pub fn check_format(format: &str, value: &str) -> Result<(), String> {
         "full-path" => Err(format!(
             "{value:?}: must be a full path: start with /, ~ or $VAR"
         )),
-        "tag-template" => template(Setting::Tags),
         "hook-template" => template(Setting::Hook),
         "fancy-regex" => fancy_regex::Regex::new(value)
             .map(drop)
@@ -383,7 +381,6 @@ mod tests {
         assert!(check_format("fancy-regex", r"(?i)\blive\b(?! stream)").is_ok());
         assert!(check_format("fancy-regex", "(unclosed").is_err());
         assert!(check_format("hook-template", "{output_file}").is_ok());
-        assert!(check_format("tag-template", "{output_file}").is_err());
         let source = |s| check_format("source-url", s);
         assert!(source("https://www.youtube.com/playlist?list=PLabc_-1").is_ok());
         assert!(source("https://youtube.com/watch?v=x&list=PLa").is_ok());

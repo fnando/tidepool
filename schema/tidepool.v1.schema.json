@@ -264,10 +264,6 @@
           "description": "The poster image.",
           "type": "boolean"
         },
-        "info_json": {
-          "description": "Attach metadata.json (mkv/mka only).",
-          "type": "boolean"
-        },
         "metadata": {
           "description": "Title, channel, date, description, URL, album/track.",
           "type": "boolean"
@@ -275,14 +271,6 @@
         "subtitles": {
           "description": "Languages from --sub-langs.",
           "type": "boolean"
-        },
-        "tags": {
-          "additionalProperties": {
-            "format": "tag-template",
-            "type": "string"
-          },
-          "description": "Extra tags, literal or templated, e.g. `album_artist = \"{channel}\"`.",
-          "type": "object"
         }
       },
       "type": "object"
