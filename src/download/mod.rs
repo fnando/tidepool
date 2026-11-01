@@ -223,7 +223,7 @@ fn link(from: &Path, to: &Path, mode: Duplicates) -> std::io::Result<()> {
 /// Move one finished file from the work area to `dest`, replacing what's
 /// there. Across filesystems it's copied to a hidden name next to `dest`
 /// first, so `dest` still appears in one rename.
-fn place(src: &Path, dest: &Path) -> std::io::Result<()> {
+pub(crate) fn place(src: &Path, dest: &Path) -> std::io::Result<()> {
     if let Some(parent) = dest.parent() {
         std::fs::create_dir_all(parent)?;
     }

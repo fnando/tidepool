@@ -7,9 +7,9 @@ the cover and chapters into the video file itself. Rules decide which videos to
 keep, and your own scripts can tidy up tags, convert files or send
 notifications along the way.
 
-> **Early days.** tidepool can keep your sources downloaded and run your own
-> scripts. Automatic cleanup, running in the background and the web interface
-> aren't available yet.
+> **Early days.** tidepool can keep your sources downloaded, run your own
+> scripts and clean up when you ask it to. Running in the background (with
+> automatic cleanup) and the web interface aren't available yet.
 
 Works on Linux and macOS.
 
@@ -521,10 +521,11 @@ A hook's `type` says when it runs:
 | `finished` (the default) | once the video is saved | notifications, copying or moving the video elsewhere |
 | `embed` | just before tags and the cover are written into the file (see [Tags, cover and chapters](#tags-cover-and-chapters-inside-the-file)) | fixing titles, artists and other tags |
 | `downloaded` | right after the download, before anything else | converting the video to another format |
+| `before_cleanup` | before [cleanup](#cleaning-up) removes a video | keeping videos you still want, telling a media server |
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `type` | `"finished"` | `finished`, `embed` or `downloaded` |
+| `type` | `"finished"` | `finished`, `embed`, `downloaded` or `before_cleanup` |
 | `timeout` | `"10m"` | stop the hook after this long |
 | `on_failure` | `"fail"` | `fail`, `warn` or `retry` |
 | `retries` | `0` | extra tries with `on_failure = "retry"` |
@@ -614,6 +615,63 @@ tidepool hooks run --category music --hook split-title
 Running the same hooks twice is safe: the file gets the new tags, cover and
 subtitles instead of a second copy of them. Videos you pick that don't use any
 of those hooks are skipped.
+
+### Cleaning up
+
+To keep a source from growing forever, set limits in `cleanup`, for every
+source, a category or one source, then run `tidepool cleanup`:
+
+```toml
+[category.default.cleanup]
+max_items = 50        # keep the 50 most recent videos
+max_age = "30d"       # remove videos downloaded more than 30 days ago
+```
+
+| Option | Default | Removes |
+| --- | --- | --- |
+| `max_items` | `0` (no limit) | the oldest videos beyond this many |
+| `max_size` | `""` (no limit) | the oldest videos until the source fits, e.g. `"20GiB"` |
+| `max_age` | `""` (no limit) | videos downloaded longer ago than this, e.g. `"30d"` |
+| `unmatched` | `"keep"` | with `"remove"`: videos your `include`/`exclude` rules (or duration limits, `cutoff`) no longer match |
+| `marker_file` | `""` | videos whose folder has this file, e.g. `".watched"` (made by you or a media server) |
+| `keep_latest` | `0` | nothing: it protects the newest N videos from all of the above |
+| `order` | `"oldest_downloaded"` | who's oldest for `max_items` and `max_size`: `oldest_downloaded`, `oldest_published` or `source_position` (furthest down the playlist or channel first) |
+
+A video goes when any limit says so, unless `keep_latest` protects it or a
+`before_cleanup` hook keeps it.
+
+What's removed:
+
+| Option | Default | |
+| --- | --- | --- |
+| `keep` | `"metadata"` | `metadata`: the video and its subtitles go, `metadata.json` and the poster stay; `nothing`: everything goes |
+| `delete` | `"trash"` | `trash`: files go to the trash, and you can bring them back; `now`: they're deleted right away |
+| `trash_for` | `"7d"` | how long files stay in the trash before they're deleted for good |
+
+Only the files tidepool saved for the video are removed, never other files in
+its folder, and the folder goes once it's empty. A cleaned-up video isn't
+downloaded again (`tidepool reset <video id>` makes it downloadable again).
+
+```sh
+tidepool cleanup --dry-run     # what would go, without removing anything
+tidepool cleanup               # every source (or --source <name>)
+tidepool trash list            # what's in the trash, and until when
+tidepool trash restore dQw4w9WgXcQ
+tidepool trash empty           # delete everything in the trash now
+```
+
+The trash is in `~/.local/share/tidepool/trash` unless a category sets
+`trash_dir`. If your videos are on another disk (a NAS, say), moving them there
+means copying them; `trash_dir = "{media_dir}/.trash"` keeps the trash on the
+same disk, where moving is instant. What's been in the trash for `trash_for` is
+deleted for good the next time you run `tidepool run`, `download` or
+`cleanup`.
+
+**Keeping videos with a hook.** A `before_cleanup` hook runs before each
+video goes, with its files and the reason as JSON on its input. Printing
+`{"keep": true}` keeps the video this time; printing nothing lets it go. Every
+`before_cleanup` hook gets asked, and if one fails or times out the video is
+kept too, and `tidepool problems` tells you.
 
 ### Problems
 
@@ -828,6 +886,7 @@ so `tidepool run -v > out.txt` keeps the summary lines separate. With
 | Your config file | `~/.config/tidepool/config.toml` |
 | Videos (unless a category sets `media_dir` or `output_dir`) | `~/.local/share/tidepool/media` |
 | Downloads in progress (unless a category sets `tmp_dir`) | `~/.local/share/tidepool/tmp` |
+| Cleaned-up files, until they're deleted for good (unless a category sets `trash_dir`) | `~/.local/share/tidepool/trash` |
 | What your hooks printed as errors | `~/.local/share/tidepool/logs/hooks/` |
 | The yt-dlp and Deno tidepool manages | `~/.local/share/tidepool/bin/` |
 | tidepool's own data | `~/.local/share/tidepool/` |

@@ -1192,12 +1192,31 @@ pub fn known_details(
     conn: &Connection,
     ids: &[String],
 ) -> rusqlite::Result<std::collections::HashMap<String, RemoteItem>> {
-    let mut stmt = conn.prepare(
+    videos_where(
+        conn,
+        ids,
+        "AND description IS NOT NULL AND tags_json IS NOT NULL AND duration_s IS NOT NULL",
+    )
+}
+
+/// What's known about these videos, however little.
+pub fn videos(
+    conn: &Connection,
+    ids: &[String],
+) -> rusqlite::Result<std::collections::HashMap<String, RemoteItem>> {
+    videos_where(conn, ids, "")
+}
+
+fn videos_where(
+    conn: &Connection,
+    ids: &[String],
+    condition: &str,
+) -> rusqlite::Result<std::collections::HashMap<String, RemoteItem>> {
+    let mut stmt = conn.prepare(&format!(
         "SELECT id, title, channel, channel_id, description, tags_json, duration_s, published_at,
            availability, thumbs_json, kind
-         FROM videos WHERE id = ?1 AND description IS NOT NULL AND tags_json IS NOT NULL
-           AND duration_s IS NOT NULL",
-    )?;
+         FROM videos WHERE id = ?1 {condition}"
+    ))?;
     let mut out = std::collections::HashMap::new();
     for id in ids {
         let found = stmt
@@ -1322,6 +1341,135 @@ pub fn reset_interrupted(conn: &Connection) -> rusqlite::Result<usize> {
         "UPDATE items SET status = 'pending' WHERE status = 'downloading'",
         [],
     )
+}
+
+/// A downloaded video, as cleanup sees it.
+#[derive(Debug, Clone)]
+pub struct Kept {
+    pub video_id: String,
+    pub position: i64,
+    pub files: VideoFiles,
+    pub media_bytes: u64,
+    pub downloaded_at: Option<Timestamp>,
+}
+
+/// A source's downloaded videos.
+pub fn kept(conn: &Connection, source_key: &str) -> rusqlite::Result<Vec<Kept>> {
+    let mut stmt = conn.prepare(
+        "SELECT video_id, position, files, media_bytes, downloaded_at FROM items
+         WHERE source_key = ?1 AND status IN ('done', 'downloaded') AND files IS NOT NULL
+         ORDER BY position",
+    )?;
+    let rows = stmt.query_map([source_key], |r| {
+        Ok((
+            r.get::<_, String>(0)?,
+            r.get::<_, Option<i64>>(1)?,
+            VideoFiles::from_column(r.get(2)?),
+            r.get::<_, Option<i64>>(3)?,
+            r.get::<_, Option<String>>(4)?,
+        ))
+    })?;
+    let mut out = Vec::new();
+    for row in rows {
+        let (video_id, position, files, bytes, downloaded_at) = row?;
+        if let Some(files) = files {
+            out.push(Kept {
+                video_id,
+                position: position.unwrap_or(0),
+                files,
+                media_bytes: bytes.unwrap_or(0).max(0) as u64,
+                downloaded_at: downloaded_at.and_then(|t| t.parse().ok()),
+            });
+        }
+    }
+    Ok(out)
+}
+
+/// A video cleanup removed: it's never downloaded again (`reset` undoes it).
+pub fn mark_cleaned_up(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    reason: &str,
+    now: Timestamp,
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE items SET status = 'cleaned_up', cleaned_up_at = ?3, cleanup_reason = ?4
+         WHERE source_key = ?1 AND video_id = ?2",
+        params![source_key, video_id, now.to_string(), reason],
+    )?;
+    Ok(())
+}
+
+/// A video back from the trash: downloaded again, as before.
+pub fn mark_restored(conn: &Connection, source_key: &str, video_id: &str) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE items SET status = 'done', cleaned_up_at = NULL, cleanup_reason = NULL
+         WHERE source_key = ?1 AND video_id = ?2 AND status = 'cleaned_up'",
+        params![source_key, video_id],
+    )?;
+    Ok(())
+}
+
+/// One video's files in the trash.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Trashed {
+    pub id: i64,
+    pub source_key: String,
+    pub video_id: String,
+    pub dir: String,
+    /// `(where it was, where it is now)`.
+    pub files: Vec<(String, String)>,
+    pub bytes: u64,
+    pub reason: String,
+    pub trashed_at: String,
+    pub delete_after: String,
+}
+
+pub fn add_trash(conn: &Connection, t: &Trashed) -> rusqlite::Result<()> {
+    conn.execute(
+        "INSERT INTO trash (source_key, video_id, dir, files, bytes, reason, trashed_at, delete_after)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        params![
+            t.source_key,
+            t.video_id,
+            t.dir,
+            serde_json::to_string(&t.files).expect("JSON"),
+            t.bytes as i64,
+            t.reason,
+            t.trashed_at,
+            t.delete_after,
+        ],
+    )?;
+    Ok(())
+}
+
+/// Everything in the trash, oldest first.
+pub fn trash(conn: &Connection) -> rusqlite::Result<Vec<Trashed>> {
+    let mut stmt = conn.prepare(
+        "SELECT id, source_key, video_id, dir, files, bytes, reason, trashed_at, delete_after
+         FROM trash ORDER BY trashed_at, id",
+    )?;
+    stmt.query_map([], |r| {
+        let files: String = r.get(4)?;
+        Ok(Trashed {
+            id: r.get(0)?,
+            source_key: r.get(1)?,
+            video_id: r.get(2)?,
+            dir: r.get(3)?,
+            files: serde_json::from_str(&files).unwrap_or_default(),
+            bytes: r.get::<_, i64>(5)?.max(0) as u64,
+            reason: r.get(6)?,
+            trashed_at: r.get(7)?,
+            delete_after: r.get(8)?,
+        })
+    })?
+    .collect()
+}
+
+pub fn remove_trash(conn: &Connection, id: i64) -> rusqlite::Result<()> {
+    conn.execute("DELETE FROM trash WHERE id = ?1", [id])?;
+    Ok(())
 }
 
 /// Forget a video's download state in every source so it's downloaded

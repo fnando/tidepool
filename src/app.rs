@@ -60,7 +60,8 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         | Command::Index(_)
         | Command::Download(_)
         | Command::Hooks { .. }
-        | Command::Embed(_) => crate::shutdown::Shutdown::listen(),
+        | Command::Embed(_)
+        | Command::Cleanup(_) => crate::shutdown::Shutdown::listen(),
         _ => crate::shutdown::Shutdown::default(),
     };
     let app = App {
@@ -93,6 +94,8 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Problems { cmd } => app.problems(cmd, out),
         Command::Hooks { cmd } => app.hooks(cmd, out).await,
         Command::Embed(args) => app.embed(args, out).await,
+        Command::Cleanup(scope) => app.cleanup(scope, out).await,
+        Command::Trash { cmd } => app.trash(cmd, out),
         other => {
             let milestone = other.milestone().unwrap_or("a later milestone");
             bail!("this command is not implemented yet (planned for {milestone})")
@@ -110,7 +113,8 @@ fn checks_config_drift(command: &Command) -> bool {
         | Command::Reset(_)
         | Command::Filter { .. }
         | Command::Hooks { .. }
-        | Command::Embed(_) => true,
+        | Command::Embed(_)
+        | Command::Cleanup(_) => true,
         _ => false,
     }
 }
@@ -133,7 +137,8 @@ fn uses_stored_config(command: &Command) -> bool {
         | Command::Download(_)
         | Command::Reset(_)
         | Command::Hooks { .. }
-        | Command::Embed(_) => true,
+        | Command::Embed(_)
+        | Command::Cleanup(_) => true,
         Command::Run(args) => !args.daemon,
         _ => false,
     }
@@ -608,6 +613,9 @@ impl App<'_> {
                 .retry_hooks(state, config, sources, tracker, out)
                 .await?;
             summary.interrupted = self.shutdown.code();
+        }
+        if summary.interrupted.is_none() && !self.cli.dry_run {
+            self.purge_trash(state, jiff::Timestamp::now(), out)?;
         }
 
         if summary.interrupted.is_some() {
@@ -1199,6 +1207,388 @@ impl App<'_> {
                 writeln!(out, "embedded {done} {videos}")?;
             }
             Ok(exit::OK)
+        }
+    }
+
+    /// `tidepool cleanup`: remove what the sources' `cleanup` limits no
+    /// longer allow (to the trash, or deleted); `--dry-run` only says what.
+    async fn cleanup(&self, scope: &ScopeArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
+        use crate::cleanup::{Candidate, files_to_remove, plan, remove};
+        use crate::download::human_bytes;
+        use crate::state::items;
+
+        let dry_run = self.cli.dry_run;
+        let state = self.open_state()?;
+        let config = self.current_config(&state)?.config;
+        let sources = self.scoped_sources(&config, &scope.sources)?;
+        let _lock = if dry_run { None } else { Some(self.lock()?) };
+        let now = jiff::Timestamp::now();
+        if !dry_run {
+            self.purge_trash(&state, now, out)?;
+        }
+        let limit = usize::try_from(config.general.regex_backtrack_limit).unwrap_or(usize::MAX);
+        let mut tracker = crate::problems::Tracker::default();
+        let (mut removed, mut freed, mut failed) = (0usize, 0u64, 0usize);
+        let mut trashed = false;
+        for source in &sources {
+            if self.shutdown.is_stopping() {
+                break;
+            }
+            let kept = items::kept(&state.conn, &source.key)?;
+            if kept.is_empty() {
+                continue;
+            }
+            let rules = RuleSet::compile(source, limit, now).map_err(anyhow::Error::msg)?;
+            let ids: Vec<String> = kept.iter().map(|k| k.video_id.clone()).collect();
+            let details = items::videos(&state.conn, &ids)?;
+            let marker = &source.cleanup.marker_file;
+            let candidates: Vec<Candidate> = kept
+                .iter()
+                .map(|k| {
+                    let video = details.get(&k.video_id);
+                    let unmatched = video.and_then(|v| match rules.decide(&Fields::from_item(v)) {
+                        crate::filter::Decision::Keep { .. }
+                        | crate::filter::Decision::Deferred { .. }
+                        | crate::filter::Decision::FilterError { .. } => None,
+                        other => Some(other.to_string()),
+                    });
+                    Candidate {
+                        video_id: k.video_id.clone(),
+                        position: k.position,
+                        bytes: k.media_bytes,
+                        downloaded_at: k.downloaded_at,
+                        published_at: video.and_then(|v| v.published_at),
+                        present: !k.files.is_removed("media") && Path::new(&k.files.media).exists(),
+                        unmatched,
+                        marked: !marker.is_empty() && Path::new(&k.files.dir).join(marker).exists(),
+                    }
+                })
+                .collect();
+            let victims = plan(&source.cleanup, &candidates, now);
+            let trash_root =
+                crate::config::check::trash_dir(source, &self.dirs).map_err(anyhow::Error::msg)?;
+            for (i, reason) in victims {
+                if self.shutdown.is_stopping() {
+                    break;
+                }
+                let k = &kept[i];
+                let title = details
+                    .get(&k.video_id)
+                    .map(|v| v.title.clone())
+                    .filter(|t| !t.is_empty())
+                    .unwrap_or_else(|| k.video_id.clone());
+                let label = format!("{}: “{title}”", source.key);
+                if dry_run {
+                    writeln!(
+                        out,
+                        "{label}: would remove ({reason}), {}",
+                        human_bytes(k.media_bytes)
+                    )?;
+                    removed += 1;
+                    freed += k.media_bytes;
+                    continue;
+                }
+                if let Some(why) = self
+                    .ask_before_cleanup(&state, &config, source, k, &label, &reason, &mut tracker)
+                    .await?
+                {
+                    writeln!(out, "{label}: kept: {why}")?;
+                    continue;
+                }
+                let paths = files_to_remove(&k.files, source.cleanup.keep);
+                let trash = (source.cleanup.delete == crate::config::CleanupDelete::Trash
+                    && !paths.is_empty())
+                .then(|| {
+                    trash_root.join(&source.key).join(format!(
+                        "{}-{}",
+                        k.video_id,
+                        now.strftime("%Y%m%dT%H%M%S")
+                    ))
+                });
+                match remove(&paths, Path::new(&k.files.dir), trash.as_deref()) {
+                    Ok((moved, bytes)) => {
+                        if let Some(dir) = &trash {
+                            let until = now
+                                .checked_add(
+                                    jiff::SignedDuration::try_from(source.cleanup.trash_for.0)
+                                        .unwrap_or(jiff::SignedDuration::ZERO),
+                                )
+                                .unwrap_or(now);
+                            items::add_trash(
+                                &state.conn,
+                                &items::Trashed {
+                                    id: 0,
+                                    source_key: source.key.clone(),
+                                    video_id: k.video_id.clone(),
+                                    dir: dir.display().to_string(),
+                                    files: moved,
+                                    bytes,
+                                    reason: reason.to_string(),
+                                    trashed_at: now.to_string(),
+                                    delete_after: until.to_string(),
+                                },
+                            )?;
+                            trashed = true;
+                        }
+                        items::mark_cleaned_up(
+                            &state.conn,
+                            &source.key,
+                            &k.video_id,
+                            &reason.to_string(),
+                            now,
+                        )?;
+                        let how = if trash.is_some() {
+                            "to the trash"
+                        } else {
+                            "deleted"
+                        };
+                        writeln!(out, "{label}: {how} ({reason}), {}", human_bytes(bytes))?;
+                        removed += 1;
+                        freed += bytes;
+                    }
+                    Err(e) => {
+                        failed += 1;
+                        writeln!(out, "{label}: {e}")?;
+                    }
+                }
+            }
+        }
+        let hooks_failed = tracker.has_failures();
+        if !dry_run {
+            tracker.finish(&state.conn, None, false, now)?;
+        }
+        let videos = if removed == 1 { "video" } else { "videos" };
+        if removed == 0 && failed == 0 {
+            writeln!(out, "nothing to clean up")?;
+        } else if dry_run {
+            writeln!(
+                out,
+                "would remove {removed} {videos} ({})",
+                human_bytes(freed)
+            )?;
+        } else {
+            let mut line = format!("removed {removed} {videos} ({})", human_bytes(freed));
+            if failed > 0 {
+                line.push_str(&format!("; {failed} couldn't be removed"));
+            }
+            if trashed {
+                line.push_str("; `tidepool trash restore <video_id>` brings one back");
+            }
+            writeln!(out, "{line}")?;
+        }
+        if let Some(code) = self.shutdown.code() {
+            return Ok(code);
+        }
+        Ok(if failed > 0 || hooks_failed {
+            exit::PARTIAL
+        } else {
+            exit::OK
+        })
+    }
+
+    /// Run a video's `before_cleanup` hooks; `Some(why)` when it stays.
+    #[allow(clippy::too_many_arguments)]
+    async fn ask_before_cleanup(
+        &self,
+        state: &State,
+        config: &crate::config::Config,
+        source: &EffectiveSource,
+        kept: &crate::state::items::Kept,
+        label: &str,
+        reason: &crate::cleanup::Reason,
+        tracker: &mut crate::problems::Tracker,
+    ) -> anyhow::Result<Option<String>> {
+        let asks = source.hooks.iter().any(|h| {
+            config
+                .hooks
+                .get(h)
+                .is_some_and(|c| c.kind == crate::config::HookType::BeforeCleanup)
+        });
+        if !asks {
+            return Ok(None);
+        }
+        let (meta, info) = match crate::download::rerun::load_metadata(&kept.files, &kept.video_id)
+        {
+            Ok(found) => found,
+            Err(e) => {
+                return Ok(Some(format!(
+                    "its before_cleanup hooks can't be asked: {e}"
+                )));
+            }
+        };
+        let source_title = meta["source"]["title"].as_str();
+        let position = meta["source"]["position"].as_u64().unwrap_or(0) as u32;
+        let values = crate::download::layout::Values::new(&info, source, source_title, position);
+        let stage = crate::download::stages::Stage {
+            source,
+            hook_names: &source.hooks,
+            hooks: &config.hooks,
+            video_id: &kept.video_id,
+            source_title,
+            position,
+            label,
+            home: &self.dirs.home,
+            hook_logs: &self.paths.hook_logs,
+            shutdown: &self.shutdown,
+            grace: config.general.shutdown_timeout.0,
+            ffmpeg: Path::new("ffmpeg"),
+            ffprobe: Path::new("ffprobe"),
+        };
+        let context = stage.context(&info);
+        let mut reports = Vec::new();
+        let keep = stage
+            .before_cleanup_hooks(
+                &values,
+                &kept.files,
+                &context,
+                &reason.to_string(),
+                &mut reports,
+            )
+            .await;
+        for report in &reports {
+            crate::state::items::record_hook_run(
+                &state.conn,
+                &crate::download::hook_run(&source.key, &kept.video_id, report, false),
+            )?;
+            match &report.result {
+                Ok(_) => tracker.hook_succeeded(),
+                Err(e) if e == "stopped" => {}
+                Err(e) => tracker.hook_failed(&source.key, &report.name, e),
+            }
+        }
+        Ok(keep)
+    }
+
+    /// Delete for good what's been in the trash for its `trash_for`.
+    fn purge_trash(
+        &self,
+        state: &State,
+        now: jiff::Timestamp,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<()> {
+        let mut count = 0;
+        let mut bytes = 0;
+        for t in crate::state::items::trash(&state.conn)? {
+            let due = t
+                .delete_after
+                .parse::<jiff::Timestamp>()
+                .is_ok_and(|at| at <= now);
+            if due && delete_trashed(&t) {
+                crate::state::items::remove_trash(&state.conn, t.id)?;
+                count += 1;
+                bytes += t.bytes;
+            }
+        }
+        if count > 0 {
+            writeln!(
+                out,
+                "emptied {count} {} from the trash ({})",
+                if count == 1 { "video" } else { "videos" },
+                crate::download::human_bytes(bytes)
+            )?;
+        }
+        Ok(())
+    }
+
+    /// `tidepool trash list | restore | empty`.
+    fn trash(&self, cmd: &crate::cli::TrashCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
+        use crate::cli::TrashCmd;
+        use crate::download::human_bytes;
+        use crate::state::items;
+
+        let state = self.open_state()?;
+        let all = items::trash(&state.conn)?;
+        let ids: Vec<String> = all.iter().map(|t| t.video_id.clone()).collect();
+        let details = items::videos(&state.conn, &ids)?;
+        let label = |t: &items::Trashed| {
+            let title = details
+                .get(&t.video_id)
+                .map(|v| v.title.clone())
+                .filter(|t| !t.is_empty())
+                .unwrap_or_else(|| t.video_id.clone());
+            format!("{}: “{title}” [{}]", t.source_key, t.video_id)
+        };
+        let day = |at: &str| {
+            at.parse::<jiff::Timestamp>()
+                .map(|t| t.strftime("%Y-%m-%d").to_string())
+                .unwrap_or_default()
+        };
+        match cmd {
+            TrashCmd::List => {
+                if all.is_empty() {
+                    writeln!(out, "the trash is empty")?;
+                }
+                for t in &all {
+                    writeln!(
+                        out,
+                        "{}: {}, removed {} ({}), deleted for good on {}",
+                        label(t),
+                        human_bytes(t.bytes),
+                        day(&t.trashed_at),
+                        t.reason,
+                        day(&t.delete_after)
+                    )?;
+                }
+                Ok(exit::OK)
+            }
+            TrashCmd::Restore { video_ids, sources } => {
+                let _lock = self.lock()?;
+                let keys: Vec<String> = if sources.is_empty() {
+                    Vec::new()
+                } else {
+                    let config = self.current_config(&state)?.config;
+                    self.scoped_sources(&config, sources)?
+                        .into_iter()
+                        .map(|s| s.key)
+                        .collect()
+                };
+                let mut failed = 0;
+                for id in video_ids {
+                    let found: Vec<&items::Trashed> = all
+                        .iter()
+                        .filter(|t| &t.video_id == id)
+                        .filter(|t| keys.is_empty() || keys.contains(&t.source_key))
+                        .collect();
+                    if found.is_empty() {
+                        failed += 1;
+                        writeln!(out, "{id}: not in the trash")?;
+                    }
+                    for t in found {
+                        match crate::cleanup::restore(&t.files) {
+                            Ok(()) => {
+                                items::mark_restored(&state.conn, &t.source_key, &t.video_id)?;
+                                items::remove_trash(&state.conn, t.id)?;
+                                let _ = std::fs::remove_dir(&t.dir);
+                                writeln!(out, "{}: restored", label(t))?;
+                            }
+                            Err(e) => {
+                                failed += 1;
+                                writeln!(out, "{}: {e}", label(t))?;
+                            }
+                        }
+                    }
+                }
+                Ok(if failed > 0 { exit::PARTIAL } else { exit::OK })
+            }
+            TrashCmd::Empty => {
+                let _lock = self.lock()?;
+                let mut bytes = 0;
+                let mut count = 0;
+                for t in &all {
+                    if delete_trashed(t) {
+                        items::remove_trash(&state.conn, t.id)?;
+                        bytes += t.bytes;
+                        count += 1;
+                    }
+                }
+                writeln!(
+                    out,
+                    "deleted {count} {} from the trash ({})",
+                    if count == 1 { "video" } else { "videos" },
+                    human_bytes(bytes)
+                )?;
+                Ok(exit::OK)
+            }
         }
     }
 
@@ -2288,4 +2678,22 @@ fn describe_embedding(embedding: &crate::download::stages::Embedding) -> String 
     } else {
         parts.join("; ")
     }
+}
+
+/// Delete a video's folder in the trash; `false` (and a warning) if it
+/// can't be.
+fn delete_trashed(t: &crate::state::items::Trashed) -> bool {
+    match std::fs::remove_dir_all(&t.dir) {
+        Ok(()) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => {
+            tracing::warn!("cannot delete {}: {e}", t.dir);
+            return false;
+        }
+    }
+    // The source's folder in the trash, once it's empty.
+    if let Some(parent) = Path::new(&t.dir).parent() {
+        let _ = std::fs::remove_dir(parent);
+    }
+    true
 }

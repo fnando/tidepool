@@ -65,8 +65,13 @@ pub enum Command {
     Index(ScopeArgs),
     /// Download items already indexed and pending; no re-index
     Download(DownloadArgs),
-    /// Run cleanup policies only
+    /// Remove downloaded videos your `cleanup` limits no longer allow
     Cleanup(ScopeArgs),
+    /// See, restore or empty what cleanup put in the trash
+    Trash {
+        #[command(subcommand)]
+        cmd: TrashCmd,
+    },
     /// List known items
     List(ListArgs),
     /// Run hooks again
@@ -112,7 +117,7 @@ impl Command {
             Command::Tools { .. } => None,
             Command::Hooks { .. } => None,
             Command::Embed(_) => None,
-            Command::Cleanup(_) => Some("M5"),
+            Command::Cleanup(_) | Command::Trash { .. } => None,
             Command::List(_) => Some("M6"),
             Command::Run(RunArgs { daemon: true, .. }) => Some("M7"),
         }
@@ -287,6 +292,22 @@ pub struct RunArgs {
     /// when the UI is off.
     #[arg(long, value_enum, requires = "daemon")]
     pub on_config_mismatch: Option<ConfigMismatch>,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum TrashCmd {
+    /// What's in the trash, and when it's deleted for good
+    List,
+    /// Put videos back where they were; they count as downloaded again
+    Restore {
+        #[arg(required = true)]
+        video_ids: Vec<String>,
+        /// Only from these sources: name, playlist id or URL; repeatable
+        #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
+        sources: Vec<SourceRef>,
+    },
+    /// Delete everything in the trash now
+    Empty,
 }
 
 #[derive(Debug, Subcommand)]

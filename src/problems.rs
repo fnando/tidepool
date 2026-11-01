@@ -463,6 +463,11 @@ impl Tracker {
     }
 
     /// A hook ran fine.
+    /// Something failed in this run.
+    pub fn has_failures(&self) -> bool {
+        !self.failures.is_empty()
+    }
+
     pub fn hook_succeeded(&mut self) {
         self.hooks_succeeded = true;
     }

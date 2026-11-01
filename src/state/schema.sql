@@ -42,6 +42,17 @@ CREATE TABLE hook_runs (           -- the latest run of each hook for each video
   PRIMARY KEY (source_key, video_id, hook, type)
 );
 
+CREATE TABLE trash (               -- what cleanup moved aside, until it's deleted for good
+  id INTEGER PRIMARY KEY,
+  source_key TEXT NOT NULL, video_id TEXT NOT NULL,
+  dir TEXT NOT NULL,                -- this video's folder in the trash
+  files TEXT NOT NULL,              -- JSON: [[where it was, where it is in the trash], ...]
+  bytes INTEGER NOT NULL,
+  reason TEXT NOT NULL,
+  trashed_at TEXT NOT NULL,
+  delete_after TEXT NOT NULL
+);
+
 CREATE TABLE hook_attempts (       -- every run of a hook, for its history
   source_key TEXT, video_id TEXT, hook TEXT, type TEXT,
   ok INTEGER NOT NULL, exit_code INTEGER, attempts INTEGER,

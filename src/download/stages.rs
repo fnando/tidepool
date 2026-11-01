@@ -341,6 +341,55 @@ impl Stage<'_> {
         changed
     }
 
+    /// `before_cleanup` hooks, every one of them, on the placed files; stdin
+    /// also says why the video is being removed. Returns why it stays: a
+    /// hook printed `{"keep": true}`, or failed (it couldn't say).
+    pub async fn before_cleanup_hooks(
+        &self,
+        values: &Values,
+        files: &VideoFiles,
+        context: &serde_json::Value,
+        reason: &str,
+        hook_runs: &mut Vec<hooks::Report>,
+    ) -> Option<String> {
+        let output_dir = PathBuf::from(&files.dir);
+        let placed = placed_of(files);
+        let work_dir = if output_dir.is_dir() {
+            output_dir.clone()
+        } else {
+            PathBuf::from("/")
+        };
+        let mut input = placed.to_json(context);
+        input["reason"] = reason.into();
+        let input = serde_json::to_vec(&input).expect("JSON");
+        let hook_values = stage_values(
+            values,
+            &output_dir,
+            placed.media.as_deref(),
+            placed.cover.as_deref(),
+            Some(Path::new(&files.metadata)),
+        );
+        let mut keep = Vec::new();
+        for (name, hook) in self.of_type(HookType::BeforeCleanup) {
+            let mut report = self
+                .run_hook(name, hook, &hook_values, &work_dir, &input)
+                .await;
+            match &report.result {
+                Ok(out) => match parse_keep(out) {
+                    Ok(true) => keep.push(format!("hook {name} said keep")),
+                    Ok(false) => {}
+                    Err(e) => {
+                        keep.push(format!("hook {name} failed: {e}"));
+                        report.result = Err(e);
+                    }
+                },
+                Err(e) => keep.push(format!("hook {name} failed: {e}")),
+            }
+            hook_runs.push(report);
+        }
+        (!keep.is_empty()).then(|| keep.join("; "))
+    }
+
     /// The tags `embed.metadata` writes.
     /// tidepool's own, then `embed.tags` on top: rendered with `values`; an
     /// empty (or blank) value removes the tag (names match in any case).
@@ -498,6 +547,21 @@ fn stage_values(
         }
     }
     out
+}
+
+/// A `before_cleanup` hook's answer: `{"keep": true}` keeps the video;
+/// nothing (or `{"keep": false}`) lets it go.
+fn parse_keep(output: &[u8]) -> Result<bool, String> {
+    if output.iter().all(u8::is_ascii_whitespace) {
+        return Ok(false);
+    }
+    let value: serde_json::Value = serde_json::from_slice(output)
+        .map_err(|e| format!("printed something that isn't JSON: {e}"))?;
+    match value.get("keep") {
+        None | Some(serde_json::Value::Bool(false)) => Ok(false),
+        Some(serde_json::Value::Bool(true)) => Ok(true),
+        Some(other) => Err(format!("\"keep\" must be true or false, not {other}")),
+    }
 }
 
 /// The files a `finished` hook sees: what's placed, minus what was removed.

@@ -170,12 +170,20 @@ fn media_size(files: &VideoFiles) -> u64 {
 }
 
 fn read_metadata(video: &Video<'_>) -> Result<(serde_json::Value, VideoInfo), String> {
-    let path = Path::new(&video.item.files.metadata);
+    load_metadata(&video.item.files, &video.item.video_id)
+}
+
+/// A downloaded video's metadata.json, and the details in it.
+pub fn load_metadata(
+    files: &VideoFiles,
+    video_id: &str,
+) -> Result<(serde_json::Value, VideoInfo), String> {
+    let path = Path::new(&files.metadata);
     let text = std::fs::read_to_string(path).map_err(|e| {
         format!(
             "cannot read {} ({e}); `tidepool reset {} --delete-files` downloads it again",
             path.display(),
-            video.item.video_id
+            video_id
         )
     })?;
     let meta: serde_json::Value = serde_json::from_str(&text)

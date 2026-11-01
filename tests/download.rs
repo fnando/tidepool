@@ -1633,3 +1633,143 @@ async fn failed_finished_hooks_are_tried_again_until_they_give_up() {
         .stdout(contains("ran hooks for 2 videos"));
     assert_eq!(state(rick).0, "ok");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn cleanup_moves_videos_to_the_trash_and_back() {
+    let env = Env::new().await;
+    let config = env.config("");
+    env.cmd(&["run", "--config", &config]).assert().code(3);
+    let done = |env: &Env| {
+        env.statuses("dl")
+            .into_iter()
+            .filter(|(_, s, _)| s == "done")
+            .count()
+    };
+    assert_eq!(done(&env), 2);
+    env.cmd(&["cleanup"])
+        .assert()
+        .success()
+        .stdout(contains("nothing to clean up"));
+
+    // One video at most, keeping its metadata.
+    let config = hooks_config(&env, "[category.default.cleanup]\nmax_items = 1", "");
+    env.cmd(&["cleanup", "--dry-run", "--config", &config])
+        .assert()
+        .success()
+        .stdout(
+            contains("would remove (beyond max_items = 1)").and(contains("would remove 1 video")),
+        );
+    assert_eq!(done(&env), 2, "a dry run changes nothing");
+    let out = env
+        .cmd(&["cleanup", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains("to the trash (beyond max_items = 1)").and(contains("removed 1 video")))
+        .get_output()
+        .stdout
+        .clone();
+    let out = String::from_utf8(out).unwrap();
+    let gone = if out.contains("Rick Astley") {
+        "dQw4w9WgXcQ"
+    } else {
+        "okvideo01"
+    };
+    assert_eq!(done(&env), 1);
+    let db = || rusqlite::Connection::open(env.path("data/tidepool/state.db")).unwrap();
+    let (files, reason): (String, String) = db()
+        .query_row(
+            "SELECT files, cleanup_reason FROM items WHERE video_id = ?1 AND status = 'cleaned_up'",
+            [gone],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    assert_eq!(reason, "beyond max_items = 1");
+    let files: serde_json::Value = serde_json::from_str(&files).unwrap();
+    let media = PathBuf::from(files["media"].as_str().unwrap());
+    let metadata = PathBuf::from(files["metadata"].as_str().unwrap());
+    assert!(!media.exists() && metadata.exists(), "keep = \"metadata\"");
+    let trash = env.path("data/tidepool/trash/dl");
+    assert!(
+        fs::read_dir(&trash).unwrap().next().is_some(),
+        "in the trash"
+    );
+
+    // Not downloaded again, not reported missing.
+    env.cmd(&["run"]).assert().stdout(contains("missing").not());
+    assert!(!media.exists());
+
+    env.cmd(&["trash", "list"])
+        .assert()
+        .success()
+        .stdout(contains(format!("[{gone}]")).and(contains("deleted for good on")));
+    env.cmd(&["trash", "restore", gone, "nope"])
+        .assert()
+        .code(3)
+        .stdout(contains("restored").and(contains("nope: not in the trash")));
+    assert!(media.exists());
+    assert_eq!(done(&env), 2);
+    env.cmd(&["trash", "list"])
+        .assert()
+        .stdout(contains("the trash is empty"));
+
+    // A before_cleanup hook can keep it; one that crashes keeps it too.
+    let guard = script(
+        &env,
+        "guard.sh",
+        r#"cat > /dev/null; echo '{"keep": true}'"#,
+    );
+    let broken = script(&env, "broken.sh", "echo 'oops' >&2; exit 2");
+    let config = hooks_config(
+        &env,
+        "hooks = [\"guard\", \"broken\"]\n[category.default.cleanup]\nmax_items = 1",
+        &format!(
+            "[hooks.guard]\ntype = \"before_cleanup\"\ncommand = [\"{}\"]\n\n\
+             [hooks.broken]\ntype = \"before_cleanup\"\ncommand = [\"{}\"]\n",
+            guard.display(),
+            broken.display()
+        ),
+    );
+    env.cmd(&["cleanup", "--config", &config])
+        .assert()
+        .code(3)
+        .stdout(contains(
+            "kept: hook guard said keep; hook broken failed: exited with exit status: 2: oops",
+        ));
+    assert_eq!(done(&env), 2);
+
+    // Deleted right away, then the trash empties itself when it's time.
+    let config = hooks_config(
+        &env,
+        "[category.default.cleanup]\nmax_items = 1\ndelete = \"now\"",
+        "",
+    );
+    env.cmd(&["cleanup", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains("deleted (beyond max_items = 1)"));
+    assert_eq!(done(&env), 1);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_trash_empties_itself() {
+    let env = Env::new().await;
+    let config = hooks_config(&env, "[category.default.cleanup]\nmax_items = 1", "");
+    env.cmd(&["run", "--config", &config]).assert().code(3);
+    env.cmd(&["cleanup"]).assert().success();
+    let trash = env.path("data/tidepool/trash");
+    assert!(trash.join("dl").is_dir());
+    // Not yet.
+    env.cmd(&["cleanup"])
+        .assert()
+        .stdout(contains("emptied").not());
+    let db = rusqlite::Connection::open(env.path("data/tidepool/state.db")).unwrap();
+    db.execute("UPDATE trash SET delete_after = '2000-01-01T00:00:00Z'", [])
+        .unwrap();
+    env.cmd(&["download"])
+        .assert()
+        .stdout(contains("emptied 1 video from the trash"));
+    assert!(!trash.join("dl").exists());
+    env.cmd(&["trash", "list"])
+        .assert()
+        .stdout(contains("the trash is empty"));
+}
