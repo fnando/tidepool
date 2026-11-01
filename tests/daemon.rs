@@ -7,6 +7,7 @@ use std::process::{Child, Stdio};
 use std::time::{Duration, Instant};
 
 use assert_cmd::Command;
+use predicates::prelude::*;
 use predicates::str::contains;
 use tempfile::TempDir;
 use wiremock::matchers::path_regex;
@@ -76,14 +77,34 @@ impl Env {
         rusqlite::Connection::open(self.path("data/tidepool/state.db")).unwrap()
     }
 
-    /// Start `tidepool run --daemon`, its log in `daemon.log`.
+    /// Import `config`, then start `tidepool run --daemon` with it, its log
+    /// in `daemon.log`.
     fn daemon(&self, config: &str, extra_env: &[(&str, &str)]) -> Daemon {
+        self.cmd(&["config", "import", config]).assert().success();
         let log = self.path("daemon.log");
         let mut cmd = std::process::Command::new(assert_cmd::cargo::cargo_bin("tidepool"));
         cmd.env_clear()
             .envs(self.envs())
             .envs(extra_env.iter().copied())
             .args(["run", "--daemon", "--config", config])
+            .stdout(Stdio::null())
+            .stderr(fs::File::create(&log).unwrap());
+        Daemon {
+            child: cmd.spawn().unwrap(),
+            log,
+        }
+    }
+}
+
+impl Env {
+    /// Start `tidepool run --daemon --config <config> <extra>` as it is.
+    fn daemon_without_import(&self, config: &str, extra: &[&str]) -> Daemon {
+        let log = self.path("daemon.log");
+        let mut cmd = std::process::Command::new(assert_cmd::cargo::cargo_bin("tidepool"));
+        cmd.env_clear()
+            .envs(self.envs())
+            .args(["run", "--daemon", "--config", config])
+            .args(extra)
             .stdout(Stdio::null())
             .stderr(fs::File::create(&log).unwrap());
         Daemon {
@@ -202,6 +223,7 @@ async fn one_daemon_at_a_time() {
 async fn the_daemon_needs_a_schedule() {
     let env = Env::new().await;
     let config = env.config("", "");
+    env.cmd(&["config", "import", &config]).assert().success();
     env.cmd(&["run", "--daemon", "--config", &config])
         .assert()
         .code(1)
@@ -466,4 +488,72 @@ async fn sync_now_and_restart_on_request() {
     assert_eq!(problems, 0);
     let (code, log) = daemon.stop();
     assert_eq!(code, Some(0), "{log}");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_config_file_must_match_the_stored_config() {
+    let env = Env::new().await;
+    let config = env.config("1h", "");
+    // Nothing stored yet: it says how to start.
+    env.cmd(&["run", "--daemon", "--config", &config])
+        .assert()
+        .code(1)
+        .stderr(contains("no stored config yet"));
+    env.cmd(&["config", "import", &config]).assert().success();
+
+    // A comment changes nothing.
+    let text = fs::read_to_string(&config).unwrap();
+    fs::write(&config, format!("# mine\n{text}")).unwrap();
+    let daemon = env.daemon_without_import(&config, &[]);
+    daemon.wait_for_log("tidepool daemon started");
+    let (code, _) = daemon.stop();
+    assert_eq!(code, Some(0));
+
+    // A real change: stopped, with what differs and how to fix it, whether
+    // the file is named or was the last one imported.
+    fs::write(
+        &config,
+        text.replace("interval = \"1h\"", "interval = \"2h\""),
+    )
+    .unwrap();
+    for args in [
+        vec!["run", "--daemon", "--config", config.as_str()],
+        vec!["run", "--daemon"],
+    ] {
+        env.cmd(&args).assert().code(1).stderr(
+            contains("differs from the stored config (revision 1, from import)")
+                .and(contains("schedule.interval: \"1h\" → \"2h\""))
+                .and(contains("tidepool config import"))
+                .and(contains("--on-config-mismatch import")),
+        );
+    }
+
+    // Export: the stored config goes to the file, the edit to config.toml.bak.
+    let daemon = env.daemon_without_import(&config, &["--on-config-mismatch", "export"]);
+    daemon.wait_for_log("tidepool daemon started");
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0));
+    assert!(log.contains("wrote config revision 1 to"), "{log}");
+    assert!(
+        fs::read_to_string(&config)
+            .unwrap()
+            .contains("interval = \"1h\"")
+    );
+    assert!(
+        fs::read_to_string(format!("{config}.bak"))
+            .unwrap()
+            .contains("interval = \"2h\"")
+    );
+
+    // Import: the file becomes revision 2.
+    fs::write(
+        &config,
+        text.replace("interval = \"1h\"", "interval = \"2h\""),
+    )
+    .unwrap();
+    let daemon = env.daemon_without_import(&config, &["--on-config-mismatch", "import"]);
+    daemon.wait_for_log("syncing every 2h");
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0));
+    assert!(log.contains("as config revision 2"), "{log}");
 }

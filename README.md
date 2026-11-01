@@ -906,13 +906,21 @@ interval = "6h"
 ```
 
 ```sh
-tidepool run --daemon --config ~/.config/tidepool/config.toml
+tidepool config import ~/.config/tidepool/config.toml
+tidepool run --daemon
 ```
 
-- **Changing settings.** Import a changed config (`tidepool config import`, or
-  `--config` when you start it) and the running daemon uses it from the next
-  video or sync on; a new `interval` takes effect right away. No restart
-  needed.
+- **Changing settings.** Import a changed config with `tidepool config
+  import` and the running daemon uses it from the next video or sync on; a
+  new `interval` takes effect right away. No restart needed.
+- **Your config file and tidepool's copy must match.** When the daemon starts,
+  it compares your config file (`--config`, or the one you last imported) with
+  the config tidepool has stored. If they differ (other than comments or
+  formatting), it doesn't start: it lists what differs and how to fix it, which
+  is either `tidepool config import` to use your file, or `tidepool config export
+  --show-secrets > <file>` to keep the stored one. To decide up front, start it
+  with `--on-config-mismatch import` (your file wins) or `export` (the stored
+  config is written to your file; the old file is kept next to it as `.bak`).
 - **Missed syncs.** If the computer was asleep or tidepool wasn't running when
   a sync was due, it syncs once as soon as it's back, not once per missed sync.
 - **Alongside cron or a terminal.** Only one daemon runs at a time, but you
@@ -957,7 +965,7 @@ prints one with the right paths):
 
 ```ini
 [Service]
-ExecStart=/usr/local/bin/tidepool run --daemon --config %h/.config/tidepool/config.toml
+ExecStart=/usr/local/bin/tidepool run --daemon --config %h/.config/tidepool/config.toml --on-config-mismatch import
 Restart=on-failure
 ```
 

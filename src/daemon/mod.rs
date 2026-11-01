@@ -6,6 +6,7 @@
 pub mod control;
 pub mod schedule;
 pub mod service;
+mod startup;
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -57,13 +58,6 @@ impl Slot {
 }
 
 pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
-    if let crate::cli::Command::Run(args) = &app.cli.command
-        && args.on_config_mismatch.is_some()
-    {
-        bail!(
-            "--on-config-mismatch isn't implemented yet (it comes with the daemon's config file check)"
-        );
-    }
     let _daemon = match lock::acquire(&app.paths.scheduler_lock) {
         Ok(held) => held,
         Err(LockError::Held { pid }) => bail!(
@@ -73,6 +67,11 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
         Err(e) => return Err(e.into()),
     };
     let state = app.open_state()?;
+    let mismatch = match &app.cli.command {
+        crate::cli::Command::Run(args) => args.on_config_mismatch,
+        _ => None,
+    };
+    startup::check(app, &state, mismatch)?;
     let config = app.current_config(&state)?.config;
     let Some(interval) = config.schedule.interval.0 else {
         bail!(

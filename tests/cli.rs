@@ -461,7 +461,7 @@ fn init_creates_config_and_state() {
                 .and(contains("sample source"))
                 .and(contains("tidepool config import"))
                 .and(contains("Or keep syncing every 6h: tidepool run --daemon"))
-                .and(contains("run --daemon --config")),
+                .and(contains("--on-config-mismatch import")),
         )
         .stderr(
             contains("will be downloaded on first use").and(contains("ffmpeg version 9.0.2-fake")),

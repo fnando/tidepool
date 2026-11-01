@@ -271,9 +271,11 @@ pub struct ResetArgs {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum ConfigMismatch {
+    /// Store the file as a new config revision
     Import,
-    Merge,
+    /// Write the stored config to the file (the old file is kept as .bak)
     Export,
+    /// Stop with the differences (the default)
     Fail,
 }
 
@@ -294,9 +296,9 @@ pub struct RunArgs {
     )]
     pub sources: Vec<SourceRef>,
 
-    /// With --daemon: what to do when the config file differs from the stored
-    /// config. Without it: ask in a terminal, resolve in the web UI, or fail
-    /// when the UI is off.
+    /// With --daemon: what to do when the config file (--config, or the one
+    /// last imported) differs from the stored config; without it, the daemon
+    /// stops and shows the differences
     #[arg(long, value_enum, requires = "daemon")]
     pub on_config_mismatch: Option<ConfigMismatch>,
 }

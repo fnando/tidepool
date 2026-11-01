@@ -153,6 +153,19 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
     }
 }
 
+/// What differs from the stored config (`stored`, JSON) to a file's
+/// (`file`), one indented line per key, secrets masked.
+pub(crate) fn config_changes(stored: &str, file: Value) -> anyhow::Result<Vec<String>> {
+    let mut stored: Value = serde_json::from_str(stored)?;
+    let mut file = file;
+    mask_json(&mut stored);
+    mask_json(&mut file);
+    Ok(key_changes(&stored, &file)
+        .iter()
+        .map(|c| format!("  {c}"))
+        .collect())
+}
+
 /// Commands that halt when the config file has changes that aren't imported.
 /// (`config …` commands never do: they're how drift gets resolved.)
 fn checks_config_drift(command: &Command) -> bool {
@@ -188,8 +201,9 @@ fn uses_stored_config(command: &Command) -> bool {
         | Command::Reset(_)
         | Command::Hooks { .. }
         | Command::Embed(_)
-        | Command::Cleanup(_)
-        | Command::Run(_) => true,
+        | Command::Cleanup(_) => true,
+        // The daemon compares the file instead (`daemon::startup_check`).
+        Command::Run(args) => !args.daemon,
         _ => false,
     }
 }
@@ -1165,14 +1179,7 @@ impl App<'_> {
         if loaded.normalized() == current.json {
             return Ok(()); // only comments or formatting changed
         }
-        let mut stored: Value = serde_json::from_str(&current.json)?;
-        let mut file = loaded.json;
-        mask_json(&mut stored);
-        mask_json(&mut file);
-        let changes: Vec<String> = key_changes(&stored, &file)
-            .iter()
-            .map(|c| format!("  {c}"))
-            .collect();
+        let changes = config_changes(&current.json, loaded.json)?;
         let mut message = format!(
             "{name} has changes that aren't applied yet:\n{}\n{skip}",
             changes.join("\n")
@@ -2265,7 +2272,7 @@ impl App<'_> {
             "\nTo run it as a service, save this as ~/.config/systemd/user/tidepool.service\n\
              and run `systemctl --user enable --now tidepool`:\n\n\
              [Unit]\nDescription=tidepool\n\n\
-             [Service]\nExecStart={exe} run --daemon --config {name}\n\
+             [Service]\nExecStart={exe} run --daemon --config {name} --on-config-mismatch import\n\
              Restart=on-failure\n\n\
              [Install]\nWantedBy=default.target"
         )?;
@@ -2284,7 +2291,7 @@ impl App<'_> {
         }
     }
 
-    fn display_path(path: &Path) -> String {
+    pub(crate) fn display_path(path: &Path) -> String {
         std::path::absolute(path)
             .unwrap_or_else(|_| path.to_path_buf())
             .display()
