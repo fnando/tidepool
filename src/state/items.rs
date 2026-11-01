@@ -102,7 +102,7 @@ pub fn record_index(
     now: Timestamp,
 ) -> rusqlite::Result<IndexSummary> {
     let now = now.to_string();
-    let tx = conn.transaction()?;
+    let tx = super::State::write_transaction(conn)?;
     tx.execute(
         "INSERT INTO sources (key, lists, title, rules_hash, last_indexed_at, last_index_source)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6)

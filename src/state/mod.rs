@@ -65,6 +65,13 @@ impl State {
         Self::init(Connection::open_in_memory()?)
     }
 
+    /// A write transaction. It takes the write lock up front, so a busy DB
+    /// (another service or process writing) is waited for (`busy_timeout`)
+    /// instead of failing when a read inside it turns into a write.
+    pub fn write_transaction(conn: &mut Connection) -> rusqlite::Result<rusqlite::Transaction<'_>> {
+        conn.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+    }
+
     fn init(mut conn: Connection) -> Result<Self, StateError> {
         conn.pragma_update(None, "foreign_keys", "ON")?;
         conn.busy_timeout(std::time::Duration::from_secs(5))?;
@@ -80,6 +87,41 @@ mod tests {
     #[test]
     fn migrations_are_valid() {
         assert!(MIGRATIONS.validate().is_ok());
+    }
+
+    #[test]
+    fn concurrent_writers_wait_for_each_other() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("state.db");
+        State::open(&path).unwrap();
+        let writers: Vec<_> = (0..4)
+            .map(|_| {
+                let path = path.clone();
+                std::thread::spawn(move || {
+                    let mut state = State::open(&path).unwrap();
+                    for _ in 0..50 {
+                        let tx = State::write_transaction(&mut state.conn).unwrap();
+                        // Read, then write: the pattern that fails without
+                        // the write lock taken up front.
+                        let n: i64 = tx
+                            .query_row("SELECT count(*) FROM runs", [], |r| r.get(0))
+                            .unwrap();
+                        tx.execute("INSERT INTO runs (command) VALUES (?1)", [n.to_string()])
+                            .unwrap();
+                        tx.commit().unwrap();
+                    }
+                })
+            })
+            .collect();
+        for writer in writers {
+            writer.join().expect("a writer failed");
+        }
+        let state = State::open(&path).unwrap();
+        let n: i64 = state
+            .conn
+            .query_row("SELECT count(*) FROM runs", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(n, 200);
     }
 
     #[test]
