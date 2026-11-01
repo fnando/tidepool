@@ -12,6 +12,7 @@ pub fn check(config: &Config) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     check_hook_references(config, &mut out);
     check_categories(config, &mut out);
+    check_kind_rules(config, &mut out);
     check_unique_ids(config, &mut out);
     check_durations(config, &mut out);
     check_youtube(config, &mut out);
@@ -65,6 +66,49 @@ fn check_categories(config: &Config, out: &mut Vec<Diagnostic>) {
                     known.join(", ")
                 ),
             ));
+        }
+    }
+}
+
+/// `kind` is matched by value (`video`, `short`, `live`), never by regex.
+fn check_kind_rules(config: &Config, out: &mut Vec<Diagnostic>) {
+    use super::types::{KINDS, Options, Rule, RuleField};
+    let mut layers: Vec<(String, Options)> = config
+        .category
+        .iter()
+        .map(|(name, c)| (format!("/category/{name}"), c.options()))
+        .collect();
+    layers.extend(
+        config
+            .sources
+            .iter()
+            .map(|(key, s)| (format!("/sources/{key}"), s.options())),
+    );
+    for (base, options) in layers {
+        if let Some(fields) = &options.match_fields
+            && let Some(i) = fields.iter().position(|f| *f == RuleField::Kind)
+        {
+            out.push(Diagnostic::error(
+                format!("{base}/match_fields/{i}"),
+                "kind can't be matched by a regex; use { field = \"kind\", value = \"short\" } in include/exclude",
+            ));
+        }
+        for (list, rules) in [("include", &options.include), ("exclude", &options.exclude)] {
+            for (i, rule) in rules.iter().flatten().enumerate() {
+                match rule {
+                    Rule::Field(f) if f.field == RuleField::Kind => out.push(Diagnostic::error(
+                        format!("{base}/{list}/{i}"),
+                        "kind is matched by value, not pattern: use { field = \"kind\", value = \"short\" } (video, short or live)",
+                    )),
+                    Rule::Value(v) if v.field == RuleField::Kind && !KINDS.contains(&v.value.as_str()) => {
+                        out.push(Diagnostic::error(
+                            format!("{base}/{list}/{i}/value"),
+                            format!("{:?} isn't a kind: use \"video\", \"short\" or \"live\"", v.value),
+                        ))
+                    }
+                    _ => {}
+                }
+            }
         }
     }
 }

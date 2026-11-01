@@ -1,0 +1,7 @@
+---
+source: tests/config_validation.rs
+expression: err
+---
+kind_rules.toml:2:12 category.default.exclude[0]: kind is matched by value, not pattern: use { field = "kind", value = "short" } (video, short or live)
+kind_rules.toml:3:26 category.default.match_fields[1]: kind can't be matched by a regex; use { field = "kind", value = "short" } in include/exclude
+kind_rules.toml:7:38 sources.supercombo.include[0].value: "shorts" isn't a kind: use "video", "short" or "live"

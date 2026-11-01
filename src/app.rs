@@ -244,6 +244,9 @@ impl App<'_> {
                         crate::config::Rule::Field(f) => {
                             format!("{:?} on {:?}", f.pattern, f.field).to_lowercase()
                         }
+                        crate::config::Rule::Value(v) => {
+                            format!("{} = {:?}", crate::filter::field_name(v.field), v.value)
+                        }
                     })
                     .collect::<Vec<_>>()
                     .join(", ")

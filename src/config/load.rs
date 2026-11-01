@@ -347,15 +347,37 @@ fn convert(error: &ValidationError<'_>, out: &mut Vec<Diagnostic>) {
         | ValidationErrorKind::AnyOf { context } => {
             // Pick the branch that matches the value's type (e.g. a rule given
             // as a string vs. as a table) and report its errors.
-            let relevant: Vec<_> = context
+            // Drop branches of the wrong type for this value; if that leaves
+            // several table shapes, drop those that don't know a key the user
+            // wrote (`pattern` rules out `{ field, value }`). What's left is
+            // the shape the user meant.
+            let mut relevant: Vec<_> = context
                 .iter()
                 .filter(|branch| {
                     !branch.iter().any(|e| {
-                        matches!(e.kind(), ValidationErrorKind::Type { .. })
-                            && e.instance_path().as_str() == pointer
+                        e.instance_path().as_str() == pointer
+                            && matches!(e.kind(), ValidationErrorKind::Type { .. })
                     })
                 })
                 .collect();
+            if relevant.len() > 1 {
+                let known: Vec<_> = relevant
+                    .iter()
+                    .copied()
+                    .filter(|branch| {
+                        !branch.iter().any(|e| {
+                            e.instance_path().as_str() == pointer
+                                && matches!(
+                                    e.kind(),
+                                    ValidationErrorKind::AdditionalProperties { .. }
+                                )
+                        })
+                    })
+                    .collect();
+                if !known.is_empty() {
+                    relevant = known;
+                }
+            }
             if let [branch] = relevant.as_slice() {
                 for e in branch.iter() {
                     convert(e, out);
@@ -366,7 +388,7 @@ fn convert(error: &ValidationError<'_>, out: &mut Vec<Diagnostic>) {
             {
                 out.push(Diagnostic::error(
                     pointer,
-                    "must be a regex string or a { field, pattern } table",
+                    "must be a regex string, a { field, pattern } table or a { field, value } table",
                 ));
             } else {
                 out.push(Diagnostic::error(pointer, error.to_string()));

@@ -76,6 +76,13 @@ pub fn parse_flat_playlist(json: &str) -> Result<RemoteList, IndexError> {
                         height: t.height,
                     })
                     .collect(),
+                // yt-dlp says so when it knows a video was streamed.
+                kind: match entry.live_status.as_deref() {
+                    Some("is_live" | "was_live" | "is_upcoming" | "post_live") => {
+                        Some(crate::index::VideoKind::Live)
+                    }
+                    _ => None,
+                },
             })
         })
         .collect();

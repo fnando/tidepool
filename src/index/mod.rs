@@ -2,6 +2,7 @@
 //! same [`RemoteList`], so everything downstream is source-agnostic.
 
 pub mod api;
+pub mod shorts;
 #[cfg(test)]
 pub mod youtube_fake;
 pub mod ytdlp;
@@ -79,6 +80,39 @@ pub struct RemoteItem {
     pub published_at: Option<Timestamp>,
     pub availability: Availability,
     pub thumbnails: Vec<Thumbnail>,
+    /// Regular video, Short or live stream; `None` until it's known.
+    pub kind: Option<VideoKind>,
+}
+
+/// Shorts are at most 3 minutes long.
+pub const SHORTS_MAX_SECONDS: u64 = 180;
+
+/// What kind of video it is, for `{ field = "kind", value = … }` rules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VideoKind {
+    Video,
+    Short,
+    /// Streamed live: now, earlier or scheduled.
+    Live,
+}
+
+impl VideoKind {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            VideoKind::Video => "video",
+            VideoKind::Short => "short",
+            VideoKind::Live => "live",
+        }
+    }
+
+    pub fn parse(s: &str) -> Option<Self> {
+        match s {
+            "video" => Some(VideoKind::Video),
+            "short" => Some(VideoKind::Short),
+            "live" => Some(VideoKind::Live),
+            _ => None,
+        }
+    }
 }
 
 /// A source's contents.

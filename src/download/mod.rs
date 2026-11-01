@@ -185,6 +185,20 @@ fn merge_details(item: &RemoteItem, info: &VideoInfo) -> RemoteItem {
         } else {
             info.thumbnails()
         },
+        // yt-dlp's full details say whether it was streamed.
+        kind: item.kind.or(match info.live_status.as_deref() {
+            Some("was_live" | "is_live" | "is_upcoming" | "post_live") => {
+                Some(crate::index::VideoKind::Live)
+            }
+            Some("not_live")
+                if info
+                    .duration_seconds()
+                    .is_some_and(|d| d > crate::index::SHORTS_MAX_SECONDS) =>
+            {
+                Some(crate::index::VideoKind::Video)
+            }
+            _ => None,
+        }),
         ..item.clone()
     }
 }
@@ -305,7 +319,13 @@ async fn process(
         .await
         {
             Ok(full) => {
-                let merged = merge_details(item, &full);
+                let mut merged = merge_details(item, &full);
+                // Not a stream and short enough: is it a Short?
+                if merged.kind.is_none() && full.live_status.as_deref() == Some("not_live") {
+                    crate::index::shorts::ShortsCheck::default()
+                        .classify(std::slice::from_mut(&mut merged), true, &ctx.shutdown)
+                        .await;
+                }
                 details = Some(merged.clone());
                 info = Some(full);
                 if job.queued.status == status::PENDING_CHECK {

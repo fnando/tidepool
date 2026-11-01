@@ -31,6 +31,8 @@ pub struct Fields<'a> {
     pub published_at: Option<Timestamp>,
     /// `None` when it doesn't apply (e.g. `filter test` on a bare title).
     pub availability: Option<Availability>,
+    /// `video`, `short` or `live`; `None` until it's known.
+    pub kind: Option<&'a str>,
 }
 
 impl<'a> Fields<'a> {
@@ -44,6 +46,7 @@ impl<'a> Fields<'a> {
             duration: item.duration,
             published_at: item.published_at,
             availability: Some(item.availability),
+            kind: item.kind.map(|k| k.as_str()),
         }
     }
 }
@@ -58,6 +61,7 @@ impl Fields<'_> {
             RuleField::Tags => self
                 .tags
                 .map(|tags| tags.iter().map(String::as_str).collect()),
+            RuleField::Kind => self.kind.map(|v| vec![v]),
         }
     }
 }
@@ -85,7 +89,14 @@ pub struct Rule {
     pub index: usize,
     pub fields: Vec<RuleField>,
     pub source: String,
-    re: Regex,
+    matcher: Matcher,
+}
+
+/// How a rule tests a value.
+#[derive(Debug, Clone)]
+enum Matcher {
+    Regex(Regex),
+    Exact(String),
 }
 
 /// The result of testing one rule.
@@ -108,14 +119,30 @@ impl Rule {
                 continue;
             };
             for value in values {
-                match self.re.is_match(value) {
-                    Ok(true) => return Match::Yes,
-                    Ok(false) => {}
-                    Err(e) => return Match::Error(e.to_string()),
+                match &self.matcher {
+                    Matcher::Exact(expected) if value == expected => return Match::Yes,
+                    Matcher::Exact(_) => {}
+                    Matcher::Regex(re) => match re.is_match(value) {
+                        Ok(true) => return Match::Yes,
+                        Ok(false) => {}
+                        Err(e) => return Match::Error(e.to_string()),
+                    },
                 }
             }
         }
         missing.map_or(Match::No, Match::Unknown)
+    }
+}
+
+/// A rule field's name, as written in the config.
+pub fn field_name(field: RuleField) -> &'static str {
+    match field {
+        RuleField::Title => "title",
+        RuleField::Description => "description",
+        RuleField::Channel => "channel",
+        RuleField::Tags => "tags",
+        RuleField::Id => "id",
+        RuleField::Kind => "kind",
     }
 }
 
@@ -281,20 +308,32 @@ impl RuleSet {
                 .iter()
                 .enumerate()
                 .map(|(index, rule)| {
-                    let (fields, source) = match rule {
-                        RuleConfig::Pattern(p) => (effective.match_fields.clone(), p.clone()),
-                        RuleConfig::Field(f) => (vec![f.field], f.pattern.clone()),
+                    let regex = |source: &str| {
+                        RegexBuilder::new(source)
+                            .backtrack_limit(backtrack_limit)
+                            .build()
+                            .map(Matcher::Regex)
+                            .map_err(|e| format!("sources.{}.{list}[{index}]: {e}", effective.key))
                     };
-                    let re = RegexBuilder::new(&source)
-                        .backtrack_limit(backtrack_limit)
-                        .build()
-                        .map_err(|e| format!("sources.{}.{list}[{index}]: {e}", effective.key))?;
+                    let (fields, source, matcher) = match rule {
+                        RuleConfig::Pattern(p) => {
+                            (effective.match_fields.clone(), p.clone(), regex(p)?)
+                        }
+                        RuleConfig::Field(f) => {
+                            (vec![f.field], f.pattern.clone(), regex(&f.pattern)?)
+                        }
+                        RuleConfig::Value(v) => (
+                            vec![v.field],
+                            format!("{} = {:?}", field_name(v.field), v.value),
+                            Matcher::Exact(v.value.clone()),
+                        ),
+                    };
                     Ok(Rule {
                         list,
                         index,
                         fields,
                         source,
-                        re,
+                        matcher,
                     })
                 })
                 .collect::<Result<Vec<_>, String>>()
@@ -313,6 +352,14 @@ impl RuleSet {
             max_duration: effective.max_duration.0.map(|d| d.as_secs()),
             cutoff,
         })
+    }
+
+    /// Whether a rule looks at `kind` (so it's worth finding out).
+    pub fn uses_kind(&self) -> bool {
+        self.include
+            .iter()
+            .chain(&self.exclude)
+            .any(|r| r.fields.contains(&RuleField::Kind))
     }
 
     pub fn decide(&self, item: &Fields<'_>) -> Decision {
@@ -430,6 +477,46 @@ mod tests {
             id: Some("abc"),
             ..Fields::default()
         }
+    }
+
+    #[test]
+    fn kind_rules_match_exact_values_and_wait_for_unknown_kinds() {
+        let set = rules(
+            "exclude = [{ field = 'kind', value = 'short' }, { field = 'kind', value = 'live' }]",
+        );
+        let with = |kind| Fields { kind, ..title("x") };
+        assert_eq!(
+            set.decide(&with(Some("short"))),
+            Decision::Excluded { rule: 0 }
+        );
+        assert_eq!(
+            set.decide(&with(Some("live"))),
+            Decision::Excluded { rule: 1 }
+        );
+        assert_eq!(
+            set.decide(&with(Some("video"))),
+            Decision::Keep { include: None }
+        );
+        assert_eq!(
+            set.decide(&with(None)),
+            Decision::Deferred {
+                needs: Needs::Field(RuleField::Kind)
+            },
+            "checked before download"
+        );
+        assert!(set.uses_kind());
+        assert!(!rules("exclude = ['x']").uses_kind());
+
+        // `value` is an exact match on any field: no regex, whole value.
+        let set = rules("include = [{ field = 'title', value = 'Live (Official)' }]");
+        assert_eq!(
+            set.decide(&title("Live (Official)")),
+            Decision::Keep { include: Some(0) }
+        );
+        assert_eq!(
+            set.decide(&title("Live (Official) remix")),
+            Decision::NotIncluded
+        );
     }
 
     #[test]

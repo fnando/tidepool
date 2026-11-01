@@ -11,7 +11,8 @@ CREATE TABLE videos (              -- shared across sources
   id TEXT PRIMARY KEY,
   title TEXT, channel TEXT, channel_id TEXT, description TEXT, tags_json TEXT,
   duration_s INTEGER, published_at TEXT, availability TEXT,
-  thumbs_json TEXT, updated_at TEXT
+  thumbs_json TEXT, updated_at TEXT,
+  kind TEXT                        -- video, short or live, once known
 );
 
 CREATE TABLE items (               -- a video's membership in a source

@@ -349,6 +349,28 @@ pub async fn index_source(
     if channel_title.is_some() {
         list.title = channel_title;
     }
+    // Rules on `kind`: settle what can be settled now. The API marks live
+    // streams, so through it "not a Short" means a regular video; through
+    // yt-dlp a past stream may not be marked, so that waits for the check
+    // before download.
+    if rules.uses_kind() {
+        let ids: Vec<String> = list.items.iter().map(|i| i.video_id.clone()).collect();
+        let known = items::known_kinds(&state.conn, &ids).unwrap_or_default();
+        for item in list.items.iter_mut().filter(|i| i.kind.is_none()) {
+            item.kind = known.get(&item.video_id).copied();
+        }
+        for item in list.items.iter_mut().filter(|i| i.kind.is_none()) {
+            if matches!(
+                item.availability,
+                crate::index::Availability::Live | crate::index::Availability::Upcoming
+            ) {
+                item.kind = Some(crate::index::VideoKind::Live);
+            }
+        }
+        crate::index::shorts::ShortsCheck::default()
+            .classify(&mut list.items, how == "api", shutdown)
+            .await;
+    }
     tracing::debug!(
         "{}: listed {} in {:.1}s ({})",
         source.key,

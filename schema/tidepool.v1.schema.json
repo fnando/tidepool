@@ -458,18 +458,23 @@
         {
           "$ref": "#/$defs/FieldRule",
           "description": "Regex tested against one field."
+        },
+        {
+          "$ref": "#/$defs/ValueRule",
+          "description": "One field equal to a value, e.g. `{ field = \"kind\", value = \"short\" }`."
         }
       ],
-      "description": "An include/exclude rule: a regex tested against `match_fields`, or a\n`{ field, pattern }` table targeting one field."
+      "description": "An include/exclude rule: a regex tested against `match_fields`, a\n`{ field, pattern }` table targeting one field, or a `{ field, value }`\ntable matching one field exactly."
     },
     "RuleField": {
-      "description": "A field rules can match against.",
+      "description": "A field rules can match against. `kind` (`video`, `short` or `live`)\nonly works with `{ field = \"kind\", value = … }`.",
       "enum": [
         "title",
         "description",
         "channel",
         "tags",
-        "id"
+        "id",
+        "kind"
       ],
       "type": "string"
     },
@@ -700,6 +705,25 @@
           "description": "yt-dlp: managed by tidepool (default) or your own binary."
         }
       },
+      "type": "object"
+    },
+    "ValueRule": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "$ref": "#/$defs/RuleField",
+          "description": "The field to test."
+        },
+        "value": {
+          "description": "The exact value (for `kind`: `video`, `short` or `live`).",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "value"
+      ],
       "type": "object"
     },
     "YoutubeOptions": {

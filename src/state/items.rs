@@ -217,6 +217,7 @@ mod tests {
                 width: Some(480),
                 height: Some(360),
             }],
+            kind: None,
         }
     }
 
@@ -418,8 +419,8 @@ fn upsert_video(conn: &Connection, item: &RemoteItem, now: &str) -> rusqlite::Re
         .then(|| serde_json::to_string(&item.thumbnails).expect("thumbnails serialize"));
     conn.execute(
         "INSERT INTO videos (id, title, channel, channel_id, description, tags_json, duration_s,
-           published_at, availability, thumbs_json, updated_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+           published_at, availability, thumbs_json, updated_at, kind)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
          ON CONFLICT(id) DO UPDATE SET title = excluded.title,
            channel = COALESCE(excluded.channel, videos.channel),
            channel_id = COALESCE(excluded.channel_id, videos.channel_id),
@@ -429,7 +430,8 @@ fn upsert_video(conn: &Connection, item: &RemoteItem, now: &str) -> rusqlite::Re
            published_at = COALESCE(excluded.published_at, videos.published_at),
            availability = excluded.availability,
            thumbs_json = COALESCE(excluded.thumbs_json, videos.thumbs_json),
-           updated_at = excluded.updated_at",
+           updated_at = excluded.updated_at,
+           kind = COALESCE(excluded.kind, videos.kind)",
         params![
             item.video_id,
             item.title,
@@ -442,6 +444,7 @@ fn upsert_video(conn: &Connection, item: &RemoteItem, now: &str) -> rusqlite::Re
             item.availability.as_str(),
             thumbs,
             now,
+            item.kind.map(|k| k.as_str()),
         ],
     )?;
     Ok(())
@@ -476,7 +479,8 @@ pub fn download_queue(
 ) -> rusqlite::Result<Vec<QueuedItem>> {
     let mut stmt = conn.prepare(
         "SELECT i.video_id, i.position, i.status, i.attempts, s.title, v.title, v.channel, v.channel_id,
-                v.description, v.tags_json, v.duration_s, v.published_at, v.availability, v.thumbs_json
+                v.description, v.tags_json, v.duration_s, v.published_at, v.availability, v.thumbs_json,
+                v.kind
          FROM items i JOIN videos v ON v.id = i.video_id JOIN sources s ON s.key = i.source_key
          WHERE i.source_key = ?1 AND i.in_remote = 1
            AND (i.status IN ('pending', 'pending_check')
@@ -491,6 +495,7 @@ pub fn download_queue(
             let position: u32 = r.get(1)?;
             let tags: Option<String> = r.get(9)?;
             let thumbs: Option<String> = r.get(13)?;
+            let kind: Option<String> = r.get(14)?;
             let published: Option<String> = r.get(11)?;
             let availability: Option<String> = r.get(12)?;
             Ok(QueuedItem {
@@ -515,6 +520,7 @@ pub fn download_queue(
                     thumbnails: thumbs
                         .and_then(|t| serde_json::from_str(&t).ok())
                         .unwrap_or_default(),
+                    kind: kind.as_deref().and_then(crate::index::VideoKind::parse),
                 },
                 video_id,
             })
@@ -896,7 +902,7 @@ pub fn known_details(
 ) -> rusqlite::Result<std::collections::HashMap<String, RemoteItem>> {
     let mut stmt = conn.prepare(
         "SELECT id, title, channel, channel_id, description, tags_json, duration_s, published_at,
-           availability, thumbs_json
+           availability, thumbs_json, kind
          FROM videos WHERE id = ?1 AND description IS NOT NULL AND tags_json IS NOT NULL
            AND duration_s IS NOT NULL",
     )?;
@@ -924,11 +930,31 @@ pub fn known_details(
                     thumbnails: thumbs
                         .and_then(|t| serde_json::from_str(&t).ok())
                         .unwrap_or_default(),
+                    kind: r
+                        .get::<_, Option<String>>(10)?
+                        .as_deref()
+                        .and_then(crate::index::VideoKind::parse),
                 })
             })
             .optional()?;
         if let Some(item) = found {
             out.insert(id.clone(), item);
+        }
+    }
+    Ok(out)
+}
+
+/// Kinds already found out for these videos.
+pub fn known_kinds(
+    conn: &Connection,
+    ids: &[String],
+) -> rusqlite::Result<std::collections::HashMap<String, crate::index::VideoKind>> {
+    let mut stmt = conn.prepare("SELECT kind FROM videos WHERE id = ?1 AND kind IS NOT NULL")?;
+    let mut out = std::collections::HashMap::new();
+    for id in ids {
+        let kind: Option<String> = stmt.query_row([id], |r| r.get(0)).optional()?;
+        if let Some(kind) = kind.as_deref().and_then(crate::index::VideoKind::parse) {
+            out.insert(id.clone(), kind);
         }
     }
     Ok(out)
@@ -1051,6 +1077,7 @@ mod download_tests {
                 width: None,
                 height: None,
             }],
+            kind: None,
         }
     }
 

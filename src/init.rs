@@ -73,7 +73,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # cookies_file = ""                 # Netscape cookies file, for private playlists
 # match_fields = ["title"]          # title | description | channel | tags | id
 # include = []                      # keep a video if any regex matches (empty = keep all)
-# exclude = []                      # drop a video if any regex matches, e.g. ['(?i)#shorts']
+# exclude = []                      # drop a video if any regex matches, e.g. ['(?i)trailer'], or by kind: [{ field = "kind", value = "short" }] (video, short, live)
 # inherit_rules = false             # elsewhere: true = add to the include/exclude inherited instead of replacing them
 # min_duration = ""                 # skip shorter videos, e.g. "60s"
 # max_duration = ""                 # skip longer videos, e.g. "4h"
@@ -266,7 +266,9 @@ mod tests {
         // New config tables must be added to the check above.
         let defs = schema["$defs"].as_object().unwrap();
         for (name, def) in defs {
-            if def.get("properties").is_some() && name != "FieldRule" {
+            if def.get("properties").is_some()
+                && !matches!(name.as_str(), "FieldRule" | "ValueRule")
+            {
                 assert!(
                     where_documented.iter().any(|(d, _)| d == name),
                     "add {name} to the template coverage check"

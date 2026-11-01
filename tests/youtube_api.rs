@@ -260,3 +260,42 @@ async fn a_channel_without_a_key() {
             "supercombo: yt-dlp failed: ERROR: [youtube:tab] @nobody-here",
         ));
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn kind_rules_skip_shorts_and_live_streams() {
+    let env = Env::new(youtube_fake::start().await).await;
+    let shorts = youtube_fake::shorts().await;
+    let config = channel_config(&env, "https://www.youtube.com/@supercombooficial", true);
+    // The source is last in the file: its rules go at the end.
+    let text = fs::read_to_string(&config).unwrap()
+        + "exclude = [{ field = \"kind\", value = \"short\" }, { field = \"kind\", value = \"live\" }]\n";
+    fs::write(&config, &text).unwrap();
+    env.cmd(&["index", "--config", &config])
+        .env("TIDEPOOL_TEST_SHORTS_BASE", shorts.uri())
+        .assert()
+        .success()
+        .stdout(contains("supercombo: 587 videos (587 new)"));
+    let count = |sql: &str| -> i64 { env.db().query_row(sql, [], |r| r.get(0)).unwrap() };
+    assert_eq!(
+        count("SELECT COUNT(*) FROM videos WHERE kind = 'short'"),
+        109
+    );
+    assert_eq!(count("SELECT COUNT(*) FROM videos WHERE kind = 'live'"), 19);
+    assert_eq!(
+        count("SELECT COUNT(*) FROM items WHERE status = 'pending'"),
+        587 - 109 - 19,
+        "Shorts and streams skipped"
+    );
+    assert_eq!(
+        shorts.received_requests().await.unwrap().len(),
+        179,
+        "only videos of 3 minutes or less that aren't streams are checked"
+    );
+
+    // Known kinds aren't checked again.
+    env.cmd(&["index"])
+        .env("TIDEPOOL_TEST_SHORTS_BASE", shorts.uri())
+        .assert()
+        .success();
+    assert_eq!(shorts.received_requests().await.unwrap().len(), 179);
+}

@@ -1,0 +1,6 @@
+[category.default]
+exclude = [{ field = "kind", value = "short" }, { field = "kind", value = "live" }]
+
+[sources.supercombo]
+url = "https://www.youtube.com/@supercombooficial"
+include = [{ field = "channel", value = "Supercombo" }]

@@ -519,7 +519,8 @@ options_struct! {
     }
 }
 
-/// A field rules can match against.
+/// A field rules can match against. `kind` (`video`, `short` or `live`)
+/// only works with `{ field = "kind", value = … }`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RuleField {
@@ -528,10 +529,12 @@ pub enum RuleField {
     Channel,
     Tags,
     Id,
+    Kind,
 }
 
-/// An include/exclude rule: a regex tested against `match_fields`, or a
-/// `{ field, pattern }` table targeting one field.
+/// An include/exclude rule: a regex tested against `match_fields`, a
+/// `{ field, pattern }` table targeting one field, or a `{ field, value }`
+/// table matching one field exactly.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(untagged)]
 pub enum Rule {
@@ -539,7 +542,22 @@ pub enum Rule {
     Pattern(#[schemars(extend("format" = "fancy-regex"))] String),
     /// Regex tested against one field.
     Field(FieldRule),
+    /// One field equal to a value, e.g. `{ field = "kind", value = "short" }`.
+    Value(ValueRule),
 }
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ValueRule {
+    /// The field to test.
+    pub field: RuleField,
+    /// The exact value (for `kind`: `video`, `short` or `live`).
+    #[schemars(length(min = 1))]
+    pub value: String,
+}
+
+/// What `kind` can be.
+pub const KINDS: [&str; 3] = ["video", "short", "live"];
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]

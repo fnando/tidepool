@@ -8,8 +8,8 @@ types_and_enums.toml:6:17 category.default.youtube.quota_warn_at: 1.5 is greater
 types_and_enums.toml:7:11 category.default.youtube.api_key: 42 is not of type "string"
 types_and_enums.toml:10:14 category.default.cover_file: 42 is not of type "string"
 types_and_enums.toml:11:16 category.default.match_fields: [] has less than 1 item
-types_and_enums.toml:12:12 category.default.include[0]: must be a regex string or a { field, pattern } table
-types_and_enums.toml:12:25 category.default.include[1].field: "comments" is not one of "title", "description", "channel", "tags", "id"
+types_and_enums.toml:12:12 category.default.include[0]: must be a regex string, a { field, pattern } table or a { field, value } table
+types_and_enums.toml:12:25 category.default.include[1].field: "comments" is not one of "title", "description", "channel", "tags", "id", "kind"
 types_and_enums.toml:12:54 category.default.include[2]: missing required key "field"
 types_and_enums.toml:15:9 category.default.cleanup.order: "random" is not one of "oldest_downloaded", "oldest_published", "source_position"
 types_and_enums.toml:16:13 category.default.cleanup.max_items: -1 is less than the minimum of 0

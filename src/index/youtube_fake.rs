@@ -66,3 +66,32 @@ pub fn key_invalid() -> ResponseTemplate {
     let saved = recorded("key-invalid");
     ResponseTemplate::new(400).set_body_json(&saved["body"])
 }
+
+/// YouTube's /shorts/<id> page for every short upload of the channel, as
+/// recorded (`shorts.json`): 200 for a Short, 303 to /watch for the rest.
+pub async fn shorts() -> MockServer {
+    use wiremock::matchers::path_regex;
+    let server = MockServer::start().await;
+    let answers: std::collections::BTreeMap<String, String> =
+        serde_json::from_value(recorded("shorts")).unwrap();
+    for (id, kind) in answers {
+        let response = if kind == "short" {
+            ResponseTemplate::new(200)
+        } else {
+            ResponseTemplate::new(303)
+                .insert_header("location", format!("https://www.youtube.com/watch?v={id}"))
+        };
+        Mock::given(method("HEAD"))
+            .and(path(format!("/shorts/{id}")))
+            .respond_with(response)
+            .mount(&server)
+            .await;
+    }
+    // Anything else (longer videos aren't asked about).
+    Mock::given(method("HEAD"))
+        .and(path_regex("^/shorts/"))
+        .respond_with(ResponseTemplate::new(404))
+        .mount(&server)
+        .await;
+    server
+}

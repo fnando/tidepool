@@ -36,6 +36,8 @@ pub struct VideoInfo {
     pub vcodec: Option<String>,
     pub acodec: Option<String>,
     pub webpage_url: Option<String>,
+    /// `not_live`, `was_live`, `is_live`, `is_upcoming` or `post_live`.
+    pub live_status: Option<String>,
     #[serde(default)]
     thumbnails: Vec<RawThumbnail>,
 }

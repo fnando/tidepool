@@ -10,7 +10,7 @@ use jiff::Timestamp;
 use serde_json::Value;
 use tokio::sync::Mutex;
 
-use super::{Availability, RemoteItem, RemoteList, Thumbnail};
+use super::{Availability, RemoteItem, RemoteList, SHORTS_MAX_SECONDS, Thumbnail, VideoKind};
 use crate::shutdown::Shutdown;
 
 const API: &str = "https://www.googleapis.com/youtube/v3";
@@ -460,6 +460,7 @@ pub fn remote_item(entry: &Entry, position: u32, video: Option<&Video>) -> Remot
             published_at: entry.published_at,
             availability: entry.availability,
             thumbnails: Vec::new(),
+            kind: None,
         };
     };
     let availability = match (entry.availability, video.broadcast) {
@@ -481,6 +482,14 @@ pub fn remote_item(entry: &Entry, position: u32, video: Option<&Video>) -> Remot
         published_at: video.published_at.or(entry.published_at),
         availability,
         thumbnails: video.thumbnails.clone(),
+        kind: if video.was_live || video.broadcast.is_some() {
+            Some(VideoKind::Live)
+        } else if video.duration.is_some_and(|d| d > SHORTS_MAX_SECONDS) {
+            Some(VideoKind::Video)
+        } else {
+            // Short or not: only YouTube's /shorts/ page tells.
+            None
+        },
     }
 }
 

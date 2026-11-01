@@ -587,7 +587,24 @@ exclude = ['(?i)\b(trailer|teaser)\b']     # but never trailers or teasers
 ```
 
 A video is kept when it matches at least one `include` rule (or there are
-none) and no `exclude` rule. Try a title against a source's rules:
+none) and no `exclude` rule.
+
+A rule can also look at one field, by pattern or by exact value:
+
+```toml
+include = [{ field = "channel", pattern = '(?i)^lofi girl$' }]
+exclude = [{ field = "kind", value = "short" }, { field = "kind", value = "live" }]
+```
+
+The fields are `title`, `description`, `channel`, `tags` and `id`, plus `kind`:
+whether a video is a regular `video`, a `short` or a `live` stream (including
+past and scheduled ones). `kind` only works with `value`. It's handy for
+channels, which include everything they upload: the example above keeps only
+regular videos. tidepool asks YouTube which videos are Shorts, so it's exact,
+not a guess from their length; it only asks for videos of 3 minutes or less,
+and only once per video.
+
+Try a title against a source's rules:
 
 ```sh
 tidepool filter test "Lofi LIVE radio" --source lofi
