@@ -20,29 +20,10 @@ pub struct Metadata<'a> {
     /// The tags written into the media file, after `embed` hooks.
     pub embedded_tags: Option<&'a std::collections::BTreeMap<String, String>>,
     pub embed_error: Option<&'a str>,
+    /// YouTube's value of each detail a `prepare` hook changed.
+    pub original: Option<&'a Value>,
     pub downloaded_at: Timestamp,
     pub ytdlp_version: Option<&'a str>,
-}
-
-/// Update the `files` section of a placed metadata.json (after a hook moved
-/// or removed files). A missing metadata file is left alone.
-pub fn rewrite_files(files: &VideoFiles) -> std::io::Result<()> {
-    let path = std::path::Path::new(&files.metadata);
-    let Ok(text) = std::fs::read_to_string(path) else {
-        return Ok(());
-    };
-    let mut meta: Value = serde_json::from_str(&text).map_err(std::io::Error::other)?;
-    meta["files"] = files_json(files);
-    let name = path
-        .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
-    let tmp = path.with_file_name(format!(".{name}.tidepool-partial"));
-    std::fs::write(
-        &tmp,
-        serde_json::to_string_pretty(&meta).expect("JSON") + "\n",
-    )?;
-    std::fs::rename(&tmp, path)
 }
 
 /// Where a video's files are, for metadata.json: relative to the metadata
@@ -87,7 +68,7 @@ impl Metadata<'_> {
             .flatten()
             .map(|c| json!({ "start": c.start_time, "end": c.end_time, "title": c.title }))
             .collect();
-        json!({
+        let mut meta = json!({
             "schema_version": 1,
             "id": info.id,
             "url": format!("https://www.youtube.com/watch?v={}", info.id),
@@ -128,7 +109,11 @@ impl Metadata<'_> {
             "downloaded_at": self.downloaded_at.to_string(),
             "tool": { "tidepool": env!("CARGO_PKG_VERSION"), "yt_dlp": self.ytdlp_version },
             "index_source": "ytdlp",
-        })
+        });
+        if let Some(original) = self.original {
+            meta["original"] = original.clone();
+        }
+        meta
     }
 }
 
@@ -186,6 +171,7 @@ mod tests {
             },
             embedded_tags: None,
             embed_error: None,
+            original: None,
             downloaded_at: "2026-10-31T12:00:00Z".parse().unwrap(),
             ytdlp_version: Some("2026.10.29"),
         }

@@ -1142,57 +1142,148 @@ async fn ytdlp_gets_the_configured_deno() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn finished_hooks_report_moved_and_removed_files() {
+async fn prepare_hooks_change_details_and_paths() {
     let env = Env::new().await;
-    let archive = env.path("archive");
-    // Moves Rick's video to an archive and reports it; deletes okvideo01's
-    // poster and says so.
-    let hook = script(
+    let artist = env.media().join("Rick Astley");
+    // Rick's: a cleaner title and channel, and an artist folder; a second
+    // hook, chained, sees the first one's result.
+    let tidy = script(
         &env,
-        "archive.sh",
+        "tidy.sh",
         &format!(
             r#"cat > /dev/null
-if [ "$TIDEPOOL_VIDEO_ID" = dQw4w9WgXcQ ]; then
-  mkdir -p '{a}'; mv "$TIDEPOOL_OUTPUT_FILE" '{a}/rick.mkv'
-  printf '{{"files": {{"media": "{a}/rick.mkv"}}}}'
-else
-  rm "$TIDEPOOL_COVER_FILE"; printf '{{"files": {{"cover": null}}}}'
-fi"#,
-            a = archive.display()
+[ "$TIDEPOOL_VIDEO_ID" = dQw4w9WgXcQ ] || exit 0
+printf '{{"details": {{"title": "Never Gonna Give You Up", "channel": "Rick", "tags": null}}, "paths": {{"output_dir": "{}"}}}}'"#,
+            artist.display()
+        ),
+    );
+    let seen = env.path("seen.json");
+    let peek = script(
+        &env,
+        "peek.sh",
+        &format!(
+            r#"input=$(cat)
+[ "$TIDEPOOL_VIDEO_ID" = dQw4w9WgXcQ ] && printf '%s' "$input" > '{}'
+exit 0"#,
+            seen.display()
         ),
     );
     let config = hooks_config(
         &env,
-        "hooks = [\"archive\"]\nredownload_missing = true",
-        &format!("[hooks.archive]\ncommand = [\"{}\"]\n", hook.display()),
+        "hooks = [\"tidy\", \"peek\"]",
+        &format!(
+            "[hooks.tidy]\ntype = \"prepare\"\ncommand = [\"{}\"]\n\n[hooks.peek]\ntype = \"prepare\"\ncommand = [\"{}\"]\n",
+            tidy.display(),
+            peek.display()
+        ),
     );
-    env.cmd(&["run", "--config", &config]).assert().code(3);
-    assert!(archive.join("rick.mkv").is_file());
-    let meta: serde_json::Value = serde_json::from_str(
-        &fs::read_to_string(env.media().join(RICK_DIR).join("metadata.json")).unwrap(),
-    )
-    .unwrap();
-    assert_eq!(
-        meta["files"]["media"],
-        archive.join("rick.mkv").display().to_string()
-    );
-    let ok = env
-        .media()
-        .join("dl/2026-09-01 - Video okvideo01 [okvideo01]");
-    let meta: serde_json::Value =
-        serde_json::from_str(&fs::read_to_string(ok.join("metadata.json")).unwrap()).unwrap();
-    assert_eq!(meta["files"]["cover"], serde_json::Value::Null);
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3)
+        .stdout(contains(
+            "dl: downloaded “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”",
+        ));
 
-    // Nothing counts as missing, even with redownload_missing: no re-download.
-    env.cmd(&["download"])
+    let media = artist.join("Never Gonna Give You Up.mkv");
+    assert!(media.is_file(), "the title and folder it set");
+    assert!(artist.join("Never Gonna Give You Up.en.vtt").is_file());
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(artist.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(meta["title"], "Never Gonna Give You Up");
+    assert_eq!(meta["channel"]["name"], "Rick");
+    assert_eq!(meta["tags"], serde_json::json!([]));
+    assert_eq!(
+        meta["original"]["title"],
+        "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)"
+    );
+    assert_eq!(meta["original"]["channel"], "Rick Astley");
+    assert!(
+        meta["original"].get("upload_date").is_none(),
+        "only changes"
+    );
+
+    let seen: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(&seen).unwrap()).unwrap();
+    assert_eq!(seen["details"]["title"], "Never Gonna Give You Up");
+    assert_eq!(seen["context"]["video"]["title"], "Never Gonna Give You Up");
+    assert_eq!(
+        seen["paths"]["output_file"],
+        artist
+            .join("Never Gonna Give You Up.{ext}")
+            .display()
+            .to_string()
+    );
+    // Others are untouched.
+    assert!(
+        env.media()
+            .join("dl/2026-09-01 - Video okvideo01 [okvideo01]")
+            .is_dir()
+    );
+
+    // Only for new downloads.
+    env.cmd(&["hooks", "run", "--all", "--hook", "tidy"])
+        .assert()
+        .code(1)
+        .stderr(contains("it only runs for new downloads"));
+    env.cmd(&["hooks", "run", "--all"])
         .assert()
         .success()
-        .stdout(contains("nothing to download").and(contains("missing").not()));
-    // The stored location follows the move.
-    env.cmd(&["reset", "dQw4w9WgXcQ", "--delete-files"])
+        .stdout("no hooks to run for the chosen videos\n");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn invalid_prepare_output_fails_the_download_unless_warn() {
+    let env = Env::new().await;
+    let escape = script(
+        &env,
+        "escape.sh",
+        r#"cat > /dev/null
+printf '{"paths": {"output_dir": "/tmp/elsewhere"}}'"#,
+    );
+    let hooks = |on_failure: &str| {
+        format!(
+            "[hooks.escape]\ntype = \"prepare\"\non_failure = \"{on_failure}\"\ncommand = [\"{}\"]\n",
+            escape.display()
+        )
+    };
+    let config = hooks_config(&env, "hooks = [\"escape\"]", &hooks("fail"));
+    env.cmd(&["run", "-s", "dl", "--config", &config])
         .assert()
-        .success()
-        .stdout(contains(archive.join("rick.mkv").display().to_string()));
+        .code(3)
+        .stderr(contains("must be inside the media folder"));
+    assert!(!env.media().join(RICK_DIR).exists(), "nothing placed");
+    assert!(!Path::new("/tmp/elsewhere").exists());
+
+    let config = hooks_config(&env, "hooks = [\"escape\"]", &hooks("warn"));
+    env.cmd(&["reset", "dQw4w9WgXcQ", "--config", &config])
+        .assert()
+        .success();
+    env.cmd(&["download", "-s", "dl"]).assert().success();
+    assert!(env.media().join(RICK_DIR).is_dir(), "continued without it");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn finished_hook_output_is_ignored() {
+    let env = Env::new().await;
+    let hook = script(
+        &env,
+        "liar.sh",
+        r#"cat > /dev/null
+printf '{"files": {"media": null, "cover": null}}'"#,
+    );
+    let config = hooks_config(
+        &env,
+        "hooks = [\"liar\"]",
+        &format!("[hooks.liar]\ncommand = [\"{}\"]\n", hook.display()),
+    );
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    let rick = env.media().join(RICK_DIR);
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(rick.join("metadata.json")).unwrap()).unwrap();
+    assert!(meta["files"]["media"].is_string());
+    assert!(meta["files"]["cover"].is_string());
 }
 
 #[tokio::test(flavor = "multi_thread")]

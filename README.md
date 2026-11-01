@@ -519,21 +519,22 @@ A hook's `type` says when it runs:
 
 | `type` | When | Good for |
 | --- | --- | --- |
-| `finished` (the default) | once the video is saved | notifications, copying or moving the video elsewhere |
+| `prepare` | right after the download, before anything else | fixing the title, description or channel; choosing where the files go |
+| `downloaded` | after `prepare` hooks, on the downloaded files | converting the video to another format |
 | `embed` | just before tags and the cover are written into the file (see [Tags, cover and chapters](#tags-cover-and-chapters-inside-the-file)) | fixing titles, artists and other tags |
-| `downloaded` | right after the download, before anything else | converting the video to another format |
+| `finished` (the default) | once the video is saved | notifications, copying the video elsewhere |
 | `before_cleanup` | before [cleanup](#cleaning-up) removes a video | keeping videos you still want, telling a media server |
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `type` | `"finished"` | `finished`, `embed`, `downloaded` or `before_cleanup` |
+| `type` | `"finished"` | `prepare`, `downloaded`, `embed`, `finished` or `before_cleanup` |
 | `timeout` | `"10m"` | stop the hook after this long |
 | `on_failure` | `"fail"` | `fail`, `warn` or `retry` |
 | `retries` | `0` | extra tries with `on_failure = "retry"` |
 | `env` | `{}` | extra environment variables |
-| `work_dir` | the video's folder | where the hook runs (`embed` and `downloaded` hooks start in a work folder, since the video isn't saved yet) |
+| `work_dir` | the video's folder | where the hook runs (`prepare`, `downloaded` and `embed` hooks start in a work folder, since the video isn't saved yet) |
 
-**When a hook fails.** If an `embed` or `downloaded` hook fails, the video
+**When a hook fails.** If a `prepare`, `downloaded` or `embed` hook fails, the video
 isn't saved; it's tried again on a later run (with `on_failure = "warn"`,
 tidepool carries on without the hook's changes instead). If a `finished` hook
 fails, the video stays saved and the hook is tried again on later runs of
@@ -545,11 +546,31 @@ remembered, so you can see what went wrong each time.
 
 #### Hooks that change things
 
-A hook receives a description of the video's files (or, for `embed` hooks, of
-the tags about to be written) as JSON on its input, and can print a changed
-version on its output. Printing nothing means "no changes", and a hook only
+A hook receives a description of the video (its details and where its files
+go for `prepare` hooks, its files for `downloaded` hooks, the tags about to be
+written for `embed` hooks) as JSON on its input, and can print a changed version
+on its output. Printing nothing means "no changes", and a hook only
 needs to print what it changes. When several hooks of the same type run, each
 one sees what the previous one printed.
+
+**Fixing details and choosing where files go** (`prepare`). A `prepare` hook
+gets the video's `details` (`title`, `description`, `channel`, `upload_date`,
+`tags` and `categories`) and its `paths` (`output_dir`, `output_file`,
+`cover_file`, `subtitle_file` and `metadata_file`, as full paths with `{ext}`
+and `{lang}` still in them), and prints what it changes:
+
+```json
+{"details": {"title": "17 Crimes", "channel": "AFI"},
+ "paths": {"output_dir": "/videos/music/AFI"}}
+```
+
+Everything after it uses the new details: file names (`{title}`), the tags
+written into the file, `metadata.json` and other hooks. Paths it doesn't change
+follow the new details, so a new title renames the files. Changed paths must
+stay inside the media folder, and keep `{ext}` (and `{lang}` for subtitles).
+`metadata.json` keeps YouTube's version of whatever changed under `original`,
+and your include and exclude rules keep seeing YouTube's details. `prepare`
+hooks only run for new downloads, not with `tidepool hooks run`.
 
 **Fixing tags** (`embed`). For example, to turn YouTube's `"Artist - Title"`
 titles into separate artist and title tags (this one uses
@@ -581,13 +602,8 @@ new file is, and tidepool saves that one instead:
 {"files": {"media": "/path/it/was/given/media.mp4"}}
 ```
 
-**Moving or deleting** (`finished`). A hook that moves the video elsewhere, or
-deletes a file on purpose, says so, so tidepool knows where everything is and
-doesn't treat it as missing:
-
-```json
-{"files": {"media": "/nas/archive/Some title.mkv", "cover": null}}
-```
+`finished` hooks run on the saved files, and what they print is ignored. To
+change where files go, use a `prepare` hook.
 
 #### Running hooks again
 
@@ -601,7 +617,7 @@ tidepool hooks run --category music          # every source in a category
 tidepool hooks run dQw4w9WgXcQ okvideo01     # these videos
 ```
 
-Each video runs its source's hooks, just like when it was downloaded: tags
+Each video runs its source's hooks (except `prepare`), just like when it was downloaded: tags
 are fixed and written again, a converted video replaces the old one, and
 `finished` hooks run on the saved files. Your files stay as they are if
 something fails. Add `--hook <name>` (repeatable) to run only some hooks, and

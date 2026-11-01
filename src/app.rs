@@ -1060,7 +1060,30 @@ impl App<'_> {
         } = cmd;
         let state = self.open_state()?;
         let config = self.current_config(&state)?.config;
+        // `prepare` hooks only make sense before a video's files exist, and
+        // `before_cleanup` hooks are asked by cleanup.
+        let reruns = |name: &String| {
+            config.hooks.get(name).is_some_and(|h| {
+                !matches!(
+                    h.kind,
+                    crate::config::HookType::Prepare | crate::config::HookType::BeforeCleanup
+                )
+            })
+        };
         for name in only_hooks {
+            if let Some(hook) = config.hooks.get(name)
+                && !reruns(name)
+            {
+                bail!(
+                    "hook {name:?} is a {} hook, which `hooks run` doesn't run: {}",
+                    hook.kind.as_str(),
+                    if hook.kind == crate::config::HookType::Prepare {
+                        "it only runs for new downloads"
+                    } else {
+                        "`tidepool cleanup` asks it"
+                    }
+                );
+            }
             if !config.hooks.contains_key(name) {
                 let known: Vec<&str> = config.hooks.keys().map(String::as_str).collect();
                 bail!(
@@ -1098,7 +1121,7 @@ impl App<'_> {
             let hook_names: Vec<String> = source
                 .hooks
                 .iter()
-                .filter(|h| config.hooks.contains_key(*h))
+                .filter(|h| reruns(h))
                 .filter(|h| only_hooks.is_empty() || only_hooks.contains(h))
                 .filter(|h| !*only_failed || last_failed.contains(*h))
                 .cloned()

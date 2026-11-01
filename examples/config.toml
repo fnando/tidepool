@@ -93,6 +93,11 @@ cover_file = "{output_dir}/cover.jpg"
 cutoff = "none"                     # keep the whole back catalogue
 inherit_rules = true                # add to default's include/exclude instead of replacing them
 
+[hooks.artist-folder]               # first, after yt-dlp: prints {"details": {…}, "paths": {…}} changes
+type = "prepare"
+command = ["/usr/local/bin/artist-folder"]
+timeout = "30s"
+
 [hooks.clean-tags]                  # "Artist - Title" → artist + title, before embedding
 type = "embed"
 command = ["/usr/local/bin/clean-tags"]

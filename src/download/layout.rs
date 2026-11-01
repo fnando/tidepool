@@ -89,6 +89,9 @@ pub struct Layout {
     cover_file: String,
     subtitle_file: String,
     metadata_file: String,
+    /// Full paths `prepare` hooks set, by setting name (`{ext}`/`{lang}`
+    /// still in them); they win over the templates.
+    overrides: BTreeMap<String, String>,
 }
 
 impl Layout {
@@ -107,6 +110,7 @@ impl Layout {
             cover_file: source.cover_file.clone(),
             subtitle_file: source.subtitle_file.clone(),
             metadata_file: source.metadata_file.clone(),
+            overrides: BTreeMap::new(),
         };
         layout.output_dir = layout.render(&source.output_dir, Setting::OutputDir, &[])?;
         Ok(layout)
@@ -134,6 +138,48 @@ impl Layout {
         .map_err(|e| format!("{setting} {e}"))
     }
 
+    /// Use the paths `prepare` hooks set. A new `output_dir` also moves the
+    /// files whose templates use `{output_dir}`.
+    pub fn with_overrides(mut self, overrides: &BTreeMap<String, String>) -> Self {
+        if let Some(dir) = overrides.get("output_dir") {
+            self.output_dir = PathBuf::from(dir);
+        }
+        self.overrides = overrides.clone();
+        self
+    }
+
+    /// Every path as it would be, with `{ext}` and `{lang}` left in: what
+    /// `prepare` hooks are shown.
+    pub fn proposed(&self) -> Result<BTreeMap<String, String>, String> {
+        let show = |p: PathBuf| p.display().to_string();
+        Ok([
+            ("output_dir", show(self.output_dir.clone())),
+            ("output_file", show(self.output_file("{ext}")?)),
+            ("cover_file", show(self.cover_file()?.0)),
+            (
+                "subtitle_file",
+                show(self.subtitle_file("{lang}", "{ext}")?),
+            ),
+            ("metadata_file", show(self.metadata_file()?)),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v))
+        .collect())
+    }
+
+    /// A path a `prepare` hook set, with `extra` placeholders filled in.
+    fn overridden(&self, key: &str, extra: &[(&str, &str)]) -> Option<PathBuf> {
+        let mut path = self.overrides.get(key)?.clone();
+        for (name, value) in extra {
+            let value = match placeholders::sanitize(value) {
+                s if s.is_empty() => "NA".into(),
+                s => s,
+            };
+            path = path.replace(&format!("{{{name}}}"), &value);
+        }
+        Some(PathBuf::from(path))
+    }
+
     /// The video's directory (`output_dir`).
     pub fn output_dir(&self) -> &Path {
         &self.output_dir
@@ -141,12 +187,18 @@ impl Layout {
 
     /// The media file (`output_file`) for yt-dlp's extension.
     pub fn output_file(&self, ext: &str) -> Result<PathBuf, String> {
+        if let Some(path) = self.overridden("output_file", &[("ext", ext)]) {
+            return Ok(path);
+        }
         self.render(&self.output_file, Setting::OutputFile, &[("ext", ext)])
     }
 
     /// The poster (`cover_file`) and the image format its extension asks for.
     pub fn cover_file(&self) -> Result<(PathBuf, CoverFormat), String> {
-        let path = self.render(&self.cover_file, Setting::CoverFile, &[])?;
+        let path = match self.overridden("cover_file", &[]) {
+            Some(path) => path,
+            None => self.render(&self.cover_file, Setting::CoverFile, &[])?,
+        };
         let format = path
             .extension()
             .and_then(|e| CoverFormat::from_extension(&e.to_string_lossy()))
@@ -161,6 +213,9 @@ impl Layout {
 
     /// One subtitle (`subtitle_file`).
     pub fn subtitle_file(&self, lang: &str, ext: &str) -> Result<PathBuf, String> {
+        if let Some(path) = self.overridden("subtitle_file", &[("lang", lang), ("ext", ext)]) {
+            return Ok(path);
+        }
         self.render(
             &self.subtitle_file,
             Setting::SubtitleFile,
@@ -170,6 +225,9 @@ impl Layout {
 
     /// tidepool's metadata.json (`metadata_file`).
     pub fn metadata_file(&self) -> Result<PathBuf, String> {
+        if let Some(path) = self.overridden("metadata_file", &[]) {
+            return Ok(path);
+        }
         self.render(&self.metadata_file, Setting::MetadataFile, &[])
     }
 }
@@ -267,6 +325,38 @@ mod tests {
         assert_eq!(
             v.get("url"),
             Some("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        );
+    }
+
+    #[test]
+    fn proposes_paths_and_takes_overrides() {
+        let s = source("");
+        let v = values(&s, "x");
+        let l = layout(&s, &v).unwrap();
+        let proposed = l.proposed().unwrap();
+        let dir = "/media/lofi/2009-10-25 - x [dQw4w9WgXcQ]";
+        assert_eq!(proposed["output_file"], format!("{dir}/x.{{ext}}"));
+        assert_eq!(
+            proposed["subtitle_file"],
+            format!("{dir}/x.{{lang}}.{{ext}}")
+        );
+
+        let overrides: BTreeMap<String, String> = [
+            ("output_dir", "/media/Rick Astley"),
+            ("subtitle_file", "/media/subs/{lang}.{ext}"),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v.to_string()))
+        .collect();
+        let l = l.with_overrides(&overrides);
+        assert_eq!(
+            l.output_file("mkv").unwrap(),
+            PathBuf::from("/media/Rick Astley/x.mkv"),
+            "follows the new output_dir"
+        );
+        assert_eq!(
+            l.subtitle_file("en/US", "vtt").unwrap(),
+            PathBuf::from("/media/subs/enUS.vtt")
         );
     }
 

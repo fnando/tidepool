@@ -1,12 +1,14 @@
 //! The stages after yt-dlp, shared by downloads and `tidepool hooks run`:
-//! `downloaded` hooks, `embed` hooks, embedding, `finished` hooks.
+//! `prepare` hooks (downloads only), `downloaded` hooks, `embed` hooks,
+//! embedding, `finished` hooks.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use super::embed;
 use super::info::VideoInfo;
-use super::layout::Values;
+use super::layout::{Layout, Values};
+use super::prepare;
 use super::thumbnail::CoverFormat;
 use super::ytdlp::Failure;
 use super::{fail, place};
@@ -94,6 +96,43 @@ impl Stage<'_> {
                 "category": self.source.category,
             },
         })
+    }
+
+    /// `prepare` hooks: they may change `info`'s details and where the files
+    /// go. Returns the paths they set (for `Layout::with_overrides`).
+    pub async fn prepare_hooks(
+        &self,
+        info: &mut VideoInfo,
+        media_dir: &Path,
+        dirs: &crate::paths::Dirs,
+        tmp: &Path,
+        media: &Path,
+        hook_runs: &mut Vec<hooks::Report>,
+    ) -> Result<BTreeMap<String, String>, Failure> {
+        let mut overrides = BTreeMap::new();
+        for (name, hook) in self.of_type(HookType::Prepare) {
+            let values = Values::new(info, self.source, self.source_title, self.position);
+            let proposed = Layout::new(self.source, &values, media_dir, dirs)
+                .map(|l| l.with_overrides(&overrides))
+                .and_then(|l| l.proposed())
+                .map_err(fail)?;
+            let mut details = prepare::Details::of(info);
+            let input = prepare::input(&details, &proposed, &self.context(info));
+            let hook_values = stage_values(&values, tmp, Some(media), None, None);
+            let report = self.run_hook(name, hook, &hook_values, tmp, &input).await;
+            let mut changed = overrides.clone();
+            let applied = match &report.result {
+                Ok(out) => {
+                    prepare::apply(name, out, &mut details, &mut changed, &proposed, media_dir)
+                }
+                Err(e) => Err(format!("hook {name} failed: {e}")),
+            };
+            if hook_failure(self.label, hook, report, applied, hook_runs)? {
+                details.apply_to(info);
+                overrides = changed;
+            }
+        }
+        Ok(overrides)
     }
 
     /// `downloaded` hooks, on the raw files in the work area `tmp`; they may
@@ -285,60 +324,45 @@ impl Stage<'_> {
         }
     }
 
-    /// `finished` hooks, on the placed files. They may report where a file
-    /// went, or that they removed it on purpose; `files` is updated (and
-    /// `true` returned) when one did. A failure doesn't undo anything; it's
-    /// recorded so the hook can be run again.
+    /// `finished` hooks, on the placed files; what they print is ignored. A
+    /// failure doesn't undo anything; it's recorded so the hook can be run
+    /// again.
     pub async fn finished_hooks(
         &self,
         values: &Values,
-        files: &mut VideoFiles,
+        files: &VideoFiles,
         context: &serde_json::Value,
         hook_runs: &mut Vec<hooks::Report>,
-    ) -> bool {
-        let mut changed = false;
+    ) {
+        let output_dir = PathBuf::from(&files.dir);
+        let placed = placed_of(files);
+        let work_dir = if output_dir.is_dir() {
+            output_dir.clone()
+        } else {
+            placed
+                .media
+                .as_ref()
+                .and_then(|m| m.parent())
+                .unwrap_or(Path::new("/"))
+                .to_path_buf()
+        };
+        let input = serde_json::to_vec(&placed.to_json(context)).expect("JSON");
+        let hook_values = stage_values(
+            values,
+            &output_dir,
+            placed.media.as_deref(),
+            placed.cover.as_deref(),
+            Some(Path::new(&files.metadata)),
+        );
         for (name, hook) in self.of_type(HookType::Finished) {
-            let output_dir = PathBuf::from(&files.dir);
-            let mut placed = placed_of(files);
-            let work_dir = if output_dir.is_dir() {
-                output_dir.clone()
-            } else {
-                placed
-                    .media
-                    .as_ref()
-                    .and_then(|m| m.parent())
-                    .unwrap_or(Path::new("/"))
-                    .to_path_buf()
-            };
-            let input = serde_json::to_vec(&placed.to_json(context)).expect("JSON");
-            let hook_values = stage_values(
-                values,
-                &output_dir,
-                placed.media.as_deref(),
-                placed.cover.as_deref(),
-                Some(Path::new(&files.metadata)),
-            );
-            let mut report = self
+            let report = self
                 .run_hook(name, hook, &hook_values, &work_dir, &input)
                 .await;
-            if let Ok(out) = &report.result {
-                let before = placed.clone();
-                match placed.apply(name, out) {
-                    Ok(()) if placed != before => {
-                        tracing::debug!("{}: hook {name} moved or removed files", self.label);
-                        apply_placed(files, &placed);
-                        changed = true;
-                    }
-                    Ok(()) => {}
-                    Err(e) => report.result = Err(e),
-                }
-            }
             if let Err(e) = &report.result {
                 tracing::warn!("{}: hook {name} failed: {e}", self.label);
             }
             hook_runs.push(report);
         }
-        changed
     }
 
     /// `before_cleanup` hooks, every one of them, on the placed files; stdin
@@ -582,46 +606,5 @@ fn placed_of(files: &VideoFiles) -> hooks::Placed {
                 path: PathBuf::from(&s.path),
             })
             .collect(),
-    }
-}
-
-/// Record what a `finished` hook reported: new paths, and files it removed.
-fn apply_placed(files: &mut VideoFiles, placed: &hooks::Placed) {
-    let mark = |files: &mut VideoFiles, what: String, gone: bool| {
-        files.removed.retain(|r| *r != what);
-        if gone {
-            files.removed.push(what);
-        }
-    };
-    match &placed.media {
-        Some(path) => {
-            files.media = path.display().to_string();
-            mark(files, "media".into(), false);
-        }
-        None => mark(files, "media".into(), true),
-    }
-    match &placed.cover {
-        Some(path) => {
-            files.cover = Some(path.display().to_string());
-            mark(files, "cover".into(), false);
-        }
-        None if files.cover.is_some() => mark(files, "cover".into(), true),
-        None => {}
-    }
-    let old: Vec<String> = files.subtitles.iter().map(|s| s.lang.clone()).collect();
-    for sub in &placed.subtitles {
-        match files.subtitles.iter_mut().find(|s| s.lang == sub.lang) {
-            Some(existing) => existing.path = sub.path.display().to_string(),
-            None => files.subtitles.push(crate::state::items::Subtitle {
-                lang: sub.lang.clone(),
-                path: sub.path.display().to_string(),
-            }),
-        }
-        mark(files, format!("subtitle:{}", sub.lang), false);
-    }
-    for lang in old {
-        if !placed.subtitles.iter().any(|s| s.lang == lang) {
-            mark(files, format!("subtitle:{lang}"), true);
-        }
     }
 }

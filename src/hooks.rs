@@ -260,7 +260,7 @@ fn last_log_line(path: &Path) -> Option<String> {
 }
 
 /// A hook's stdout as JSON; empty means "no change".
-fn parse_output(name: &str, output: &[u8]) -> Result<Option<Value>, String> {
+pub(crate) fn parse_output(name: &str, output: &[u8]) -> Result<Option<Value>, String> {
     if output.iter().all(u8::is_ascii_whitespace) {
         return Ok(None);
     }
@@ -383,8 +383,8 @@ impl Files {
     }
 }
 
-/// The placed files `finished` hooks see, and may report as moved (a new
-/// path) or removed on purpose (`None`).
+/// The placed files `finished` and `before_cleanup` hooks see (`None`: a
+/// `finished` hook removed it, back when they could).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Placed {
     pub media: Option<PathBuf>,
@@ -402,31 +402,6 @@ impl Placed {
             },
             "context": context,
         })
-    }
-
-    /// Apply a `finished` hook's output: a path (anywhere, must exist) says
-    /// where a file is now; `null` says it was removed on purpose; a
-    /// subtitle list replaces the current one. Missing keys keep their value.
-    pub fn apply(&mut self, name: &str, output: &[u8]) -> Result<(), String> {
-        let Some(value) = parse_output(name, output)? else {
-            return Ok(());
-        };
-        let Some(files) = value.get("files") else {
-            return Ok(());
-        };
-        for (key, slot) in [("media", &mut self.media), ("cover", &mut self.cover)] {
-            if let Some(path) = files.get(key) {
-                *slot = if path.is_null() {
-                    None
-                } else {
-                    Some(existing_file(name, &format!("files.{key}"), path)?)
-                };
-            }
-        }
-        if let Some(subtitles) = files.get("subtitles") {
-            self.subtitles = parse_subtitles(name, subtitles)?;
-        }
-        Ok(())
     }
 }
 

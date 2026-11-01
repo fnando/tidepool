@@ -6,6 +6,7 @@ pub mod info;
 pub mod layout;
 pub mod metadata;
 pub mod missing;
+pub mod prepare;
 pub mod rerun;
 pub mod stages;
 pub mod thumbnail;
@@ -457,13 +458,47 @@ async fn assemble(
     subtitles.sort_by(|a, b| a.lang.cmp(&b.lang));
     let media = media.ok_or_else(|| fail("no media file in the work area"))?;
 
+    let stage = stages::Stage {
+        source,
+        hook_names: &source.hooks,
+        hooks: &ctx.hooks,
+        video_id,
+        source_title: job.queued.source_title.as_deref(),
+        position: job.queued.position,
+        label,
+        home: &ctx.dirs.home,
+        hook_logs: &ctx.hook_logs,
+        shutdown: &ctx.shutdown,
+        grace: ctx.shutdown_timeout,
+        ffmpeg: &ctx.ffmpeg,
+        ffprobe: &ctx.ffprobe,
+    };
+
+    // `prepare` hooks: the details and paths everything below uses. The
+    // details recorded for the video (`details`) stay YouTube's.
+    let original = prepare::Details::of(&info);
+    let mut info = info;
+    let overrides = stage
+        .prepare_hooks(
+            &mut info,
+            &job.paths.media_dir,
+            &ctx.dirs,
+            tmp,
+            &media,
+            hook_runs,
+        )
+        .await?;
+    let originals = prepare::Details::of(&info).originals(&original);
+
     let values = Values::new(
         &info,
         source,
         job.queued.source_title.as_deref(),
         job.queued.position,
     );
-    let layout = Layout::new(source, &values, &job.paths.media_dir, &ctx.dirs).map_err(fail)?;
+    let layout = Layout::new(source, &values, &job.paths.media_dir, &ctx.dirs)
+        .map_err(fail)?
+        .with_overrides(&overrides);
     let (cover_dest, cover_format) = layout.cover_file().map_err(fail)?;
     let metadata_dest = layout.metadata_file().map_err(fail)?;
 
@@ -507,21 +542,6 @@ async fn assemble(
     }
 
     // `downloaded` hooks: on the raw files; they may replace them.
-    let stage = stages::Stage {
-        source,
-        hook_names: &source.hooks,
-        hooks: &ctx.hooks,
-        video_id,
-        source_title: job.queued.source_title.as_deref(),
-        position: job.queued.position,
-        label,
-        home: &ctx.dirs.home,
-        hook_logs: &ctx.hook_logs,
-        shutdown: &ctx.shutdown,
-        grace: ctx.shutdown_timeout,
-        ffmpeg: &ctx.ffmpeg,
-        ffprobe: &ctx.ffprobe,
-    };
     let context = stage.context(&info);
     let mut raw = hooks::Files {
         media,
@@ -608,6 +628,7 @@ async fn assemble(
         embedded: &embedding.embedded,
         embedded_tags: embedding.embedded.metadata.then_some(&data.tags),
         embed_error: embedding.error.as_deref(),
+        original: originals.as_ref(),
         downloaded_at: job.now,
         ytdlp_version: ctx.ytdlp_version.as_deref(),
     };
@@ -645,13 +666,9 @@ async fn assemble(
         started.elapsed().as_secs_f64()
     );
 
-    if stage
-        .finished_hooks(&values, &mut files, &context, hook_runs)
-        .await
-        && let Err(e) = metadata::rewrite_files(&files)
-    {
-        tracing::warn!("{label}: cannot update {}: {e}", files.metadata);
-    }
+    stage
+        .finished_hooks(&values, &files, &context, hook_runs)
+        .await;
 
     let metadata = std::fs::read_to_string(&files.metadata).unwrap_or(json);
     Ok(Outcome::Done {

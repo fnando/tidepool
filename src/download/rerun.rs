@@ -144,18 +144,15 @@ pub async fn rerun(shared: &Shared<'_>, video: &Video<'_>) -> Rerun {
         result.hook_runs = hook_runs;
         return result;
     }
-    let (mut placed, bytes) = match result.files.take() {
+    let (placed, bytes) = match result.files.take() {
         Some(new) => new,
         None => (files.clone(), media_size(files)),
     };
     let context = stage.context(&info);
-    let moved = stage
-        .finished_hooks(&values, &mut placed, &context, &mut hook_runs)
+    stage
+        .finished_hooks(&values, &placed, &context, &mut hook_runs)
         .await;
-    if moved && let Err(e) = metadata::rewrite_files(&placed) {
-        tracing::warn!("{label}: cannot update {}: {e}", placed.metadata);
-    }
-    if moved || placed != *files {
+    if placed != *files {
         result.files = Some((placed, bytes));
     }
     result.hook_runs = hook_runs;

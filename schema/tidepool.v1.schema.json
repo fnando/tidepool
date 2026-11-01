@@ -413,7 +413,7 @@
         "type": {
           "$ref": "#/$defs/HookType",
           "default": "finished",
-          "description": "When the hook runs: `downloaded` (raw files, before embedding; may\nreplace them), `embed` (rewrites what gets embedded), `finished`\n(after the files are in place) or `before_cleanup`."
+          "description": "When the hook runs: `prepare` (first; may change the video's details\nand paths), `downloaded` (raw files, before embedding; may replace\nthem), `embed` (rewrites what gets embedded), `finished`\n(after the files are in place) or `before_cleanup`."
         },
         "work_dir": {
           "description": "Working directory. Defaults to the video's directory.",
@@ -427,6 +427,11 @@
     },
     "HookType": {
       "oneOf": [
+        {
+          "const": "prepare",
+          "description": "First, after yt-dlp: may change the video's details (title,\ndescription, …) and where its files go.",
+          "type": "string"
+        },
         {
           "const": "downloaded",
           "description": "On the raw files in the work area, before embedding; may replace them.",

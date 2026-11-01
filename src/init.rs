@@ -126,7 +126,7 @@ cover_file = "{output_dir}/cover.jpg"
 #
 # [hooks.notify]
 # command = ["ntfy", "publish", "videos", "New: {title}"]   # argv, no shell; {placeholders} expanded
-# type = "finished"                 # downloaded (raw files, before embedding) | embed | finished (files in place) | before_cleanup
+# type = "finished"                 # prepare (details, paths) | downloaded (raw files) | embed | finished (files in place) | before_cleanup
 # timeout = "10m"                   # killed after this long
 # on_failure = "fail"               # fail | warn | retry
 # retries = 0                       # used by on_failure = "retry"

@@ -272,8 +272,9 @@ pub struct HookConfig {
     /// argv array; `{placeholder}`s are expanded inside each element, no shell.
     #[schemars(schema_with = "hook_command_schema")]
     pub command: Vec<String>,
-    /// When the hook runs: `downloaded` (raw files, before embedding; may
-    /// replace them), `embed` (rewrites what gets embedded), `finished`
+    /// When the hook runs: `prepare` (first; may change the video's details
+    /// and paths), `downloaded` (raw files, before embedding; may replace
+    /// them), `embed` (rewrites what gets embedded), `finished`
     /// (after the files are in place) or `before_cleanup`.
     #[serde(default, rename = "type")]
     pub kind: HookType,
@@ -316,6 +317,9 @@ fn default_hook_timeout() -> HumanDuration {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum HookType {
+    /// First, after yt-dlp: may change the video's details (title,
+    /// description, …) and where its files go.
+    Prepare,
     /// On the raw files in the work area, before embedding; may replace them.
     Downloaded,
     /// Receives the data about to be embedded as JSON; returns it processed.
@@ -330,6 +334,7 @@ pub enum HookType {
 impl HookType {
     pub fn as_str(self) -> &'static str {
         match self {
+            Self::Prepare => "prepare",
             Self::Downloaded => "downloaded",
             Self::Embed => "embed",
             Self::Finished => "finished",
