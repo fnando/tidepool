@@ -24,5 +24,6 @@ pub mod spans;
 
 pub use load::{ConfigError, Loaded, load_file, load_str};
 pub mod check;
+pub mod defaults;
 pub mod diff;
 pub mod store;

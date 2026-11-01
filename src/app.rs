@@ -1843,11 +1843,15 @@ impl App<'_> {
         Ok(())
     }
 
-    fn report(&self, findings: Vec<Finding>) -> usize {
+    /// Log environment findings, what passed at `ok_level`; returns the errors.
+    fn report(&self, findings: Vec<Finding>, ok_level: tracing::Level) -> usize {
         let mut errors = 0;
         for finding in findings {
             match finding {
-                Finding::Ok(message) => tracing::info!("{message}"),
+                Finding::Ok(message) if ok_level == tracing::Level::INFO => {
+                    tracing::info!("{message}")
+                }
+                Finding::Ok(message) => tracing::debug!("{message}"),
                 Finding::Warning(message) => tracing::warn!("{message}"),
                 Finding::Error(message) => {
                     errors += 1;
@@ -1938,7 +1942,10 @@ impl App<'_> {
         let rev = ConfigStore::new(&state.conn)
             .import(Some(&name), &text, &loaded)?
             .rev();
-        let errors = self.report(check_environment(&loaded.config, &self.dirs, Some(&path)));
+        let errors = self.report(
+            check_environment(&loaded.config, &self.dirs, Some(&path)),
+            tracing::Level::INFO,
+        );
 
         if replaced {
             writeln!(out)?;
@@ -2082,15 +2089,25 @@ impl App<'_> {
         match &args.cmd {
             None => {
                 let state = self.open_state()?;
-                self.current_config(&state)?;
+                let loaded = self.current_config(&state)?;
                 let current = ConfigStore::new(&state.conn)
                     .current()?
                     .expect("loaded above");
-                write!(out, "{}", show(&current.toml))?;
+                let text = if args.include_defaults {
+                    crate::config::defaults::with_defaults(
+                        &current.toml,
+                        &loaded.config,
+                        &self.dirs.default_media_dir().display().to_string(),
+                    )
+                    .map_err(anyhow::Error::msg)?
+                } else {
+                    current.toml.clone()
+                };
+                write!(out, "{}", show(&text))?;
             }
             Some(ConfigCmd::Schema) => write!(out, "{}", schema_json())?,
             Some(ConfigCmd::Check { path }) => {
-                return self.config_check(path.as_deref(), args.show_secrets, out);
+                return self.config_check(path.as_deref());
             }
             Some(ConfigCmd::Import { path }) => {
                 let path = &self.import_path(path.as_deref())?;
@@ -2181,12 +2198,7 @@ impl App<'_> {
     /// the file last imported, or the default) and the stored config, each
     /// validated, and whether they differ. Environment checks and the
     /// effective config use the file when it's valid, else the stored one.
-    fn config_check(
-        &self,
-        path: Option<&Path>,
-        show_secrets: bool,
-        out: &mut dyn Write,
-    ) -> anyhow::Result<i32> {
+    fn config_check(&self, path: Option<&Path>) -> anyhow::Result<i32> {
         let state = if self.paths.state_db.exists() {
             Some(self.open_state()?)
         } else {
@@ -2229,7 +2241,7 @@ impl App<'_> {
             Some(text) => match load_str(&name, text) {
                 Ok(loaded) => {
                     self.warn(&loaded.warnings);
-                    tracing::info!("{name} is valid ({} sources)", loaded.config.sources.len());
+                    tracing::debug!("{name} is valid ({} sources)", loaded.config.sources.len());
                     Some(loaded)
                 }
                 Err(err) => {
@@ -2270,7 +2282,7 @@ impl App<'_> {
                 });
                 if same {
                     if loaded.is_some() {
-                        tracing::info!(
+                        tracing::debug!(
                             "the stored config (revision {}) is valid and matches {name}",
                             current.rev
                         );
@@ -2292,16 +2304,14 @@ impl App<'_> {
                 invalid.join(" and ") + if invalid.len() > 1 { " are" } else { " is" }
             );
         };
-        let env_failed = self.report(check_environment(
-            &loaded.config,
-            &self.dirs,
-            text.is_some().then_some(file_path.as_path()),
-        )) > 0;
-        write!(
-            out,
-            "{}",
-            EffectiveConfig::new(&loaded.config, &self.dirs, show_secrets).to_toml()
-        )?;
+        let env_failed = self.report(
+            check_environment(
+                &loaded.config,
+                &self.dirs,
+                text.is_some().then_some(file_path.as_path()),
+            ),
+            tracing::Level::DEBUG,
+        ) > 0;
         if !invalid.is_empty() {
             bail!(
                 "{} invalid; see above",

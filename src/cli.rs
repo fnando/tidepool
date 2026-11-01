@@ -189,6 +189,9 @@ pub struct ConfigArgs {
     /// Print API keys unmasked
     #[arg(long, global = true)]
     pub show_secrets: bool,
+    /// Also print every setting left out, with its default
+    #[arg(long)]
+    pub include_defaults: bool,
 
     #[command(subcommand)]
     pub cmd: Option<ConfigCmd>,
@@ -196,7 +199,7 @@ pub struct ConfigArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum ConfigCmd {
-    /// Validate a file (or the current revision) and print the effective config
+    /// Validate a file and the stored config, and say whether they match; quiet when all is well
     Check { path: Option<PathBuf> },
     /// Print the JSON Schema for the config file
     Schema,

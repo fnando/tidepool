@@ -189,10 +189,50 @@ fn invalid_configs_report_file_line_col_and_are_not_stored() {
 }
 
 #[test]
-fn check_prints_the_effective_config() {
+fn check_is_quiet_when_all_is_well() {
     let env = Env::new();
     let file = env.write_config("c.toml", "");
+    // Only what needs attention: here, nothing imported yet and no Deno.
     env.cmd(&["config", "check", &file])
+        .assert()
+        .success()
+        .stdout("")
+        .stderr(
+            contains("nothing is stored yet")
+                .and(contains("is valid").not())
+                .and(contains("yt-dlp 2026.10.01").not()),
+        );
+    env.cmd(&["config", "check", "-v", &file])
+        .assert()
+        .success()
+        .stdout("")
+        .stderr(contains("yt-dlp 2026.10.01").and(contains("is valid (1 sources)")));
+
+    // Without a path: the file last imported, and the stored revision.
+    env.cmd(&["config", "import", &file]).assert().success();
+    env.cmd(&["config", "check", "-v"])
+        .assert()
+        .success()
+        .stderr(
+            contains(format!("{file} is valid (1 sources)"))
+                .and(contains(
+                    "the stored config (revision 1) is valid and matches",
+                ))
+                .and(contains("differ").not()),
+        );
+}
+
+#[test]
+fn config_shows_the_stored_config_with_or_without_defaults() {
+    let env = Env::new();
+    let file = env.write_config("c.toml", "");
+    env.cmd(&["config", "import", &file]).assert().success();
+    env.cmd(&["config"]).assert().success().stdout(
+        contains("[sources.lofi]")
+            .and(contains("AIza…x1Qw"))
+            .and(contains("trash_dir").not()),
+    );
+    env.cmd(&["config", "--include-defaults"])
         .assert()
         .success()
         .stdout(
@@ -200,19 +240,9 @@ fn check_prints_the_effective_config() {
                 .and(contains(
                     "cover_file = \"{output_dir}/{normalized_title}-poster.jpg\"",
                 ))
+                .and(contains("trash_dir = \"{data_dir}/trash\""))
                 .and(contains("AIza…x1Qw")),
-        )
-        .stderr(contains("yt-dlp 2026.10.01").and(contains("is valid (1 sources)")));
-
-    // Without a path: the file last imported, and the stored revision.
-    env.cmd(&["config", "import", &file]).assert().success();
-    env.cmd(&["config", "check"]).assert().success().stderr(
-        contains(format!("{file} is valid (1 sources)"))
-            .and(contains(
-                "the stored config (revision 1) is valid and matches",
-            ))
-            .and(contains("differ").not()),
-    );
+        );
 }
 
 #[test]
@@ -228,7 +258,7 @@ fn check_reports_both_configs_and_whether_they_differ() {
         text.replace("include = ['(?i)\\blive\\b']", "include = ['(?i)concert']"),
     )
     .unwrap();
-    env.cmd(&["config", "check"]).assert().success().stderr(
+    env.cmd(&["config", "check", "-v"]).assert().success().stderr(
         contains(format!("{file} is valid"))
             .and(contains(format!(
                 "{file} and the stored config (revision 1) differ: run `tidepool config import` to apply it (`tidepool config diff` shows what changed)"
@@ -243,7 +273,7 @@ fn check_reports_both_configs_and_whether_they_differ() {
         [],
     )
     .unwrap();
-    env.cmd(&["config", "check"]).assert().code(1).stderr(
+    env.cmd(&["config", "check", "-v"]).assert().code(1).stderr(
         contains(format!("{file} is valid"))
             .and(contains("the stored config (revision 1) no longer loads"))
             .and(contains("ytdlp: unknown key \"ytdlp\""))
@@ -272,7 +302,7 @@ fn check_reports_both_configs_and_whether_they_differ() {
     // Importing the fixed file brings both back in step.
     fs::write(&file, &text).unwrap();
     env.cmd(&["config", "import", &file]).assert().success();
-    env.cmd(&["config", "check"])
+    env.cmd(&["config", "check", "-v"])
         .assert()
         .success()
         .stderr(contains(

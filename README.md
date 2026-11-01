@@ -248,9 +248,9 @@ config.toml:20:12 sources.lofi.cleanup.max_size: "20 gigs" is not a valid byte s
 ```
 
 It also checks that `ffmpeg`, yt-dlp and Deno are available and that the video
-folder is writable. Then it prints your settings with every default filled in,
-so you can see exactly what each source will do. A file with mistakes is
-never applied.
+folder is writable. When everything is fine it prints nothing (add `-v` to see
+what it checked); it only speaks up about mistakes and warnings. A file with
+mistakes is never applied.
 
 Editors that understand the `#:schema` line at the top of the file (for
 example VS Code with the *Even Better TOML* extension) suggest setting names
@@ -262,7 +262,8 @@ Every applied change is kept, so you can always go back:
 
 | Command | What it does |
 | --- | --- |
-| `tidepool config` | Show the current settings |
+| `tidepool config` | Show the current settings, as you wrote them |
+| `tidepool config --include-defaults` | The same, with every setting you left out filled in with its default |
 | `tidepool config history` | List every applied version (`*` marks the current one) |
 | `tidepool config diff` | Show how your file differs from the current settings |
 | `tidepool config export [--rev N]` | Show an older version |
@@ -874,9 +875,8 @@ DEBUG sample: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Rema
 sample: downloaded “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” (9.1 MB)
 ```
 
-`-vv` shows even more: your complete settings with every default filled in (as
-`tidepool config check` prints them, with your API key and web interface token
-hidden), every video's decision (not just new and changed ones), and the exact
+`-vv` shows even more: every source's complete settings, with every default
+filled in (your API key and web interface token hidden), every video's decision (not just new and changed ones), and the exact
 yt-dlp commands and output.
 `-q` (`--quiet`) shows errors only. Messages go to the terminal's error output,
 so `tidepool run -v > out.txt` keeps the summary lines separate. With
