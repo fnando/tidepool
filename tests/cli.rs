@@ -445,7 +445,7 @@ fn init_creates_config_and_state() {
     assert!(text.starts_with("#:schema https://raw.githubusercontent.com/fnando/tidepool/v"));
     assert!(text.contains(
         "[sources.sample]                    # one short video, to see tidepool work; replace it with your own\n\
-         url = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"   # the playlist's URL\n\
+         url = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"   # a playlist's URL, or a channel's (https://www.youtube.com/@name)\n\
          # category = \"default\""
     ));
 
