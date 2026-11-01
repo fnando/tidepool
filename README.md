@@ -1,13 +1,15 @@
 # tidepool
 
 tidepool keeps local copies of YouTube playlists in sync. For each video it
-saves the video file, its details (title, channel, description, …) and the
-largest available cover image. Rules decide which videos to keep, and limits
-keep each folder from growing forever.
+saves the video file, its details (title, channel, description, …), the
+largest available cover image and any subtitles you want, and can write tags,
+the cover and chapters into the video file itself. Rules decide which videos to
+keep, and your own scripts can tidy up tags, convert files or send
+notifications along the way.
 
-> **Early days.** tidepool can keep your sources downloaded. Running your own
-> scripts after each download, automatic cleanup, running in the background and
-> the web interface aren't available yet.
+> **Early days.** tidepool can keep your sources downloaded and run your own
+> scripts. Automatic cleanup, running in the background and the web interface
+> aren't available yet.
 
 Works on Linux and macOS.
 
@@ -45,11 +47,13 @@ tidepool run
 
 ```
 installed yt-dlp 2026.10.29.232701
+installed Deno 2.9.8
 sample: 1 video (1 new): 1 to download
 sample: downloaded “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” (243.8 MB)
 downloaded 1 video (243.8 MB)
 ```
 
+The first run also downloads the two tools tidepool uses (see [Tools](#tools)).
 The video lands in `~/.local/share/tidepool/media/sample/`. tidepool downloads
 the best quality available by default, which for this video is 4K (about
 240 MB); set `format` to download smaller files, e.g.
@@ -317,14 +321,13 @@ cover_file = "/nas/posters/{id}.webp"
 metadata_file = "{output_dir}/{id}.json"
 ```
 
-Files can share a folder: tidepool only ever replaces or deletes the files it
-placed for a video, never anything else in the folder.
+Videos can share a folder: tidepool only ever replaces or deletes its own files
+for a video, never anything else you keep there.
 
-Downloads in progress live in `tmp_dir` (default `"{data_dir}/tmp"`). Each file
-is moved into place once the whole video is ready, and the metadata file
-always comes last, so a video only counts as downloaded once everything is
-there. When `tmp_dir` is on a different disk, each file is copied next to its
-destination under a hidden name first, so it still appears all at once.
+You never see half-finished downloads: while a video downloads, its files wait
+in a work folder (`~/.local/share/tidepool/tmp`, or `tmp_dir`), and they only
+show up in your folders once everything is ready, even when that's on another
+disk.
 
 By default, `format` is `"bv*+ba/b/bv*/ba"`: the best video and the best audio
 merged into one file; otherwise the best single file that has both; otherwise
@@ -418,9 +421,9 @@ purpose (see below) never count as missing.
 
 ### Hooks
 
-Hooks run your own commands at each stage of a download: to fix tags, convert
-files, or send a notification. Define a hook once, then list it in `hooks` for
-every source, a category or a single source:
+Hooks run your own commands while tidepool works: to send a notification, fix
+up tags, convert videos, or move them somewhere else. Define a hook once, then
+list it in `hooks` for every source, a category or a single source:
 
 ```toml
 [hooks.notify]
@@ -430,25 +433,46 @@ command = ["ntfy", "publish", "videos", "New: {title}"]
 hooks = ["notify"]
 ```
 
-`command` is the program and its arguments, run directly (no shell). Any
-`{placeholder}` works in it (`{title}`, `{channel}`, `{output_file}`, …), and
-the same values are in the environment too (`TIDEPOOL_TITLE`,
-`TIDEPOOL_OUTPUT_FILE`, …). What a hook prints to its error output goes to
-`~/.local/share/tidepool/logs/hooks/<video id>.log`.
+`command` is the program and its arguments. Any `{placeholder}` works in it
+(`{title}`, `{channel}`, `{output_file}` for the video file, …), and the same
+values are available to scripts as environment variables (`TIDEPOOL_TITLE`,
+`TIDEPOOL_OUTPUT_FILE`, …). Hooks run in the order you list them. What a hook
+prints as errors is kept in `~/.local/share/tidepool/logs/hooks/<video id>.log`.
 
 A hook's `type` says when it runs:
 
-| `type` | When | What it gets and returns |
+| `type` | When | Good for |
 | --- | --- | --- |
-| `downloaded` | right after the download, before anything is embedded | the raw files, as JSON on its input; it may print new ones, e.g. after converting the video |
-| `embed` | before tags and the cover go into the file (see `embed`) | the tags, cover, chapters and subtitles about to be embedded, as JSON; it prints them back, changed |
-| `finished` (the default) | once the video's files are in place | the placed files, as JSON; if it moves or deletes one, it prints where it went (or `null` for "deleted on purpose") |
+| `finished` (the default) | once the video is saved | notifications, copying or moving the video elsewhere |
+| `embed` | just before tags and the cover are written into the file (see [Tags, cover and chapters](#tags-cover-and-chapters-inside-the-file)) | fixing titles, artists and other tags |
+| `downloaded` | right after the download, before anything else | converting the video to another format |
 
-Hooks of the same type run in the order you list them, each getting what the
-previous one printed. Printing nothing means "no changes".
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `type` | `"finished"` | `finished`, `embed` or `downloaded` |
+| `timeout` | `"10m"` | stop the hook after this long |
+| `on_failure` | `"fail"` | `fail`, `warn` or `retry` |
+| `retries` | `0` | extra tries with `on_failure = "retry"` |
+| `env` | `{}` | extra environment variables |
+| `work_dir` | the video's folder | where the hook runs (`embed` and `downloaded` hooks start in a work folder, since the video isn't saved yet) |
 
-For example, to turn YouTube's `"Artist - Title"` titles into separate artist
-and title tags (this one uses [`jq`](https://jqlang.org)):
+**When a hook fails.** If an `embed` or `downloaded` hook fails, the video
+isn't saved; it's tried again on a later run (with `on_failure = "warn"`,
+tidepool carries on without the hook's changes instead). If a `finished` hook
+fails, the video stays saved, and `tidepool problems` tells you about it so you
+can run the hook again once it's fixed (see below).
+
+#### Hooks that change things
+
+A hook receives a description of the video's files (or, for `embed` hooks, of
+the tags about to be written) as JSON on its input, and can print a changed
+version on its output. Printing nothing means "no changes", and a hook only
+needs to print what it changes. When several hooks of the same type run, each
+one sees what the previous one printed.
+
+**Fixing tags** (`embed`). For example, to turn YouTube's `"Artist - Title"`
+titles into separate artist and title tags (this one uses
+[`jq`](https://jqlang.org)):
 
 ```toml
 [hooks.split-title]
@@ -463,32 +487,25 @@ jq '(.tags.title | capture("^(?<artist>.+?) - (?<title>.+)$")) as $m
     | .tags.artist = $m.artist | .tags.album_artist = $m.artist | .tags.title = $m.title'
 ```
 
-A `finished` hook that moves the video somewhere else, or deletes a file on
-purpose, says so, so tidepool knows where everything is and doesn't treat it
-as missing:
+Besides `tags`, an `embed` hook can change the `cover`, `chapters` and
+`subtitles` that go into the file; setting one to `null` leaves it out. Your
+`embed` settings still decide what's written: changed tags only go into the
+file with `metadata = true`.
+
+**Converting** (`downloaded`). A hook that converts the video prints where the
+new file is, and tidepool saves that one instead:
+
+```json
+{"files": {"media": "/path/it/was/given/media.mp4"}}
+```
+
+**Moving or deleting** (`finished`). A hook that moves the video elsewhere, or
+deletes a file on purpose, says so, so tidepool knows where everything is and
+doesn't treat it as missing:
 
 ```json
 {"files": {"media": "/nas/archive/Some title.mkv", "cover": null}}
 ```
-
-In what an `embed` hook prints, a missing key keeps its value and `null`
-removes it (a tag, the cover, all chapters). The `embed` settings still decide
-what goes into the file: a hook can change the tags, but they're only written
-with `metadata = true`.
-
-| Option | Default | Meaning |
-| --- | --- | --- |
-| `type` | `"finished"` | `downloaded`, `embed` or `finished` |
-| `timeout` | `"10m"` | stop the hook after this long |
-| `on_failure` | `"fail"` | `fail`, `warn` or `retry` |
-| `retries` | `0` | extra tries with `on_failure = "retry"` |
-| `env` | `{}` | extra environment variables |
-| `work_dir` | the video's folder | where the hook runs |
-
-When a `downloaded` or `embed` hook fails, the download fails too and is tried
-again on a later run; with `on_failure = "warn"`, tidepool carries on without
-the hook's changes. When a `finished` hook fails, the video stays downloaded,
-and `tidepool problems` tells you about it.
 
 #### Running hooks again
 
@@ -502,12 +519,11 @@ tidepool hooks run --category music          # every source in a category
 tidepool hooks run dQw4w9WgXcQ okvideo01     # these videos
 ```
 
-Each video runs its source's hooks, as a download would: `downloaded` and
-`embed` hooks work on copies of the files, which are then embedded again and
-put back in place (so a hook that converts a video replaces the old file);
-`finished` hooks run on the files as they are. Add `--hook <name>` (repeatable)
-to run only some hooks, and `--failed` to run only the ones that failed last
-time:
+Each video runs its source's hooks, just like when it was downloaded: tags
+are fixed and written again, a converted video replaces the old one, and
+`finished` hooks run on the saved files. Your files stay as they are if
+something fails. Add `--hook <name>` (repeatable) to run only some hooks, and
+`--failed` to run only the ones that failed last time:
 
 ```sh
 tidepool hooks run --all --failed            # after fixing a broken hook
@@ -515,13 +531,14 @@ tidepool hooks run --category music --hook split-title
 ```
 
 Running the same hooks twice is safe: the file gets the new tags, cover and
-subtitles instead of a second copy of them.
+subtitles instead of a second copy of them. Videos you pick that don't use any
+of those hooks are skipped.
 
 ### Problems
 
 Some failures aren't about one video: an outdated yt-dlp that can't read
 YouTube anymore, YouTube asking to confirm you're not a bot, a playlist that
-was deleted. When tidepool runs into one of these repeatedly, it keeps a note
+was deleted, a hook that keeps failing. When tidepool runs into one of these repeatedly, it keeps a note
 and shows it the next time you use tidepool, even if the failure happened in
 a cron job:
 
@@ -589,17 +606,17 @@ can read it.
 
 ### Tools
 
-tidepool downloads [yt-dlp](https://github.com/yt-dlp/yt-dlp) and
-[Deno](https://deno.com) the first time they're needed, and keeps them up to
-date. Deno is the JavaScript runtime yt-dlp needs to download from YouTube.
+tidepool uses two tools, and takes care of both: it downloads them the first
+time they're needed and keeps them up to date.
 
-- **yt-dlp** is checked for a new release at most once an hour. Before
-  installing one, tidepool checks that it was signed by the yt-dlp project and
-  that the file wasn't altered, so a tampered download is never used.
-- **Deno** is checked once a day. tidepool installs the newest 2.x release
-  (yt-dlp needs at least 2.3.0) and checks it against the checksum published
-  with the release. Deno doesn't sign its releases, so this catches broken
-  downloads, but not a release that was tampered with on GitHub itself.
+- **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** does the downloading. tidepool
+  looks for a new release at most once an hour, and only installs one that the
+  yt-dlp project signed, so a tampered download is never used.
+- **[Deno](https://deno.com)** is a helper yt-dlp needs to download from
+  YouTube. tidepool looks for a new release once a day, and checks each
+  download against the fingerprint Deno publishes with it. That catches broken
+  downloads; since Deno doesn't sign its releases, it can't catch a release
+  that was tampered with at the source.
 
 | Command | What it does |
 | --- | --- |
@@ -687,6 +704,8 @@ so `tidepool run -v > out.txt` keeps the summary lines separate. With
 | Your config file | `~/.config/tidepool/config.toml` |
 | Videos (unless a category sets `media_dir` or `output_dir`) | `~/.local/share/tidepool/media` |
 | Downloads in progress (unless a category sets `tmp_dir`) | `~/.local/share/tidepool/tmp` |
+| What your hooks printed as errors | `~/.local/share/tidepool/logs/hooks/` |
+| The yt-dlp and Deno tidepool manages | `~/.local/share/tidepool/bin/` |
 | tidepool's own data | `~/.local/share/tidepool/` |
 
 If you set `XDG_CONFIG_HOME` or `XDG_DATA_HOME`, tidepool uses those folders
@@ -701,5 +720,5 @@ For scripts:
 | 0 | Success |
 | 1 | Something went wrong (e.g. a config mistake); the message says what |
 | 2 | The command was used incorrectly (unknown option, unknown source) |
-| 3 | Something failed for some sources or videos, but the rest finished |
+| 3 | Something failed for some sources, videos or hooks, but the rest finished |
 | 130 / 143 | Stopped by Ctrl-C / `kill` |
