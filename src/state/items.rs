@@ -378,6 +378,35 @@ mod tests {
     }
 
     #[test]
+    fn hook_retries_wait_longer_each_time_up_to_an_hour() {
+        let waits: Vec<Option<u64>> = (0..9).map(|n| hook_retry_wait(n, 0)).collect();
+        assert_eq!(
+            waits,
+            [
+                Some(15),
+                Some(16),
+                Some(31),
+                Some(96),
+                Some(271),
+                Some(640),
+                Some(1311),
+                Some(2416),
+                None
+            ]
+        );
+        assert_eq!(
+            hook_retry_wait(7, 9),
+            Some(2416 + 9 * 8),
+            "jitter grows too"
+        );
+        assert_eq!(
+            hook_retry_wait(0, 13),
+            Some(15 + 3),
+            "jitter stays under 10"
+        );
+    }
+
+    #[test]
     fn a_failed_list_leaves_its_videos_alone() {
         let mut state = State::open_in_memory().unwrap();
         let keep = |_: &RemoteItem| Decision::Keep { include: None };
@@ -912,43 +941,182 @@ pub struct HookRun {
     pub finished_at: String,
     pub error: Option<String>,
     pub values: BTreeMap<String, String>,
+    /// An automatic retry of a failed `finished` hook: it keeps counting
+    /// retries, where any other run starts over.
+    pub retry: bool,
 }
 
-/// Store the latest run of a hook for a video.
+/// The longest wait before a failed `finished` hook is tried again; past
+/// it, the hook has failed for good.
+pub const MAX_HOOK_RETRY_WAIT: u64 = 3600;
+
+/// How long to wait before automatic retry number `retries + 1` of a
+/// failed `finished` hook (Sidekiq's curve: `n⁴ + 15 + rand(10)·(n + 1)`
+/// seconds, `jitter` in 0..10); `None` once that would pass an hour.
+pub fn hook_retry_wait(retries: u32, jitter: u32) -> Option<u64> {
+    let n = u64::from(retries);
+    let base = n.pow(4) + 15;
+    (base <= MAX_HOOK_RETRY_WAIT).then(|| base + u64::from(jitter % 10) * (n + 1))
+}
+
+/// A number in 0..10, different each time.
+fn jitter() -> u32 {
+    use std::hash::{BuildHasher, Hasher};
+    let mut hasher = std::collections::hash_map::RandomState::new().build_hasher();
+    hasher.write_u128(
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos(),
+    );
+    (hasher.finish() % 10) as u32
+}
+
+/// Store a run of a hook for a video: its history, and its latest state. A
+/// failed `finished` hook is tried again later (see [`hook_retry_wait`]),
+/// until it fails for good.
 pub fn record_hook_run(conn: &Connection, run: &HookRun) -> rusqlite::Result<()> {
     conn.execute(
-        "INSERT INTO hook_runs (source_key, video_id, hook, type, status, exit_code, attempts,
-           started_at, finished_at, error, input_values)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
-         ON CONFLICT (source_key, video_id, hook, type) DO UPDATE SET
-           status = excluded.status, exit_code = excluded.exit_code, attempts = excluded.attempts,
-           started_at = excluded.started_at, finished_at = excluded.finished_at,
-           error = excluded.error, input_values = excluded.input_values",
+        "INSERT INTO hook_attempts (source_key, video_id, hook, type, ok, exit_code, attempts,
+           started_at, finished_at, error, retry)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
         params![
             run.source_key,
             run.video_id,
             run.hook,
             run.kind,
-            if run.ok { "ok" } else { "failed" },
+            run.ok,
+            run.exit_code,
+            run.attempts,
+            run.started_at,
+            run.finished_at,
+            run.error,
+            run.retry,
+        ],
+    )?;
+    let previous: u32 = conn
+        .query_row(
+            "SELECT retries FROM hook_runs
+             WHERE source_key = ?1 AND video_id = ?2 AND hook = ?3 AND type = ?4",
+            params![run.source_key, run.video_id, run.hook, run.kind],
+            |r| r.get(0),
+        )
+        .optional()?
+        .unwrap_or(0);
+    let finished_at: Option<Timestamp> = run.finished_at.parse().ok();
+    let later = |seconds: u64| {
+        finished_at
+            .and_then(|t| {
+                t.checked_add(jiff::SignedDuration::from_secs(seconds as i64))
+                    .ok()
+            })
+            .map(|t| t.to_string())
+    };
+    let stopped = run.error.as_deref() == Some("stopped");
+    let (status, retries, next_attempt_at) = if run.ok {
+        ("ok", 0, None)
+    } else if run.kind != "finished" {
+        // downloaded/embed: the download failed, and is retried as a whole.
+        ("failed", 0, None)
+    } else if stopped {
+        // Not the hook's fault: on the next run, same count.
+        ("retrying", if run.retry { previous } else { 0 }, later(0))
+    } else {
+        let retries = if run.retry { previous + 1 } else { 0 };
+        match hook_retry_wait(retries, jitter()) {
+            Some(wait) => ("retrying", retries, later(wait)),
+            None => ("failed", retries, None),
+        }
+    };
+    conn.execute(
+        "INSERT INTO hook_runs (source_key, video_id, hook, type, status, exit_code, attempts,
+           started_at, finished_at, error, input_values, retries, next_attempt_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)
+         ON CONFLICT (source_key, video_id, hook, type) DO UPDATE SET
+           status = excluded.status, exit_code = excluded.exit_code, attempts = excluded.attempts,
+           started_at = excluded.started_at, finished_at = excluded.finished_at,
+           error = excluded.error, input_values = excluded.input_values,
+           retries = excluded.retries, next_attempt_at = excluded.next_attempt_at",
+        params![
+            run.source_key,
+            run.video_id,
+            run.hook,
+            run.kind,
+            status,
             run.exit_code,
             run.attempts,
             run.started_at,
             run.finished_at,
             run.error,
             serde_json::to_string(&run.values).expect("values serialize"),
+            retries,
+            next_attempt_at,
         ],
     )?;
     Ok(())
 }
 
-/// The hooks whose last run failed for one video in one source.
+/// A hook's latest status for a video: `ok`, `retrying` or `failed`.
+pub fn hook_status(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    hook: &str,
+) -> rusqlite::Result<Option<String>> {
+    conn.query_row(
+        "SELECT status FROM hook_runs WHERE source_key = ?1 AND video_id = ?2 AND hook = ?3
+         ORDER BY type = 'finished' DESC LIMIT 1",
+        params![source_key, video_id, hook],
+        |r| r.get(0),
+    )
+    .optional()
+}
+
+/// `finished` hooks due for an automatic retry, per video:
+/// `(source_key, video_id, hooks)`.
+pub fn due_hook_retries(
+    conn: &Connection,
+    now: Timestamp,
+) -> rusqlite::Result<Vec<(String, String, Vec<String>)>> {
+    let mut stmt = conn.prepare(
+        "SELECT source_key, video_id, hook, next_attempt_at FROM hook_runs
+         WHERE status = 'retrying' AND type = 'finished'
+         ORDER BY source_key, video_id, hook",
+    )?;
+    let rows = stmt.query_map([], |r| {
+        Ok((
+            r.get::<_, String>(0)?,
+            r.get::<_, String>(1)?,
+            r.get::<_, String>(2)?,
+            r.get::<_, Option<String>>(3)?,
+        ))
+    })?;
+    let mut due: Vec<(String, String, Vec<String>)> = Vec::new();
+    for row in rows {
+        let (source, video, hook, at) = row?;
+        let ready = at
+            .and_then(|t| t.parse::<Timestamp>().ok())
+            .is_none_or(|t| t <= now);
+        if !ready {
+            continue;
+        }
+        match due.last_mut() {
+            Some((s, v, hooks)) if *s == source && *v == video => hooks.push(hook),
+            _ => due.push((source, video, vec![hook])),
+        }
+    }
+    Ok(due)
+}
+
+/// The hooks whose last run failed (and may be waiting for a retry) for one
+/// video in one source.
 pub fn failed_hooks(
     conn: &Connection,
     source_key: &str,
     video_id: &str,
 ) -> rusqlite::Result<HashSet<String>> {
     let mut stmt = conn.prepare(
-        "SELECT hook FROM hook_runs WHERE source_key = ?1 AND video_id = ?2 AND status = 'failed'",
+        "SELECT hook FROM hook_runs WHERE source_key = ?1 AND video_id = ?2 AND status != 'ok'",
     )?;
     stmt.query_map(params![source_key, video_id], |r| r.get(0))?
         .collect()

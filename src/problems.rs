@@ -162,7 +162,7 @@ impl Kind {
             Kind::ApiKeyRejected => "replace youtube.api_key in your config (and run `tidepool config import`); until then, sources are checked with yt-dlp".into(),
             Kind::ApiQuota => "the quota resets at midnight Pacific time; until then, sources are checked with yt-dlp. If Google granted your project more, raise youtube.daily_quota".into(),
             Kind::DenoFailed => "check your network, or run `tidepool tools update deno`; without Deno, YouTube downloads may fail. To use your own, set managed = false in [tools.deno]".into(),
-            Kind::HookFailing => "see the hook's log in ~/.local/share/tidepool/logs/hooks/<video_id>.log; after fixing it, run `tidepool hooks run <video_id>` (videos whose download failed are retried on later runs)".into(),
+            Kind::HookFailing => "see the hook's log in ~/.local/share/tidepool/logs/hooks/<video_id>.log; failed finished hooks are tried again on later runs for about an hour and a half, and failed downloads later too; after fixing it, `tidepool hooks run --all --failed` runs the rest".into(),
         }
     }
 }

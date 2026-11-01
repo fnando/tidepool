@@ -599,10 +599,16 @@ impl App<'_> {
                 cookies: crate::pipeline::cookies_file(source, dirs)?,
             })
         };
-        let summary =
+        let mut summary =
             crate::download::download_all(state, sources, paths, ctx, options, tracker, out)
                 .await
                 .map_err(anyhow::Error::msg)?;
+        if summary.interrupted.is_none() {
+            summary.hooks_failed += self
+                .retry_hooks(state, config, sources, tracker, out)
+                .await?;
+            summary.interrupted = self.shutdown.code();
+        }
 
         if summary.interrupted.is_some() {
             writeln!(
@@ -610,7 +616,16 @@ impl App<'_> {
                 "stopped; unfinished downloads will resume on the next run"
             )?;
         } else if summary.downloaded + summary.skipped + summary.failed == 0 {
-            writeln!(out, "nothing to download")?;
+            if summary.hooks_failed > 0 {
+                writeln!(
+                    out,
+                    "nothing to download; {} hook{} failed",
+                    summary.hooks_failed,
+                    if summary.hooks_failed == 1 { "" } else { "s" }
+                )?;
+            } else {
+                writeln!(out, "nothing to download")?;
+            }
         } else {
             let videos = if summary.downloaded == 1 {
                 "video"
@@ -638,6 +653,112 @@ impl App<'_> {
             writeln!(out, "{}", parts.join("; "))?;
         }
         Ok(summary)
+    }
+
+    /// Try again the failed `finished` hooks of `sources` that are due (see
+    /// `items::hook_retry_wait`); returns how many failed again.
+    async fn retry_hooks(
+        &self,
+        state: &State,
+        config: &crate::config::Config,
+        sources: &[EffectiveSource],
+        tracker: &mut crate::problems::Tracker,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<usize> {
+        use crate::state::items;
+        let due: Vec<(String, String, Vec<String>)> =
+            items::due_hook_retries(&state.conn, jiff::Timestamp::now())?
+                .into_iter()
+                .filter(|(source, _, _)| sources.iter().any(|s| &s.key == source))
+                .collect();
+        if due.is_empty() {
+            return Ok(0);
+        }
+        let every: Vec<String> = effective_sources(config)
+            .into_iter()
+            .map(|s| s.key)
+            .collect();
+        let everywhere = items::downloaded(&state.conn, &every)?;
+        let videos = everywhere
+            .iter()
+            .filter(|v| {
+                due.iter()
+                    .any(|(s, id, _)| *s == v.source_key && *id == v.video_id)
+            })
+            .cloned()
+            .collect();
+        let selected = Selected {
+            sources: sources.to_vec(),
+            videos,
+            everywhere,
+        };
+        let mut rerun = Rerun::new(
+            self,
+            state,
+            config,
+            &selected,
+            crate::download::rerun::Mode::Hooks,
+            tracker,
+        );
+        rerun.retry = true;
+        let mut failed = 0;
+        for (source_key, video_id, hooks) in &due {
+            if self.shutdown.is_stopping() {
+                break;
+            }
+            // Gone since, or no longer downloaded: nothing to run it on.
+            let Some(item) = selected
+                .videos
+                .iter()
+                .find(|v| &v.source_key == source_key && &v.video_id == video_id)
+            else {
+                continue;
+            };
+            let source = selected.source(source_key);
+            // In the source's order, if it still has them.
+            let names: Vec<String> = source
+                .hooks
+                .iter()
+                .filter(|h| hooks.contains(h))
+                .filter(|h| {
+                    config
+                        .hooks
+                        .get(*h)
+                        .is_some_and(|c| c.kind == crate::config::HookType::Finished)
+                })
+                .cloned()
+                .collect();
+            if names.is_empty() {
+                continue;
+            }
+            let (title, problems) = rerun.video(item, source, &names).await?;
+            let label = format!("{source_key}: “{title}”");
+            if problems.is_empty() {
+                writeln!(out, "{label}: hook {} worked this time", names.join(", "))?;
+                continue;
+            }
+            failed += 1;
+            let gave_up: Vec<&str> = names
+                .iter()
+                .filter(|h| {
+                    items::hook_status(&state.conn, source_key, video_id, h)
+                        .ok()
+                        .flatten()
+                        .as_deref()
+                        == Some("failed")
+                })
+                .map(String::as_str)
+                .collect();
+            let mut line = format!("{label}: tried again: {}", problems.join("; "));
+            if !gave_up.is_empty() {
+                line.push_str(&format!(
+                    " (no more retries for {}; `tidepool hooks run {video_id} --failed` tries again)",
+                    gave_up.join(", ")
+                ));
+            }
+            writeln!(out, "{line}")?;
+        }
+        Ok(failed)
     }
 
     fn exit_code(summary: &crate::download::Summary, index_failures: usize) -> i32 {
@@ -942,12 +1063,14 @@ impl App<'_> {
         }
         let selected = self.select_downloaded(&state, &config, select, out)?;
         let _lock = self.lock()?;
+        let mut tracker = crate::problems::Tracker::default();
         let mut rerun = Rerun::new(
             self,
             &state,
             &config,
             &selected,
             crate::download::rerun::Mode::Hooks,
+            &mut tracker,
         );
         let (mut ran, mut failed) = (0, 0);
         for item in &selected.videos {
@@ -981,7 +1104,8 @@ impl App<'_> {
                 writeln!(out, "{label}: {}", problems.join("; "))?;
             }
         }
-        rerun.finish()?;
+        drop(rerun);
+        tracker.finish(&state.conn, None, false, jiff::Timestamp::now())?;
         if let Some(code) = self.shutdown.code() {
             writeln!(out, "stopped after {ran} videos; run it again to finish")?;
             return Ok(code);
@@ -1014,7 +1138,8 @@ impl App<'_> {
         let mode = crate::download::rerun::Mode::Embed {
             remove_disabled: args.remove_disabled,
         };
-        let mut rerun = Rerun::new(self, &state, &config, &selected, mode);
+        let mut tracker = crate::problems::Tracker::default();
+        let mut rerun = Rerun::new(self, &state, &config, &selected, mode, &mut tracker);
         let (mut done, mut failed) = (0, 0);
         let mut nothing_on: Vec<&str> = Vec::new();
         for item in &selected.videos {
@@ -1053,7 +1178,8 @@ impl App<'_> {
                 writeln!(out, "{label}: {}", problems.join("; "))?;
             }
         }
-        rerun.finish()?;
+        drop(rerun);
+        tracker.finish(&state.conn, None, false, jiff::Timestamp::now())?;
         for key in nothing_on {
             writeln!(
                 out,
@@ -2037,7 +2163,9 @@ struct Rerun<'a> {
     state: &'a State,
     selected: &'a Selected,
     shared: crate::download::rerun::Shared<'a>,
-    tracker: crate::problems::Tracker,
+    tracker: &'a mut crate::problems::Tracker,
+    /// These are automatic retries of failed `finished` hooks.
+    retry: bool,
     /// What embedding did for the last video.
     last_embedding: Option<crate::download::stages::Embedding>,
 }
@@ -2049,6 +2177,7 @@ impl<'a> Rerun<'a> {
         config: &'a crate::config::Config,
         selected: &'a Selected,
         mode: crate::download::rerun::Mode,
+        tracker: &'a mut crate::problems::Tracker,
     ) -> Self {
         Self {
             state,
@@ -2064,7 +2193,8 @@ impl<'a> Rerun<'a> {
                 shutdown: &app.shutdown,
                 grace: config.general.shutdown_timeout.0,
             },
-            tracker: crate::problems::Tracker::default(),
+            tracker,
+            retry: false,
             last_embedding: None,
         }
     }
@@ -2113,7 +2243,7 @@ impl<'a> Rerun<'a> {
         for report in &result.hook_runs {
             crate::state::items::record_hook_run(
                 conn,
-                &crate::download::hook_run(&item.source_key, &item.video_id, report),
+                &crate::download::hook_run(&item.source_key, &item.video_id, report, self.retry),
             )?;
             match &report.result {
                 Ok(_) => self.tracker.hook_succeeded(),
@@ -2131,12 +2261,6 @@ impl<'a> Rerun<'a> {
         }
         self.last_embedding = result.embedding;
         Ok((result.title, problems))
-    }
-
-    fn finish(self) -> anyhow::Result<()> {
-        self.tracker
-            .finish(&self.state.conn, None, false, jiff::Timestamp::now())?;
-        Ok(())
     }
 }
 

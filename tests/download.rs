@@ -1537,3 +1537,93 @@ async fn embed_applies_the_current_settings_to_downloaded_videos() {
         serde_json::json!({ "metadata": true, "cover": false, "chapters": true, "subtitles": false })
     );
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn failed_finished_hooks_are_tried_again_until_they_give_up() {
+    let env = Env::new().await;
+    let flag = env.path("fixed");
+    let notify = script(
+        &env,
+        "notify.sh",
+        &format!(
+            "[ -f '{}' ] || {{ echo 'server down' >&2; exit 1; }}",
+            flag.display()
+        ),
+    );
+    let config = hooks_config(
+        &env,
+        "hooks = [\"notify\"]",
+        &format!("[hooks.notify]\ncommand = [\"{}\"]\n", notify.display()),
+    );
+    env.cmd(&["run", "--config", &config]).assert().code(3);
+    let db = || rusqlite::Connection::open(env.path("data/tidepool/state.db")).unwrap();
+    let rick = "dQw4w9WgXcQ";
+    let state = |video: &str| -> (String, i64, Option<String>) {
+        db().query_row(
+            "SELECT status, retries, next_attempt_at FROM hook_runs WHERE video_id = ?1",
+            [video],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .unwrap()
+    };
+    let (status, retries, next) = state(rick);
+    assert_eq!((status.as_str(), retries), ("retrying", 0));
+    assert!(next.is_some());
+
+    // Not due yet: left alone.
+    env.cmd(&["download"])
+        .assert()
+        .success()
+        .stdout(contains("nothing to download").and(contains("tried again").not()));
+
+    // Due: tried again, and counted.
+    let due = || {
+        db().execute(
+            "UPDATE hook_runs SET next_attempt_at = '2000-01-01T00:00:00Z' WHERE status = 'retrying'",
+            [],
+        )
+        .unwrap();
+    };
+    due();
+    env.cmd(&["download"])
+        .assert()
+        .code(3)
+        .stdout(
+            contains("dl: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”: tried again: hook notify failed")
+                .and(contains("nothing to download; 2 hooks failed")),
+        );
+    assert_eq!(state(rick).1, 1);
+
+    // Retries 2 to 7 fail too; the 8th is the last.
+    for _ in 2..8 {
+        due();
+        env.cmd(&["download"]).assert().code(3);
+    }
+    due();
+    env.cmd(&["download"]).assert().code(3).stdout(contains(
+        "(no more retries for notify; `tidepool hooks run dQw4w9WgXcQ --failed` tries again)",
+    ));
+    let (status, retries, next) = state(rick);
+    assert_eq!((status.as_str(), retries, next), ("failed", 8, None));
+    due();
+    env.cmd(&["download"])
+        .assert()
+        .success()
+        .stdout(contains("tried again").not());
+    let attempts: i64 = db()
+        .query_row(
+            "SELECT COUNT(*) FROM hook_attempts WHERE video_id = ?1",
+            [rick],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(attempts, 9, "the first run and 8 retries, each kept");
+
+    // Fixed: `hooks run --failed` picks up the ones that gave up.
+    fs::write(&flag, "").unwrap();
+    env.cmd(&["hooks", "run", "--all", "--failed"])
+        .assert()
+        .success()
+        .stdout(contains("ran hooks for 2 videos"));
+    assert_eq!(state(rick).0, "ok");
+}

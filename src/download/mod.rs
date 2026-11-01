@@ -127,7 +127,12 @@ struct Finished {
 }
 
 /// A hook report as stored in `hook_runs`.
-pub fn hook_run(source_key: &str, video_id: &str, report: &hooks::Report) -> items::HookRun {
+pub fn hook_run(
+    source_key: &str,
+    video_id: &str,
+    report: &hooks::Report,
+    retry: bool,
+) -> items::HookRun {
     items::HookRun {
         source_key: source_key.to_string(),
         video_id: video_id.to_string(),
@@ -140,6 +145,7 @@ pub fn hook_run(source_key: &str, video_id: &str, report: &hooks::Report) -> ite
         finished_at: report.finished_at.to_string(),
         error: report.result.as_ref().err().cloned(),
         values: report.values.clone(),
+        retry,
     }
 }
 
@@ -831,7 +837,10 @@ fn record(
         items::update_video_details(&state.conn, details, now)?;
     }
     for report in &f.hook_runs {
-        items::record_hook_run(&state.conn, &hook_run(&f.source_key, &f.video_id, report))?;
+        items::record_hook_run(
+            &state.conn,
+            &hook_run(&f.source_key, &f.video_id, report, false),
+        )?;
         match &report.result {
             Ok(_) => tracker.hook_succeeded(),
             // Stopped by Ctrl-C: not the hook's fault.

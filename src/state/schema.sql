@@ -31,13 +31,24 @@ CREATE TABLE items (               -- a video's membership in a source
   PRIMARY KEY (source_key, video_id)
 );
 
-CREATE TABLE hook_runs (
+CREATE TABLE hook_runs (           -- the latest run of each hook for each video
   source_key TEXT, video_id TEXT, hook TEXT, type TEXT,
-  status TEXT, exit_code INTEGER, attempts INTEGER, started_at TEXT, finished_at TEXT,
+  status TEXT,                      -- ok, retrying (a finished hook, tried again later) or failed
+  exit_code INTEGER, attempts INTEGER, started_at TEXT, finished_at TEXT,
   error TEXT,                       -- why it failed
   input_values TEXT,                -- JSON: the placeholder values it ran with, to run it again
+  retries INTEGER NOT NULL DEFAULT 0, -- automatic retries so far (finished hooks)
+  next_attempt_at TEXT,             -- when it's tried again (status retrying)
   PRIMARY KEY (source_key, video_id, hook, type)
 );
+
+CREATE TABLE hook_attempts (       -- every run of a hook, for its history
+  source_key TEXT, video_id TEXT, hook TEXT, type TEXT,
+  ok INTEGER NOT NULL, exit_code INTEGER, attempts INTEGER,
+  started_at TEXT, finished_at TEXT, error TEXT,
+  retry INTEGER NOT NULL            -- 1 when it was an automatic retry
+);
+CREATE INDEX hook_attempts_by_video ON hook_attempts (source_key, video_id, hook);
 
 CREATE TABLE runs (
   id INTEGER PRIMARY KEY, command TEXT, started_at TEXT, finished_at TEXT,

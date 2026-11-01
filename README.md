@@ -514,8 +514,12 @@ A hook's `type` says when it runs:
 **When a hook fails.** If an `embed` or `downloaded` hook fails, the video
 isn't saved; it's tried again on a later run (with `on_failure = "warn"`,
 tidepool carries on without the hook's changes instead). If a `finished` hook
-fails, the video stays saved, and `tidepool problems` tells you about it so you
-can run the hook again once it's fixed (see below).
+fails, the video stays saved and the hook is tried again on later runs of
+`tidepool run` and `tidepool download`, waiting a little longer each time: 15
+seconds at first, about 40 minutes by the last try. After 8 more tries (about an
+hour and a half) it stops trying, and `tidepool problems` tells you about it, so
+you can run the hook again once it's fixed (see below). Every try is
+remembered, so you can see what went wrong each time.
 
 #### Hooks that change things
 
@@ -578,7 +582,8 @@ Each video runs its source's hooks, just like when it was downloaded: tags
 are fixed and written again, a converted video replaces the old one, and
 `finished` hooks run on the saved files. Your files stay as they are if
 something fails. Add `--hook <name>` (repeatable) to run only some hooks, and
-`--failed` to run only the ones that failed last time:
+`--failed` to run only the ones that failed last time, including those that
+ran out of tries (they get a fresh set of tries if they fail again):
 
 ```sh
 tidepool hooks run --all --failed            # after fixing a broken hook

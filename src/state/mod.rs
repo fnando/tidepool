@@ -97,6 +97,7 @@ mod tests {
         for t in [
             "config_revisions",
             "hook_runs",
+            "hook_attempts",
             "items",
             "sources",
             "quota_usage",
