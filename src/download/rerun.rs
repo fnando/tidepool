@@ -120,10 +120,29 @@ pub async fn rerun(shared: &Shared<'_>, video: &Video<'_>) -> Rerun {
         }
     }
 
-    let placed = result.files.as_ref().map(|(f, _)| f).unwrap_or(files);
-    stage.finished_hooks(&values, placed, &mut hook_runs).await;
+    let (mut placed, bytes) = match result.files.take() {
+        Some(new) => new,
+        None => (files.clone(), media_size(files)),
+    };
+    let context = stage.context(&info);
+    let moved = stage
+        .finished_hooks(&values, &mut placed, &context, &mut hook_runs)
+        .await;
+    if moved && let Err(e) = metadata::rewrite_files(&placed) {
+        tracing::warn!("{label}: cannot update {}: {e}", placed.metadata);
+    }
+    if moved || placed != *files {
+        result.files = Some((placed, bytes));
+    }
     result.hook_runs = hook_runs;
     result
+}
+
+/// The media's size now (0 when it's gone).
+fn media_size(files: &VideoFiles) -> u64 {
+    std::fs::metadata(&files.media)
+        .map(|m| m.len())
+        .unwrap_or(0)
 }
 
 fn read_metadata(video: &Video<'_>) -> Result<(serde_json::Value, VideoInfo), String> {

@@ -400,6 +400,22 @@ If embedding fails, you keep the file as downloaded, with a warning.
 When the same video is in two sources and shares one file (see `duplicates`),
 the file carries the album and track of the source that downloaded it last.
 
+### Missing files
+
+Each run checks that every file of the videos you've downloaded is still
+there: the video, the poster, the subtitles and the metadata file. By default
+it only tells you:
+
+```
+1 video has missing files; set redownload_missing = true to restore them
+```
+
+With `redownload_missing = true` (for every source, a category or one source),
+tidepool restores only what's missing: a deleted poster is fetched again,
+subtitles are fetched again without the video, the metadata file is written
+again, and only a missing video is downloaded again. Files a hook deleted on
+purpose (see below) never count as missing.
+
 ### Hooks
 
 Hooks run your own commands at each stage of a download: to fix tags, convert
@@ -426,7 +442,7 @@ A hook's `type` says when it runs:
 | --- | --- | --- |
 | `downloaded` | right after the download, before anything is embedded | the raw files, as JSON on its input; it may print new ones, e.g. after converting the video |
 | `embed` | before tags and the cover go into the file (see `embed`) | the tags, cover, chapters and subtitles about to be embedded, as JSON; it prints them back, changed |
-| `finished` (the default) | once the video's files are in place | nothing; what it prints is ignored |
+| `finished` (the default) | once the video's files are in place | the placed files, as JSON; if it moves or deletes one, it prints where it went (or `null` for "deleted on purpose") |
 
 Hooks of the same type run in the order you list them, each getting what the
 previous one printed. Printing nothing means "no changes".
@@ -445,6 +461,14 @@ command = ["~/bin/split-title"]
 # ~/bin/split-title
 jq '(.tags.title | capture("^(?<artist>.+?) - (?<title>.+)$")) as $m
     | .tags.artist = $m.artist | .tags.album_artist = $m.artist | .tags.title = $m.title'
+```
+
+A `finished` hook that moves the video somewhere else, or deletes a file on
+purpose, says so, so tidepool knows where everything is and doesn't treat it
+as missing:
+
+```json
+{"files": {"media": "/nas/archive/Some title.mkv", "cover": null}}
 ```
 
 In what an `embed` hook prints, a missing key keeps its value and `null`

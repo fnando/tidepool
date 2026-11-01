@@ -581,6 +581,10 @@ pub struct VideoFiles {
     /// yt-dlp's raw info JSON, with `keep_raw_info`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub raw_info: Option<String>,
+    /// Files a `finished` hook removed on purpose: `media`, `cover` or
+    /// `subtitle:<lang>`. They don't count as missing.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub removed: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -590,6 +594,10 @@ pub struct Subtitle {
 }
 
 impl VideoFiles {
+    pub fn is_removed(&self, what: &str) -> bool {
+        self.removed.iter().any(|r| r == what)
+    }
+
     /// Every file, metadata last.
     pub fn paths(&self) -> Vec<&str> {
         let mut out = vec![self.media.as_str()];
@@ -605,23 +613,103 @@ impl VideoFiles {
     }
 }
 
+/// A finished download, as stored.
+pub struct Done<'a> {
+    pub files: &'a VideoFiles,
+    /// Its metadata.json, kept as a copy to restore it.
+    pub metadata: &'a str,
+    /// The format string it was downloaded with.
+    pub format: &'a str,
+    pub media_bytes: u64,
+}
+
 pub fn mark_done(
     conn: &Connection,
     source_key: &str,
     video_id: &str,
-    files: &VideoFiles,
-    format: &str,
-    media_bytes: u64,
+    done: Done<'_>,
     now: Timestamp,
 ) -> rusqlite::Result<()> {
+    let Done {
+        files,
+        metadata,
+        format,
+        media_bytes,
+    } = done;
     let json = serde_json::to_string(files).expect("files serialize");
     conn.execute(
-        "UPDATE items SET status = 'done', dir = ?3, files = ?4, format = ?5, media_bytes = ?6, media_present = 1,
-           downloaded_at = ?7, attempts = 0, next_attempt_at = NULL, last_error = NULL
+        "UPDATE items SET status = 'done', dir = ?3, files = ?4, metadata = ?5, format = ?6, media_bytes = ?7,
+           media_present = 1, missing = NULL, downloaded_at = ?8, attempts = 0, next_attempt_at = NULL,
+           last_error = NULL
          WHERE source_key = ?1 AND video_id = ?2",
-        params![source_key, video_id, files.dir, json, format, media_bytes as i64, now.to_string()],
+        params![source_key, video_id, files.dir, json, metadata, format, media_bytes as i64, now.to_string()],
     )?;
     Ok(())
+}
+
+/// What's missing of a downloaded video (empty = nothing).
+pub fn set_missing(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    missing: &[String],
+) -> rusqlite::Result<()> {
+    let json = (!missing.is_empty()).then(|| serde_json::to_string(missing).expect("JSON"));
+    conn.execute(
+        "UPDATE items SET missing = ?3, media_present = ?4 WHERE source_key = ?1 AND video_id = ?2",
+        params![
+            source_key,
+            video_id,
+            json,
+            !missing.iter().any(|m| m == "media")
+        ],
+    )?;
+    Ok(())
+}
+
+/// Download a video again whose media is gone (its other files are
+/// replaced too).
+pub fn requeue(conn: &Connection, source_key: &str, video_id: &str) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE items SET status = 'pending', attempts = 0, next_attempt_at = NULL, last_error = NULL
+         WHERE source_key = ?1 AND video_id = ?2",
+        params![source_key, video_id],
+    )?;
+    Ok(())
+}
+
+/// The stored copy of a video's metadata.json.
+pub fn metadata_copy(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+) -> rusqlite::Result<Option<String>> {
+    Ok(conn
+        .query_row(
+            "SELECT metadata FROM items WHERE source_key = ?1 AND video_id = ?2",
+            params![source_key, video_id],
+            |r| r.get(0),
+        )
+        .optional()?
+        .flatten())
+}
+
+/// The thumbnails the indexer found for a video.
+pub fn thumbnails(
+    conn: &Connection,
+    video_id: &str,
+) -> rusqlite::Result<Vec<crate::index::Thumbnail>> {
+    let json: Option<String> = conn
+        .query_row(
+            "SELECT thumbs_json FROM videos WHERE id = ?1",
+            [video_id],
+            |r| r.get(0),
+        )
+        .optional()?
+        .flatten();
+    Ok(json
+        .and_then(|t| serde_json::from_str(&t).ok())
+        .unwrap_or_default())
 }
 
 /// A failed download: permanent failures become `unavailable`; others are
@@ -783,9 +871,19 @@ pub fn update_files(
     media_bytes: u64,
 ) -> rusqlite::Result<()> {
     let json = serde_json::to_string(files).expect("files serialize");
+    // Keep the metadata copy in step with the file on disk.
+    let metadata = std::fs::read_to_string(&files.metadata).ok();
     conn.execute(
-        "UPDATE items SET dir = ?3, files = ?4, media_bytes = ?5 WHERE source_key = ?1 AND video_id = ?2",
-        params![source_key, video_id, files.dir, json, media_bytes as i64],
+        "UPDATE items SET dir = ?3, files = ?4, media_bytes = ?5, metadata = COALESCE(?6, metadata)
+         WHERE source_key = ?1 AND video_id = ?2",
+        params![
+            source_key,
+            video_id,
+            files.dir,
+            json,
+            media_bytes as i64,
+            metadata
+        ],
     )?;
     Ok(())
 }
@@ -985,7 +1083,13 @@ mod download_tests {
             metadata: "/media/a/x/metadata.json".into(),
             ..VideoFiles::default()
         };
-        mark_done(&state.conn, "a", "x", &files, "bv*+ba/b", 1234, now()).unwrap();
+        let done = Done {
+            files: &files,
+            metadata: "{}",
+            format: "bv*+ba/b",
+            media_bytes: 1234,
+        };
+        mark_done(&state.conn, "a", "x", done, now()).unwrap();
         assert_eq!(
             row(&state, "a", "x"),
             ("done".into(), 0, None, Some("/media/a/x".into()))

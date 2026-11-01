@@ -24,6 +24,27 @@ pub struct Metadata<'a> {
     pub ytdlp_version: Option<&'a str>,
 }
 
+/// Update the `files` section of a placed metadata.json (after a hook moved
+/// or removed files). A missing metadata file is left alone.
+pub fn rewrite_files(files: &VideoFiles) -> std::io::Result<()> {
+    let path = std::path::Path::new(&files.metadata);
+    let Ok(text) = std::fs::read_to_string(path) else {
+        return Ok(());
+    };
+    let mut meta: Value = serde_json::from_str(&text).map_err(std::io::Error::other)?;
+    meta["files"] = files_json(files);
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let tmp = path.with_file_name(format!(".{name}.tidepool-partial"));
+    std::fs::write(
+        &tmp,
+        serde_json::to_string_pretty(&meta).expect("JSON") + "\n",
+    )?;
+    std::fs::rename(&tmp, path)
+}
+
 /// Where a video's files are, for metadata.json: relative to the metadata
 /// file's folder when they're under it, absolute otherwise.
 pub fn files_json(files: &VideoFiles) -> Value {
@@ -48,11 +69,12 @@ impl Metadata<'_> {
         let subtitles: Vec<Value> = files
             .subtitles
             .iter()
+            .filter(|s| !files.is_removed(&format!("subtitle:{}", s.lang)))
             .map(|s| json!({ "lang": s.lang, "path": show(&s.path) }))
             .collect();
         json!({
-            "media": show(&files.media),
-            "cover": files.cover.as_deref().map(show),
+            "media": (!files.is_removed("media")).then(|| show(&files.media)),
+            "cover": files.cover.as_deref().filter(|_| !files.is_removed("cover")).map(show),
             "subtitles": subtitles,
         })
     }
@@ -140,6 +162,7 @@ mod tests {
             }],
             metadata: "/m/lofi/x/metadata.json".into(),
             raw_info: None,
+            removed: vec![],
         };
         let cover = Cover {
             bytes: vec![],

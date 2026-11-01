@@ -115,7 +115,7 @@
           "type": "string"
         },
         "redownload_missing": {
-          "description": "Download again when a downloaded item's media file is gone.",
+          "description": "Restore a downloaded video's missing files (video, poster, subtitles,\nmetadata); otherwise each run reports them.",
           "type": "boolean"
         },
         "subtitle_file": {
@@ -641,7 +641,7 @@
           "type": "string"
         },
         "redownload_missing": {
-          "description": "Download again when a downloaded item's media file is gone.",
+          "description": "Restore a downloaded video's missing files (video, poster, subtitles,\nmetadata); otherwise each run reports them.",
           "type": "boolean"
         },
         "subtitle_file": {

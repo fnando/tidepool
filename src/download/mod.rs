@@ -5,6 +5,7 @@ pub mod embed;
 pub mod info;
 pub mod layout;
 pub mod metadata;
+pub mod missing;
 pub mod rerun;
 pub mod stages;
 pub mod thumbnail;
@@ -83,6 +84,8 @@ pub struct Summary {
     pub failed: usize,
     /// `finished` hooks that failed (the videos are downloaded).
     pub hooks_failed: usize,
+    /// Downloaded videos with missing files.
+    pub missing: missing::Report,
     /// Exit code when a signal stopped the run (130 for SIGINT, 143 for SIGTERM).
     pub interrupted: Option<i32>,
 }
@@ -99,6 +102,8 @@ struct Job {
 enum Outcome {
     Done {
         files: items::VideoFiles,
+        /// The metadata.json written, kept as a copy to restore it.
+        metadata: String,
         media_bytes: u64,
         linked: bool,
     },
@@ -589,10 +594,18 @@ async fn assemble(
         started.elapsed().as_secs_f64()
     );
 
-    stage.finished_hooks(&values, &files, hook_runs).await;
+    if stage
+        .finished_hooks(&values, &mut files, &context, hook_runs)
+        .await
+        && let Err(e) = metadata::rewrite_files(&files)
+    {
+        tracing::warn!("{label}: cannot update {}: {e}", files.metadata);
+    }
 
+    let metadata = std::fs::read_to_string(&files.metadata).unwrap_or(json);
     Ok(Outcome::Done {
         files,
+        metadata,
         media_bytes,
         linked: job.copy_from.is_some(),
     })
@@ -674,13 +687,16 @@ pub async fn download_all(
     tmp_roots.sort();
     tmp_roots.dedup();
     recover(state, &tmp_roots)?;
+    let mut summary = Summary {
+        missing: missing::check(state, sources, &by_source, &ctx, out).await?,
+        ..Summary::default()
+    };
 
     let keys: Vec<String> = sources.iter().map(|s| s.key.clone()).collect();
     let mut queue = items::download_queue(&state.conn, &keys, now).map_err(db)?;
     if let Some(limit) = options.limit {
         queue.truncate(limit);
     }
-    let mut summary = Summary::default();
     if queue.is_empty() {
         return Ok(summary);
     }
@@ -792,6 +808,7 @@ fn record(
     match &f.outcome {
         Outcome::Done {
             files,
+            metadata,
             media_bytes,
             linked,
         } => {
@@ -799,9 +816,12 @@ fn record(
                 &state.conn,
                 &f.source_key,
                 &f.video_id,
-                files,
-                &f.format,
-                *media_bytes,
+                items::Done {
+                    files,
+                    metadata,
+                    format: &f.format,
+                    media_bytes: *media_bytes,
+                },
                 now,
             )?;
             summary.downloaded += 1;

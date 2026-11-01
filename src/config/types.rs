@@ -438,7 +438,8 @@ macro_rules! options_struct {
             /// Add hooks to the ones inherited instead of replacing them.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub inherit_hooks: Option<bool>,
-            /// Download again when a downloaded item's media file is gone.
+            /// Restore a downloaded video's missing files (video, poster, subtitles,
+            /// metadata); otherwise each run reports them.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub redownload_missing: Option<bool>,
             /// Keep yt-dlp's raw info JSON next to the metadata file (as `<metadata file name>.ytdlp.json`).

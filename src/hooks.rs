@@ -374,6 +374,53 @@ impl Files {
     }
 }
 
+/// The placed files `finished` hooks see, and may report as moved (a new
+/// path) or removed on purpose (`None`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Placed {
+    pub media: Option<PathBuf>,
+    pub cover: Option<PathBuf>,
+    pub subtitles: Vec<Subtitle>,
+}
+
+impl Placed {
+    pub fn to_json(&self, context: &Value) -> Value {
+        json!({
+            "files": {
+                "media": self.media,
+                "cover": self.cover,
+                "subtitles": subtitles_json(&self.subtitles),
+            },
+            "context": context,
+        })
+    }
+
+    /// Apply a `finished` hook's output: a path (anywhere, must exist) says
+    /// where a file is now; `null` says it was removed on purpose; a
+    /// subtitle list replaces the current one. Missing keys keep their value.
+    pub fn apply(&mut self, name: &str, output: &[u8]) -> Result<(), String> {
+        let Some(value) = parse_output(name, output)? else {
+            return Ok(());
+        };
+        let Some(files) = value.get("files") else {
+            return Ok(());
+        };
+        for (key, slot) in [("media", &mut self.media), ("cover", &mut self.cover)] {
+            if let Some(path) = files.get(key) {
+                *slot = if path.is_null() {
+                    None
+                } else {
+                    Some(existing_file(name, &format!("files.{key}"), path)?)
+                };
+            }
+        }
+        if let Some(subtitles) = files.get("subtitles") {
+            self.subtitles = parse_subtitles(name, subtitles)?;
+        }
+        Ok(())
+    }
+}
+
 /// What gets embedded; `embed` hooks may change all of it.
 #[derive(Debug, Clone, PartialEq)]
 pub struct EmbedData {

@@ -80,7 +80,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # cutoff = "none"                   # skip videos published before: "30d", "2024-01-01" or "none"
 # hooks = []                        # hook names; each runs at its type's stage, in this order
 # inherit_hooks = false             # elsewhere: true = add to the hooks inherited instead of replacing them
-# redownload_missing = false        # download again when a downloaded file is gone
+# redownload_missing = false        # restore files that went missing (else each run reports them)
 # keep_raw_info = false             # keep yt-dlp's raw info.json
 
 [category.default.youtube]          # YouTube Data API (optional)

@@ -569,7 +569,11 @@ impl App<'_> {
     fn exit_code(summary: &crate::download::Summary, index_failures: usize) -> i32 {
         match summary.interrupted {
             Some(code) => code,
-            None if summary.failed > 0 || summary.hooks_failed > 0 || index_failures > 0 => {
+            None if summary.failed > 0
+                || summary.hooks_failed > 0
+                || summary.missing.failed > 0
+                || index_failures > 0 =>
+            {
                 exit::PARTIAL
             }
             None => exit::OK,

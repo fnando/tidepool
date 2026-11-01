@@ -3,6 +3,7 @@
 #   --version                        prints a version
 #   --flat-playlist -J ... <url>     prints playlists/<list id>.json
 #   -J ... <watch url>               prints videos/<id>.info.json (or a generated one)
+#   subtitles only (--skip-download): writes media.<lang>.vtt into the -o directory.
 #   download (--print after_move:filepath): writes media.mkv and ytdlp.info.json
 #     into the -o directory, plus media.en.vtt with --write-subs.
 # videos/<id>.error makes a video fail with that message (exit 1).
@@ -58,6 +59,20 @@ case " $* " in
     case " $* " in *" --write-subs "*) printf 'WEBVTT\n\n00:00.000 --> 00:00.500\nHello\n' > "$dir/media.en.vtt" ;; esac
     echo '{"status": "finished", "downloaded_bytes": 20, "total_bytes": 20}'
     echo "$dir/media.mkv"
+    exit 0 ;;
+  *" --skip-download "*)
+    # Subtitles only: media.<lang>.vtt for the --sub-langs language.
+    id="${last##*v=}"
+    fail_if_error "$id"
+    media=""; lang=""; prev=""
+    for arg; do
+      [ "$prev" = "-o" ] && media="$arg"
+      [ "$prev" = "--sub-langs" ] && lang="$arg"
+      prev="$arg"
+    done
+    dir="$(dirname "$media")"
+    mkdir -p "$dir"
+    printf 'WEBVTT\n\n00:00.000 --> 00:00.500\nRestored\n' > "$dir/media.$lang.vtt"
     exit 0 ;;
   *" -J "*)
     id="${last##*v=}"

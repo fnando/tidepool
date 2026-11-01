@@ -1137,3 +1137,115 @@ async fn ytdlp_gets_the_configured_deno() {
     let calls = fs::read_to_string(&log).unwrap();
     assert!(!calls.contains("--js-runtimes"), "{calls}");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn finished_hooks_report_moved_and_removed_files() {
+    let env = Env::new().await;
+    let archive = env.path("archive");
+    // Moves Rick's video to an archive and reports it; deletes okvideo01's
+    // poster and says so.
+    let hook = script(
+        &env,
+        "archive.sh",
+        &format!(
+            r#"cat > /dev/null
+if [ "$TIDEPOOL_VIDEO_ID" = dQw4w9WgXcQ ]; then
+  mkdir -p '{a}'; mv "$TIDEPOOL_OUTPUT_FILE" '{a}/rick.mkv'
+  printf '{{"files": {{"media": "{a}/rick.mkv"}}}}'
+else
+  rm "$TIDEPOOL_COVER_FILE"; printf '{{"files": {{"cover": null}}}}'
+fi"#,
+            a = archive.display()
+        ),
+    );
+    let config = hooks_config(
+        &env,
+        "hooks = [\"archive\"]\nredownload_missing = true",
+        &format!("[hooks.archive]\ncommand = [\"{}\"]\n", hook.display()),
+    );
+    env.cmd(&["run", "--config", &config]).assert().code(3);
+    assert!(archive.join("rick.mkv").is_file());
+    let meta: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(env.media().join(RICK_DIR).join("metadata.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        meta["files"]["media"],
+        archive.join("rick.mkv").display().to_string()
+    );
+    let ok = env
+        .media()
+        .join("dl/2026-09-01 - Video okvideo01 [okvideo01]");
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(ok.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(meta["files"]["cover"], serde_json::Value::Null);
+
+    // Nothing counts as missing, even with redownload_missing: no re-download.
+    env.cmd(&["download"])
+        .assert()
+        .success()
+        .stdout(contains("nothing to download").and(contains("missing").not()));
+    // The stored location follows the move.
+    env.cmd(&["reset", "dQw4w9WgXcQ", "--delete-files"])
+        .assert()
+        .success()
+        .stdout(contains(archive.join("rick.mkv").display().to_string()));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn missing_files_are_reported_or_restored() {
+    let env = Env::new().await;
+    let config = env.config("");
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    let rick = env.media().join(RICK_DIR);
+    let title = "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)";
+    let (media, cover, subs, meta) = (
+        rick.join(format!("{title}.mkv")),
+        rick.join(format!("{title}-poster.jpg")),
+        rick.join(format!("{title}.en.vtt")),
+        rick.join("metadata.json"),
+    );
+    let original_meta = fs::read_to_string(&meta).unwrap();
+    for file in [&cover, &subs, &meta] {
+        fs::remove_file(file).unwrap();
+    }
+
+    // Off (the default): reported, nothing touched.
+    env.cmd(&["download"]).assert().success().stdout(contains(
+        "1 video has missing files; set redownload_missing = true to restore them",
+    ));
+    assert!(!cover.exists() && !subs.exists() && !meta.exists());
+
+    // On: only what's missing comes back.
+    let text = fs::read_to_string(&config)
+        .unwrap()
+        .replace("[tools.deno]", "redownload_missing = true\n\n[tools.deno]");
+    fs::write(&config, text).unwrap();
+    env.cmd(&["config", "import", &config]).assert().success();
+    let media_inode = fs::metadata(&media).unwrap().ino();
+    env.cmd(&["download"])
+        .assert()
+        .success()
+        .stdout(contains("restored 3 missing files"));
+    assert!(cover.is_file());
+    assert_eq!(
+        fs::read_to_string(&subs).unwrap(),
+        "WEBVTT\n\n00:00.000 --> 00:00.500\nRestored\n"
+    );
+    assert_eq!(fs::read_to_string(&meta).unwrap(), original_meta);
+    assert_eq!(
+        fs::metadata(&media).unwrap().ino(),
+        media_inode,
+        "the video wasn't downloaded again"
+    );
+
+    // The video itself: downloaded again.
+    fs::remove_file(&media).unwrap();
+    env.cmd(&["download"])
+        .assert()
+        .success()
+        .stdout(contains(format!("dl: downloaded “{title}”")));
+    assert!(media.is_file());
+}
