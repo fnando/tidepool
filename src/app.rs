@@ -18,7 +18,7 @@ use crate::config::store::{ConfigStore, Imported, Revision};
 use crate::config::{Loaded, load_file, load_str};
 use crate::filter::{Fields, Match, RuleSet};
 use crate::init;
-use crate::lock::{self, LibraryLock};
+use crate::lock::{self, LockError};
 use crate::paths::{Dirs, StatePaths};
 use crate::state::State;
 
@@ -38,14 +38,55 @@ pub mod exit {
 #[error("{0}")]
 pub struct UsageError(pub String);
 
-struct App<'a> {
-    cli: &'a Cli,
-    dirs: Dirs,
-    paths: StatePaths,
+pub(crate) struct App<'a> {
+    pub(crate) cli: &'a Cli,
+    pub(crate) dirs: Dirs,
+    pub(crate) paths: StatePaths,
     /// Ctrl-C and `kill`, for commands that run yt-dlp, ffmpeg or hooks.
-    shutdown: crate::shutdown::Shutdown,
+    pub(crate) shutdown: crate::shutdown::Shutdown,
     /// A source couldn't use the API and `fallback_to_ytdlp = false` (exit 4).
     no_fallback: std::cell::Cell<bool>,
+    /// What this does in `tidepool run --daemon`, if anything.
+    role: Role,
+    /// The daemon's library lock, shared by its services.
+    library: Option<std::sync::Arc<lock::Shared>>,
+    /// Told when a download is waiting to be processed (the daemon's
+    /// processor waits on it).
+    fetched: Option<std::sync::Arc<tokio::sync::Notify>>,
+}
+
+/// Which part of the work an [`App`] does.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Role {
+    /// A command: download and process, then run the queued hooks.
+    OneShot,
+    /// The daemon's syncer: index, download, clean up.
+    Syncer,
+    /// The daemon's processor: process downloads, run queued hooks.
+    Processor,
+}
+
+impl<'a> App<'a> {
+    /// An [`App`] for one of the daemon's services.
+    pub(crate) fn for_service(
+        cli: &'a Cli,
+        dirs: Dirs,
+        shutdown: crate::shutdown::Shutdown,
+        role: Role,
+        library: std::sync::Arc<lock::Shared>,
+        fetched: std::sync::Arc<tokio::sync::Notify>,
+    ) -> Self {
+        Self {
+            cli,
+            paths: dirs.state(),
+            dirs,
+            shutdown,
+            no_fallback: Default::default(),
+            role,
+            library: Some(library),
+            fetched: Some(fetched),
+        }
+    }
 }
 
 /// Run a parsed command; returns the process exit code.
@@ -70,6 +111,9 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         paths,
         shutdown,
         no_fallback: Default::default(),
+        role: Role::OneShot,
+        library: None,
+        fetched: None,
     };
     if cli.config.is_some() && !cli.dry_run && uses_stored_config(&cli.command) {
         app.import_config_flag()?;
@@ -94,6 +138,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Index(scope) => app.index(scope, out).await,
         Command::Download(args) => app.download(args, out).await,
         Command::Run(args) if !args.daemon => app.run_once(args, out).await,
+        Command::Run(_) => crate::daemon::run(&app).await,
         Command::Reset(args) => app.reset(args, out),
         Command::Problems { cmd } => app.problems(cmd, out),
         Command::Hooks { cmd } => app.hooks(cmd, out).await,
@@ -142,8 +187,8 @@ fn uses_stored_config(command: &Command) -> bool {
         | Command::Reset(_)
         | Command::Hooks { .. }
         | Command::Embed(_)
-        | Command::Cleanup(_) => true,
-        Command::Run(args) => !args.daemon,
+        | Command::Cleanup(_)
+        | Command::Run(_) => true,
         _ => false,
     }
 }
@@ -594,14 +639,17 @@ impl App<'_> {
                 .build()?,
             shutdown_timeout: config.general.shutdown_timeout.0,
             shutdown: self.shutdown.clone(),
+            fetched: self.fetched.clone(),
         };
+        // In the daemon, the syncer downloads and the processor processes;
+        // the daemon cleans up after a crash once, when it starts.
         let options = Options {
             limit,
             concurrency: concurrency.unwrap_or(config.general.concurrency) as usize,
             process_concurrency: config.general.process_concurrency as usize,
-            fetch: true,
-            process: true,
-            recover: true,
+            fetch: self.role != Role::Processor,
+            process: self.role != Role::Syncer,
+            recover: self.role == Role::OneShot,
             now: jiff::Timestamp::now(),
         };
         let dirs = &self.dirs;
@@ -616,11 +664,15 @@ impl App<'_> {
             crate::download::download_all(state, sources, paths, ctx, options, tracker, out)
                 .await
                 .map_err(anyhow::Error::msg)?;
-        if summary.interrupted.is_none() {
+        if summary.interrupted.is_none() && self.role != Role::Syncer {
             summary.hooks_failed += self
                 .run_hook_queue(state, config, sources, tracker, out)
                 .await?;
             summary.interrupted = self.shutdown.code();
+        }
+        if self.role != Role::OneShot {
+            // The daemon logs its own summary.
+            return Ok(summary);
         }
         if summary.interrupted.is_none() && !self.cli.dry_run {
             self.purge_trash(state, jiff::Timestamp::now(), out)?;
@@ -833,6 +885,136 @@ impl App<'_> {
     }
 
     /// `tidepool run`: index, then download, once.
+    /// One sync of the daemon's syncer: index every enabled source, download
+    /// what's new (the processor finishes it), clean up. `None` when another
+    /// tidepool holds the library.
+    pub(crate) async fn sync_once(&self, out: &mut dyn Write) -> anyhow::Result<Option<String>> {
+        let mut state = self.open_state()?;
+        let config = self.current_config(&state)?.config;
+        let sources = self.scoped_sources(&config, &[])?;
+        if sources.is_empty() {
+            return Ok(Some(
+                "no enabled sources; add one under [sources.<name>] in your config".into(),
+            ));
+        }
+        let lock = match self.lock() {
+            Ok(lock) => lock,
+            Err(LockError::Held { pid }) => {
+                tracing::info!(
+                    "skipped: another tidepool is running{}",
+                    pid.map(|p| format!(" (pid {p})")).unwrap_or_default()
+                );
+                return Ok(None);
+            }
+            Err(e) => return Err(e.into()),
+        };
+        let ytdlp = self.ytdlp_binary(&state, &config).await?;
+        let mut tracker = crate::problems::Tracker::default();
+        let failed = self
+            .index_sources(&mut state, &config, &sources, &ytdlp, &mut tracker, out)
+            .await?;
+        if self.shutdown.is_stopping() {
+            return Ok(Some("stopped".into()));
+        }
+        let summary = self
+            .download_sources(
+                &mut state,
+                &config,
+                &sources,
+                ytdlp.clone(),
+                None,
+                None,
+                &mut tracker,
+                out,
+            )
+            .await?;
+        if summary.interrupted.is_some() {
+            return Ok(Some("stopped".into()));
+        }
+        self.finish_problems(&state, &config, tracker, &ytdlp)
+            .await?;
+        drop(lock);
+        self.cleanup(
+            &ScopeArgs {
+                sources: Vec::new(),
+            },
+            out,
+        )
+        .await?;
+        let mut parts = vec![format!(
+            "synced {} source{}",
+            sources.len(),
+            if sources.len() == 1 { "" } else { "s" }
+        )];
+        if summary.fetched > 0 {
+            parts.push(format!("{} downloaded", summary.fetched));
+        }
+        if summary.failed > 0 {
+            parts.push(format!("{} failed", summary.failed));
+        }
+        if failed > 0 {
+            parts.push(format!(
+                "{failed} source{} couldn't be checked",
+                if failed == 1 { "" } else { "s" }
+            ));
+        }
+        Ok(Some(parts.join(", ")))
+    }
+
+    /// One pass of the daemon's processor: finish what's downloaded, run the
+    /// queued hooks. `None` when another tidepool holds the library.
+    pub(crate) async fn process_once(
+        &self,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<Option<crate::download::Summary>> {
+        let mut state = self.open_state()?;
+        let config = self.current_config(&state)?.config;
+        // Every source, enabled or not: what's downloaded gets finished.
+        let sources = effective_sources(&config);
+        let _lock = match self.lock() {
+            Ok(lock) => lock,
+            Err(LockError::Held { .. }) => return Ok(None),
+            Err(e) => return Err(e.into()),
+        };
+        let ytdlp = self.ytdlp_binary(&state, &config).await?;
+        let mut tracker = crate::problems::Tracker::default();
+        let summary = self
+            .download_sources(
+                &mut state,
+                &config,
+                &sources,
+                ytdlp.clone(),
+                None,
+                None,
+                &mut tracker,
+                out,
+            )
+            .await?;
+        if summary.interrupted.is_none() {
+            self.finish_problems(&state, &config, tracker, &ytdlp)
+                .await?;
+        }
+        Ok(Some(summary))
+    }
+
+    /// Put things back after a crash, for every source: interrupted videos,
+    /// work areas (see `download::recover`).
+    pub(crate) fn recover(&self, state: &State) -> anyhow::Result<usize> {
+        let config = self.current_config(state)?.config;
+        let mut by_source = std::collections::BTreeMap::new();
+        for source in effective_sources(&config) {
+            by_source.insert(
+                source.key.clone(),
+                crate::download::SourcePaths {
+                    media_dir: media_dir(&source, &self.dirs).map_err(anyhow::Error::msg)?,
+                    tmp_root: tmp_dir(&source, &self.dirs).map_err(anyhow::Error::msg)?,
+                    cookies: None,
+                },
+            );
+        }
+        crate::download::recover(state, &by_source).map_err(anyhow::Error::msg)
+    }
+
     async fn run_once(&self, args: &RunArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
         let mut state = self.open_state()?;
         let loaded = self.current_config(&state)?;
@@ -2068,12 +2250,11 @@ impl App<'_> {
              \x20 1. Edit {name}: replace the sample with your sources, set where videos go.\n\
              \x20 2. Apply your changes: tidepool config import{import_path}\n\
              \x20 3. Sync once: tidepool run\n\
-             \x20    Or keep syncing every {interval} with the web UI at http://{listen}: tidepool run --daemon",
+             \x20    Or keep syncing every {interval}: tidepool run --daemon",
             import_path = self.import_arg(Path::new(name)),
             interval = crate::config::types::format_duration(
                 config.schedule.interval.0.unwrap_or_default()
             ),
-            listen = config.server.listen,
         )?;
         let exe = std::env::current_exe()
             .map(|p| p.display().to_string())
@@ -2083,19 +2264,23 @@ impl App<'_> {
             "\nTo run it as a service, save this as ~/.config/systemd/user/tidepool.service\n\
              and run `systemctl --user enable --now tidepool`:\n\n\
              [Unit]\nDescription=tidepool\n\n\
-             [Service]\nExecStart={exe} run --daemon --config {name} --on-config-mismatch import\n\
+             [Service]\nExecStart={exe} run --daemon --config {name}\n\
              Restart=on-failure\n\n\
              [Install]\nWantedBy=default.target"
         )?;
         Ok(())
     }
 
-    fn open_state(&self) -> anyhow::Result<State> {
+    pub(crate) fn open_state(&self) -> anyhow::Result<State> {
         Ok(State::open(&self.paths.state_db)?)
     }
 
-    fn lock(&self) -> anyhow::Result<LibraryLock> {
-        Ok(lock::acquire(&self.paths.lock)?)
+    /// The library lock: this process's own, or a share of the daemon's.
+    pub(crate) fn lock(&self) -> Result<lock::Hold, LockError> {
+        match &self.library {
+            Some(shared) => shared.acquire().map(lock::Hold::Shared),
+            None => lock::acquire(&self.paths.lock).map(lock::Hold::Own),
+        }
     }
 
     fn display_path(path: &Path) -> String {
@@ -2113,7 +2298,7 @@ impl App<'_> {
 
     /// The config to run with: the stored revision (`--config` was imported
     /// up front), or with `--dry-run`, the `--config` file without storing it.
-    fn current_config(&self, state: &State) -> anyhow::Result<Loaded> {
+    pub(crate) fn current_config(&self, state: &State) -> anyhow::Result<Loaded> {
         if let (Some(path), true) = (&self.cli.config, self.cli.dry_run) {
             let loaded = load_file(path)?;
             self.warn(&loaded.warnings);

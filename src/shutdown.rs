@@ -14,6 +14,8 @@ pub struct Shutdown {
     kill: CancellationToken,
     /// Exit code of the first signal: 130 (SIGINT) or 143 (SIGTERM).
     code: Arc<AtomicI32>,
+    /// A child's parent's code: a signal stops the whole process.
+    parent_code: Option<Arc<AtomicI32>>,
 }
 
 /// Wait for SIGINT (130) or SIGTERM (143).
@@ -53,6 +55,17 @@ impl Shutdown {
         self.stop.cancel();
     }
 
+    /// A shutdown for one part of the process (a daemon service): it stops
+    /// when this one does, and can also be stopped on its own.
+    pub fn child(&self) -> Self {
+        Self {
+            stop: self.stop.child_token(),
+            kill: self.kill.child_token(),
+            code: Arc::default(),
+            parent_code: Some(self.code.clone()),
+        }
+    }
+
     /// Stop without waiting for anything (the second signal).
     pub fn kill(&self) {
         self.stop(130);
@@ -75,9 +88,28 @@ impl Shutdown {
 
     /// The exit code to use, once stopping started.
     pub fn code(&self) -> Option<i32> {
+        let parent = || self.parent_code.as_ref().map(|c| c.load(Ordering::SeqCst));
         match self.code.load(Ordering::SeqCst) {
-            0 => None,
+            0 => parent().filter(|c| *c != 0),
             code => Some(code),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn children_stop_with_the_parent_or_on_their_own() {
+        let parent = Shutdown::default();
+        let (a, b) = (parent.child(), parent.child());
+        a.stop(143);
+        assert!(a.is_stopping() && !b.is_stopping() && !parent.is_stopping());
+        assert_eq!((a.code(), b.code()), (Some(143), None));
+        parent.stop(130);
+        assert!(b.is_stopping());
+        assert_eq!(b.code(), Some(130), "the signal's code");
+        assert_eq!(a.code(), Some(143), "its own stop came first");
     }
 }

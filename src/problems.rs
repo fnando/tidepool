@@ -38,10 +38,12 @@ pub enum Kind {
     ApiKeyRejected,
     /// An API key's daily quota is used up.
     ApiQuota,
+    /// A part of `tidepool run --daemon` stopped unexpectedly.
+    ServiceFailed,
 }
 
 impl Kind {
-    pub const ALL: [Kind; 14] = [
+    pub const ALL: [Kind; 15] = [
         Kind::Extraction,
         Kind::BotCheck,
         Kind::RateLimited,
@@ -56,6 +58,7 @@ impl Kind {
         Kind::DenoFailed,
         Kind::ApiKeyRejected,
         Kind::ApiQuota,
+        Kind::ServiceFailed,
     ];
 
     pub fn as_str(self) -> &'static str {
@@ -74,6 +77,7 @@ impl Kind {
             Kind::DenoFailed => "deno_failed",
             Kind::ApiKeyRejected => "api_key_rejected",
             Kind::ApiQuota => "api_quota",
+            Kind::ServiceFailed => "daemon_service_failed",
         }
     }
 
@@ -99,6 +103,7 @@ impl Kind {
             }
             Kind::ApiKeyRejected => "YouTube rejected your API key",
             Kind::ApiQuota => "your YouTube API quota is used up for today",
+            Kind::ServiceFailed => "a part of the daemon stopped unexpectedly",
         }
     }
 
@@ -114,6 +119,7 @@ impl Kind {
                 | Kind::DenoFailed
                 | Kind::ApiKeyRejected
                 | Kind::ApiQuota
+                | Kind::ServiceFailed
         )
     }
 
@@ -162,6 +168,7 @@ impl Kind {
             Kind::ApiKeyRejected => "replace youtube.api_key in your config (and run `tidepool config import`); until then, sources are checked with yt-dlp".into(),
             Kind::ApiQuota => "the quota resets at midnight Pacific time; until then, sources are checked with yt-dlp. If Google granted your project more, raise youtube.daily_quota".into(),
             Kind::DenoFailed => "check your network, or run `tidepool tools update deno`; without Deno, YouTube downloads may fail. To use your own, set managed = false in [tools.deno]".into(),
+            Kind::ServiceFailed => "the daemon restarts it on its own, waiting longer each time; its log says what went wrong".into(),
             Kind::HookFailing => "see the hook's log in ~/.local/share/tidepool/logs/hooks/<video_id>.log; failed finished hooks are tried again on later runs for about an hour and a half, and failed downloads later too; after fixing it, `tidepool hooks run --all --failed` runs the rest".into(),
         }
     }

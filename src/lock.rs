@@ -88,9 +88,79 @@ pub fn acquire(path: &Path) -> Result<LibraryLock, LockError> {
     })
 }
 
+/// The library lock shared by the daemon's services: the first to take it
+/// locks the file, the last to let go unlocks it. Services in the same
+/// process never exclude each other; other processes are still excluded.
+#[derive(Debug)]
+pub struct Shared {
+    path: PathBuf,
+    held: std::sync::Mutex<(usize, Option<LibraryLock>)>,
+}
+
+/// One service's hold on a [`Shared`] lock, until dropped.
+#[derive(Debug)]
+pub struct SharedGuard {
+    shared: std::sync::Arc<Shared>,
+}
+
+impl Shared {
+    pub fn new(path: &Path) -> std::sync::Arc<Self> {
+        std::sync::Arc::new(Self {
+            path: path.to_path_buf(),
+            held: std::sync::Mutex::new((0, None)),
+        })
+    }
+
+    /// Hold it, locking the file if nobody in this process does yet.
+    pub fn acquire(self: &std::sync::Arc<Self>) -> Result<SharedGuard, LockError> {
+        let mut held = self.held.lock().unwrap_or_else(|e| e.into_inner());
+        if held.0 == 0 {
+            held.1 = Some(acquire(&self.path)?);
+        }
+        held.0 += 1;
+        Ok(SharedGuard {
+            shared: self.clone(),
+        })
+    }
+}
+
+impl Drop for SharedGuard {
+    fn drop(&mut self) {
+        let mut held = self.shared.held.lock().unwrap_or_else(|e| e.into_inner());
+        held.0 -= 1;
+        if held.0 == 0 {
+            held.1 = None;
+        }
+    }
+}
+
+/// A hold on the library: tidepool's own lock, or a share of the daemon's.
+#[derive(Debug)]
+pub enum Hold {
+    Own(LibraryLock),
+    Shared(SharedGuard),
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_shared_lock_is_held_while_anyone_holds_it() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("lock");
+        let shared = Shared::new(&path);
+        let a = shared.acquire().unwrap();
+        let b = shared.acquire().unwrap();
+        assert!(matches!(acquire(&path), Err(LockError::Held { .. })));
+        drop(a);
+        assert!(
+            matches!(acquire(&path), Err(LockError::Held { .. })),
+            "b still holds it"
+        );
+        drop(b);
+        assert!(acquire(&path).is_ok(), "released by the last one");
+    }
 
     #[test]
     fn second_acquire_reports_the_holder() {

@@ -4,6 +4,7 @@ pub mod app;
 pub mod cleanup;
 pub mod cli;
 pub mod config;
+pub mod daemon;
 pub mod download;
 pub mod filter;
 pub mod hooks;

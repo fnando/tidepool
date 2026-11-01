@@ -1179,6 +1179,25 @@ pub fn due_hooks(
     Ok(due)
 }
 
+/// When the next queued or retried `finished` hook is due, if any.
+pub fn next_hook_due(conn: &Connection) -> rusqlite::Result<Option<Timestamp>> {
+    let next: Option<String> = conn.query_row(
+        "SELECT MIN(next_attempt_at) FROM hook_runs
+         WHERE type = 'finished' AND status IN ('pending', 'retrying')",
+        [],
+        |r| r.get(0),
+    )?;
+    Ok(next.and_then(|t| t.parse().ok()))
+}
+
+/// Put every item in status `from` back to `to` (after a service crashed).
+pub fn reset_status(conn: &Connection, from: &str, to: &str) -> rusqlite::Result<usize> {
+    conn.execute(
+        "UPDATE items SET status = ?2 WHERE status = ?1",
+        params![from, to],
+    )
+}
+
 /// A video's `finished` hooks that haven't run yet, or will run again.
 pub fn waiting_hooks(
     conn: &Connection,

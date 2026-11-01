@@ -7,6 +7,7 @@ use std::path::Path;
 use rusqlite::Connection;
 use rusqlite_migration::{M, Migrations};
 
+pub mod daemon;
 pub mod items;
 
 const MIGRATION_LIST: &[M<'static>] = &[
@@ -17,6 +18,28 @@ const MIGRATION_LIST: &[M<'static>] = &[
     // When a video's download finished (status `fetched`), so they're
     // processed in that order.
     M::up("ALTER TABLE items ADD COLUMN fetched_at TEXT;"),
+    // `tidepool run --daemon`: its schedule, its services, and requests from
+    // `tidepool daemon`.
+    M::up(
+        "CREATE TABLE daemon_state (key TEXT PRIMARY KEY, value TEXT);
+         CREATE TABLE daemon_services (
+           name TEXT PRIMARY KEY,
+           paused INTEGER NOT NULL DEFAULT 0,
+           status TEXT,                 -- running, idle, stopped, restarting
+           activity TEXT,               -- what it's doing, for `daemon status`
+           started_at TEXT,
+           restarts INTEGER NOT NULL DEFAULT 0,
+           last_error TEXT, last_error_at TEXT,
+           updated_at TEXT
+         );
+         CREATE TABLE daemon_requests (
+           id INTEGER PRIMARY KEY,
+           service TEXT,                -- NULL: every service
+           action TEXT NOT NULL,        -- restart, pause, resume, sync
+           created_at TEXT NOT NULL,
+           done_at TEXT, result TEXT
+         );",
+    ),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_LIST);
 

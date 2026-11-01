@@ -409,7 +409,7 @@ fn exit_codes() {
     env.cmd(&["run", "--daemon"])
         .assert()
         .code(1)
-        .stderr(contains("not implemented yet (planned for M7)"));
+        .stderr(contains("has no config yet"));
     env.cmd(&["--bogus"]).assert().code(2);
     env.cmd(&["sync"]).assert().code(2);
     env.cmd(&["run", "-s", "Not A Key"]).assert().code(2);
@@ -460,10 +460,8 @@ fn init_creates_config_and_state() {
                 .and(contains("Stored it as config revision 1"))
                 .and(contains("sample source"))
                 .and(contains("tidepool config import"))
-                .and(contains(
-                    "every 6h with the web UI at http://127.0.0.1:8787: tidepool run --daemon",
-                ))
-                .and(contains("--on-config-mismatch import")),
+                .and(contains("Or keep syncing every 6h: tidepool run --daemon"))
+                .and(contains("run --daemon --config")),
         )
         .stderr(
             contains("will be downloaded on first use").and(contains("ffmpeg version 9.0.2-fake")),

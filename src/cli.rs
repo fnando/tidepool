@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 use clap::{ArgAction, Args, Parser, Subcommand, ValueEnum};
 
-#[derive(Debug, Parser)]
+#[derive(Debug, Clone, Parser)]
 #[command(
     name = "tidepool",
     version,
@@ -57,7 +57,7 @@ pub enum LogFormat {
     Json,
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum Command {
     /// Create a commented config file and start tidepool's state
     Init(InitArgs),
@@ -109,29 +109,25 @@ impl Command {
     pub fn milestone(&self) -> Option<&'static str> {
         match self {
             Command::Init(_) | Command::Config(_) | Command::Filter { .. } => None,
-            Command::Index(_)
-            | Command::Download(_)
-            | Command::Reset(_)
-            | Command::Run(RunArgs { daemon: false, .. }) => None,
+            Command::Index(_) | Command::Download(_) | Command::Reset(_) | Command::Run(_) => None,
             Command::Problems { .. } => None,
             Command::Tools { .. } => None,
             Command::Hooks { .. } => None,
             Command::Embed(_) => None,
             Command::Cleanup(_) | Command::Trash { .. } => None,
             Command::List(_) => Some("M6"),
-            Command::Run(RunArgs { daemon: true, .. }) => Some("M7"),
         }
     }
 }
 
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 pub struct ScopeArgs {
     /// Limit to these sources: name, playlist id or URL; repeatable
     #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
     pub sources: Vec<SourceRef>,
 }
 
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 pub struct DownloadArgs {
     #[command(flatten)]
     pub scope: ScopeArgs,
@@ -152,7 +148,7 @@ pub enum ItemStatus {
     Failed,
 }
 
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 pub struct ListArgs {
     #[command(flatten)]
     pub scope: ScopeArgs,
@@ -168,7 +164,7 @@ pub struct ListArgs {
     pub json: bool,
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum HooksCmd {
     /// Run hooks again on videos already downloaded
     Run {
@@ -183,7 +179,7 @@ pub enum HooksCmd {
     },
 }
 
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 #[command(args_conflicts_with_subcommands = true)]
 pub struct ConfigArgs {
     /// Print API keys unmasked
@@ -197,7 +193,7 @@ pub struct ConfigArgs {
     pub cmd: Option<ConfigCmd>,
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum ConfigCmd {
     /// Validate a file and the stored config, and say whether they match; quiet when all is well
     Check { path: Option<PathBuf> },
@@ -221,7 +217,7 @@ pub enum ConfigCmd {
     Merge { path: PathBuf },
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum FilterCmd {
     /// Show which rules match a video tidepool knows (by id), or a title
     Test {
@@ -235,7 +231,7 @@ pub enum FilterCmd {
 }
 
 /// Which downloaded videos a command works on.
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 pub struct VideoSelection {
     /// Only these videos
     pub video_ids: Vec<String>,
@@ -250,7 +246,7 @@ pub struct VideoSelection {
     pub categories: Vec<String>,
 }
 
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 pub struct EmbedArgs {
     #[command(flatten)]
     pub select: VideoSelection,
@@ -259,7 +255,7 @@ pub struct EmbedArgs {
     pub remove_disabled: bool,
 }
 
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 pub struct ResetArgs {
     pub video_id: String,
     /// Also delete the video's files
@@ -277,7 +273,7 @@ pub enum ConfigMismatch {
 
 /// `tidepool run`: sync once and exit; with `--daemon`, keep syncing every
 /// `schedule.interval` and serve the web UI (unless `server.enabled = false`).
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 pub struct RunArgs {
     /// Keep running: sync every schedule.interval, and serve the web UI
     #[arg(long)]
@@ -299,7 +295,7 @@ pub struct RunArgs {
     pub on_config_mismatch: Option<ConfigMismatch>,
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum TrashCmd {
     /// What's in the trash, and when it's deleted for good
     List,
@@ -315,13 +311,13 @@ pub enum TrashCmd {
     Empty,
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum ProblemsCmd {
     /// Hide a problem until it happens again
     Ack { id: i64 },
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum ToolsCmd {
     /// Versions, paths and the last update checks
     Status,
@@ -341,7 +337,7 @@ pub enum ToolName {
 
 /// `tidepool init`. The config file goes to the global --config path
 /// (default ~/.config/tidepool/config.toml).
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 pub struct InitArgs {
     /// Replace an existing config file with a fresh one, backing it up first
     /// (as <name>.<UTC timestamp>.bak). A stored config stays as it is until

@@ -8,8 +8,8 @@ keep, and your own scripts can tidy up tags, convert files or send
 notifications along the way.
 
 > **Early days.** tidepool can keep your sources downloaded, run your own
-> scripts and clean up when you ask it to. Running in the background (with
-> automatic cleanup) and the web interface aren't available yet.
+> scripts, clean up, and keep doing all of that in the background. The web
+> interface isn't available yet.
 
 Works on Linux and macOS.
 
@@ -364,8 +364,10 @@ video alone, or audio alone. So you get the best quality available, and still
 get something when only part of it can be downloaded. To cap the resolution:
 `format = "bv*[height<=1080]+ba/b"`.
 
-To run tidepool on a schedule, call it from cron (or launchd, or a systemd
-timer). `--config` applies your config file first if you changed it:
+To run tidepool on a schedule, keep it running in the background (see
+[Keeping it running](#keeping-it-running)), or call it from cron (or launchd,
+or a systemd timer). `--config` applies your config file first if you changed
+it:
 
 ```
 0 */6 * * *  tidepool run --config ~/.config/tidepool/config.toml
@@ -889,6 +891,49 @@ tidepool then uses those copies as they are, and never updates them. To use
 another JavaScript runtime instead of Deno (Node, for example), set
 `managed = false` in `[tools.deno]` and pass yt-dlp's own option in a category:
 `ytdlp_args = ["--js-runtimes", "node"]`.
+
+### Keeping it running
+
+`tidepool run --daemon` keeps tidepool running: it syncs every source right
+away, then again every `schedule.interval` (counted from when the last sync
+ended), and cleans up after each sync. Downloads are finished (hooks,
+embedding, saving) as soon as they arrive, and hooks that failed are tried
+again when they're due, without waiting for the next sync.
+
+```toml
+[schedule]
+interval = "6h"
+```
+
+```sh
+tidepool run --daemon --config ~/.config/tidepool/config.toml
+```
+
+- **Changing settings.** Import a changed config (`tidepool config import`, or
+  `--config` when you start it) and the running daemon uses it from the next
+  video or sync on; a new `interval` takes effect right away. No restart
+  needed.
+- **Missed syncs.** If the computer was asleep or tidepool wasn't running when
+  a sync was due, it syncs once as soon as it's back, not once per missed sync.
+- **Alongside cron or a terminal.** Only one daemon runs at a time, but you
+  can still run `tidepool run` or other commands while it's going; whoever
+  starts second waits its turn (the daemon skips a sync that comes due while
+  another tidepool is working, and tries again on the next one).
+- **Stopping.** Ctrl-C or `kill` stops it cleanly, the same way as other
+  commands, and it exits with 0.
+- **If something goes wrong.** The daemon is made of parts that work
+  independently: one syncs, one finishes downloads. If one stops unexpectedly,
+  the daemon starts it again on its own (waiting a little longer each time)
+  and `tidepool problems` tells you about it.
+
+To start it with your computer, use a systemd user service (`tidepool init`
+prints one with the right paths):
+
+```ini
+[Service]
+ExecStart=/usr/local/bin/tidepool run --daemon --config %h/.config/tidepool/config.toml
+Restart=on-failure
+```
 
 ### The web interface
 

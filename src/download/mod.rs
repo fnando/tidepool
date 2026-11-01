@@ -20,6 +20,7 @@ use std::sync::Arc;
 use jiff::Timestamp;
 use tokio::sync::Semaphore;
 use tokio::task::JoinSet;
+use tracing::Instrument;
 
 use crate::config::merge::EffectiveSource;
 use crate::config::{Duplicates, HookConfig, HookType};
@@ -67,6 +68,8 @@ pub struct Context {
     pub shutdown_timeout: std::time::Duration,
     /// Ctrl-C and `kill`: stop new work, stop running processes.
     pub shutdown: crate::shutdown::Shutdown,
+    /// Told each time a download is waiting to be processed.
+    pub fetched: Option<Arc<tokio::sync::Notify>>,
 }
 
 pub struct Options {
@@ -88,6 +91,9 @@ pub struct Options {
 /// What a run of downloads did.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Summary {
+    /// Downloaded into the work area, waiting to be processed.
+    pub fetched: usize,
+    /// Processed and saved.
     pub downloaded: usize,
     pub bytes: u64,
     pub skipped: usize,
@@ -947,21 +953,24 @@ pub async fn download_all(
             status::PROCESSING,
         )?;
         let (ctx, slots) = (ctx.clone(), process_slots.clone());
-        processes.spawn(async move {
-            let mut hook_runs = Vec::new();
-            let outcome = tokio::select! {
-                permit = slots.acquire_owned() => {
-                    let _permit = permit.expect("semaphore open");
-                    if ctx.shutdown.is_stopping() {
-                        Outcome::Stopped
-                    } else {
-                        process(&mut job, &ctx, &mut hook_runs).await.0
+        processes.spawn(
+            async move {
+                let mut hook_runs = Vec::new();
+                let outcome = tokio::select! {
+                    permit = slots.acquire_owned() => {
+                        let _permit = permit.expect("semaphore open");
+                        if ctx.shutdown.is_stopping() {
+                            Outcome::Stopped
+                        } else {
+                            process(&mut job, &ctx, &mut hook_runs).await.0
+                        }
                     }
-                }
-                _ = ctx.shutdown.stopping() => Outcome::Stopped,
-            };
-            finished(Phase::Process, &job, &ctx, outcome, None, hook_runs)
-        });
+                    _ = ctx.shutdown.stopping() => Outcome::Stopped,
+                };
+                finished(Phase::Process, &job, &ctx, outcome, None, hook_runs)
+            }
+            .in_current_span(),
+        );
         Ok::<_, rusqlite::Error>(())
     };
 
@@ -998,21 +1007,24 @@ pub async fn download_all(
             now,
         };
         let (ctx, slots) = (ctx.clone(), fetch_slots.clone());
-        fetches.spawn(async move {
-            let (outcome, details) = tokio::select! {
-                permit = slots.acquire_owned() => {
-                    let _permit = permit.expect("semaphore open");
-                    if ctx.shutdown.is_stopping() {
-                        (Outcome::Stopped, None)
-                    } else {
-                        fetch(&job, &ctx).await
+        fetches.spawn(
+            async move {
+                let (outcome, details) = tokio::select! {
+                    permit = slots.acquire_owned() => {
+                        let _permit = permit.expect("semaphore open");
+                        if ctx.shutdown.is_stopping() {
+                            (Outcome::Stopped, None)
+                        } else {
+                            fetch(&job, &ctx).await
+                        }
                     }
-                }
-                _ = ctx.shutdown.stopping() => (Outcome::Stopped, None),
-            };
-            let f = finished(Phase::Fetch, &job, &ctx, outcome, details, Vec::new());
-            (f, job)
-        });
+                    _ = ctx.shutdown.stopping() => (Outcome::Stopped, None),
+                };
+                let f = finished(Phase::Fetch, &job, &ctx, outcome, details, Vec::new());
+                (f, job)
+            }
+            .in_current_span(),
+        );
     }
 
     loop {
@@ -1024,8 +1036,12 @@ pub async fn download_all(
                 let Ok((f, job)) = done else { continue };
                 let fetched = matches!(f.outcome, Outcome::Fetched { .. });
                 record(state, &f, now, &mut summary, tracker, out).map_err(db)?;
-                if fetched && options.process {
-                    spawn_process(state, &mut processes, job).map_err(db)?;
+                if fetched {
+                    if options.process {
+                        spawn_process(state, &mut processes, job).map_err(db)?;
+                    } else if let Some(waiting) = &ctx.fetched {
+                        waiting.notify_one();
+                    }
                 }
             }
             Some(done) = processes.join_next(), if !processes.is_empty() => {
@@ -1126,6 +1142,7 @@ fn record(
     match &f.outcome {
         Outcome::Fetched { bytes } => {
             items::mark_fetched(&state.conn, &f.source_key, &f.video_id, now)?;
+            summary.fetched += 1;
             tracker.download_succeeded();
             tracing::debug!(
                 "{}: fetched “{}” ({})",
