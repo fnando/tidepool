@@ -896,22 +896,207 @@ async fn failing_finished_hooks_keep_the_video_and_run_again() {
         .stdout(contains("a hook is failing").and(contains("tidepool hooks run")));
 
     fs::write(&flag, "").unwrap();
-    env.cmd(&["hooks", "run", "dQw4w9WgXcQ"])
+    env.cmd(&["hooks", "run", "--all", "--failed"])
         .assert()
         .success()
-        .stdout(contains("dl: hook notify succeeded"));
+        .stdout(
+            contains("dl: “Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)”: ran notify")
+                .and(contains("ran hooks for 2 videos")),
+        );
     let notified = fs::read_to_string(env.path("notified")).unwrap();
     assert!(
         notified
             .contains("Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mkv"),
         "{notified}"
     );
-    env.cmd(&["hooks", "run", "dQw4w9WgXcQ"])
+    env.cmd(&["hooks", "run", "--all", "--failed"])
         .assert()
         .success()
-        .stdout(contains("no failed finished hook for dQw4w9WgXcQ"));
-    env.cmd(&["hooks", "run", "okvideo01"]).assert().success();
+        .stdout(contains("no hooks to run for the chosen videos"));
     env.cmd(&["problems"])
         .assert()
         .stdout(contains("no open problems").and(contains("a hook is failing (resolved")));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn hooks_run_again_on_downloaded_videos() {
+    let env = Env::new().await;
+    let Some(bin) = real_ffmpeg_bin(&env) else {
+        eprintln!("skipped: ffmpeg not installed");
+        return;
+    };
+    let sample = env.path("sample.mkv");
+    assert!(
+        std::process::Command::new(bin.join("ffmpeg"))
+            .args(["-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i"])
+            .arg("testsrc=size=64x36:rate=10:duration=1")
+            .arg(&sample)
+            .status()
+            .unwrap()
+            .success()
+    );
+    let path = format!("{}:/usr/bin:/bin", bin.display());
+    let config = env.config("[category.default.embed]\nmetadata = true");
+    let text = fs::read_to_string(&config).unwrap()
+        + "\n[sources.dl2]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\n";
+    fs::write(&config, &text).unwrap();
+    let cmd = |args: &[&str]| {
+        let mut cmd = env.cmd(args);
+        cmd.env("PATH", &path).env("TIDEPOOL_FAKE_MEDIA", &sample);
+        cmd
+    };
+    cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    cmd(&["run", "-s", "dl2"]).assert().success();
+    let okvideo = |source: &str| {
+        env.media()
+            .join(format!("{source}/2026-09-01 - Video okvideo01 [okvideo01]"))
+    };
+    let (a, b) = (
+        okvideo("dl").join("Video okvideo01.mkv"),
+        okvideo("dl2").join("Video okvideo01.mkv"),
+    );
+    assert_eq!(
+        fs::metadata(&a).unwrap().ino(),
+        fs::metadata(&b).unwrap().ino()
+    );
+    assert_eq!(
+        ffprobe_json(&a)["format"]["tags"]["title"],
+        "Video okvideo01"
+    );
+
+    // Hooks added after the download: an embed hook and a finished one.
+    let rename = script(
+        &env,
+        "rename.sh",
+        r#"cat > /dev/null; printf '{"tags": {"title": "Renamed: %s"}}' "$TIDEPOOL_VIDEO_ID""#,
+    );
+    let log = env.path("finished.log");
+    let finished = script(
+        &env,
+        "finished.sh",
+        &format!(
+            "echo \"$TIDEPOOL_SOURCE $TIDEPOOL_OUTPUT_FILE\" >> '{}'",
+            log.display()
+        ),
+    );
+    let text = text.replace(
+        "[category.default.embed]",
+        "hooks = [\"rename\", \"finished\"]\n[category.default.embed]",
+    ) + &format!(
+        "\n[hooks.rename]\ntype = \"embed\"\ncommand = [\"{}\"]\n\n[hooks.finished]\ncommand = [\"{}\"]\n",
+        rename.display(),
+        finished.display()
+    );
+    fs::write(&config, &text).unwrap();
+    cmd(&["config", "import", &config]).assert().success();
+
+    // Nothing picked: an error, not "every video".
+    cmd(&["hooks", "run"])
+        .assert()
+        .code(1)
+        .stderr(contains("pick the videos"));
+    cmd(&["hooks", "run", "--all", "--hook", "nope"])
+        .assert()
+        .code(1)
+        .stderr(contains(
+            "there's no hook \"nope\" (hooks: finished, rename)",
+        ));
+
+    // Only one source, only the finished hook: files untouched.
+    cmd(&["hooks", "run", "-s", "dl2", "--hook", "finished"])
+        .assert()
+        .success()
+        .stdout(
+            contains("dl2: “Video okvideo01”: ran finished").and(contains("ran hooks for 1 video")),
+        );
+    assert_eq!(
+        fs::read_to_string(&log).unwrap(),
+        format!("dl2 {}\n", b.display())
+    );
+    assert_eq!(
+        ffprobe_json(&a)["format"]["tags"]["title"],
+        "Video okvideo01"
+    );
+
+    // Every video of the default category: re-embedded with the hook's tags.
+    cmd(&["hooks", "run", "--category", "default"])
+        .assert()
+        .success()
+        .stdout(
+            contains("dl: “Video okvideo01”: ran rename, finished")
+                .and(contains("ran hooks for 3 videos")),
+        );
+    assert_eq!(
+        ffprobe_json(&a)["format"]["tags"]["title"],
+        "Renamed: okvideo01"
+    );
+    assert_eq!(
+        fs::metadata(&a).unwrap().ino(),
+        fs::metadata(&b).unwrap().ino(),
+        "the linked copy follows (last wins)"
+    );
+    let streams = ffprobe_json(&a)["streams"].as_array().unwrap().len();
+    cmd(&["hooks", "run", "okvideo01", "--hook", "rename"])
+        .assert()
+        .success();
+    assert_eq!(
+        ffprobe_json(&a)["streams"].as_array().unwrap().len(),
+        streams,
+        "running again doesn't pile up streams"
+    );
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(okvideo("dl").join("metadata.json")).unwrap())
+            .unwrap();
+    assert_eq!(meta["embedded_tags"]["title"], "Renamed: okvideo01");
+    assert_eq!(
+        meta["title"], "Video okvideo01",
+        "the video's own title is kept"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn hooks_run_can_convert_downloaded_files() {
+    let env = Env::new().await;
+    let config = env.config("");
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    let remux = script(
+        &env,
+        "remux.sh",
+        r#"cat > /dev/null
+new="${TIDEPOOL_OUTPUT_FILE%.mkv}.mp4"
+mv "$TIDEPOOL_OUTPUT_FILE" "$new"
+printf '{"files": {"media": "%s"}}' "$new""#,
+    );
+    let text = fs::read_to_string(&config)
+        .unwrap()
+        .replace("[ytdlp]", "hooks = [\"remux\"]\n\n[ytdlp]")
+        + &format!(
+            "\n[hooks.remux]\ntype = \"downloaded\"\ncommand = [\"{}\"]\n",
+            remux.display()
+        );
+    fs::write(&config, text).unwrap();
+    env.cmd(&["config", "import", &config]).assert().success();
+    env.cmd(&["hooks", "run", "dQw4w9WgXcQ"])
+        .assert()
+        .success()
+        .stdout(contains("ran remux"));
+    let rick = env.media().join(RICK_DIR);
+    let title = "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)";
+    assert!(rick.join(format!("{title}.mp4")).is_file());
+    assert!(
+        !rick.join(format!("{title}.mkv")).exists(),
+        "the old file is gone"
+    );
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(rick.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(meta["files"]["media"], format!("{title}.mp4"));
+    // The stored location follows: reset --delete-files finds the new file.
+    env.cmd(&["reset", "dQw4w9WgXcQ", "--delete-files"])
+        .assert()
+        .success()
+        .stdout(contains(format!("{title}.mp4")));
 }

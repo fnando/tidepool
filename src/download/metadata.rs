@@ -24,11 +24,19 @@ pub struct Metadata<'a> {
     pub ytdlp_version: Option<&'a str>,
 }
 
+/// Where a video's files are, for metadata.json: relative to the metadata
+/// file's folder when they're under it, absolute otherwise.
+pub fn files_json(files: &VideoFiles) -> Value {
+    Metadata::files_json_of(files)
+}
+
 impl Metadata<'_> {
-    /// Where the files are: relative to the metadata file's folder when
-    /// they're under it, absolute otherwise.
     fn files_json(&self) -> Value {
-        let base = std::path::Path::new(&self.files.metadata)
+        Self::files_json_of(self.files)
+    }
+
+    fn files_json_of(files: &VideoFiles) -> Value {
+        let base = std::path::Path::new(&files.metadata)
             .parent()
             .unwrap_or(std::path::Path::new("/"));
         let show = |path: &str| {
@@ -37,15 +45,14 @@ impl Metadata<'_> {
                 .map(|p| p.display().to_string())
                 .unwrap_or_else(|_| path.to_string())
         };
-        let subtitles: Vec<Value> = self
-            .files
+        let subtitles: Vec<Value> = files
             .subtitles
             .iter()
             .map(|s| json!({ "lang": s.lang, "path": show(&s.path) }))
             .collect();
         json!({
-            "media": show(&self.files.media),
-            "cover": self.files.cover.as_deref().map(show),
+            "media": show(&files.media),
+            "cover": files.cover.as_deref().map(show),
             "subtitles": subtitles,
         })
     }
@@ -69,6 +76,7 @@ impl Metadata<'_> {
                 "name": info.channel,
                 "url": info.channel_url,
             },
+            "upload_date": info.upload_date_iso(),
             "published_at": info.published_at().map(|t| t.to_string()),
             "duration_seconds": info.duration_seconds(),
             "tags": info.tags.clone().unwrap_or_default(),

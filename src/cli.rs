@@ -169,15 +169,25 @@ pub struct ListArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum HooksCmd {
-    /// Run a video's failed `finished` hooks again
+    /// Run hooks again on videos already downloaded
     Run {
-        video_id: String,
-        /// Only this hook
+        /// Only these videos
+        video_ids: Vec<String>,
+        /// Every downloaded video
         #[arg(long)]
-        hook: Option<String>,
-        /// Also run the ones that succeeded
+        all: bool,
+        /// Only videos of these sources: name, playlist id or URL; repeatable
+        #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
+        sources: Vec<SourceRef>,
+        /// Only videos of sources in this category; repeatable
+        #[arg(long = "category", value_name = "NAME")]
+        categories: Vec<String>,
+        /// Only this hook; repeatable
+        #[arg(long = "hook", value_name = "NAME")]
+        hooks: Vec<String>,
+        /// Only hooks whose last run failed
         #[arg(long)]
-        force: bool,
+        failed: bool,
     },
 }
 

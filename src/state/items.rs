@@ -723,47 +723,71 @@ pub fn record_hook_run(conn: &Connection, run: &HookRun) -> rusqlite::Result<()>
     Ok(())
 }
 
-/// How many hook runs are failing, across every video.
-pub fn failed_hook_runs(conn: &Connection) -> rusqlite::Result<i64> {
-    conn.query_row(
-        "SELECT COUNT(*) FROM hook_runs WHERE status = 'failed'",
-        [],
-        |r| r.get(0),
-    )
+/// The hooks whose last run failed for one video in one source.
+pub fn failed_hooks(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+) -> rusqlite::Result<HashSet<String>> {
+    let mut stmt = conn.prepare(
+        "SELECT hook FROM hook_runs WHERE source_key = ?1 AND video_id = ?2 AND status = 'failed'",
+    )?;
+    stmt.query_map(params![source_key, video_id], |r| r.get(0))?
+        .collect()
 }
 
-/// A video's stored hook runs of one type, failed ones only unless `all`.
-pub fn hook_runs(
-    conn: &Connection,
-    video_id: &str,
-    kind: &str,
-    all: bool,
-) -> rusqlite::Result<Vec<HookRun>> {
+/// A downloaded video and where its files are.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Downloaded {
+    pub source_key: String,
+    pub video_id: String,
+    pub files: VideoFiles,
+}
+
+/// Every downloaded video of `sources`, in source order then position.
+pub fn downloaded(conn: &Connection, sources: &[String]) -> rusqlite::Result<Vec<Downloaded>> {
     let mut stmt = conn.prepare(
-        "SELECT source_key, video_id, hook, type, status, exit_code, attempts, started_at,
-           finished_at, error, input_values
-         FROM hook_runs WHERE video_id = ?1 AND type = ?2 AND (?3 OR status = 'failed')
-         ORDER BY source_key, hook",
+        "SELECT source_key, video_id, files FROM items
+         WHERE status IN ('done', 'downloaded') AND files IS NOT NULL
+         ORDER BY source_key, position",
     )?;
-    stmt.query_map(params![video_id, kind, all], |r| {
-        let values: Option<String> = r.get(10)?;
-        Ok(HookRun {
-            source_key: r.get(0)?,
-            video_id: r.get(1)?,
-            hook: r.get(2)?,
-            kind: r.get(3)?,
-            ok: r.get::<_, String>(4)? == "ok",
-            exit_code: r.get(5)?,
-            attempts: r.get(6)?,
-            started_at: r.get(7)?,
-            finished_at: r.get(8)?,
-            error: r.get(9)?,
-            values: values
-                .and_then(|v| serde_json::from_str(&v).ok())
-                .unwrap_or_default(),
-        })
-    })?
-    .collect()
+    let rows = stmt.query_map([], |r| {
+        Ok((
+            r.get::<_, String>(0)?,
+            r.get::<_, String>(1)?,
+            VideoFiles::from_column(r.get(2)?),
+        ))
+    })?;
+    let mut out = Vec::new();
+    for row in rows {
+        let (source_key, video_id, files) = row?;
+        if let Some(files) = files
+            && sources.contains(&source_key)
+        {
+            out.push(Downloaded {
+                source_key,
+                video_id,
+                files,
+            });
+        }
+    }
+    Ok(out)
+}
+
+/// New file locations (and size) after a downloaded video was reprocessed.
+pub fn update_files(
+    conn: &Connection,
+    source_key: &str,
+    video_id: &str,
+    files: &VideoFiles,
+    media_bytes: u64,
+) -> rusqlite::Result<()> {
+    let json = serde_json::to_string(files).expect("files serialize");
+    conn.execute(
+        "UPDATE items SET dir = ?3, files = ?4, media_bytes = ?5 WHERE source_key = ?1 AND video_id = ?2",
+        params![source_key, video_id, files.dir, json, media_bytes as i64],
+    )?;
+    Ok(())
 }
 
 /// After a crash or an interrupt: downloads that didn't finish go back to

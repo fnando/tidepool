@@ -790,86 +790,175 @@ impl App<'_> {
         Ok(exit::OK)
     }
 
-    /// `tidepool hooks run <video>`: run its failed `finished` hooks again.
+    /// `tidepool hooks run`: run hooks again on videos already downloaded.
     async fn hooks(&self, cmd: &HooksCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
         let HooksCmd::Run {
-            video_id,
-            hook,
-            force,
+            video_ids,
+            all,
+            sources: source_refs,
+            categories,
+            hooks: only_hooks,
+            failed: only_failed,
         } = cmd;
+        if video_ids.is_empty() && !*all && source_refs.is_empty() && categories.is_empty() {
+            bail!("pick the videos: video ids, --source <name>, --category <name> or --all");
+        }
         let state = self.open_state()?;
         let config = self.current_config(&state)?.config;
-        let _lock = self.lock()?;
-        let runs: Vec<_> =
-            crate::state::items::hook_runs(&state.conn, video_id, "finished", *force)?
-                .into_iter()
-                .filter(|r| hook.as_ref().is_none_or(|h| *h == r.hook))
-                .collect();
-        if runs.is_empty() {
-            let which = hook.as_deref().map(|h| format!("{h} ")).unwrap_or_default();
-            if *force {
-                bail!("no finished hook {which}ran for {video_id}");
+        for name in only_hooks {
+            if !config.hooks.contains_key(name) {
+                let known: Vec<&str> = config.hooks.keys().map(String::as_str).collect();
+                bail!(
+                    "there's no hook {name:?} (hooks: {})",
+                    if known.is_empty() {
+                        "none".to_string()
+                    } else {
+                        known.join(", ")
+                    }
+                );
             }
-            writeln!(out, "no failed finished hook {which}for {video_id}")?;
-            return Ok(exit::OK);
         }
-        let cancel = tokio_util::sync::CancellationToken::new();
-        let mut failed = 0;
-        for run in runs {
-            let Some(hook) = config
-                .hooks
-                .get(&run.hook)
-                .filter(|h| h.kind == crate::config::HookType::Finished)
-            else {
-                writeln!(
-                    out,
-                    "{}: hook {} isn't a finished hook in the config anymore; skipped",
-                    run.source_key, run.hook
-                )?;
-                continue;
-            };
-            let work_dir = run
-                .values
-                .get("output_dir")
-                .map(PathBuf::from)
-                .filter(|d| d.is_dir())
-                .or_else(|| {
-                    run.values
-                        .get("output_file")
-                        .and_then(|f| Path::new(f).parent().map(Path::to_path_buf))
-                })
-                .unwrap_or_else(|| self.dirs.home.clone());
-            let report = crate::hooks::run(&crate::hooks::Run {
-                name: &run.hook,
-                hook,
-                values: &run.values,
-                default_work_dir: &work_dir,
-                home: &self.dirs.home,
-                input: b"",
-                log: &self.paths.hook_logs.join(format!("{video_id}.log")),
-                cancel: &cancel,
-            })
-            .await;
-            crate::state::items::record_hook_run(
-                &state.conn,
-                &crate::download::hook_run(&run.source_key, video_id, &report),
-            )?;
-            match &report.result {
-                Ok(_) => writeln!(out, "{}: hook {} succeeded", run.source_key, run.hook)?,
-                Err(e) => {
-                    failed += 1;
-                    writeln!(out, "{}: hook {} failed: {e}", run.source_key, run.hook)?;
+        let every = effective_sources(&config);
+        let mut picked: Vec<EffectiveSource> = Vec::new();
+        for r in source_refs {
+            let source = resolve_source(r, &every)?;
+            if !picked.iter().any(|p| p.key == source.key) {
+                picked.push(source.clone());
+            }
+        }
+        for category in categories {
+            if category != crate::config::merge::DEFAULT_CATEGORY
+                && !config.category.contains_key(category)
+            {
+                bail!("there's no category {category:?}");
+            }
+            for source in every.iter().filter(|s| &s.category == category) {
+                if !picked.iter().any(|p| p.key == source.key) {
+                    picked.push(source.clone());
                 }
             }
         }
-        if crate::state::items::failed_hook_runs(&state.conn)? == 0 {
-            crate::problems::resolve(
-                &state.conn,
-                crate::problems::Kind::HookFailing,
-                jiff::Timestamp::now(),
-            )?;
+        if source_refs.is_empty() && categories.is_empty() {
+            picked = every.clone();
         }
-        Ok(if failed > 0 { exit::PARTIAL } else { exit::OK })
+        let _lock = self.lock()?;
+        let keys: Vec<String> = picked.iter().map(|s| s.key.clone()).collect();
+        let mut videos = crate::state::items::downloaded(&state.conn, &keys)?;
+        if !video_ids.is_empty() {
+            videos.retain(|v| video_ids.contains(&v.video_id));
+            for id in video_ids {
+                if !videos.iter().any(|v| &v.video_id == id) {
+                    writeln!(out, "{id}: not downloaded in the chosen sources; skipped")?;
+                }
+            }
+        }
+        let all_downloaded = crate::state::items::downloaded(
+            &state.conn,
+            &every.iter().map(|s| s.key.clone()).collect::<Vec<_>>(),
+        )?;
+
+        let cancel = tokio_util::sync::CancellationToken::new();
+        let shared = crate::download::rerun::Shared {
+            hooks: &config.hooks,
+            hook_logs: &self.paths.hook_logs,
+            dirs: &self.dirs,
+            ffmpeg: Path::new("ffmpeg"),
+            ffprobe: Path::new("ffprobe"),
+            duplicates: config.general.duplicates,
+            cancel: &cancel,
+        };
+        let mut tracker = crate::problems::Tracker::default();
+        let (mut ran, mut failed) = (0, 0);
+        for item in &videos {
+            let source = picked
+                .iter()
+                .find(|s| s.key == item.source_key)
+                .expect("picked source");
+            let last_failed = if *only_failed {
+                crate::state::items::failed_hooks(&state.conn, &item.source_key, &item.video_id)?
+            } else {
+                Default::default()
+            };
+            let hook_names: Vec<String> = source
+                .hooks
+                .iter()
+                .filter(|h| config.hooks.contains_key(*h))
+                .filter(|h| only_hooks.is_empty() || only_hooks.contains(h))
+                .filter(|h| !*only_failed || last_failed.contains(*h))
+                .cloned()
+                .collect();
+            if hook_names.is_empty() {
+                continue;
+            }
+            let media_dir = media_dir(source, &self.dirs).map_err(anyhow::Error::msg)?;
+            let tmp_root = tmp_dir(source, &self.dirs).map_err(anyhow::Error::msg)?;
+            let others: Vec<crate::state::items::VideoFiles> = all_downloaded
+                .iter()
+                .filter(|o| o.video_id == item.video_id && o.source_key != item.source_key)
+                .map(|o| o.files.clone())
+                .collect();
+            let result = crate::download::rerun::rerun(
+                &shared,
+                &crate::download::rerun::Video {
+                    item,
+                    source,
+                    hook_names: &hook_names,
+                    media_dir: &media_dir,
+                    tmp_root: &tmp_root,
+                    others: &others,
+                },
+            )
+            .await;
+            ran += 1;
+            if let Some((files, bytes)) = &result.files {
+                crate::state::items::update_files(
+                    &state.conn,
+                    &item.source_key,
+                    &item.video_id,
+                    files,
+                    *bytes,
+                )?;
+            }
+            let mut problems = Vec::new();
+            for report in &result.hook_runs {
+                crate::state::items::record_hook_run(
+                    &state.conn,
+                    &crate::download::hook_run(&item.source_key, &item.video_id, report),
+                )?;
+                match &report.result {
+                    Ok(_) => tracker.hook_succeeded(),
+                    Err(e) => {
+                        tracker.hook_failed(&item.source_key, &report.name, e);
+                        problems.push(format!("hook {} failed: {e}", report.name));
+                    }
+                }
+            }
+            if let Some(e) = &result.error
+                && !problems.iter().any(|p| p == e)
+            {
+                problems.push(e.clone());
+            }
+            let label = format!("{}: “{}”", item.source_key, result.title);
+            if problems.is_empty() {
+                writeln!(out, "{label}: ran {}", hook_names.join(", "))?;
+            } else {
+                failed += 1;
+                writeln!(out, "{label}: {}", problems.join("; "))?;
+            }
+        }
+        tracker.finish(&state.conn, None, false, jiff::Timestamp::now())?;
+        if ran == 0 {
+            writeln!(out, "no hooks to run for the chosen videos")?;
+            return Ok(exit::OK);
+        }
+        let videos = if ran == 1 { "video" } else { "videos" };
+        if failed > 0 {
+            writeln!(out, "ran hooks for {ran} {videos}; {failed} with failures")?;
+            Ok(exit::PARTIAL)
+        } else {
+            writeln!(out, "ran hooks for {ran} {videos}")?;
+            Ok(exit::OK)
+        }
     }
 
     async fn ytdlp(&self, cmd: &YtdlpCmd, out: &mut dyn Write) -> anyhow::Result<i32> {

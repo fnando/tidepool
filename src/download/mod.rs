@@ -5,6 +5,8 @@ pub mod embed;
 pub mod info;
 pub mod layout;
 pub mod metadata;
+pub mod rerun;
+pub mod stages;
 pub mod thumbnail;
 pub mod ytdlp;
 
@@ -19,7 +21,7 @@ use tokio::task::JoinSet;
 use tokio_util::sync::CancellationToken;
 
 use crate::config::merge::EffectiveSource;
-use crate::config::{Duplicates, HookConfig, HookType, OnFailure};
+use crate::config::{Duplicates, HookConfig, HookType};
 use crate::filter::{Decision, Fields, RuleSet};
 use crate::hooks;
 use crate::index::RemoteItem;
@@ -461,35 +463,29 @@ async fn assemble(
     }
 
     // `downloaded` hooks: on the raw files; they may replace them.
-    let context = hook_context(&info, job);
+    let stage = stages::Stage {
+        source,
+        hook_names: &source.hooks,
+        hooks: &ctx.hooks,
+        video_id,
+        source_title: job.queued.source_title.as_deref(),
+        position: job.queued.position,
+        label,
+        home: &ctx.dirs.home,
+        hook_logs: &ctx.hook_logs,
+        cancel: &ctx.cancel,
+        ffmpeg: &ctx.ffmpeg,
+        ffprobe: &ctx.ffprobe,
+    };
+    let context = stage.context(&info);
     let mut raw = hooks::Files {
         media,
         cover: cover_file,
         subtitles,
     };
-    for (name, hook) in hooks::of_type(&source.hooks, &ctx.hooks, HookType::Downloaded) {
-        let input = serde_json::to_vec(&raw.to_json(&context)).expect("JSON");
-        let hook_values = stage_values(&values, tmp, Some(&raw.media), raw.cover.as_deref(), None);
-        let report = run_hook(ctx, job, name, hook, &hook_values, tmp, &input).await;
-        let mut changed = raw.clone();
-        let applied = match &report.result {
-            Ok(out) => changed
-                .apply(name, out)
-                .and_then(|()| check_in_work_area(name, tmp, &changed))
-                .and_then(|()| check_cover(name, &changed, cover_format)),
-            Err(e) => Err(format!("hook {name} failed: {e}")),
-        };
-        if hook_failure(label, hook, report, applied, hook_runs)? {
-            if changed.media != raw.media {
-                let _ = std::fs::remove_file(&raw.media);
-                tracing::debug!(
-                    "{label}: hook {name} replaced the media with {}",
-                    changed.media.display()
-                );
-            }
-            raw = changed;
-        }
-    }
+    stage
+        .downloaded_hooks(&mut raw, &values, &context, tmp, cover_format, hook_runs)
+        .await?;
 
     let media_ext = raw
         .media
@@ -535,36 +531,17 @@ async fn assemble(
 
     // What gets embedded: processed by `embed` hooks, then embedded.
     let mut data = hooks::EmbedData {
-        tags: embed_tags(
-            &info,
-            job.queued.source_title.as_deref(),
-            job.queued.position,
-        ),
+        tags: stage.tags(&info),
         cover: raw.cover.clone(),
         chapters: info.chapters.clone().unwrap_or_default(),
         subtitles: raw.subtitles.clone(),
     };
-    let settings = &source.embed;
-    let embedding_on =
-        settings.metadata || settings.cover || settings.chapters || settings.subtitles;
-    for (name, hook) in hooks::of_type(&source.hooks, &ctx.hooks, HookType::Embed) {
-        if !embedding_on {
-            tracing::debug!("{label}: skipping hook {name}: nothing is embedded (see embed)");
-            continue;
-        }
-        let input = serde_json::to_vec(&data.to_json(&context)).expect("JSON");
-        let hook_values = stage_values(&values, tmp, Some(&raw.media), raw.cover.as_deref(), None);
-        let report = run_hook(ctx, job, name, hook, &hook_values, tmp, &input).await;
-        let mut processed = data.clone();
-        let applied = match &report.result {
-            Ok(out) => processed.apply(name, out),
-            Err(e) => Err(format!("hook {name} failed: {e}")),
-        };
-        if hook_failure(label, hook, report, applied, hook_runs)? {
-            data = processed;
-        }
-    }
-    let embedding = embed_media(job, ctx, &raw.media, &data, label).await;
+    stage
+        .embed_hooks(&mut data, &values, &context, tmp, &raw, hook_runs)
+        .await?;
+    let embedding = stage
+        .embed(&raw.media, &data, job.copy_from.as_ref(), ctx.duplicates)
+        .await;
 
     let media_bytes = std::fs::metadata(&raw.media)
         .map_err(|e| io_fail("cannot read", &raw.media, e))?
@@ -612,303 +589,13 @@ async fn assemble(
         started.elapsed().as_secs_f64()
     );
 
-    // `finished` hooks: on the placed files. A failure doesn't undo the
-    // download; it's recorded so the hook can be run again.
-    let output_dir = layout.output_dir();
-    let work_dir = if output_dir.is_dir() {
-        output_dir.to_path_buf()
-    } else {
-        media_dest.parent().unwrap_or(Path::new("/")).to_path_buf()
-    };
-    let cover_placed = files.cover.as_ref().map(PathBuf::from);
-    for (name, hook) in hooks::of_type(&source.hooks, &ctx.hooks, HookType::Finished) {
-        let hook_values = stage_values(
-            &values,
-            output_dir,
-            Some(&media_dest),
-            cover_placed.as_deref(),
-            Some(&metadata_dest),
-        );
-        let report = run_hook(ctx, job, name, hook, &hook_values, &work_dir, b"").await;
-        if let Err(e) = &report.result {
-            tracing::warn!("{label}: hook {name} failed: {e}");
-        }
-        hook_runs.push(report);
-    }
+    stage.finished_hooks(&values, &files, hook_runs).await;
 
     Ok(Outcome::Done {
         files,
         media_bytes,
         linked: job.copy_from.is_some(),
     })
-}
-
-/// Run one hook for a download.
-async fn run_hook(
-    ctx: &Context,
-    job: &Job,
-    name: &str,
-    hook: &HookConfig,
-    values: &BTreeMap<String, String>,
-    work_dir: &Path,
-    input: &[u8],
-) -> hooks::Report {
-    tracing::debug!(
-        "{}: running hook {name} ({})",
-        job.source.key,
-        hook.kind.as_str()
-    );
-    hooks::run(&hooks::Run {
-        name,
-        hook,
-        values,
-        default_work_dir: work_dir,
-        home: &ctx.dirs.home,
-        input,
-        log: &ctx.hook_logs.join(format!("{}.log", job.queued.video_id)),
-        cancel: &ctx.cancel,
-    })
-    .await
-}
-
-/// Record a `downloaded`/`embed` hook run and decide what its failure means
-/// (`applied` covers both the run and its output). `Ok(true)`: use its
-/// output; `Ok(false)`: continue without it (`warn`); `Err`: fail the download.
-fn hook_failure(
-    label: &str,
-    hook: &HookConfig,
-    mut report: hooks::Report,
-    applied: Result<(), String>,
-    hook_runs: &mut Vec<hooks::Report>,
-) -> Result<bool, Failure> {
-    if let Err(e) = &applied
-        && report.result.is_ok()
-    {
-        report.result = Err(e.clone());
-    }
-    hook_runs.push(report);
-    match applied {
-        Ok(()) => Ok(true),
-        Err(e) if hook.on_failure == OnFailure::Warn => {
-            tracing::warn!("{label}: {e}; continuing without it");
-            Ok(false)
-        }
-        Err(e) => Err(fail(e)),
-    }
-}
-
-/// Files a `downloaded` hook returns must stay in the video's work area.
-fn check_in_work_area(name: &str, tmp: &Path, files: &hooks::Files) -> Result<(), String> {
-    let paths = std::iter::once(&files.media)
-        .chain(files.cover.iter())
-        .chain(files.subtitles.iter().map(|s| &s.path));
-    for path in paths {
-        if !path.starts_with(tmp) {
-            return Err(format!(
-                "hook {name} returned {}, which isn't in the work area {}",
-                path.display(),
-                tmp.display()
-            ));
-        }
-    }
-    Ok(())
-}
-
-/// A replaced cover must be in the format `cover_file` asks for.
-fn check_cover(name: &str, files: &hooks::Files, format: CoverFormat) -> Result<(), String> {
-    match &files.cover {
-        Some(cover)
-            if cover
-                .extension()
-                .and_then(|e| CoverFormat::from_extension(&e.to_string_lossy()))
-                != Some(format) =>
-        {
-            Err(format!(
-                "hook {name} returned a cover that isn't a .{} like cover_file",
-                format.extension()
-            ))
-        }
-        _ => Ok(()),
-    }
-}
-
-/// Placeholder values for a hook: the video's, plus where its files are at
-/// this stage.
-fn stage_values(
-    values: &Values,
-    output_dir: &Path,
-    output_file: Option<&Path>,
-    cover_file: Option<&Path>,
-    metadata_file: Option<&Path>,
-) -> BTreeMap<String, String> {
-    let mut out: BTreeMap<String, String> = values
-        .0
-        .iter()
-        .map(|(k, v)| (k.to_string(), v.clone()))
-        .collect();
-    out.insert("output_dir".into(), output_dir.display().to_string());
-    for (key, path) in [
-        ("output_file", output_file),
-        ("cover_file", cover_file),
-        ("metadata_file", metadata_file),
-    ] {
-        if let Some(path) = path {
-            out.insert(key.into(), path.display().to_string());
-        }
-    }
-    out
-}
-
-/// What hooks get as read-only `context`.
-fn hook_context(info: &VideoInfo, job: &Job) -> serde_json::Value {
-    serde_json::json!({
-        "video": {
-            "id": info.id,
-            "url": format!("https://www.youtube.com/watch?v={}", info.id),
-            "title": info.title,
-            "description": info.description,
-            "channel": { "id": info.channel_id, "name": info.channel, "url": info.channel_url },
-            "upload_date": info.upload_date_iso(),
-            "duration_seconds": info.duration_seconds(),
-            "tags": info.tags.clone().unwrap_or_default(),
-            "categories": info.categories.clone().unwrap_or_default(),
-        },
-        "source": {
-            "name": job.source.key,
-            "url": job.source.url,
-            "id": job.source.id,
-            "title": job.queued.source_title,
-            "position": job.queued.position,
-            "category": job.source.category,
-        },
-    })
-}
-
-/// What embedding did for one download.
-#[derive(Default)]
-struct Embedding {
-    embedded: embed::Embedded,
-    error: Option<String>,
-    /// The media was a hardlinked duplicate and got new tags: point the
-    /// other source's path at the new file once it's placed.
-    relink: bool,
-}
-
-/// Embed what the source's `embed` settings ask for into `media` (in the
-/// work area), from `data`. Never fails the download: problems become a
-/// warning and `embed_error` in metadata.json.
-async fn embed_media(
-    job: &Job,
-    ctx: &Context,
-    media: &Path,
-    data: &hooks::EmbedData,
-    label: &str,
-) -> Embedding {
-    let settings = &job.source.embed;
-    if !(settings.metadata || settings.cover || settings.chapters || settings.subtitles) {
-        return Embedding::default();
-    }
-    let cover = data.cover.as_ref().and_then(|path| {
-        let format = path
-            .extension()
-            .and_then(|e| CoverFormat::from_extension(&e.to_string_lossy()))?;
-        Some((path.as_path(), format))
-    });
-    let request = embed::Request {
-        media,
-        tags: if settings.metadata {
-            data.tags.clone()
-        } else {
-            BTreeMap::new()
-        },
-        cover: cover.filter(|_| settings.cover),
-        chapters: if settings.chapters {
-            &data.chapters
-        } else {
-            &[]
-        },
-        subtitles: if settings.subtitles {
-            data.subtitles
-                .iter()
-                .map(|s| (s.path.clone(), s.lang.clone()))
-                .collect()
-        } else {
-            Vec::new()
-        },
-    };
-    if settings.cover && cover.is_none() {
-        tracing::warn!("{label}: no cover to embed");
-    }
-    match embed::embed(&ctx.ffmpeg, &ctx.ffprobe, &request).await {
-        Ok(None) => Embedding::default(),
-        Ok(Some(out)) => {
-            for what in &out.skipped {
-                tracing::warn!("{label}: not embedded: {what}");
-            }
-            let shared = job.copy_from.as_ref().filter(|_| media.is_symlink());
-            let result = match shared {
-                // A symlinked duplicate: update the file it points to.
-                Some(other) => place(&out.path, Path::new(&other.media)),
-                None => std::fs::rename(&out.path, media),
-            };
-            match result {
-                Ok(()) => {
-                    tracing::debug!("{label}: embedded {:?}", out.embedded);
-                    Embedding {
-                        embedded: out.embedded,
-                        error: None,
-                        relink: job.copy_from.is_some()
-                            && shared.is_none()
-                            && ctx.duplicates == Duplicates::Hardlink,
-                    }
-                }
-                Err(e) => {
-                    let _ = std::fs::remove_file(&out.path);
-                    embed_failed(label, e.to_string())
-                }
-            }
-        }
-        Err(e) => embed_failed(label, e),
-    }
-}
-
-fn embed_failed(label: &str, error: String) -> Embedding {
-    tracing::warn!("{label}: embedding failed, keeping the file as downloaded: {error}");
-    Embedding {
-        error: Some(error),
-        ..Embedding::default()
-    }
-}
-
-/// The tags `embed.metadata` writes.
-fn embed_tags(
-    info: &VideoInfo,
-    source_title: Option<&str>,
-    position: u32,
-) -> BTreeMap<String, String> {
-    let url = info
-        .webpage_url
-        .clone()
-        .unwrap_or_else(|| format!("https://www.youtube.com/watch?v={}", info.id));
-    let description = info.description.clone().filter(|d| !d.is_empty());
-    [
-        ("title", Some(info.title.clone())),
-        ("artist", info.channel.clone()),
-        ("album_artist", info.channel.clone()),
-        (
-            "genre",
-            info.categories.as_ref().and_then(|c| c.first().cloned()),
-        ),
-        ("date", info.upload_date_iso()),
-        ("comment", Some(url)),
-        ("description", description.clone()),
-        ("synopsis", description),
-        ("album", source_title.map(str::to_string)),
-        ("track", Some(position.to_string())),
-    ]
-    .into_iter()
-    .filter_map(|(key, value)| value.map(|v| (key.to_string(), v)))
-    .collect()
 }
 
 /// Point `other` at the same file as `ours` (a hardlink, or a copy across

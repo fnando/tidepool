@@ -456,15 +456,35 @@ with `metadata = true`.
 
 When a `downloaded` or `embed` hook fails, the download fails too and is tried
 again on a later run; with `on_failure = "warn"`, tidepool carries on without
-the hook's changes. When a `finished` hook fails, the video stays downloaded:
-fix the problem, then run the hook again with
+the hook's changes. When a `finished` hook fails, the video stays downloaded,
+and `tidepool problems` tells you about it.
+
+#### Running hooks again
+
+Added a hook, or fixed one? Run hooks on videos you already have, without
+downloading them again:
 
 ```sh
-tidepool hooks run <video id>
+tidepool hooks run --all                     # every downloaded video
+tidepool hooks run --source lofi             # one source (repeatable)
+tidepool hooks run --category music          # every source in a category
+tidepool hooks run dQw4w9WgXcQ okvideo01     # these videos
 ```
 
-(`--hook <name>` runs only that hook; `--force` also runs the ones that
-worked.)
+Each video runs its source's hooks, as a download would: `downloaded` and
+`embed` hooks work on copies of the files, which are then embedded again and
+put back in place (so a hook that converts a video replaces the old file);
+`finished` hooks run on the files as they are. Add `--hook <name>` (repeatable)
+to run only some hooks, and `--failed` to run only the ones that failed last
+time:
+
+```sh
+tidepool hooks run --all --failed            # after fixing a broken hook
+tidepool hooks run --category music --hook split-title
+```
+
+Running the same hooks twice is safe: the file gets the new tags, cover and
+subtitles instead of a second copy of them.
 
 ### Problems
 

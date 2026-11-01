@@ -52,6 +52,51 @@ impl VideoInfo {
         serde_json::from_str(json).map_err(|e| format!("unexpected yt-dlp info JSON: {e}"))
     }
 
+    /// Rebuild the details tidepool uses from a video's metadata.json, for
+    /// working on files already downloaded.
+    pub fn from_metadata(meta: &serde_json::Value) -> Result<Self, String> {
+        let upload_date = meta["upload_date"]
+            .as_str()
+            .or_else(|| {
+                meta["published_at"]
+                    .as_str()
+                    .map(|t| t.get(..10).unwrap_or(t))
+            })
+            .map(|d| d.replace('-', ""));
+        let timestamp = meta["published_at"]
+            .as_str()
+            .and_then(|t| t.parse::<Timestamp>().ok())
+            .map(|t| t.as_second());
+        let chapters: Vec<serde_json::Value> = meta["chapters"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|c| serde_json::json!({ "start_time": c["start"], "end_time": c["end"], "title": c["title"] }))
+            .collect();
+        let shaped = serde_json::json!({
+            "id": meta["id"],
+            "title": meta["title"],
+            "description": meta["description"],
+            "channel": meta["channel"]["name"],
+            "channel_id": meta["channel"]["id"],
+            "channel_url": meta["channel"]["url"],
+            "upload_date": upload_date,
+            "timestamp": timestamp,
+            "duration": meta["duration_seconds"],
+            "tags": meta["tags"],
+            "categories": meta["categories"],
+            "chapters": chapters,
+            "format_id": meta["media"]["format_id"],
+            "width": meta["media"]["width"],
+            "height": meta["media"]["height"],
+            "fps": meta["media"]["fps"],
+            "vcodec": meta["media"]["vcodec"],
+            "acodec": meta["media"]["acodec"],
+            "webpage_url": meta["url"],
+        });
+        serde_json::from_value(shaped).map_err(|e| format!("unexpected metadata file: {e}"))
+    }
+
     /// Publish time: the exact timestamp, else the upload date at midnight UTC.
     pub fn published_at(&self) -> Option<Timestamp> {
         self.timestamp
