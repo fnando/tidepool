@@ -246,7 +246,7 @@ fn resolve(
             cover: table!(embed, cover, false),
             chapters: table!(embed, chapters, false),
             subtitles: table!(embed, subtitles, false),
-            tags: table!(embed, tags, BTreeMap::new()),
+            tags: merged_tags(layers),
         },
         cleanup: Cleanup {
             max_items: table!(cleanup, max_items, 0),
@@ -277,6 +277,22 @@ fn resolve(
             ),
         },
     }
+}
+
+/// `embed.tags` from every layer, name by name: a later layer adds tags or
+/// replaces them (names match in any case); `""` stays, as "remove it".
+fn merged_tags(layers: &[Options]) -> BTreeMap<String, String> {
+    let mut tags = BTreeMap::new();
+    for layer in layers {
+        let Some(layer_tags) = layer.embed.as_ref().and_then(|e| e.tags.as_ref()) else {
+            continue;
+        };
+        for (key, value) in layer_tags {
+            tags.retain(|k: &String, _| !k.eq_ignore_ascii_case(key));
+            tags.insert(key.clone(), value.clone());
+        }
+    }
+    tags
 }
 
 /// A category resolved on its own (`default` + the category, no source), for
@@ -431,6 +447,32 @@ mod tests {
         assert_eq!(
             p.youtube.daily_quota, 5000,
             "quota from default, key from the category"
+        );
+    }
+
+    #[test]
+    fn embed_tags_merge_name_by_name() {
+        let p = only(&format!(
+            "[category.default.embed]\ntags = {{ HANDLER_NAME = '', genre = 'Music' }}\n\
+             [category.music.embed]\ntags = {{ album = '{{source_title}}' }}\n\
+             [sources.x]\n{URL}\ncategory = 'music'\n\
+             [sources.x.embed]\ntags = {{ MUSICBRAINZ_ARTISTID = 'abc', GENRE = 'Rock' }}"
+        ));
+        let tags: Vec<(&str, &str)> = p
+            .embed
+            .tags
+            .iter()
+            .map(|(k, v)| (k.as_str(), v.as_str()))
+            .collect();
+        assert_eq!(
+            tags,
+            [
+                ("GENRE", "Rock"),
+                ("HANDLER_NAME", ""),
+                ("MUSICBRAINZ_ARTISTID", "abc"),
+                ("album", "{source_title}")
+            ],
+            "every layer adds; later ones replace, in any case; \"\" stays as a removal"
         );
     }
 

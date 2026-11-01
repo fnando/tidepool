@@ -437,7 +437,9 @@ mark whose music videos a source holds:
 tags = { MUSICBRAINZ_ARTISTID = "…", album_artist = "{channel}", genre = "" }
 ```
 
-A source's `tags` replace its category's. Not every file type keeps every
+Tags add up: a source's `tags` are added to its category's and
+`[category.default]`'s, and a tag set again replaces the earlier one, so you can
+set shared tags once and one id per source. Not every file type keeps every
 tag: mp4 files only keep the usual ones (title, artist, album, date, …), so a
 tag like `MUSICBRAINZ_ARTISTID` needs mkv. tidepool tells you when a tag
 couldn't be saved.
