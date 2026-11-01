@@ -12,8 +12,20 @@
 # TIDEPOOL_FAKE_THUMB_BASE: replaces https://i.ytimg.com in info JSON.
 # TIDEPOOL_FAKE_YTDLP_FAIL: every download and -J lookup fails with this message.
 # TIDEPOOL_FAKE_MEDIA: a real media file to copy instead of writing fake bytes.
+# TIDEPOOL_FAKE_YTDLP_STUBBORN: ignore SIGTERM (only SIGKILL stops it).
+# TIDEPOOL_FAKE_YTDLP_PIDS: append this process's pid and its sleeping
+#   child's to this file.
+# TIDEPOOL_FAKE_INDEX_SLEEP: seconds to wait before listing a playlist.
 fixtures="$(cd "$(dirname "$0")/.." && pwd)/fixtures/ytdlp"
 [ -n "${TIDEPOOL_FAKE_YTDLP_LOG:-}" ] && echo "$*" >> "$TIDEPOOL_FAKE_YTDLP_LOG"
+[ -n "${TIDEPOOL_FAKE_YTDLP_STUBBORN:-}" ] && trap '' TERM
+
+# Sleep in a child process (like yt-dlp's ffmpeg), recording both pids.
+nap() {
+  sleep "$1" &
+  [ -n "${TIDEPOOL_FAKE_YTDLP_PIDS:-}" ] && echo "$$ $!" >> "$TIDEPOOL_FAKE_YTDLP_PIDS"
+  wait "$!" 2>/dev/null || wait "$!"
+}
 
 for arg; do last="$arg"; done
 
@@ -32,6 +44,7 @@ fail_if_error() {
 case " $* " in
   *" --version "*) echo 2026.10.01; exit 0 ;;
   *" --flat-playlist "*)
+    [ -n "${TIDEPOOL_FAKE_INDEX_SLEEP:-}" ] && nap "$TIDEPOOL_FAKE_INDEX_SLEEP"
     id="${last##*list=}"; id="${id%%&*}"
     if [ -f "$fixtures/playlists/$id.json" ]; then cat "$fixtures/playlists/$id.json"; exit 0; fi
     echo "ERROR: [youtube:tab] $id: The playlist does not exist." >&2
@@ -49,7 +62,7 @@ case " $* " in
     dir="$(dirname "$media")"
     mkdir -p "$dir"
     echo '{"status": "downloading", "downloaded_bytes": 10, "total_bytes": 20}'
-    [ -n "${TIDEPOOL_FAKE_YTDLP_SLEEP:-}" ] && sleep "$TIDEPOOL_FAKE_YTDLP_SLEEP"
+    [ -n "${TIDEPOOL_FAKE_YTDLP_SLEEP:-}" ] && nap "$TIDEPOOL_FAKE_YTDLP_SLEEP"
     if [ -n "${TIDEPOOL_FAKE_MEDIA:-}" ]; then
       cp "$TIDEPOOL_FAKE_MEDIA" "$dir/media.mkv"
     else

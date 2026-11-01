@@ -4,6 +4,7 @@
 use std::fs;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use assert_cmd::Command;
 use predicates::prelude::*;
@@ -1248,4 +1249,166 @@ async fn missing_files_are_reported_or_restored() {
         .success()
         .stdout(contains(format!("dl: downloaded “{title}”")));
     assert!(media.is_file());
+}
+
+/// Start tidepool in the background, the way a terminal would.
+fn spawn_tidepool(env: &Env, args: &[&str], vars: &[(&str, &str)]) -> std::process::Child {
+    let mut cmd = std::process::Command::new(assert_cmd::cargo::cargo_bin("tidepool"));
+    cmd.env_clear()
+        .env("PATH", format!("{}:/usr/bin:/bin", test_bin().display()))
+        .env("HOME", env.path("home"))
+        .env("XDG_CONFIG_HOME", env.path("config"))
+        .env("XDG_DATA_HOME", env.path("data"))
+        .env("TIDEPOOL_TEST_THUMBNAIL_BASE", env.thumbs.uri())
+        .args(args)
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::null());
+    for (key, value) in vars {
+        cmd.env(key, value);
+    }
+    cmd.spawn().unwrap()
+}
+
+fn signal_int(child: &std::process::Child) {
+    std::process::Command::new("kill")
+        .args(["-INT", &child.id().to_string()])
+        .status()
+        .unwrap();
+}
+
+/// The pids the fake yt-dlp recorded (itself and its sleeping child).
+fn recorded_pids(file: &Path) -> Vec<i32> {
+    fs::read_to_string(file)
+        .unwrap_or_default()
+        .split_whitespace()
+        .map(|p| p.parse().unwrap())
+        .collect()
+}
+
+fn alive(pid: i32) -> bool {
+    std::process::Command::new("kill")
+        .args(["-0", &pid.to_string()])
+        .stderr(std::process::Stdio::null())
+        .status()
+        .unwrap()
+        .success()
+}
+
+fn wait_for(what: &str, check: impl Fn() -> bool) {
+    for _ in 0..200 {
+        if check() {
+            return;
+        }
+        std::thread::sleep(Duration::from_millis(25));
+    }
+    panic!("timed out waiting for {what}");
+}
+
+/// A config whose processes get `grace` to stop.
+fn config_with_grace(env: &Env, grace: &str) -> String {
+    let config = env.config("");
+    let text = format!("[general]\nshutdown_timeout = \"{grace}\"\n\n")
+        + &fs::read_to_string(&config).unwrap();
+    fs::write(&config, text).unwrap();
+    config
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_second_ctrl_c_stops_right_away() {
+    let env = Env::new().await;
+    let config = config_with_grace(&env, "60s");
+    env.cmd(&["index", "--config", &config]).assert().code(0);
+    let pids = env.path("pids");
+    let pids_arg = pids.display().to_string();
+    // yt-dlp ignores the polite request, so the first Ctrl-C waits for it.
+    let mut child = spawn_tidepool(
+        &env,
+        &["download", "--limit", "1"],
+        &[
+            ("TIDEPOOL_FAKE_YTDLP_SLEEP", "30"),
+            ("TIDEPOOL_FAKE_YTDLP_STUBBORN", "1"),
+            ("TIDEPOOL_FAKE_YTDLP_PIDS", &pids_arg),
+        ],
+    );
+    wait_for("the download to start", || recorded_pids(&pids).len() == 2);
+    signal_int(&child);
+    std::thread::sleep(Duration::from_millis(500));
+    assert!(
+        child.try_wait().unwrap().is_none(),
+        "still giving yt-dlp time"
+    );
+    let started = std::time::Instant::now();
+    signal_int(&child);
+    let status = child.wait().unwrap();
+    assert_eq!(status.code(), Some(130));
+    assert!(
+        started.elapsed() < Duration::from_secs(5),
+        "{:?}",
+        started.elapsed()
+    );
+    for pid in recorded_pids(&pids) {
+        assert!(!alive(pid), "yt-dlp and what it started are gone ({pid})");
+    }
+    assert_eq!(env.statuses("dl")[0].1, "pending");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn ctrl_c_gives_processes_the_shutdown_timeout() {
+    let env = Env::new().await;
+    let config = config_with_grace(&env, "1s");
+    env.cmd(&["index", "--config", &config]).assert().code(0);
+    let pids = env.path("pids");
+    let pids_arg = pids.display().to_string();
+    let mut child = spawn_tidepool(
+        &env,
+        &["download", "--limit", "1"],
+        &[
+            ("TIDEPOOL_FAKE_YTDLP_SLEEP", "30"),
+            ("TIDEPOOL_FAKE_YTDLP_STUBBORN", "1"),
+            ("TIDEPOOL_FAKE_YTDLP_PIDS", &pids_arg),
+        ],
+    );
+    wait_for("the download to start", || recorded_pids(&pids).len() == 2);
+    let started = std::time::Instant::now();
+    signal_int(&child);
+    let status = child.wait().unwrap();
+    let took = started.elapsed();
+    assert_eq!(status.code(), Some(130));
+    assert!(
+        took >= Duration::from_millis(900) && took < Duration::from_secs(6),
+        "{took:?}"
+    );
+    for pid in recorded_pids(&pids) {
+        assert!(!alive(pid), "killed after the timeout ({pid})");
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn ctrl_c_while_checking_sources() {
+    let env = Env::new().await;
+    let config = config_with_grace(&env, "10s");
+    env.cmd(&["config", "import", &config]).assert().success();
+    let pids = env.path("pids");
+    let pids_arg = pids.display().to_string();
+    let child = spawn_tidepool(
+        &env,
+        &["run"],
+        &[
+            ("TIDEPOOL_FAKE_INDEX_SLEEP", "30"),
+            ("TIDEPOOL_FAKE_YTDLP_PIDS", &pids_arg),
+        ],
+    );
+    wait_for("the listing to start", || recorded_pids(&pids).len() == 2);
+    let started = std::time::Instant::now();
+    signal_int(&child);
+    let output = child.wait_with_output().unwrap();
+    assert_eq!(output.status.code(), Some(130));
+    assert!(started.elapsed() < Duration::from_secs(5));
+    assert!(
+        String::from_utf8_lossy(&output.stdout)
+            .contains("stopped; the rest will be checked on the next run")
+    );
+    for pid in recorded_pids(&pids) {
+        assert!(!alive(pid), "nothing left running ({pid})");
+    }
 }

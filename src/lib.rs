@@ -12,5 +12,7 @@ pub mod lock;
 pub mod paths;
 pub mod pipeline;
 pub mod problems;
+pub mod process;
+pub mod shutdown;
 pub mod state;
 pub mod tools;

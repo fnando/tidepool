@@ -40,13 +40,29 @@ struct App<'a> {
     cli: &'a Cli,
     dirs: Dirs,
     paths: StatePaths,
+    /// Ctrl-C and `kill`, for commands that run yt-dlp, ffmpeg or hooks.
+    shutdown: crate::shutdown::Shutdown,
 }
 
 /// Run a parsed command; returns the process exit code.
 pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
     let dirs = Dirs::from_env().map_err(anyhow::Error::msg)?;
     let paths = dirs.state();
-    let app = App { cli, dirs, paths };
+    // Commands that start other programs stop them on Ctrl-C (first: give
+    // them `shutdown_timeout` to finish; second: right away). Others keep the
+    // default: Ctrl-C ends them at once.
+    let shutdown = match &cli.command {
+        Command::Run(_) | Command::Index(_) | Command::Download(_) | Command::Hooks { .. } => {
+            crate::shutdown::Shutdown::listen()
+        }
+        _ => crate::shutdown::Shutdown::default(),
+    };
+    let app = App {
+        cli,
+        dirs,
+        paths,
+        shutdown,
+    };
     if cli.config.is_some() && !cli.dry_run && uses_stored_config(&cli.command) {
         app.import_config_flag()?;
     }
@@ -428,6 +444,10 @@ impl App<'_> {
                 out,
             )
             .await?;
+        if let Some(code) = self.shutdown.code() {
+            writeln!(out, "stopped; the rest will be checked on the next run")?;
+            return Ok(code);
+        }
         self.finish_problems(&state, &loaded.config, tracker, &ytdlp)
             .await?;
         Ok(if failed > 0 { exit::PARTIAL } else { exit::OK })
@@ -446,8 +466,21 @@ impl App<'_> {
         let now = jiff::Timestamp::now();
         let mut failed = 0;
         for source in sources {
-            match crate::pipeline::index_source(state, config, source, &self.dirs, ytdlp, now).await
+            if self.shutdown.is_stopping() {
+                break;
+            }
+            match crate::pipeline::index_source(
+                state,
+                config,
+                source,
+                &self.dirs,
+                ytdlp,
+                &self.shutdown,
+                now,
+            )
+            .await
             {
+                Err(err) if err == "stopped" => break,
                 Ok(summary) => {
                     tracker.index_succeeded(&source.key);
                     tracker.regex_limit(
@@ -510,7 +543,7 @@ impl App<'_> {
                 .read_timeout(std::time::Duration::from_secs(30))
                 .build()?,
             shutdown_timeout: config.general.shutdown_timeout.0,
-            cancel: tokio_util::sync::CancellationToken::new(),
+            shutdown: self.shutdown.clone(),
         };
         let options = Options {
             limit,
@@ -634,6 +667,10 @@ impl App<'_> {
                 out,
             )
             .await?;
+        if let Some(code) = self.shutdown.code() {
+            writeln!(out, "stopped; the rest will be checked on the next run")?;
+            return Ok(code);
+        }
         let summary = self
             .download_sources(
                 &mut state,
@@ -902,7 +939,6 @@ impl App<'_> {
             &every.iter().map(|s| s.key.clone()).collect::<Vec<_>>(),
         )?;
 
-        let cancel = tokio_util::sync::CancellationToken::new();
         let shared = crate::download::rerun::Shared {
             hooks: &config.hooks,
             hook_logs: &self.paths.hook_logs,
@@ -910,11 +946,15 @@ impl App<'_> {
             ffmpeg: Path::new("ffmpeg"),
             ffprobe: Path::new("ffprobe"),
             duplicates: config.general.duplicates,
-            cancel: &cancel,
+            shutdown: &self.shutdown,
+            grace: config.general.shutdown_timeout.0,
         };
         let mut tracker = crate::problems::Tracker::default();
         let (mut ran, mut failed) = (0, 0);
         for item in &videos {
+            if self.shutdown.is_stopping() {
+                break;
+            }
             let source = picked
                 .iter()
                 .find(|s| s.key == item.source_key)
@@ -972,6 +1012,7 @@ impl App<'_> {
                 )?;
                 match &report.result {
                     Ok(_) => tracker.hook_succeeded(),
+                    Err(e) if e == "stopped" => problems.push("stopped".into()),
                     Err(e) => {
                         tracker.hook_failed(&item.source_key, &report.name, e);
                         problems.push(format!("hook {} failed: {e}", report.name));
@@ -992,6 +1033,10 @@ impl App<'_> {
             }
         }
         tracker.finish(&state.conn, None, false, jiff::Timestamp::now())?;
+        if let Some(code) = self.shutdown.code() {
+            writeln!(out, "stopped after {ran} videos; run it again to finish")?;
+            return Ok(code);
+        }
         if ran == 0 {
             writeln!(out, "no hooks to run for the chosen videos")?;
             return Ok(exit::OK);

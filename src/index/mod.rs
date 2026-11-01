@@ -91,6 +91,8 @@ pub struct RemoteList {
 pub enum IndexError {
     #[error("yt-dlp failed: {0}")]
     Ytdlp(String),
+    #[error("stopped")]
+    Stopped,
     #[error("unexpected yt-dlp output: {0}")]
     Parse(String),
 }

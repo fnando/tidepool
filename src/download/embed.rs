@@ -3,6 +3,9 @@
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
+
+use crate::shutdown::Shutdown;
 
 use serde::Serialize;
 
@@ -91,7 +94,22 @@ pub async fn embed(
     ffmpeg: &Path,
     ffprobe: &Path,
     request: &Request<'_>,
+    shutdown: &Shutdown,
+    grace: Duration,
 ) -> Result<Option<Output>, String> {
+    let run = |program: &Path, args: Vec<std::ffi::OsString>| {
+        let program = program.to_path_buf();
+        async move {
+            let mut command = tokio::process::Command::new(&program);
+            command.args(&args);
+            crate::process::output(&mut command, grace, shutdown)
+                .await
+                .map_err(|e| match e {
+                    crate::process::Error::Stopped => "stopped".to_string(),
+                    e => format!("cannot run {}: {e}", program.display()),
+                })
+        }
+    };
     let ext = request
         .media
         .extension()
@@ -101,7 +119,7 @@ pub async fn embed(
     let dir = request.media.parent().unwrap_or(Path::new("."));
     let mut skipped = Vec::new();
     let mut embedded = Embedded::default();
-    let before = probe(ffprobe, request.media).await?;
+    let before = probe(ffprobe, request.media, &run).await?;
 
     // What this pass replaces: a file embedded before (or reprocessed) keeps
     // one cover, one set of subtitles and chapters, and exactly the given
@@ -268,12 +286,13 @@ pub async fn embed(
     command.extend(args);
     command.push(path_arg(&output));
 
-    let result = tokio::process::Command::new(ffmpeg)
-        .args(&command)
-        .kill_on_drop(true)
-        .output()
-        .await
-        .map_err(|e| format!("cannot run {}: {e}", ffmpeg.display()))?;
+    let result = match run(ffmpeg, command.into_iter().map(Into::into).collect()).await {
+        Ok(result) => result,
+        Err(e) => {
+            let _ = std::fs::remove_file(&output);
+            return Err(e);
+        }
+    };
     if !result.status.success() {
         let _ = std::fs::remove_file(&output);
         let stderr = String::from_utf8_lossy(&result.stderr);
@@ -282,7 +301,7 @@ pub async fn embed(
     }
 
     // Trust the new file only if ffprobe reads it with every stream.
-    let after = probe(ffprobe, &output).await.inspect_err(|_| {
+    let after = probe(ffprobe, &output, &run).await.inspect_err(|_| {
         let _ = std::fs::remove_file(&output);
     })?;
     // mp4 stores chapters as an extra text track, so more is fine.
@@ -315,21 +334,24 @@ struct Streams {
     attachment: usize,
 }
 
-async fn probe(ffprobe: &Path, file: &Path) -> Result<Streams, String> {
-    let result = tokio::process::Command::new(ffprobe)
-        .args([
-            "-v",
-            "error",
-            "-show_entries",
-            "stream=codec_type:stream_disposition=attached_pic",
-            "-of",
-            "csv=p=0",
-        ])
-        .arg(file)
-        .kill_on_drop(true)
-        .output()
-        .await
-        .map_err(|e| format!("cannot run {}: {e}", ffprobe.display()))?;
+async fn probe<F, Fut>(ffprobe: &Path, file: &Path, run: &F) -> Result<Streams, String>
+where
+    F: Fn(&Path, Vec<std::ffi::OsString>) -> Fut,
+    Fut: std::future::Future<Output = Result<std::process::Output, String>>,
+{
+    let args = [
+        "-v",
+        "error",
+        "-show_entries",
+        "stream=codec_type:stream_disposition=attached_pic",
+        "-of",
+        "csv=p=0",
+    ]
+    .into_iter()
+    .map(Into::into)
+    .chain(std::iter::once(file.as_os_str().to_owned()))
+    .collect();
+    let result = run(ffprobe, args).await?;
     if !result.status.success() {
         return Err(format!(
             "ffprobe can't read {}: {}",
@@ -524,7 +546,16 @@ mod tests {
             chapters: &chapters,
             subtitles: vec![(sub, "en".into())],
         };
-        let out = embed(&ffmpeg, &ffprobe, &request).await.unwrap().unwrap();
+        let out = embed(
+            &ffmpeg,
+            &ffprobe,
+            &request,
+            &Shutdown::default(),
+            Duration::from_secs(5),
+        )
+        .await
+        .unwrap()
+        .unwrap();
         assert_eq!(
             out.embedded,
             Embedded {
@@ -579,7 +610,16 @@ mod tests {
             chapters: &[],
             subtitles: vec![],
         };
-        let out = embed(&ffmpeg, &ffprobe, &request).await.unwrap().unwrap();
+        let out = embed(
+            &ffmpeg,
+            &ffprobe,
+            &request,
+            &Shutdown::default(),
+            Duration::from_secs(5),
+        )
+        .await
+        .unwrap()
+        .unwrap();
         let json = probe_json(&out.path);
         let attachment = json["streams"]
             .as_array()
@@ -603,7 +643,16 @@ mod tests {
             chapters: &chapters,
             subtitles: vec![(sub, "en".into())],
         };
-        let out = embed(&ffmpeg, &ffprobe, &request).await.unwrap().unwrap();
+        let out = embed(
+            &ffmpeg,
+            &ffprobe,
+            &request,
+            &Shutdown::default(),
+            Duration::from_secs(5),
+        )
+        .await
+        .unwrap()
+        .unwrap();
         assert_eq!(
             out.embedded,
             Embedded {
@@ -630,7 +679,18 @@ mod tests {
             chapters: &[],
             subtitles: vec![],
         };
-        assert!(embed(&ffmpeg, &ffprobe, &request).await.unwrap().is_none());
+        assert!(
+            embed(
+                &ffmpeg,
+                &ffprobe,
+                &request,
+                &Shutdown::default(),
+                Duration::from_secs(5)
+            )
+            .await
+            .unwrap()
+            .is_none()
+        );
     }
 
     #[tokio::test]
@@ -664,7 +724,16 @@ mod tests {
                     chapters: &chapters,
                     subtitles: vec![(sub.clone(), "en".into())],
                 };
-                let out = embed(&ffmpeg, &ffprobe, &request).await.unwrap().unwrap();
+                let out = embed(
+                    &ffmpeg,
+                    &ffprobe,
+                    &request,
+                    &Shutdown::default(),
+                    Duration::from_secs(5),
+                )
+                .await
+                .unwrap()
+                .unwrap();
                 std::fs::rename(&out.path, &media).unwrap();
                 let json = probe_json(&media);
                 let streams = json["streams"].as_array().unwrap();
@@ -717,7 +786,15 @@ mod tests {
             chapters: &[],
             subtitles: vec![],
         };
-        let err = embed(&ffmpeg, &ffprobe, &request).await.unwrap_err();
+        let err = embed(
+            &ffmpeg,
+            &ffprobe,
+            &request,
+            &Shutdown::default(),
+            Duration::from_secs(5),
+        )
+        .await
+        .unwrap_err();
         assert!(err.contains("ffprobe"), "{err}");
         assert!(!dir.path().join("embedded.mkv").exists());
     }

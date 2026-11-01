@@ -5,8 +5,8 @@ use std::process::Stdio;
 
 use std::time::Duration;
 
+use crate::shutdown::Shutdown;
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio_util::sync::CancellationToken;
 
 use super::info::VideoInfo;
 use crate::config::merge::EffectiveSource;
@@ -139,44 +139,34 @@ impl Progress {
     }
 }
 
-/// Stop a child: SIGTERM, then SIGKILL after `grace`; returns once it exited.
-async fn stop(child: &mut tokio::process::Child, grace: Duration) {
-    if let Some(pid) = child.id() {
-        // SAFETY: sending a signal to a child process we spawned and still own.
-        unsafe {
-            libc::kill(pid as libc::pid_t, libc::SIGTERM);
-        }
-        if tokio::time::timeout(grace, child.wait()).await.is_ok() {
-            return;
-        }
-    }
-    let _ = child.kill().await;
-}
-
-fn cancelled() -> Failure {
+fn stopped() -> Failure {
     Failure {
         permanent: false,
-        message: "cancelled".into(),
+        message: "stopped".into(),
     }
 }
 
-/// Run yt-dlp with `args`; returns the final media path. When `cancel`
-/// fires, yt-dlp is stopped (SIGTERM, then SIGKILL after `grace`) and this
-/// returns only after it exited, so nothing writes to the work area anymore.
+/// Run yt-dlp with `args`; returns the final media path. When stopping
+/// starts, yt-dlp and what it started are stopped (SIGTERM, then SIGKILL
+/// after `grace`, or right away on a second signal), and this returns only
+/// after they exited, so nothing writes to the work area anymore.
 pub async fn download(
     ytdlp: &crate::tools::Ytdlp,
     args: &[String],
     label: &str,
-    cancel: &CancellationToken,
+    shutdown: &Shutdown,
     grace: Duration,
 ) -> Result<PathBuf, Failure> {
+    if shutdown.is_stopping() {
+        return Err(stopped());
+    }
     tracing::trace!("yt-dlp command: {} {}", ytdlp.display(), args.join(" "));
-    let mut child = ytdlp
-        .command()
+    let mut command = ytdlp.command();
+    let mut child = crate::process::isolate(&mut command)
         .args(args)
+        .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .kill_on_drop(true)
         .spawn()
         .map_err(|e| Failure {
             permanent: false,
@@ -197,9 +187,9 @@ pub async fn download(
     loop {
         let line = tokio::select! {
             line = lines.next_line() => line,
-            _ = cancel.cancelled() => {
-                stop(&mut child, grace).await;
-                return Err(cancelled());
+            _ = shutdown.stopping() => {
+                crate::process::stop(&mut child, grace, shutdown).await;
+                return Err(stopped());
             }
         };
         let Ok(Some(line)) = line else { break };
@@ -211,11 +201,14 @@ pub async fn download(
             final_path = Some(PathBuf::from(line));
         }
     }
-    let status = tokio::select! {
-        status = child.wait() => status.map_err(|e| Failure { permanent: false, message: e.to_string() })?,
-        _ = cancel.cancelled() => {
-            stop(&mut child, grace).await;
-            return Err(cancelled());
+    let status = match crate::process::wait(&mut child, grace, shutdown).await {
+        Ok(status) => status,
+        Err(crate::process::Error::Stopped) => return Err(stopped()),
+        Err(e) => {
+            return Err(Failure {
+                permanent: false,
+                message: e.to_string(),
+            });
         }
     };
     let stderr = stderr_task.await.unwrap_or_default();
@@ -237,6 +230,8 @@ pub async fn video_info(
     ytdlp: &crate::tools::Ytdlp,
     video_id: &str,
     cookies: Option<&Path>,
+    shutdown: &Shutdown,
+    grace: Duration,
 ) -> Result<VideoInfo, Failure> {
     let mut args = vec![
         "-J".to_string(),
@@ -248,16 +243,16 @@ pub async fn video_info(
         args.extend(["--cookies".into(), cookies.display().to_string()]);
     }
     args.extend(["--".into(), watch_url(video_id)]);
-    let output = ytdlp
-        .command()
-        .args(&args)
-        .kill_on_drop(true)
-        .output()
-        .await
-        .map_err(|e| Failure {
-            permanent: false,
-            message: format!("cannot run {}: {e}", ytdlp.display()),
-        })?;
+    let output = match crate::process::output(ytdlp.command().args(&args), grace, shutdown).await {
+        Ok(output) => output,
+        Err(crate::process::Error::Stopped) => return Err(stopped()),
+        Err(e) => {
+            return Err(Failure {
+                permanent: false,
+                message: format!("cannot run {}: {e}", ytdlp.display()),
+            });
+        }
+    };
     if !output.status.success() {
         return Err(classify(&String::from_utf8_lossy(&output.stderr)));
     }

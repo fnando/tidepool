@@ -19,7 +19,6 @@ use std::time::Duration;
 use jiff::Timestamp;
 use serde_json::{Value, json};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio_util::sync::CancellationToken;
 
 use crate::config::placeholders::{self, PLACEHOLDERS, Setting};
 use crate::config::{HookConfig, HookType, OnFailure};
@@ -42,7 +41,7 @@ pub struct Run<'a> {
     pub input: &'a [u8],
     /// stderr is appended here.
     pub log: &'a Path,
-    pub cancel: &'a CancellationToken,
+    pub shutdown: &'a crate::shutdown::Shutdown,
 }
 
 /// How a hook (with its retries) went.
@@ -77,7 +76,7 @@ pub async fn run(run: &Run<'_>) -> Report {
     let (result, exit_code) = loop {
         attempts += 1;
         let (result, code) = run_once(run).await;
-        if result.is_ok() || attempts >= tries || run.cancel.is_cancelled() {
+        if result.is_ok() || attempts >= tries || run.shutdown.is_stopping() {
             break (result, code);
         }
         tracing::debug!(
@@ -154,9 +153,8 @@ async fn run_once(run: &Run<'_>) -> (Result<Vec<u8>, String>, Option<i32>) {
         .envs(&run.hook.env)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::from(log))
-        .process_group(0)
-        .kill_on_drop(true);
+        .stderr(Stdio::from(log));
+    crate::process::isolate(&mut command);
     let mut child = match command.spawn() {
         Ok(child) => child,
         Err(e) => return (Err(format!("cannot run {}: {e}", argv[0])), None),
@@ -179,12 +177,12 @@ async fn run_once(run: &Run<'_>) -> (Result<Vec<u8>, String>, Option<i32>) {
     let status = tokio::select! {
         status = child.wait() => status,
         _ = tokio::time::sleep(timeout) => {
-            stop(&mut child).await;
+            crate::process::stop(&mut child, KILL_GRACE, run.shutdown).await;
             return (Err(format!("timed out after {}", crate::config::types::format_duration(timeout))), None);
         }
-        _ = run.cancel.cancelled() => {
-            stop(&mut child).await;
-            return (Err("cancelled".into()), None);
+        _ = run.shutdown.stopping() => {
+            crate::process::stop(&mut child, KILL_GRACE, run.shutdown).await;
+            return (Err("stopped".into()), None);
         }
     };
     let _ = writer.await;
@@ -203,24 +201,6 @@ async fn run_once(run: &Run<'_>) -> (Result<Vec<u8>, String>, Option<i32>) {
         return (Err("printed more than 16 MiB".into()), status.code());
     }
     (Ok(output), status.code())
-}
-
-/// SIGTERM to the hook's process group, SIGKILL after a grace period.
-async fn stop(child: &mut tokio::process::Child) {
-    if let Some(pid) = child.id() {
-        // SAFETY: signalling the process group of a child we spawned.
-        unsafe {
-            libc::kill(-(pid as libc::pid_t), libc::SIGTERM);
-        }
-        if tokio::time::timeout(KILL_GRACE, child.wait()).await.is_ok() {
-            return;
-        }
-        // SAFETY: as above.
-        unsafe {
-            libc::kill(-(pid as libc::pid_t), libc::SIGKILL);
-        }
-    }
-    let _ = child.kill().await;
 }
 
 fn open_log(path: &Path, name: &str, kind: HookType) -> std::io::Result<std::fs::File> {
@@ -565,7 +545,7 @@ mod tests {
 
     async fn go(hook: &HookConfig, input: &str, dir: &Path) -> Report {
         let values = values();
-        let cancel = CancellationToken::new();
+        let shutdown = crate::shutdown::Shutdown::default();
         run(&Run {
             name: "h",
             hook,
@@ -574,7 +554,7 @@ mod tests {
             home: Path::new("/home/me"),
             input: input.as_bytes(),
             log: &dir.join("logs/x.log"),
-            cancel: &cancel,
+            shutdown: &shutdown,
         })
         .await
     }

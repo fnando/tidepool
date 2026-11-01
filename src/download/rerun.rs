@@ -8,8 +8,6 @@ use std::collections::BTreeMap;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 
-use tokio_util::sync::CancellationToken;
-
 use super::info::VideoInfo;
 use super::layout::{Layout, Values};
 use super::stages::Stage;
@@ -28,7 +26,8 @@ pub struct Shared<'a> {
     pub ffmpeg: &'a Path,
     pub ffprobe: &'a Path,
     pub duplicates: Duplicates,
-    pub cancel: &'a CancellationToken,
+    pub shutdown: &'a crate::shutdown::Shutdown,
+    pub grace: std::time::Duration,
 }
 
 /// One video to run hooks for.
@@ -82,7 +81,8 @@ pub async fn rerun(shared: &Shared<'_>, video: &Video<'_>) -> Rerun {
         label: &label,
         home: &shared.dirs.home,
         hook_logs: shared.hook_logs,
-        cancel: shared.cancel,
+        shutdown: shared.shutdown,
+        grace: shared.grace,
         ffmpeg: shared.ffmpeg,
         ffprobe: shared.ffprobe,
     };

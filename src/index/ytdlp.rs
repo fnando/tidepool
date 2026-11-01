@@ -128,16 +128,17 @@ pub async fn list(
     ytdlp: &crate::tools::Ytdlp,
     url: &str,
     cookies_file: Option<&Path>,
+    shutdown: &crate::shutdown::Shutdown,
+    grace: std::time::Duration,
 ) -> Result<RemoteList, IndexError> {
     let args = list_args(url, cookies_file);
     tracing::trace!("yt-dlp command: {} {}", ytdlp.display(), args.join(" "));
-    let output = ytdlp
-        .command()
-        .args(&args)
-        .kill_on_drop(true)
-        .output()
+    let output = crate::process::output(ytdlp.command().args(&args), grace, shutdown)
         .await
-        .map_err(|e| IndexError::Ytdlp(format!("cannot run {}: {e}", ytdlp.display())))?;
+        .map_err(|e| match e {
+            crate::process::Error::Stopped => IndexError::Stopped,
+            e => IndexError::Ytdlp(format!("cannot run {}: {e}", ytdlp.display())),
+        })?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let message = stderr
@@ -251,17 +252,27 @@ mod tests {
         let fake = crate::tools::Ytdlp::new(
             Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/bin/yt-dlp"),
         );
+        let shutdown = crate::shutdown::Shutdown::default();
+        let grace = std::time::Duration::from_secs(5);
         let remote = list(
             &fake,
             "https://www.youtube.com/playlist?list=PLXLpuA-bwY4s",
             None,
+            &shutdown,
+            grace,
         )
         .await
         .unwrap();
         assert_eq!(remote.items.len(), 1);
-        let err = list(&fake, "https://www.youtube.com/playlist?list=PLnope", None)
-            .await
-            .unwrap_err();
+        let err = list(
+            &fake,
+            "https://www.youtube.com/playlist?list=PLnope",
+            None,
+            &shutdown,
+            grace,
+        )
+        .await
+        .unwrap_err();
         assert_eq!(
             err.to_string(),
             "yt-dlp failed: ERROR: [youtube:tab] PLnope: The playlist does not exist."

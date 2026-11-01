@@ -4,8 +4,6 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use tokio_util::sync::CancellationToken;
-
 use super::embed;
 use super::info::VideoInfo;
 use super::layout::Values;
@@ -30,7 +28,9 @@ pub struct Stage<'a> {
     pub home: &'a Path,
     /// Where hook logs go (`<video_id>.log`).
     pub hook_logs: &'a Path,
-    pub cancel: &'a CancellationToken,
+    pub shutdown: &'a crate::shutdown::Shutdown,
+    /// How long processes get to stop (`general.shutdown_timeout`).
+    pub grace: std::time::Duration,
     pub ffmpeg: &'a Path,
     pub ffprobe: &'a Path,
 }
@@ -65,7 +65,7 @@ impl Stage<'_> {
             home: self.home,
             input,
             log: &self.hook_logs.join(format!("{}.log", self.video_id)),
-            cancel: self.cancel,
+            shutdown: self.shutdown,
         })
         .await
     }
@@ -215,7 +215,15 @@ impl Stage<'_> {
         if settings.cover && cover.is_none() {
             tracing::warn!("{label}: no cover to embed");
         }
-        match embed::embed(self.ffmpeg, self.ffprobe, &request).await {
+        match embed::embed(
+            self.ffmpeg,
+            self.ffprobe,
+            &request,
+            self.shutdown,
+            self.grace,
+        )
+        .await
+        {
             Ok(None) => Embedding::default(),
             Ok(Some(out)) => {
                 for what in &out.skipped {

@@ -349,8 +349,12 @@ longer each time, up to 5 attempts. Videos that can't be downloaded at all
 marked unavailable and not tried again. Either way, the other videos still
 download, and the command ends with exit code 3.
 
-**Stopping.** Ctrl-C stops cleanly: unfinished downloads are discarded and
-picked up again on the next run.
+**Stopping.** Ctrl-C stops cleanly: no new downloads start, and the ones in
+progress get a moment to wind down (10 seconds, or `general.shutdown_timeout`)
+before they're stopped. Videos that finished in the meantime are kept;
+unfinished ones are discarded and downloaded again on the next run. Press
+Ctrl-C a second time to stop right away. Hooks and anything else tidepool
+started stop with it, so nothing keeps running in the background.
 
 **Downloading only what's waiting.** `tidepool download` downloads videos
 already found by `tidepool run` or `tidepool index`, without checking the

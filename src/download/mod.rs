@@ -19,7 +19,6 @@ use std::sync::Arc;
 use jiff::Timestamp;
 use tokio::sync::Semaphore;
 use tokio::task::JoinSet;
-use tokio_util::sync::CancellationToken;
 
 use crate::config::merge::EffectiveSource;
 use crate::config::{Duplicates, HookConfig, HookType};
@@ -65,7 +64,8 @@ pub struct Context {
     pub http: reqwest::Client,
     /// Grace period for yt-dlp after SIGTERM (`general.shutdown_timeout`).
     pub shutdown_timeout: std::time::Duration,
-    pub cancel: CancellationToken,
+    /// Ctrl-C and `kill`: stop new work, stop running processes.
+    pub shutdown: crate::shutdown::Shutdown,
 }
 
 pub struct Options {
@@ -295,7 +295,15 @@ async fn process(
     // A decision that needed fields the index didn't have.
     let mut info = None;
     if job.queued.status == status::PENDING_CHECK || job.copy_from.is_some() {
-        match ytdlp::video_info(&ctx.ytdlp, video_id, job.paths.cookies.as_deref()).await {
+        match ytdlp::video_info(
+            &ctx.ytdlp,
+            video_id,
+            job.paths.cookies.as_deref(),
+            &ctx.shutdown,
+            ctx.shutdown_timeout,
+        )
+        .await
+        {
             Ok(full) => {
                 let merged = merge_details(item, &full);
                 details = Some(merged.clone());
@@ -370,9 +378,14 @@ async fn assemble(
         }
         _ => {
             let args = ytdlp::download_args(source, video_id, tmp, job.paths.cookies.as_deref());
-            let media =
-                ytdlp::download(&ctx.ytdlp, &args, label, &ctx.cancel, ctx.shutdown_timeout)
-                    .await?;
+            let media = ytdlp::download(
+                &ctx.ytdlp,
+                &args,
+                label,
+                &ctx.shutdown,
+                ctx.shutdown_timeout,
+            )
+            .await?;
             let info_path = tmp.join("ytdlp.info.json");
             let text = std::fs::read_to_string(&info_path)
                 .map_err(|e| io_fail("cannot read", &info_path, e))?;
@@ -478,7 +491,8 @@ async fn assemble(
         label,
         home: &ctx.dirs.home,
         hook_logs: &ctx.hook_logs,
-        cancel: &ctx.cancel,
+        shutdown: &ctx.shutdown,
+        grace: ctx.shutdown_timeout,
         ffmpeg: &ctx.ffmpeg,
         ffprobe: &ctx.ffprobe,
     };
@@ -575,6 +589,11 @@ async fn assemble(
         .map_err(|e| io_fail("cannot write", &metadata_path, e))?;
     moves.push((metadata_path, metadata_dest.clone()));
 
+    // Stopping: nothing is placed (an embed may have been cut short); the
+    // video goes back to the queue.
+    if ctx.shutdown.is_stopping() {
+        return Err(fail("stopped"));
+    }
     place_all(&moves)?;
     let _ = std::fs::remove_dir_all(tmp);
     if embedding.relink
@@ -632,18 +651,6 @@ fn extension_of(path: &str) -> String {
         .extension()
         .map(|e| e.to_string_lossy().into_owned())
         .unwrap_or_default()
-}
-
-/// Wait for SIGINT or SIGTERM; returns the exit code to use.
-async fn interrupted() -> i32 {
-    let mut term = match tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
-        Ok(term) => term,
-        Err(_) => return std::future::pending().await,
-    };
-    tokio::select! {
-        _ = tokio::signal::ctrl_c() => 130,
-        _ = term.recv() => 143,
-    }
 }
 
 /// Clear the work areas and put interrupted downloads back in the queue.
@@ -735,9 +742,9 @@ pub async fn download_all(
         tasks.spawn(async move {
             let _permit = tokio::select! {
                 permit = semaphore.acquire_owned() => permit.expect("semaphore open"),
-                _ = ctx.cancel.cancelled() => return None,
+                _ = ctx.shutdown.stopping() => return None,
             };
-            if ctx.cancel.is_cancelled() {
+            if ctx.shutdown.is_stopping() {
                 return None;
             }
             let mut hook_runs = Vec::new();
@@ -759,8 +766,6 @@ pub async fn download_all(
         });
     }
 
-    let signal = interrupted();
-    tokio::pin!(signal);
     loop {
         tokio::select! {
             finished = tasks.join_next() => {
@@ -768,13 +773,19 @@ pub async fn download_all(
                 let Ok(Some(f)) = finished else { continue };
                 record(state, &f, now, &mut summary, tracker, out).map_err(db)?;
             }
-            code = &mut signal => {
-                // Stop yt-dlp gracefully and wait for every task, so nothing
-                // writes to the work area while it's cleared.
-                ctx.cancel.cancel();
-                while tasks.join_next().await.is_some() {}
+            _ = ctx.shutdown.stopping() => {
+                // Running processes are being stopped; wait for every task,
+                // so nothing writes to the work area while it's cleared.
+                // Downloads that finished in the meantime still count.
+                while let Some(finished) = tasks.join_next().await {
+                    if let Ok(Some(f)) = finished
+                        && matches!(f.outcome, Outcome::Done { .. })
+                    {
+                        record(state, &f, now, &mut summary, tracker, out).map_err(db)?;
+                    }
+                }
                 recover(state, &tmp_roots)?;
-                summary.interrupted = Some(code);
+                summary.interrupted = ctx.shutdown.code();
                 break;
             }
         }
@@ -797,6 +808,8 @@ fn record(
         items::record_hook_run(&state.conn, &hook_run(&f.source_key, &f.video_id, report))?;
         match &report.result {
             Ok(_) => tracker.hook_succeeded(),
+            // Stopped by Ctrl-C: not the hook's fault.
+            Err(e) if e == "stopped" => {}
             Err(e) => {
                 tracker.hook_failed(&f.source_key, &report.name, e);
                 if report.kind == HookType::Finished {

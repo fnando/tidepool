@@ -45,12 +45,14 @@ pub async fn index_source(
     source: &EffectiveSource,
     dirs: &Dirs,
     ytdlp_path: &crate::tools::Ytdlp,
+    shutdown: &crate::shutdown::Shutdown,
     now: Timestamp,
 ) -> Result<IndexSummary, String> {
     let cookies = cookies_file(source, dirs)?;
     tracing::debug!("{}: listing {}", source.key, source.url);
     let started = std::time::Instant::now();
-    let list = ytdlp::list(ytdlp_path, &source.url, cookies.as_deref())
+    let grace = config.general.shutdown_timeout.0;
+    let list = ytdlp::list(ytdlp_path, &source.url, cookies.as_deref(), shutdown, grace)
         .await
         .map_err(|e| e.to_string())?;
     tracing::debug!(
