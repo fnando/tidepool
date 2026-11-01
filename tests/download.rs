@@ -1659,7 +1659,7 @@ async fn cleanup_moves_videos_to_the_trash_and_back() {
         .stdout(
             contains("would remove (beyond max_items = 1)")
                 .and(contains("dl: 2 videos: 1 would be removed ("))
-                .and(contains("), 1 stay"))
+                .and(contains("), 1 stay ("))
                 .and(contains("would remove 1 video")),
         );
     assert_eq!(done(&env), 2, "a dry run changes nothing");

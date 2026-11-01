@@ -1267,7 +1267,7 @@ impl App<'_> {
             let victims = plan(&source.cleanup, &candidates, now);
             // With --dry-run, a line per source: how many go and how many stay.
             let tally = format!(
-                "{}: {} {}: {}, {} stay",
+                "{}: {} {}: {}, {} stay ({})",
                 source.key,
                 kept.len(),
                 if kept.len() == 1 { "video" } else { "videos" },
@@ -1280,7 +1280,13 @@ impl App<'_> {
                         human_bytes(victims.iter().map(|(i, _)| kept[*i].media_bytes).sum())
                     )
                 },
-                kept.len() - victims.len()
+                kept.len() - victims.len(),
+                human_bytes(
+                    (0..kept.len())
+                        .filter(|i| candidates[*i].present && !victims.iter().any(|(v, _)| v == i))
+                        .map(|i| kept[i].media_bytes)
+                        .sum()
+                )
             );
             let trash_root =
                 crate::config::check::trash_dir(source, &self.dirs).map_err(anyhow::Error::msg)?;
