@@ -1380,7 +1380,15 @@ impl App<'_> {
             self.warn(&loaded.warnings);
             return Ok(loaded);
         }
-        let (_, loaded) = ConfigStore::new(&state.conn).load_current()?;
+        let store = ConfigStore::new(&state.conn);
+        let (_, loaded) = store.load_current().map_err(|err| match (&err, store.current()) {
+            (crate::config::store::StoreError::Config(_), Ok(Some(current))) => anyhow::anyhow!(
+                "the stored config (revision {}) no longer loads with this tidepool:\n{err}\n\
+                 fix it in your config file and run `tidepool config import`",
+                current.rev
+            ),
+            _ => err.into(),
+        })?;
         self.warn(&loaded.warnings);
         Ok(loaded)
     }
@@ -1494,53 +1502,140 @@ impl App<'_> {
         Ok(())
     }
 
+    /// `tidepool config check [path]`: the config file (the path, `--config`,
+    /// the file last imported, or the default) and the stored config, each
+    /// validated, and whether they differ. Environment checks and the
+    /// effective config use the file when it's valid, else the stored one.
     fn config_check(
         &self,
         path: Option<&Path>,
         show_secrets: bool,
         out: &mut dyn Write,
     ) -> anyhow::Result<i32> {
-        let (loaded, source, file) = match path {
-            Some(path) => (
-                load_file(path)?,
-                Self::display_path(path),
-                Some(path.to_path_buf()),
-            ),
+        let state = if self.paths.state_db.exists() {
+            Some(self.open_state()?)
+        } else {
+            None
+        };
+        let store = state.as_ref().map(|s| ConfigStore::new(&s.conn));
+        let current = match &store {
+            Some(store) => store.current()?,
+            None => None,
+        };
+        let file_path = match path
+            .map(Path::to_path_buf)
+            .or_else(|| self.cli.config.clone())
+        {
+            Some(path) => path,
             None => {
-                let state = self.open_state()?;
-                let loaded = self.current_config(&state)?;
-                let current = ConfigStore::new(&state.conn)
-                    .current()?
-                    .expect("loaded above");
-                let file = current
-                    .source_path
-                    .as_ref()
+                let last = match &store {
+                    Some(store) => store.last_import()?,
+                    None => None,
+                };
+                last.and_then(|r| r.source_path)
                     .map(PathBuf::from)
-                    .filter(|p| p.exists());
-                (loaded, format!("config revision {}", current.rev), file)
+                    .filter(|p| p.exists())
+                    .unwrap_or_else(|| self.dirs.default_config_file())
             }
         };
-        if path.is_some() {
-            self.warn(&loaded.warnings);
-        }
+        let name = Self::display_path(&file_path);
+        let mut invalid = Vec::new();
 
-        let failed = self.report(check_environment(
+        // The file.
+        let text = std::fs::read_to_string(&file_path).ok();
+        let file = match &text {
+            None => {
+                if path.is_some() || self.cli.config.is_some() {
+                    bail!("cannot read {name}");
+                }
+                tracing::warn!("no config file at {name}");
+                None
+            }
+            Some(text) => match load_str(&name, text) {
+                Ok(loaded) => {
+                    self.warn(&loaded.warnings);
+                    tracing::info!("{name} is valid ({} sources)", loaded.config.sources.len());
+                    Some(loaded)
+                }
+                Err(err) => {
+                    tracing::error!("{err}");
+                    invalid.push(name.clone());
+                    None
+                }
+            },
+        };
+
+        // The stored config, and whether the file matches it.
+        let stored = match &current {
+            None => {
+                tracing::warn!(
+                    "nothing is stored yet; apply your config with `tidepool config import`"
+                );
+                None
+            }
+            Some(current) => {
+                let label = format!("config revision {}", current.rev);
+                let loaded = match load_str(&label, &current.toml) {
+                    Ok(loaded) => Some(loaded),
+                    Err(err) => {
+                        tracing::error!(
+                            "the stored config (revision {}) no longer loads with this tidepool:\n{err}\n\
+                             fix it in your config file and run `tidepool config import`",
+                            current.rev
+                        );
+                        invalid.push(format!("the stored config (revision {})", current.rev));
+                        None
+                    }
+                };
+                let same = text.as_ref().is_some_and(|text| {
+                    crate::config::store::hash(text) == current.source_hash
+                        || file
+                            .as_ref()
+                            .is_some_and(|f| loaded.is_some() && f.normalized() == current.json)
+                });
+                if same {
+                    if loaded.is_some() {
+                        tracing::info!(
+                            "the stored config (revision {}) is valid and matches {name}",
+                            current.rev
+                        );
+                    }
+                } else if text.is_some() {
+                    tracing::warn!(
+                        "{name} and the stored config (revision {}) differ: run `tidepool config import` \
+                         to apply it (`tidepool config diff` shows what changed)",
+                        current.rev
+                    );
+                }
+                loaded
+            }
+        };
+
+        let Some(loaded) = file.or(stored) else {
+            bail!(
+                "{} invalid; see above",
+                invalid.join(" and ") + if invalid.len() > 1 { " are" } else { " is" }
+            );
+        };
+        let env_failed = self.report(check_environment(
             &loaded.config,
             &self.dirs,
-            file.as_deref(),
+            text.is_some().then_some(file_path.as_path()),
         )) > 0;
         write!(
             out,
             "{}",
             EffectiveConfig::new(&loaded.config, &self.dirs, show_secrets).to_toml()
         )?;
-        if failed {
-            bail!("{source} is valid, but the environment checks above failed");
+        if !invalid.is_empty() {
+            bail!(
+                "{} invalid; see above",
+                invalid.join(" and ") + if invalid.len() > 1 { " are" } else { " is" }
+            );
         }
-        tracing::info!(
-            "{source} is valid ({} sources)",
-            loaded.config.sources.len()
-        );
+        if env_failed {
+            bail!("the config is valid, but the environment checks above failed");
+        }
         Ok(exit::OK)
     }
 

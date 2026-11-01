@@ -199,17 +199,23 @@ stopped, since they're how you sort it out.
 ### Checking for mistakes
 
 ```sh
-tidepool config check ~/.config/tidepool/config.toml
+tidepool config check
 ```
 
-This shows every problem at once, with the line and column where it is:
+This checks your config file (`~/.config/tidepool/config.toml`, or the path you
+give it) and the settings tidepool has stored, and tells you whether the two
+differ, so you know when your edits still need `tidepool config import`. If
+the stored settings no longer work with your version of tidepool (after an
+update renamed a setting, for example), it says so: fix the file and import it.
+
+It shows every problem at once, with the line and column where it is:
 
 ```
 config.toml:2:1 general.concurency: unknown key "concurency"
 config.toml:20:12 sources.lofi.cleanup.max_size: "20 gigs" is not a valid byte size (e.g. "20GiB", "500MB")
 ```
 
-It also checks that `ffmpeg` and yt-dlp are available and that the video
+It also checks that `ffmpeg`, yt-dlp and Deno are available and that the video
 folder is writable. Then it prints your settings with every default filled in,
 so you can see exactly what each source will do. A file with mistakes is
 never applied.

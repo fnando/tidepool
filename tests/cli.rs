@@ -204,12 +204,80 @@ fn check_prints_the_effective_config() {
         )
         .stderr(contains("yt-dlp 2026.10.01").and(contains("is valid (1 sources)")));
 
-    // Without a path: checks the stored revision.
+    // Without a path: the file last imported, and the stored revision.
+    env.cmd(&["config", "import", &file]).assert().success();
+    env.cmd(&["config", "check"]).assert().success().stderr(
+        contains(format!("{file} is valid (1 sources)"))
+            .and(contains(
+                "the stored config (revision 1) is valid and matches",
+            ))
+            .and(contains("differ").not()),
+    );
+}
+
+#[test]
+fn check_reports_both_configs_and_whether_they_differ() {
+    let env = Env::new();
+    let file = env.write_config("c.toml", "");
+    env.cmd(&["config", "import", &file]).assert().success();
+
+    // The file changed: out of sync, but both valid.
+    let text = fs::read_to_string(&file).unwrap();
+    fs::write(
+        &file,
+        text.replace("include = ['(?i)\\blive\\b']", "include = ['(?i)concert']"),
+    )
+    .unwrap();
+    env.cmd(&["config", "check"]).assert().success().stderr(
+        contains(format!("{file} is valid"))
+            .and(contains(format!(
+                "{file} and the stored config (revision 1) differ: run `tidepool config import` to apply it (`tidepool config diff` shows what changed)"
+            ))),
+    );
+
+    // The stored config no longer loads (e.g. written by an older tidepool).
+    let conn = rusqlite::Connection::open(env.path("data/tidepool/state.db")).unwrap();
+    conn.execute(
+        "UPDATE config_revisions SET toml = '[ytdlp]\nmanaged = false\n',
+           json = '{\"ytdlp\":{\"managed\":false}}', source_hash = 'old' WHERE rev = 1",
+        [],
+    )
+    .unwrap();
+    env.cmd(&["config", "check"]).assert().code(1).stderr(
+        contains(format!("{file} is valid"))
+            .and(contains("the stored config (revision 1) no longer loads"))
+            .and(contains("ytdlp: unknown key \"ytdlp\""))
+            .and(contains(
+                "fix it in your config file and run `tidepool config import`",
+            ))
+            .and(contains("differ")),
+    );
+
+    // Other commands say the same.
+    env.cmd(&["filter", "test", "x", "-s", "lofi", "--skip-config-check"])
+        .assert()
+        .code(1)
+        .stderr(
+            contains("the stored config (revision 1) no longer loads with this tidepool").and(
+                contains("fix it in your config file and run `tidepool config import`"),
+            ),
+        );
+
+    // An invalid file is reported too, with its line numbers.
+    fs::write(&file, "[general]\nconcurrency = 0\n").unwrap();
+    env.cmd(&["config", "check"]).assert().code(1).stderr(
+        contains(format!("{file}:2:15 general.concurrency")).and(contains("no longer loads")),
+    );
+
+    // Importing the fixed file brings both back in step.
+    fs::write(&file, &text).unwrap();
     env.cmd(&["config", "import", &file]).assert().success();
     env.cmd(&["config", "check"])
         .assert()
         .success()
-        .stderr(contains("config revision 1 is valid"));
+        .stderr(contains(
+            "the stored config (revision 2) is valid and matches",
+        ));
 }
 
 #[test]
