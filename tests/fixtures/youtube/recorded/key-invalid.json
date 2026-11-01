@@ -1,0 +1,42 @@
+{
+  "request": {
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "PLfSl2rOZ6Zto"
+    },
+    "if_none_match": null
+  },
+  "status": 400,
+  "etag": null,
+  "body": {
+    "error": {
+      "code": 400,
+      "message": "API key not valid. Please pass a valid API key.",
+      "errors": [
+        {
+          "message": "API key not valid. Please pass a valid API key.",
+          "domain": "global",
+          "reason": "badRequest"
+        }
+      ],
+      "status": "INVALID_ARGUMENT",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "API_KEY_INVALID",
+          "domain": "googleapis.com",
+          "metadata": {
+            "service": "youtube.googleapis.com"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "API key not valid. Please pass a valid API key."
+        }
+      ]
+    }
+  }
+}

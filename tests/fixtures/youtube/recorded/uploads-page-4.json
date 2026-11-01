@@ -1,0 +1,2721 @@
+{
+  "request": {
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNKWUJJaEEyTTBJelFrRTVOMEZEUkRJNFJEUTM"
+    },
+    "if_none_match": null
+  },
+  "status": 200,
+  "etag": null,
+  "body": {
+    "kind": "youtube#playlistItemListResponse",
+    "etag": "FwH1rEtYYnjCu2NLAVvJ96hCfOw",
+    "nextPageToken": "EAAaH1BUOkNNZ0JJaEEyTlVSRE1VRkZPREZCUlRnd01EQXo",
+    "prevPageToken": "EAEaH1BUOkNKWUJJaEEyTTBJelFrRTVOMEZEUkRJNFJEUTM",
+    "items": [
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Xwg3ABd6LT70QMqHthhOrmirW9g",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLllLNVB0dk5oZV9V",
+        "snippet": {
+          "publishedAt": "2023-07-10T22:15:08Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Vlogs no canal da Supercombo. Amanhã tem novo!",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/YK5PtvNhe_U/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/YK5PtvNhe_U/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/YK5PtvNhe_U/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/YK5PtvNhe_U/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/YK5PtvNhe_U/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 150,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "YK5PtvNhe_U"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "YK5PtvNhe_U",
+          "videoPublishedAt": "2023-07-10T22:15:08Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "WNS4oJlf1qAoSmON3GBxV2A5nq0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmNmUTRmMEU1OW9z",
+        "snippet": {
+          "publishedAt": "2023-07-08T21:47:58Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Xis coração & proteina vegana @supercombooficial",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/cfQ4f0E59os/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/cfQ4f0E59os/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/cfQ4f0E59os/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/cfQ4f0E59os/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/cfQ4f0E59os/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 151,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "cfQ4f0E59os"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "cfQ4f0E59os",
+          "videoPublishedAt": "2023-07-08T21:47:58Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "frUf3NXhNNGljTh_i2YEtfLRtEA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmtMMkcxXy1heGkw",
+        "snippet": {
+          "publishedAt": "2023-06-28T15:00:28Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Lag & Sommelier de banco @supercombooficial",
+          "description": "Paulinho ta com ping alto demais, vlogzinho de nossa passagem por Porto Alegre:",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/kL2G1_-axi0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/kL2G1_-axi0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/kL2G1_-axi0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/kL2G1_-axi0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/kL2G1_-axi0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 152,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "kL2G1_-axi0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "kL2G1_-axi0",
+          "videoPublishedAt": "2023-06-28T15:00:28Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "3AOIZp5E_2YlY9PMzmM3YJByz-Q",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnRaT2tMUmtKdzRR",
+        "snippet": {
+          "publishedAt": "2023-06-23T16:09:30Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Maquia e conversa @supercombooficial",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/tZOkLRkJw4Q/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/tZOkLRkJw4Q/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/tZOkLRkJw4Q/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/tZOkLRkJw4Q/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/tZOkLRkJw4Q/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 153,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "tZOkLRkJw4Q"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "tZOkLRkJw4Q",
+          "videoPublishedAt": "2023-06-23T16:09:30Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "YHKHyejAT6eCd_behRLliwaawxA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm5LZDBvbDlkY3dV",
+        "snippet": {
+          "publishedAt": "2023-06-20T23:00:18Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Turismo e Keanu Reeves capixaba @supercombooficial",
+          "description": "A bobeira n tem limites, dessa vez em campinas no Brasuca!\n\nSe liga na nossa agenda, meu nobre:\n\nAGENDA SUPERCOMBO\nTOUR REMÉDIOS \n\n-21/05 - São Paulo - SP (Audio)\n-27/05 - São Paulo - SP (Sesc Interlagos)\n-02/06 - Rio de Janeiro - RJ (Imperator)\n-04/06 - São Paulo - SP  (MITA Festival)\n-17/06 - Campinas - SP (Brasuca)\n-25/06 - Porto Alegre - RS (Opinião)\n-07/07 - Por Anunciar \n-08/07 - Por Anunciar \n-09/07- São Paulo - SP (Sesc Itaquera)\n-13/07 - Mogi das Cruzes - SP (Sesc Mogi)\n-14/07 - Uberlândia - MG\n-15/07 - Belo Horizonte - MG (Autêntica)\n-16/07 - São Paulo - SP (Esquenta Rock Fun Fest)\n-22/07 - Santo André - SP (Sesc Santo André)\n-29/07 - Taubaté - SP (Sesc Taubaté)\n-05/08 - Goiânia - GO\n-06/08 - Brasília - DF\n-11/08 - São Paulo - SP (Sesc Belenzinho)\n-12/08 - São Paulo - SP (Sesc Belenzinho)\n-20/08 - Santa Rita do Sapucaí - MG (Hacktown)\n-26/08 - Ribeirão Preto - SP (Bacon Day)\n-26/08 - Santa Bárbara do Oeste - SP (Virada SP)\n-09/09 - Belém - PA \n-10/09 - Manaus - AM\n-23/09 - São Paulo - SP\n-24/09 - São Paulo - SP (Cine Jóia)\n-06/10 - Por Anunciar\n-13/10 - Por Anunciar\n-14/10 - Por Anunciar\n-28/10 - São Paulo - SP(Evento Fechado)\n-01/11 - Tour Nordeste \n-02/11 - Tour Nordeste\n-03/11 - Tour Nordeste\n-04/11 - Tour Nordeste\n-05/11 - Tour Nordeste\n-10/11 - Tour Nordeste\n-11/11 - Tour Nordeste\n-12/11 - Tour Nordeste\n-02/12 - São Paulo - SP\n-10/12 - Rio de Janeiro - RJ",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/nKd0ol9dcwU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/nKd0ol9dcwU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/nKd0ol9dcwU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/nKd0ol9dcwU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/nKd0ol9dcwU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 154,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "nKd0ol9dcwU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "nKd0ol9dcwU",
+          "videoPublishedAt": "2023-06-20T23:00:18Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "8i4J9o8Yz2hDEflexXZuPy-6ZWs",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjhaYUtvVW1EV2pR",
+        "snippet": {
+          "publishedAt": "2023-06-19T23:18:54Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Cabô o programa, tchau Sonastério! @supercombooficial",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/8ZaKoUmDWjQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/8ZaKoUmDWjQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/8ZaKoUmDWjQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/8ZaKoUmDWjQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/8ZaKoUmDWjQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 155,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "8ZaKoUmDWjQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "8ZaKoUmDWjQ",
+          "videoPublishedAt": "2023-06-19T23:18:54Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "IhK3zKZ1WvgplXlGt4isznVSQ1w",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmN4TmFKZmxYSFJR",
+        "snippet": {
+          "publishedAt": "2023-06-17T22:00:15Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Desmontagem e doidera @supercombooficial",
+          "description": "Fim da gravação no @Sonastério , doidera e agenda de show:\n\nAGENDA SUPERCOMBO\nTOUR REMÉDIOS \n\n-21/05 - São Paulo - SP (Audio)\n-27/05 - São Paulo - SP (Sesc Interlagos)\n-02/06 - Rio de Janeiro - RJ (Imperator)\n-04/06 - São Paulo - SP  (MITA Festival)\n-17/06 - Campinas - SP (Brasuca)\n-25/06 - Porto Alegre - RS (Opinião)\n-07/07 - Por Anunciar \n-08/07 - Por Anunciar \n-09/07- São Paulo - SP (Sesc Itaquera)\n-13/07 - Mogi das Cruzes - SP (Sesc Mogi)\n-14/07 - Uberlândia - MG\n-15/07 - Belo Horizonte - MG (Autêntica)\n-16/07 - São Paulo - SP (Esquenta Rock Fun Fest)\n-22/07 - Santo André - SP (Sesc Santo André)\n-29/07 - Taubaté - SP (Sesc Taubaté)\n-05/08 - Goiânia - GO\n-06/08 - Brasília - DF\n-11/08 - São Paulo - SP (Sesc Belenzinho)\n-12/08 - São Paulo - SP (Sesc Belenzinho)\n-20/08 - Santa Rita do Sapucaí - MG (Hacktown)\n-26/08 - Ribeirão Preto - SP (Bacon Day)\n-26/08 - Santa Bárbara do Oeste - SP (Virada SP)\n-09/09 - Belém - PA \n-10/09 - Manaus - AM\n-23/09 - São Paulo - SP\n-24/09 - São Paulo - SP (Cine Jóia)\n-06/10 - Por Anunciar\n-13/10 - Por Anunciar\n-14/10 - Por Anunciar\n-28/10 - São Paulo - SP(Evento Fechado)\n-01/11 - Tour Nordeste \n-02/11 - Tour Nordeste\n-03/11 - Tour Nordeste\n-04/11 - Tour Nordeste\n-05/11 - Tour Nordeste\n-10/11 - Tour Nordeste\n-11/11 - Tour Nordeste\n-12/11 - Tour Nordeste\n-02/12 - São Paulo - SP\n-10/12 - Rio de Janeiro - RJ",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/cxNaJflXHRQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/cxNaJflXHRQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/cxNaJflXHRQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/cxNaJflXHRQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/cxNaJflXHRQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 156,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "cxNaJflXHRQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "cxNaJflXHRQ",
+          "videoPublishedAt": "2023-06-17T22:00:15Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "R7JLtDPGHtBmUR5kIAuRXDzxV98",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkFma3h4aURDNkFZ",
+        "snippet": {
+          "publishedAt": "2023-06-16T23:38:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Rango mineiro, crocs & teste de guitarra @supercombooficial",
+          "description": "Segundo dia de vivência no Sonastério.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/AfkxxiDC6AY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/AfkxxiDC6AY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/AfkxxiDC6AY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/AfkxxiDC6AY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/AfkxxiDC6AY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 157,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "AfkxxiDC6AY"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "AfkxxiDC6AY",
+          "videoPublishedAt": "2023-06-16T23:38:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "FQ8zi8sirYAJIacoo5LLxvX8LSw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmlSejhSQUxiRGNJ",
+        "snippet": {
+          "publishedAt": "2023-06-15T21:00:19Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Ensaio e café @supercombooficial",
+          "description": "Dia 2 aqui no @Sonastério , montando nosso setup, ensaiando e gravando uns conteúdos!\n\nAGENDA SUPERCOMBO\nTOUR REMÉDIOS \n\n-21/05 - São Paulo - SP (Audio)\n-27/05 - São Paulo - SP (Sesc Interlagos)\n-02/06 - Rio de Janeiro - RJ (Imperator)\n-04/06 - São Paulo - SP  (MITA Festival)\n-17/06 - Campinas - SP (Brasuca)\n-25/06 - Porto Alegre - RS (Opinião)\n-07/07 - Por Anunciar \n-08/07 - Por Anunciar \n- 09/07- São Paulo - SP (Sesc Itaquera)\n-13/07 - Mogi das Cruzes - SP (Sesc Mogi)\n-14/07 - Uberlândia - MG\n-15/07 - Belo Horizonte - MG (Autêntica)\n-16/07 - São Paulo - SP (Esquenta Rock Fun Fest)\n-22/07 - Santo André - SP (Sesc Santo André)\n-29/07 - Taubaté - SP (Sesc Taubaté)\n-05/08 - Goiânia - GO\n-06/08 - Brasília - DF\n-11/08 - São Paulo - SP (Sesc Belenzinho)\n-12/08 - São Paulo - SP (Sesc Belenzinho)\n-20/08 - Santa Rita do Sapucaí - MG (Hacktown)\n-26/08 - Ribeirão Preto - SP (Bacon Day)\n-26/08 - Santa Bárbara do Oeste - SP (Virada SP)\n-09/09 - Belém - PA \n-10/09 - Manaus - AM\n-23/09 - São Paulo - SP\n-24/09 - São Paulo - SP (Cine Jóia)\n-06/10 - Por Anunciar\n-13/10 - Por Anunciar\n-14/10 - Por Anunciar\n-28/10 - São Paulo - SP(Evento Fechado)\n-01/11 - Tour Nordeste \n-02/11 - Tour Nordeste\n-03/11 - Tour Nordeste\n-04/11 - Tour Nordeste\n-05/11 - Tour Nordeste\n-10/11 - Tour Nordeste\n-11/11 - Tour Nordeste\n-12/11 - Tour Nordeste\n-02/12 - São Paulo - SP\n-10/12 - Rio de Janeiro - RJ",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/iRz8RALbDcI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/iRz8RALbDcI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/iRz8RALbDcI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/iRz8RALbDcI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/iRz8RALbDcI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 158,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "iRz8RALbDcI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "iRz8RALbDcI",
+          "videoPublishedAt": "2023-06-15T21:00:19Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "zJcTRMhaTvvY39IzuANo8VU_EDI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlBOOHY5ZzhwVXpR",
+        "snippet": {
+          "publishedAt": "2023-06-15T01:00:22Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Chiclete & Rango Mineiro @supercombooficial",
+          "description": "@supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/PN8v9g8pUzQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/PN8v9g8pUzQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/PN8v9g8pUzQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/PN8v9g8pUzQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/PN8v9g8pUzQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 159,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "PN8v9g8pUzQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "PN8v9g8pUzQ",
+          "videoPublishedAt": "2023-06-15T01:00:22Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "K6Tz5fvURfC1XElFuMlpxkM0-hY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkVKT0tIYnlTMEI0",
+        "snippet": {
+          "publishedAt": "2023-06-12T15:14:28Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Skate e aniversário infinito @supercombooficial",
+          "description": "Leo tem futuro no skate, aniversário do maick, show do mauro e claro, agenda de shows:\n\nAGENDA SUPERCOMBO\nTOUR REMÉDIOS \n\n-21/05 - São Paulo - SP (Audio)\n-27/05 - São Paulo - SP (Sesc Interlagos)\n-02/06 - Rio de Janeiro - RJ (Imperator)\n-04/06 - São Paulo - SP  (MITA Festival)\n-17/06 - Campinas - SP (Brasuca)\n-25/06 - Porto Alegre - RS (Opinião)\n-07/07 - Por Anunciar \n-08/07 - Por Anunciar \n- 09/07- São Paulo - SP (Sesc Itaquera)\n-13/07 - Mogi das Cruzes - SP (Sesc Mogi)\n-14/07 - Uberlândia - MG\n-15/07 - Belo Horizonte - MG (Autêntica)\n-16/07 - São Paulo - SP (Esquenta Rock Fun Fest)\n-22/07 - Santo André - SP (Sesc Santo André)\n-29/07 - Taubaté - SP (Sesc Taubaté)\n-05/08 - Goiânia - GO\n-06/08 - Brasília - DF\n-11/08 - São Paulo - SP (Sesc Belenzinho)\n-12/08 - São Paulo - SP (Sesc Belenzinho)\n-20/08 - Santa Rita do Sapucaí - MG (Hacktown)\n-26/08 - Ribeirão Preto - SP (Bacon Day)\n-26/08 - Santa Bárbara do Oeste - SP (Virada SP)\n-09/09 - Belém - PA \n-10/09 - Manaus - AM\n-23/09 - São Paulo - SP\n-24/09 - São Paulo - SP (Cine Jóia)\n-06/10 - Por Anunciar\n-13/10 - Por Anunciar\n-14/10 - Por Anunciar\n-28/10 - São Paulo - SP(Evento Fechado)\n-01/11 - Tour Nordeste \n-02/11 - Tour Nordeste\n-03/11 - Tour Nordeste\n-04/11 - Tour Nordeste\n-05/11 - Tour Nordeste\n-10/11 - Tour Nordeste\n-11/11 - Tour Nordeste\n-12/11 - Tour Nordeste\n-02/12 - São Paulo - SP\n-10/12 - Rio de Janeiro - RJ",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/EJOKHbyS0B4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/EJOKHbyS0B4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/EJOKHbyS0B4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/EJOKHbyS0B4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/EJOKHbyS0B4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 160,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "EJOKHbyS0B4"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "EJOKHbyS0B4",
+          "videoPublishedAt": "2023-06-12T15:14:28Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "SW_SNZIaq2hgvLwYJNgGZTwgnBA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnpLcjFZNGJrQWJB",
+        "snippet": {
+          "publishedAt": "2023-06-07T22:23:22Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Vinil e Côco @supercombooficial",
+          "description": "Vimos a coleção de vinil da radio gazeta logo após uma entrevista comendo côco.\n\n\n\nAGENDA SUPERCOMBO\nTOUR REMÉDIOS \n\n-21/05 - São Paulo - SP (Audio)\n-27/05 - São Paulo - SP (Sesc Interlagos)\n-02/06 - Rio de Janeiro - RJ (Imperator)\n-04/06 - São Paulo - SP  (MITA Festival)\n-17/06 - Campinas - SP (Brasuca)\n-25/06 - Porto Alegre - RS (Opinião)\n-07/07 - Por Anunciar \n-08/07 - Por Anunciar \n-09/07- São Paulo - SP (Sesc Itaquera)\n-13/07 - Mogi das Cruzes - SP (Sesc Mogi)\n-15/07 - Belo Horizonte - MG (Autêntica)\n-16/07 - São Paulo - SP (Esquenta Rock Fun Fest)\n-22/07 - Santo André - SP (Sesc Santo André)\n-29/07 - Taubaté - SP (Sesc Taubaté)\n-05/08 - Goiânia - GO\n-06/08 - Brasília - DF\n-11/08 - São Paulo - SP (Sesc Belenzinho)\n-12/08 - São Paulo - SP (Sesc Belenzinho)\n-20/08 - Santa Rita do Sapucaí - MG (Hacktown)\n-26/08 - Ribeirão Preto - SP (Bacon Day)\n-26/08 - Santa Bárbara do Oeste - SP (Virada SP)\n-09/09 - Belém - PA \n-10/09 - Manaus - AM\n-23/09 - São Paulo - SP\n-24/09 - São Paulo - SP (Cine Jóia)\n-06/10 - Por Anunciar\n-13/10 - Por Anunciar\n-14/10 - Por Anunciar\n-28/10 - São Paulo - SP(Evento Fechado)\n-01/11 - Tour Nordeste \n-02/11 - Tour Nordeste\n-03/11 - Tour Nordeste\n-04/11 - Tour Nordeste\n-05/11 - Tour Nordeste\n-10/11 - Tour Nordeste\n-11/11 - Tour Nordeste\n-12/11 - Tour Nordeste\n-02/12 - São Paulo - SP\n-10/12 - Rio de Janeiro - RJ",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/zKr1Y4bkAbA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/zKr1Y4bkAbA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/zKr1Y4bkAbA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/zKr1Y4bkAbA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/zKr1Y4bkAbA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 161,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "zKr1Y4bkAbA"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "zKr1Y4bkAbA",
+          "videoPublishedAt": "2023-06-07T22:23:22Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "kD-USdP3ppEq-uIjrzDgPSqdaCM",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlBZMWt1eXU5TmZB",
+        "snippet": {
+          "publishedAt": "2023-05-13T02:44:54Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "After Party Remédios",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/PY1kuyu9NfA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/PY1kuyu9NfA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/PY1kuyu9NfA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/PY1kuyu9NfA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/PY1kuyu9NfA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 162,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "PY1kuyu9NfA"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "PY1kuyu9NfA",
+          "videoPublishedAt": "2023-05-13T02:44:54Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "5_J7PjA--oM3WCcdKsHS5_TpbfU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlBMMUtVUFJQbDBj",
+        "snippet": {
+          "publishedAt": "2023-05-12T22:00:12Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Remédios (Clipe Oficial)",
+          "description": "Ouça o álbum nas plataformas: https://Supercombo.lnk.to/RemediosID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\nLETRA:\n\nA gente faz o que pode, nem sempre consegue\nTentando agradar\nAté dorme cedo, acorda de noite\nPensando no “será” ... \n\nO que não tem remédio, remediado está\nAh…\nO que não tem resposta, respondido está\n\nNem tudo está perdido\n\nA gente rala até tarde, não come direito\nTentando entregar\nOcupa um espaço gigantesco na nossa memória\n\nO que não tem remédio, remediado está\nAh…\nO que não tem resposta, respondido está\n\nNem tudo está ferido\n\nA gente faz o que pode, nem sempre consegue\nTentando agradar\nAté dorme cedo, acorda de noite\nPensando no \"será\"… \n\nO que não tem remédio, remediado está\nAh…\nO que não tem resposta, respondido está\n\n--\n\nFICHA TÉCNICA\n\nVÍDEO:\nDireção e Roteiro: Laís Dantas\nAssistente de Direção: Karol Guimarães \nProdutora: Jennifer Sabino \nAssistente de Prod/Set: Ricardo Veras \nDireção de Fotografia: Gabe Gomez\nAssistente de Câmera: Mathe Mendes \nGaffer: Thiago Zumbi \nAssistente de Gaffer: Baltazar \nDiretora de Arte: Yolanda Ribeiro \nProdutora de Objetos: Barbara Donatello \nContra-regras: Gabriel Macedo e João Rasta \nBeleza: Natália Stracieri \nFigurino: Carol Navarro\nAcervo figurino: Gabriela Roth\nMontagem e Finalização: Fernanda Ricci \nColorista: Rafael Focay \nFoto Still e Making Of: Gabs Hand\nCatering: Nina Oliver Gastronomia \nCaminhão de Produção: Junior Jamaica\nEquipamentos: Cinegripp\nRádios: Stunt \nInfraestrutura: Santa Infra\n\nAgradecimento: Carolina Feres Hallack\n\nMÚSICA:\nProduzido por Supercombo\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/PL1KUPRPl0c/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/PL1KUPRPl0c/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/PL1KUPRPl0c/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/PL1KUPRPl0c/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/PL1KUPRPl0c/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 163,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "PL1KUPRPl0c"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "PL1KUPRPl0c",
+          "videoPublishedAt": "2023-05-12T22:00:12Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "dfo762re-Yb34RrDw1cLcOfu9kc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlpsTWpaTEFIZTlZ",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:01:19Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Aos Poucos (Visualizer)",
+          "description": "Visualizer da Faixa 1 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nAos Poucos \n(Leo Ramos, Carol Navarro, Paulo Vaz e André Dea) \n\nAcho que fui longe demais\nDescarreguei e me perdi\nÉ tão difícil se localizar\nQuando os mapas estão contra você\n\nSou incapaz de terminar o que eu comecei \nSou incapaz de começar o que não terminei \n\nSabe, é devagar, um passo de cada vez\nVou fazer o mínimo e aos poucos, eu volto a ser\nSabe, é devagar, um passo de cada vez\nVou fazer o mínimo e aos poucos\nReaprender \n\nÀs vezes a gente demora pra se tocar, pra se cuidar\nE quase desiste e deixa tudo pros abutres\n\nSou incapaz de terminar o que eu comecei \nSou incapaz de começar o que eu não terminei \n\nSabe, é devagar, um passo de cada vez\nVou fazer o mínimo e aos poucos, eu volto a ser\nSabe, é devagar um passo, de cada vez\nSó fazer o mínimo e aos poucos tu volta\n\nRepete pra mim, eu volto a ser, quando eu quiser\n\nSabe, é devagar, um passo de cada vez\nTudo bem se recompor\nE aos poucos, tu volta a ser",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ZlMjZLAHe9Y/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ZlMjZLAHe9Y/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ZlMjZLAHe9Y/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ZlMjZLAHe9Y/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ZlMjZLAHe9Y/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 164,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ZlMjZLAHe9Y"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ZlMjZLAHe9Y",
+          "videoPublishedAt": "2023-05-12T17:01:19Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "4i_LRa3hNehvvq-KNfcbWMEYljQ",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnY4MzZ5UzhBZld3",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:01:16Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Remédios (Visualizer)",
+          "description": "Visualizer da Faixa 2 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nRemédios\n(Leo Ramos, Carol Navarro, Paulo Vaz e André Dea) \n\nA gente faz o que pode, nem sempre consegue\nTentando agradar\nAté dorme cedo, acorda de noite\nPensando no “será” ... \n\nO que não tem remédio, remediado está\nAh…\nO que não tem resposta, respondido está\n\nNem tudo está perdido\n\nA gente rala até tarde, não come direito\nTentando entregar\nOcupa um espaço gigantesco na nossa memória\n\nO que não tem remédio, remediado está\nAh…\nO que não tem resposta, respondido está\n\nNem tudo está ferido\n\nA gente faz o que pode, nem sempre consegue\nTentando agradar\nAté dorme cedo, acorda de noite\nPensando no \"será\"… \n\nO que não tem remédio, remediado está\nAh…\nO que não tem resposta, respondido está",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/v836yS8AfWw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/v836yS8AfWw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/v836yS8AfWw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/v836yS8AfWw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/v836yS8AfWw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 165,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "v836yS8AfWw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "v836yS8AfWw",
+          "videoPublishedAt": "2023-05-12T17:01:16Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "LODcKmbOjv7atk7Use5kTnAgSoE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkYzcXR1cFdXMWJR",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:01:12Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Tarde Demais (com Vitor Kley) (Visualiser)",
+          "description": "Visualiser da Faixa 3 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nTarde Demais\n(Leo Ramos, Carol Navarro, Paulo Vaz e André Dea) \n\n\"Tava muito mal da garganta, ainda consegui tirar um caldo ali nas edição, né Xablau?\"\n\nTarara, tarara, tarara, tarara, tarara, tararanara\nTarara, tarara, tarara, tarara, tarara, tararanara\nTarara, tarara, tarara, tarara, tarara, tararanara\nTarara, tarara, tarara, tarara, tarara, tararanara\n\nTudo tem um tempo\nTipo um cimento \nDemora pra secar, demora pra aproveitar\nÀs vezes desaba\nÀs vezes pombo pisa\n\nSabe, não tem idade\nA validade nunca é\n\nTarde demais\nTarde demais\nTarde demais\nTarde demais\nPra se misturar\n\nTarara, tarara, tarara, tarara, tarara, tararanara\nTarara, tarara, tarara, tarara, tarara, tararanara\n\nTudo tem um jeito\nTipo um joelho\nDemora pra andar\nDemora pra levantar\nÀs vezes no Lego\nÀs vezes travesseiro\n\nSabe, não tem idade\nA validade nunca é\nSabe, não tem idade\nA validade nunca é\n\nTarde demais\nTarde demais\nTarde demais\nTarde demais\nPra meter o Sagat \n\nDale o resgate\nApreciar uma paisagem\nMatar de novo o tamagotchi\nSair da caverna\n\nNanana nanana nanana, nanana, nanana, nanananana\nNanana nanana nanana, nanana, nanana, nanananana\n\nTarde demais\nTarde demais\nTarde demais\nTarde demais\nPra se misturar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/F3qtupWW1bQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/F3qtupWW1bQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/F3qtupWW1bQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/F3qtupWW1bQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/F3qtupWW1bQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 166,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "F3qtupWW1bQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "F3qtupWW1bQ",
+          "videoPublishedAt": "2023-05-12T17:01:12Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "eJ-1Z0_Sj3UEKlW0TZjL-AKzOKE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLklILVlnRDRPV3dJ",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:01:08Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Ímã (Visualizer)",
+          "description": "Visualizer da Faixa 4 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nÍmã \n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea)\n\nSe eu fizer um jantar \"gostozin\" pra nós dois\nSei que a gente mal se fala, fala\nMeu lado negativo, éramos bons amigos\nMe deixa eu te mostrar um som, um mantra\n\nDesiste não, teus erros não definem quem você é, você é\nDesiste não, teu coração é livre e você, meu bem, mal me quer\n\nDia sim, dia não, um assume e o outro vê\nSem perder a amizade, cadê?\n\nMeu lado positivo, éramos inimigos\nMe deixa te mostrar um som, um mantra\n\nDesiste não, acertos não definem quem você é, você é\nDesiste não, teu coração é livre e você, eu sei, bem me quer\n\nA lua faz a maré virar, trampando de casa\nE o sol não fala nada, só deixa rolar\nE no Mortal Kombat, daria empate?\nPassa o controle e vamo ver\nQuem é melhor, eu ou você? \nEu ou você?\nEu ou você?\n\nDesiste não, defeitos não definem quem você é\nEu ou você?\nEu ou vo...\nEu ou você?\nEu ou você?",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/IH-YgD4OWwI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/IH-YgD4OWwI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/IH-YgD4OWwI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/IH-YgD4OWwI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/IH-YgD4OWwI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 167,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "IH-YgD4OWwI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "IH-YgD4OWwI",
+          "videoPublishedAt": "2023-05-12T17:01:08Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "obpvwmrQ-KMimlCbr-re0wfgKaM",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkdFeVJlSFJSTmtV",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:01:04Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Intervenção (Visualizer)",
+          "description": "Visualiser da Faixa 5 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nIntervenção \n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea)\n\nCom licença, eu não queria incomodar você\nEu sou teu subconsciente vim pra conversar, entender\n\nDiz qual destino, qual destino, vamos escolher\nSe tu não é bem-vindo em casa deixa o mundão te acolher\n\nPassageiro, ninguém sabe o que cê passa…\n\nSou a interseção, a encruzilhada do bem\nTem sempre uma direção pro trilho que saiu do trem\nSou a intervenção, aquele apito do bem\nUm dia teu coração embarca no mesmo trem\n\nO teu porto seguro era cheio de armadilha, ainda bem que você percebeu\nTu já apanhou de todo lado, acho que já deu, já deu, já deu\n\nTu ia desistir, desistir de viver\nOs nossos sonhos não esperam a gente acontecer\nSei que é raro, mas tá sempre nas manchetes\n\nSou a interseção, a encruzilhada do bem\nTem sempre uma direção pro trilho que saiu do trem\nSou a intervenção, aquele apito do bem\nUm dia teu coração sente alguma coisa\n\nAlguma coisa de bom\nUm dia teu coração embarca no mesmo trem\n\nTerapia, ar condicionado, banho quente, ter um pé de pato\nTanto faz, se te faz feliz\nO que importa mesmo é nunca desistir",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/GEyReHRRNkU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/GEyReHRRNkU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/GEyReHRRNkU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/GEyReHRRNkU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/GEyReHRRNkU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 168,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "GEyReHRRNkU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "GEyReHRRNkU",
+          "videoPublishedAt": "2023-05-12T17:01:04Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "bdn23YeKvM1enuByeuIytfleQJw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmVhWTc5dWtBSE9r",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:01:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - O Pneu e a Lombada (Visualizer)",
+          "description": "Visualizer da Faixa 6 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nO Pneu e a Lombada \n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea)\n\nQuem dera entrar no carro\nComo nos filmes de fuga\nSair sem hora pra voltar\nSe a vida é uma estrada\nEu sou o acostamento\nLombada, eu te odeio\n\nMas não me deixa só, não me deixa só\nNão me deixa sofrer\n\nVem, me ajuda a levantar\nSoltar a âncora do ombro e voar\nTalvez o mundo que precisa rodar\nUm pouco mais devagar\nSó se vive uma vez\nNão foi dessa vez…\n\nQuem dera entrar num barco\nComo nos filmes de pesca\nPassar um tempo na água\n(Não me deixa só, não me deixa...)\nPois é dormindo que às vezes\nA gente move montanhas\nConversa com periquitos\nTipo filmes da Disney\n\nNas noites em claro, não me deixa só\nNão me deixa só\nNão me deixa sofrer\n\nVem, me ajuda a levantar\nSoltar a âncora do ombro e voar\nTalvez o mundo que precisa rodar\nUm pouco mais devagar\nSó se vive uma vez\n\nNão me deixa só\nNão me deixa só\nSó se vive uma vez\nNão me deixa\nNão me deixa\nNão me deixa só\n\nÉ o pneu e a lombada\nÉ o pneu e a lombada\nÉ o pneu e a lombada\nÉ o pneu… \nNão me deixa só\nNão me deixa só\n\nVem, me ajuda a levantar\nSoltar a âncora do ombro e voar\nTalvez o mundo que precisa rodar\nUm pouco mais devagar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/eaY79ukAHOk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/eaY79ukAHOk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/eaY79ukAHOk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/eaY79ukAHOk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/eaY79ukAHOk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 169,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "eaY79ukAHOk"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "eaY79ukAHOk",
+          "videoPublishedAt": "2023-05-12T17:01:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "-waEPVy_mK1y5_uZe6bMuZCZS3g",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmZWVGJFRlQyWGlN",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:00:55Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Fim do Mundo (Visualizer)",
+          "description": "Visualizer da Faixa 7 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nFim do Mundo \n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea)\n\nEu vejo sinais que o corpo já se entregou\nTrês \"hora\" de sono, suando frio, bem-vindo à crise\n\nE o que é que tem? Deixa pra lá… \nO mundo não espera a gente descansar\nE o que é que tem? Frescura… \nO universo para e a gente roda\n\nEu tô bem aqui no fim do mundo\nNão tô bem atrás desse sorriso\nEu tô bem aqui no fim do mundo\n\nSinto sinais, me diz como faz pra gente ter paz\nDiminuir a rotação\nColocar a âncora no chão\nPra cura curar nós\n\nE o que é que tem? Deixa pra lá… \nO mundo não espera a gente descansar\nE o que é que tem? Frescura… \nO universo para e a gente roda\n\nEu tô bem aqui no fim do mundo\nNão tô bem atrás desse sorriso\nEu tô bem aqui no fim do mundo\n\nÉ o fim do mundo toda vez\nQue pesa o ombro toda vez\nQue eu me cobro toda vez\nToda vez… \nÉ o fim do mundo toda vez\nQue pesa o ombro toda vez\nQue eu me cobro toda vez\nToda vez… \n\nEu tô bem aqui no fim do mundo\nNão tô bem atrás desse sorriso\nEu tô bem aqui no fim do mundo \n\nEu tô bem aqui no fim do mundo\nEu tô bem aqui no fim do mundo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/fVTbEFT2XiM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/fVTbEFT2XiM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/fVTbEFT2XiM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/fVTbEFT2XiM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/fVTbEFT2XiM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 170,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "fVTbEFT2XiM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "fVTbEFT2XiM",
+          "videoPublishedAt": "2023-05-12T17:00:55Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "CMM8sLFBhpSoaZe4Y-WaeuluSEc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLllzNHBaSU5kOG84",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:00:51Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - A Baleia e o Lambari (Visualizer)",
+          "description": "Visualizer da Faixa 8 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nA Baleia e o Lambari\n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea)\n\nSei que você esperava outra coisa\nEu ri, “não, não é bem assim”\nQuer viver da tua arte? Então, se prepara!\nÉ tudo contra você!\n\n“Oh, não! Como assim? Não basta acreditar em mim?”\n\nE se acontecer, quem vai dizer se isso é sucesso?\nEu sou a cabeça do lambari ou o rabo da baleia?\n\nSei que você não sabia muita coisa\nMas deu “OK” mesmo assim\n\"Desde a idade média eu sonho em ser artista\nAmor à primeira vista, o braço arrepia\"\n\n\"Legal, não leve a mal, mas, paga mal, paga mal\"\nE se acontecer, quem vai dizer se isso é sucesso?\nEu sou a cabeça do lambari ou o rabo da baleia?\n\nA gente é o que é, seja como for\nTu já viu esperança engolindo o sapo?\nA gente é o que é, seja como for\nE foda-se a grana a gente faz por amor\n\nQuem vai dizer, quem vai dizer se isso é sucesso?\nQuem vai dizer, quem vai dizer se eu tô chegando perto?",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Ys4pZINd8o8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Ys4pZINd8o8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Ys4pZINd8o8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Ys4pZINd8o8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Ys4pZINd8o8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 171,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Ys4pZINd8o8"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Ys4pZINd8o8",
+          "videoPublishedAt": "2023-05-12T17:00:51Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "BHa_nt-aohG5UZ0XVSAdp_WPJxE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlJRbkRnNlJVNjZz",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:00:45Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - À primeira vista (Visualizer)",
+          "description": "Visualizer da Faixa 9 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nÀ Primeira Vista\n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea)\n\nÀ primeira vista parecia estar tudo bem\nE o tempo foi nublando devagar e o encanto acabou\nAté aparecer meus demônios\nPra me lembrar do que eu não resolvi\nE que uma hora assombra\n\nSe for pra ser, só deixa acontecer\nSei que o tempo vai curar\nSe for pra ser, não tem que remoer\nAmanhã vai ser melhor, melhor\n\nÀ primeira vista parecia estar tudo bem\nE o tempo foi nublando devagar e o encanto acabou\nAí apareceram meus demônios\nPra me lembrar do que eu não resolvi\nE que uma hora chega\n\nSe for pra ser, só deixa acontecer\nSei que o tempo vai curar\nSe for pra ser, não tem que remoer\nAmanhã vai ser melhor, melhor\n\nSe for pra ser, só deixa acontecer\nSei que o tempo vai curar\nAmanhã vai ser\nAmanhã vai ser\nAmanhã vai ser melhor, melhor, o-or",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/RQnDg6RU66s/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/RQnDg6RU66s/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/RQnDg6RU66s/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/RQnDg6RU66s/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/RQnDg6RU66s/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 172,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "RQnDg6RU66s"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "RQnDg6RU66s",
+          "videoPublishedAt": "2023-05-12T17:00:45Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "NjmR7NwbFzCujbXXXyYjbXhvDvc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlFVbG5zMnhITTBB",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:00:40Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Estrela do Mar (com Elana Dara) (Visualizer)",
+          "description": "Visualizer da Faixa 10 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nEstrela do Mar *com Elana Dara \n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea / Elana Dara) \nDeck / Warner Chappell Music\n\nSola do pé sujo, de pijama\nDalai Lama, delay\nFaço nada e crio barbatana\nLámen, lá vem lama debaixo da cama\n\nLevo meu peixe pro banho e tosa\nUm lacinho rosa, pele pegajosa\nMeus sonhos são mundos de água doce\nE é como se fosse nós dois num aquário\n\nAo som do mar\nAh, ah, ah, ah\nAh, ah, ah\nNo nosso céu tem estrela do mar\nAo som do mar\nAh, ah, ah, ah\nAh, ah, ah\nNo nosso céu tem estrela do mar\n\nJovem que entende essa linguagem\nDe linguado linguarudo\nRodeado só de peixe afogado\nRobalo embalado a vácuo\nPra dar mais sabor pra vida\nSó que acabou se perdendo\nDentro do atum enlatado\n\nDivida comigo seus surtos\nDivida comigo os assuntos\nMeus sonhos são mundos de água doce\nE é como se fosse nós dois num aquário\n\nAo som do mar\nAh, ah, ah, ah\nAh, ah, ah\nNo nosso céu tem estrela do mar\nAo som do mar\nAh, ah, ah, ah\nAh, ah, ah\nNo nosso céu tem estrela do mar\n\nNo meu quarto alagado\nCabelo molhado, pingando\nE fazendo baliza no chão\nNo meu quarto alagado\nCabelo molhado, pingando\nE fazendo baliza no chão\n\nAo som do mar\nAh, ah, ah, ah\nAh, ah, ah\nNo nosso céu tem estrela do mar\nAh, ah\nAo som do mar\nAh, ah, ah, ah\nAh, ah, ah\nNo nosso céu tem estrela do mar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/QUlns2xHM0A/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/QUlns2xHM0A/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/QUlns2xHM0A/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/QUlns2xHM0A/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/QUlns2xHM0A/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 173,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "QUlns2xHM0A"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "QUlns2xHM0A",
+          "videoPublishedAt": "2023-05-12T17:00:40Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "nWa782nzqOHJ68TikVZM6XVydjM",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm1XdFp2NUVvZTNV",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:00:36Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Cassino (Visualizer)",
+          "description": "Visualizer da Faixa 11 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nCassino\n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea)\n\nEu entendi a tua necessidade, já entendi a tua\nTu quer a mão, o pé e a alma, tudo de lambuja\n\nTu quer o universo, a realidade, o que der pra sugar\nTu quer o impossível sem dar nada em troca\nNada em troca\n\nEu perco o jogo, compro ficha\nEu sozinho giro a máquina\nNinguém vai embora\nEu preciso ver no que vai dar\n\nEu já vendi a minha dignidade\nBriguei com o sol e a lua\nTu quer o rim, o sangue e o braço, tudo de bom grado\n\nTu quer o universo, a realidade, o que der pra sugar\nTu quer o impossível sem dar nada em troca\nNada em troca\n\nEu perco o jogo, compro ficha\nEu sozinho giro a máquina\nNinguém vai embora\nEu preciso alimentar o vício de merda\n\nÉ só mais um, é só mais um, mais um cassino\nÉ só mais um, é só mais um e eu juro que é isso\nÉ só mais um, é só mais um, mais um cassino\nÉ só mais um, é só mais um dia difícil\n\nEu perco o jogo, compro fichas\nEu sozinho giro a máquina\nE se eu for?\nEu compro o jogo, perco fichas\nE se eu for? \nEu sozinho giro a máquina\n\nUm dia a gente se liberta",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/mWtZv5Eoe3U/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/mWtZv5Eoe3U/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/mWtZv5Eoe3U/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/mWtZv5Eoe3U/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/mWtZv5Eoe3U/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 174,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "mWtZv5Eoe3U"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "mWtZv5Eoe3U",
+          "videoPublishedAt": "2023-05-12T17:00:36Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "GwkdnvzXg9QBGSLTQ7AZ76x05ik",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmdjR2pNcGFlRHpN",
+        "snippet": {
+          "publishedAt": "2023-05-12T17:00:25Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Esqueletos na Areia (Visualizer)",
+          "description": "Visualizer da Faixa 12 do álbum \"Remédios\".\nOuça o álbum completo: https://Supercombo.lnk.to/RemediosID\n#Supercombo #Remédios #AosPoucos\n\nProduzido por Supercombo\nGravadora: Deckdisc\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\nGravadora: Deck\n\nCAPA:\nFoto: Murilo Amancio\nDesign, edição e manipulação: Bruno Queiroz\nDireção de arte: Bruno Queiroz e Supercombo\nMaquiagem: Natália Stracieri\nFigurino: Carol Navarro e André Dea\n\nMOTION: Vincius Kahan e Marco Souza\n\nREMÉDIOS:\n\n1 - Aos Poucos \n2 - Remédios\n3- Tarde Demais com Vitor Kley \n4- Ímã\n5- Intervenção\n6- O Pneu e a Lombada\n7- Fim do Mundo\n8- A Baleia e o Lambari\n9- À Primeira Vista\n10- Estrela do Mar com Elana Dara\n11- Cassino\n12- Esqueletos na Areia\n\nEsqueletos na Areia\n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea)\n\nMorar num deserto, distante do mundo\nOportunidade do jeitinho que eu sempre quis\nOu achei que quis\nEu e meu nariz…\n\nQual é o segredo, o tamanho da lábia? \nÉ um inverno de noite, um inferno de dia\n\nE o corretor maldito\nSe perdeu, achou\nPerdeu, achou\n\"O que aconteceu?\"\n\n\"Teus dias 'tão' contados\"\nDisseram esqueletos na areia\nMas eles só têm inveja\nDe todo o cálcio que a gente tem\n\nMorrendo de sede, correndo de vermes\nTempestade de areia não me deixa enxergar…\nOnde fui parar?\n\nSe perdeu, achou\nPerdeu, achou \nComo é chato dar um passo maior que a perna\n\n\"Teus dias 'tão' contados\"\nDisseram esqueletos na areia\nMas eles só têm inveja\nDe todo o cálcio que a gente tem\n\nAreia na meia\nAreia no olho\nAreia à milanesa\nAreia na meia\nAreia no olho\nAreia à milanesa\nAreia na meia\nAreia no olho\nAreia à milanesa\n\nAreia na meia\nAreia no olho\nAreia à milanesa\nOs dias ‘tão’ contados\nAreia na veia\nAreia na areia\n\nAreia na meia\nAreia no olho\nAreia à milanesa\nOs dias ‘tão’ contados\nAreia na veia\nAreia na areia",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/gcGjMpaeDzM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/gcGjMpaeDzM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/gcGjMpaeDzM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/gcGjMpaeDzM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/gcGjMpaeDzM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 175,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "gcGjMpaeDzM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "gcGjMpaeDzM",
+          "videoPublishedAt": "2023-05-12T17:00:25Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "UZGrHEKDRD_gBITVM4YUkXFjCj8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnRZVE9HVGl2b0dv",
+        "snippet": {
+          "publishedAt": "2023-05-12T00:12:55Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "LIVE ESQUENTA - REMEDIOS",
+          "description": "TAMO AO VIVO, eu acho",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/tYTOGTivoGo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/tYTOGTivoGo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/tYTOGTivoGo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/tYTOGTivoGo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/tYTOGTivoGo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 176,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "tYTOGTivoGo"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "tYTOGTivoGo",
+          "videoPublishedAt": "2023-05-12T00:12:55Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "oHE-V50F1vvHq98luFYSwmZBF9U",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnhJLTI3N3pNcmhV",
+        "snippet": {
+          "publishedAt": "2023-05-12T00:01:38Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "LIVE ESQUENTA - REMEDIOS",
+          "description": "TAMO AO VIVO, eu acho",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/xI-277zMrhU/default.jpg?v=645d81e3",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/xI-277zMrhU/mqdefault.jpg?v=645d81e3",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/xI-277zMrhU/hqdefault.jpg?v=645d81e3",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/xI-277zMrhU/sddefault.jpg?v=645d81e3",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/xI-277zMrhU/maxresdefault.jpg?v=645d81e3",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 177,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "xI-277zMrhU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "xI-277zMrhU",
+          "videoPublishedAt": "2023-05-12T00:01:38Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "cilBQkOdT_i_efRiYwzMIa1dXFs",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLk5LUU9aLUJwMjJr",
+        "snippet": {
+          "publishedAt": "2023-04-26T21:59:53Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Léozão te ensinando a tocar TARDE DEMAIS. *vídeo completo no insta. #supercombo #tardedemais",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/NKQOZ-Bp22k/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/NKQOZ-Bp22k/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/NKQOZ-Bp22k/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/NKQOZ-Bp22k/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/NKQOZ-Bp22k/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 178,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "NKQOZ-Bp22k"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "NKQOZ-Bp22k",
+          "videoPublishedAt": "2023-04-26T21:59:53Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "7ybSAZw80RLy-zbfXzBCMsmvAkk",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLk1vSW4ycWtOdkVN",
+        "snippet": {
+          "publishedAt": "2023-04-20T15:00:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo, @vitorkley - Tarde Demais",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/VitorKleyTardeDemaisID \n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\nLETRA:\n\n- Tava muito mal da garganta, ainda consegui tirar um caldo ali nas edição, né Xablau?\n\nTarara, tarara, tarara, tarara, tarara, tararanara\nTarara, tarara, tarara, tarara, tarara, tararanara\nTarara, tarara, tarara, tarara, tarara, tararanara\nTarara, tarara, tarara, tarara, tarara, tararanara\n\nTudo tem um tempo\nTipo um cimento \nDemora pra secar, demora pra aproveitar\nÀs vezes desaba\nÀs vezes pombo pisa\n\nSabe, não tem idade\nA validade nunca é\n\nTarde demais\nTarde demais\nTarde demais\nTarde demais\nPra se misturar\n\nTarara, tarara, tarara, tarara, tarara, tararanara\nTarara, tarara, tarara, tarara, tarara, tararanara\n\nTudo tem um jeito\nTipo um joelho\nDemora pra andar\nDemora pra levantar\nÀs vezes no Lego\nÀs vezes travesseiro\n\nSabe, não tem idade\nA validade nunca é\nSabe, não tem idade\nA validade nunca é\n\nTarde demais\nTarde demais\nTarde demais\nTarde demais\nPra meter o Sagat \n\nDale o resgate\nApreciar uma paisagem\nMatar de novo o tamagotchi\nSair da caverna\n\nNanana nanana nanana, nanana, nanana, nanananana\nNanana nanana nanana, nanana, nanana, nanananana\n\nTarde demais\nTarde demais\nTarde demais\nTarde demais\nPra se misturar\n\n--\n\nFICHA TÉCNICA\n\nVÍDEO:\nDireção: Chris Tex\nDireção de Fotografia: Lucas Haas\nDireção de Arte: Carol Navarro & André Dea \nProdutor de Set: Marco Hali\nAssistente de Câmera: Gabriel Carnelos \nChefe de elétrica: Robson Lopes de Souza \nBeleza: Natália Stracieri\nFigurino: Carol Navarro - Calma São Paulo\nLettering: Bruno Queiroz\nAssistente de Produção: Aline Rodrigues \nMontagem: Chris Tex\nCor: Lucas Haas\nCoprodução: Volt Filmes \nUma produção Tex Filmes\nApoio: iFIy Sao Paulo - Brasil\nParcerias e Midia iFIy: Bruna Guimarães e Isabela Antunes\nAgradecimentos Especiais:\nInstrutores iFIy: Bruno Pisaneli, Diogo Mariano, Rafael Freitas, José Barbosa e  Lucas Shiwitz\nDrivers iFIy: Ana Iglesias e Rafael Freitas\n\nMÚSICA:\nProduzido por Supercombo\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\n\nVitor Kley: Voz \n\nGravado no estúdio Midas Music, em São Paulo\nEngenheiro de Gravação: José Soares de Alencar Junior  e Júnior Lanne\nEdição Voz: Alexandre Chapola\n\n\n#Supercombo #VitorKley #TardeDemais",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/MoIn2qkNvEM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/MoIn2qkNvEM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/MoIn2qkNvEM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/MoIn2qkNvEM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/MoIn2qkNvEM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 179,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "MoIn2qkNvEM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "MoIn2qkNvEM",
+          "videoPublishedAt": "2023-04-20T15:00:11Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "d12yTQtetDSl46umdOC0EKLG2X8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmRKa2JmS3BaZFdN",
+        "snippet": {
+          "publishedAt": "2023-03-31T15:00:22Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo, @kamaitachi  - Infame (Clipe Oficial)",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/Kamaitachi_InfameID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\nLETRA\n\nDólares caem como pétalas\nRezas ao mal verde faz gerar sempre mais cédulas\nToca violeiro\nPra não passar em branco\nTeu som é um encanto\nTermina e toca de novo\n\n“Enquanto faço o balanço, expando o território e faço cada vez mais inimigos\nUm brinde ao nosso negócio e toma cuidado pra não ser o próximo a ser enterrado vivo”\n\nViciado queimo grana porque eu posso\nO teu castelo é barro, beira a destroços\nIsso é ser pináculo, é trato e negócio\nEu encho essa taça porque é assim que eu gosto\n\nAs regras são tão claras, é bala ou bala\nÉ cock, é sangue, é guerra e guerra e nunca acaba\nAbrace esse caos, caos\nE morra como nada\n\nHoje teremos festa, álcool, droga e tango\nUm rebolado, um toque manso \nUm cianeto nesse copo\nUm teco e teco, um paco e ganho\n\nToca violeiro\nPra não passar em branco\nTeu som é um encanto\nTermina e toca de novo\n\n“Enquanto faço o balanço, expando o território e faço cada vez mais inimigos\nUm brinde ao nosso negócio e toma cuidado pra não ser o próximo a ser enterrado vivo”\n\nViciado queimo grana porque eu posso\nO teu castelo é barro, beira a destroços\nIsso é ser pináculo, é trato e negócio\nEu encho essa taça porque é assim que eu gosto\n\nAs regras são tão claras, é bala ou bala\nÉ cock, é sangue, é guerra e guerra e nunca acaba\nAbrace este caos, caos\nE morra como nada\nE morra como nada\n\nQueimo grana porque eu posso\nO teu castelo é barro e beira a destroços\nIsso é ser pináculo, é trato e negócio\nEu encho essa taça porque é assim que eu gosto \nAs regras são tão claras, é bala ou bala\nÉ cock, é sangue, é guerra e guerra e nunca acaba\nAbrace este caos, caos\nE morra como nada\nE morra como nada\nE morra como nada\nE morra como nada\n\n--\n\nFICHA TÉCNICA:\nProduzido por Supercombo e Kamaitachi.\n\nKAMAITACHI\nRafael Gonçalvez: Voz\nSUPERCOMBO\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nFelippe Pipeta: Trompete\nFred Benuce: Locução\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição de voz Marcus Maia\nEditado por Leo Ramos\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\n\nArte da Capa: Kiwi Sttudio\n\nVIDEOCLIPE\nDireção - Gabriel Faria (@gabrielfaria.me) e Gui Carrara (@gui_carrara) \nAssistente de direção - Patrick (@bombassar0)\nFotografia - Gui Carrara (@gui_carrara) \n1 Assistente de câmera - Julio Bertolini (@julio_bertolini)\n2 assistente de camera - Pedro Borba (@__pedroborba)\nGaffer - Leonardo Perez (@leoperezn)\nAss. de elétrica - Gabriel Vignola (@gabriel_vignola)\nDireção de arte - Lucas Fidelis (@f1delis)\nAssistência de set de arte - Cassio Zambotto e Welton Silva \nFigurinista: Giovanna Naomi (@giovxnnan)\nAssistência de figurino: Augusto Amparo (@charliesangelfullthrottle)\nConfecção: Giovanna Naomi (@giovxnnan), Juan Bispo (@zju4n), Brabo (@brabo.br)\nMaquiagem - Natália Stracieri (@natstracieri)\nMontagem e finalização - Gabriel Faria (@gabrielfaria.me) e Gui Carrara (@gui_carrara)\nColorização - Gui Carrara (@gui_carrara)\nEfeitos sonoros - Cauê Gifalli (@cauegifalli)\nProjeto Gráfico - Wes Azevedo (@kiwi.sttudio)\nDireção de produção - Ana Beatriz Motta (@nomiudinhomeubem)\nProdução - Laís Leite (@laclais)\nAssistência de produção - Barbara Lavínia (@balavinia)\nFotografia Still - Gabriel Hand (@gabshand) e Natan Carrara (@*carraramag_*)\nLocação - Estúdio Lâmina (@estudiolamina)\nApoio - (@22locacoes)\nAgradecimentos - Mauricio Abbade (@mauricioabbade) e Vinicius Piran (@vinipiran)\n\n\n#supercombo #kamaitachi #infame",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/dJkbfKpZdWM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/dJkbfKpZdWM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/dJkbfKpZdWM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/dJkbfKpZdWM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/dJkbfKpZdWM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 180,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "dJkbfKpZdWM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "dJkbfKpZdWM",
+          "videoPublishedAt": "2023-03-31T15:00:22Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "VTnfxA-CiZTLO4XdPPOk7joILe0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmFoTWxEaEdlOFlR",
+        "snippet": {
+          "publishedAt": "2023-03-03T15:00:08Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Intervenção (Clipe Oficial)",
+          "description": "Ouça nas plataformas:: https://Supercombo.lnk.to/InvervencaoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\nLETRA\nCom licença, eu não queria incomodar você\nEu sou teu subconsciente\nVim pra conversar, entender\nDiz qual destino, qual destino vamo' escolher\nSe tu não é bem vindo em casa\nDeixa o mundão te acolher\n\nPassageiro, ninguém sabe o que cê passa\n\nSou a intercessão, a encruzilhada do bem\nTem sempre uma direção pro trilho que saiu do trem\nSou a intervenção, aquele apito do bem\nUm dia até o coração embarca no mesmo trem\n\nO teu porto seguro era cheio de armadilha\nAinda bem que você percebeu\nTu já apanhou de todo lado, acho que já deu\nJá deu, já deu\n\nTu ia desistir, desistir de viver\nOs nossos sonhos não esperam a gente acontecer\nSei que é raro mas tá sempre nas manchetes\n\nSou a intercessão, a encruzilhada do bem\nTem sempre uma direção pro trilho que saiu do trem\nSou a intervenção, aquele apito do bem\nUm dia até o coração sente alguma coisa\n\nAlguma coisa de bom\nUm dia até o coração embarca no mesmo trem\n\nTerapia, ar condicionado\nBanho quente, ter um pé de pato\nTanto faz, se te faz feliz\nO que importa mesmo é nunca desistir\n\n--\n\nFICHA TÉCNICA\n\nSUPERCOMBO\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\nDIREÇÃO\nJaguara\n\nPROD EXECUTIVA\nMichel Luz\n\nCOORD EXECUTIVA\nJuliana Sena\n\nDIREÇÃO DE FOTOGRAFIA\nJaguara\n\nOP DE STEADICAM\nHeitor Pontes\n\n1º ASSISTENTE DE CÂMERA\nDiego Manhori\n\n2º ASSISTENTE DE CÂMERA\nJeff Médici\n\nLOGGER\nTiago Palacio\n\nMAKING OF\nRenan Casarin\nThiago Canuto\nGabs Hand\n\nDIREÇÃO DE ARTE\nBruno Queiroz\n\nASSISTENTES DE ARTE\nVitória Kunzel\nRaphael Peres\n\nCOLORISTA\nAlan Porciuncula\nBurn Color Grading\n\nSTYLING\nCarol Navarro\nNatália Stracieri\nGaby Roth\n\nMAKE/HAIR\nNatália Stracieri\n\nCHEFE DE ELÉTRICA\nSerginho Bronzo\n\nASSISTENTES DE ELÉTRICA\nRobinho\nMichele Zuaid\n\nASSISTENTES DE SET\nGabriel Amadio\nCrispim Bispo\n\nPRODUÇÃO\nLucas Braga\n\nAPOIO\nCasa Do Produtor\nÁguia Locações\nMARC Films\nCine House Equipamentos\nTranskinderr",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ahMlDhGe8YQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ahMlDhGe8YQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ahMlDhGe8YQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ahMlDhGe8YQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ahMlDhGe8YQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 181,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ahMlDhGe8YQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ahMlDhGe8YQ",
+          "videoPublishedAt": "2023-03-03T15:00:08Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Oy9B8RXRU_U2SlGJpakT5q1TElw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnhBZkVhWkpHdFNB",
+        "snippet": {
+          "publishedAt": "2023-03-02T19:18:13Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "ESQUENTA PRO SINGLE \"INTERVENSAO\"",
+          "description": "O clipe sai dia 03/03/2023 ao meio dia mas já tamo aqui na expectativa.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/xAfEaZJGtSA/default.jpg?v=6400fd69",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/xAfEaZJGtSA/mqdefault.jpg?v=6400fd69",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/xAfEaZJGtSA/hqdefault.jpg?v=6400fd69",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/xAfEaZJGtSA/sddefault.jpg?v=6400fd69",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/xAfEaZJGtSA/maxresdefault.jpg?v=6400fd69",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 182,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "xAfEaZJGtSA"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "xAfEaZJGtSA",
+          "videoPublishedAt": "2023-03-02T19:18:13Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "3GyTHI0pfh0Vo-qhqlHYmmVJ6Lc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLi1zRm9ZanVTMmow",
+        "snippet": {
+          "publishedAt": "2023-03-01T21:00:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 14 - Oxigênio + Rockfun Fest",
+          "description": "O décimo quarto episódio da nossa série r e c o n e x ã o mostra os bastidores dos nossos shows nos festivais Oxigênio e Rockfun Fest, em São Paulo.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres / Esto Produtora (https://www.instagram.com/estoprodutora/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/-sFoYjuS2j0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/-sFoYjuS2j0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/-sFoYjuS2j0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/-sFoYjuS2j0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/-sFoYjuS2j0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 183,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "-sFoYjuS2j0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "-sFoYjuS2j0",
+          "videoPublishedAt": "2023-03-01T21:00:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "3MgCFTRMfs6FOZ8v3JZCThZHDts",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLklmdEFKWHA3eHJv",
+        "snippet": {
+          "publishedAt": "2023-03-01T20:57:18Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "INTERVENÇÃO - 03.03 #intervenção #supercombo",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/IftAJXp7xro/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/IftAJXp7xro/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/IftAJXp7xro/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/IftAJXp7xro/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/IftAJXp7xro/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 184,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "IftAJXp7xro"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "IftAJXp7xro",
+          "videoPublishedAt": "2023-03-01T20:57:18Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "WILPJGUWOhYZVG5emv_nEOKe59o",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlJmU2VBcHVqUEQ4",
+        "snippet": {
+          "publishedAt": "2023-02-22T15:00:15Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 13 - Santo Antônio do Pinhal + Praia Grande",
+          "description": "O décimo terceiro episódio da nossa série r e c o n e x ã o mostra os bastidores dos nossos shows em Santo Antônio do Pinhal, na Virada Paulista, e em Praia Grande, na Feira do Estudante.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres / Esto Produtora (https://www.instagram.com/estoprodutora/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/RfSeApujPD8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/RfSeApujPD8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/RfSeApujPD8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/RfSeApujPD8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/RfSeApujPD8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 185,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "RfSeApujPD8"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "RfSeApujPD8",
+          "videoPublishedAt": "2023-02-22T15:00:15Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "uLQAJ2flEEgGzkxfdKjjzMtQKEY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLldyVkJJcTZjY2ow",
+        "snippet": {
+          "publishedAt": "2023-02-21T22:20:23Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "03.03 tem single novo! INTERVENÇÃO #intervenção #supercombo #SupercomboIntervenção",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/WrVBIq6ccj0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/WrVBIq6ccj0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/WrVBIq6ccj0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/WrVBIq6ccj0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/WrVBIq6ccj0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 186,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "WrVBIq6ccj0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "WrVBIq6ccj0",
+          "videoPublishedAt": "2023-02-21T22:20:23Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "zEXYDNifoTDpoKYWvHbbAeA0zOY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkFxUEZrd2RMTHlF",
+        "snippet": {
+          "publishedAt": "2022-12-09T19:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "vem de baixo de Aos Poucos com Carol Navarro - #SupercomboAosPoucos",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/AqPFkwdLLyE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/AqPFkwdLLyE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/AqPFkwdLLyE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/AqPFkwdLLyE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/AqPFkwdLLyE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 187,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "AqPFkwdLLyE"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "AqPFkwdLLyE",
+          "videoPublishedAt": "2022-12-09T19:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "5IQIkoxvC34gklRK5EpAywp6LQA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLk9ZZDRXQTh1aGtj",
+        "snippet": {
+          "publishedAt": "2022-12-08T21:37:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "teclado de \"Aos Poucos\" por Paulo Vaz!!!! - #SupercomboAosPoucos",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/OYd4WA8uhkc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/OYd4WA8uhkc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/OYd4WA8uhkc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/OYd4WA8uhkc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/OYd4WA8uhkc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 188,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "OYd4WA8uhkc"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "OYd4WA8uhkc",
+          "videoPublishedAt": "2022-12-08T21:37:06Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "DU8drVh6YooWHwsrUqUKlNuPkzc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnlxWnNWRWpfcmpV",
+        "snippet": {
+          "publishedAt": "2022-12-06T22:50:04Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Vem de batera de \"Aos Poucos\" - #SupercomboAosPoucos",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/yqZsVEj_rjU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/yqZsVEj_rjU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/yqZsVEj_rjU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/yqZsVEj_rjU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/yqZsVEj_rjU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 189,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "yqZsVEj_rjU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "yqZsVEj_rjU",
+          "videoPublishedAt": "2022-12-06T22:50:04Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "C6s-tzdsMpTgVyfTRuIzuaTKy08",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkJuMlVoQ3dDRk5Z",
+        "snippet": {
+          "publishedAt": "2022-12-05T21:11:26Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "#SupercomboAosPoucos - crossfit pós clipe!",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Bn2UhCwCFNY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Bn2UhCwCFNY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Bn2UhCwCFNY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Bn2UhCwCFNY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Bn2UhCwCFNY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 190,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Bn2UhCwCFNY"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Bn2UhCwCFNY",
+          "videoPublishedAt": "2022-12-05T21:11:26Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "nA0UoCt1Q-JMTtzHPcX9KEX-6DE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmtQSHlYQ3JOQWNr",
+        "snippet": {
+          "publishedAt": "2022-12-04T18:05:23Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "#SupercomboAosPoucos - André Dea come açucar puro?",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/kPHyXCrNAck/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/kPHyXCrNAck/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/kPHyXCrNAck/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/kPHyXCrNAck/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/kPHyXCrNAck/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 191,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "kPHyXCrNAck"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "kPHyXCrNAck",
+          "videoPublishedAt": "2022-12-04T18:05:23Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "1un3PZJ6FdLHwxDAKH05rBEjfBo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkZfSkV5dUNRN1Jv",
+        "snippet": {
+          "publishedAt": "2022-12-03T22:13:37Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "#SupercomboAosPoucos - um pouquinho da gravação do clipe \"Aos Poucos\"",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/F_JEyuCQ7Ro/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/F_JEyuCQ7Ro/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/F_JEyuCQ7Ro/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/F_JEyuCQ7Ro/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/F_JEyuCQ7Ro/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 192,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "F_JEyuCQ7Ro"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "F_JEyuCQ7Ro",
+          "videoPublishedAt": "2022-12-03T22:13:37Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "mUu5aN76EX9pztfpPa4_kMFwkrI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLk5ZLXlhVW1nQXNB",
+        "snippet": {
+          "publishedAt": "2022-12-02T13:12:40Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Aprenda o riff de Aos Poucos!#SupercomboAosPoucos",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/NY-yaUmgAsA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/NY-yaUmgAsA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/NY-yaUmgAsA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/NY-yaUmgAsA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/NY-yaUmgAsA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 193,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "NY-yaUmgAsA"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "NY-yaUmgAsA",
+          "videoPublishedAt": "2022-12-02T13:12:40Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "RLxkdGQa10G2iPwUkGbiqVOb8H8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjVndHAxN1ZJekZv",
+        "snippet": {
+          "publishedAt": "2022-11-25T21:18:10Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Sem Spoiler - \"Aos Poucos\" - 25.11 #SupercomboAosPoucos",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/5gtp17VIzFo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/5gtp17VIzFo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/5gtp17VIzFo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/5gtp17VIzFo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/5gtp17VIzFo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 194,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "5gtp17VIzFo"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "5gtp17VIzFo",
+          "videoPublishedAt": "2022-11-25T21:18:10Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "olPT3KcxLWVz8f6dlwY3lii04CI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmVnVzl1R3gwY1Fn",
+        "snippet": {
+          "publishedAt": "2022-11-25T15:00:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Aos Poucos (Clipe Oficial)",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/AosPoucosID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\nLETRA\n\nAcho que fui longe demais\nDescarreguei e me perdi\nÉ tão difícil se localizar\nQuando os mapas estão contra você\n\nSou incapaz de terminar o que eu comecei \nSou incapaz de começar o que não terminei \n\nSabe, é devagar, um passo de cada vez\nVou fazer o mínimo e aos poucos, eu volto a ser\nSabe, é devagar, um passo de cada vez\nVou fazer o mínimo e aos poucos\nReaprender \n\nÀs vezes a gente demora pra se tocar, pra se cuidar\nE quase desiste e deixa tudo pros abutres\n\nSou incapaz de terminar o que eu comecei \nSou incapaz de começar o que eu não terminei \n\nSabe, é devagar, um passo de cada vez\nVou fazer o mínimo e aos poucos, eu volto a ser\nSabe, é devagar um passo, de cada vez\nSó fazer o mínimo e aos poucos tu volta\n\nRepete pra mim, eu volto a ser, quando eu quiser\n\nSabe, é devagar, um passo de cada vez\nTudo bem se recompor\nE aos poucos, tu volta a ser\n\n--\n\nFicha Técnica: \n\nVIDEOCLIPE\nDireção: Chris Tex \nAss. Direção: Patricia Maccioni\nDireção de Fotografia: Lucas Haas\nDireção de Arte: Camila Esfanía Martino\nDir. Produção: Ronder William\nMontagem: Chris Tex\nCor: Lucas Haas\n1o  Ass. Câmera: Gabriel Carnelos\nAss Arte: Marco Hali\nAss. Produção: Carlos Rogério da Cunha\nAss. Produção:  Rodrigo Dias\nMaquiador: Natalia Martins Stracieri\nEletricista: Claudinei Marcelino\nAss. Eletrica: Mauricio Garbim\nEletricista + Assistente Making of / Fotógrafo: Renato Dias Peres \nProdução Executiva: Chris Tex & Lucas Haas\nCo-produção: Volt Filmes\nUma produção Tex Filmes\n\nÁUDIO\nProduzido por Supercombo\nGravadora: Deck\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\n\nCAPA\nFoto: Renato Peres\nArte: Bruno Queiroz\n\n#Supercombo #AosPoucos",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/egW9uGx0cQg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/egW9uGx0cQg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/egW9uGx0cQg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/egW9uGx0cQg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/egW9uGx0cQg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 195,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "egW9uGx0cQg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "egW9uGx0cQg",
+          "videoPublishedAt": "2022-11-25T15:00:11Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "B_X4w15qIURFdb9Cm7c0sqSNV9o",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnIyLU5kTWJwRnY4",
+        "snippet": {
+          "publishedAt": "2022-11-22T20:58:52Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Spoiler Part II \"Aos Poucos\" - 25.11 #SupercomboAosPoucos",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/r2-NdMbpFv8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/r2-NdMbpFv8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/r2-NdMbpFv8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/r2-NdMbpFv8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/r2-NdMbpFv8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 196,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "r2-NdMbpFv8"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "r2-NdMbpFv8",
+          "videoPublishedAt": "2022-11-22T20:58:52Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "i1wxHO2KrlBDpLx6jCTPk_mH6YE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnozSmJ3SFFuei1F",
+        "snippet": {
+          "publishedAt": "2022-11-18T21:50:19Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Spoiler! \"Aos Poucos\" - 25.11 #SupercomboAosPoucos",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/z3JbwHQnz-E/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/z3JbwHQnz-E/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/z3JbwHQnz-E/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/z3JbwHQnz-E/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/z3JbwHQnz-E/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 197,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "z3JbwHQnz-E"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "z3JbwHQnz-E",
+          "videoPublishedAt": "2022-11-18T21:50:19Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "9dOAxKi0e2BkWLawTe88P4qtMkU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlEza3c4N0pReElV",
+        "snippet": {
+          "publishedAt": "2022-11-01T21:00:07Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 12 - Campo Grande",
+          "description": "O décimo segundo episódio da nossa série r e c o n e x ã o mostra os bastidores do nosso show em Campo Grande, MS.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\n\nEdição: Bruno Ferrero (https://www.instagram.com/brunoferrero/)\nGravação: Bruno Ferrero e Paulo Ramos",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Q3kw87JQxIU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Q3kw87JQxIU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Q3kw87JQxIU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Q3kw87JQxIU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Q3kw87JQxIU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 198,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Q3kw87JQxIU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Q3kw87JQxIU",
+          "videoPublishedAt": "2022-11-01T21:00:07Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "et4kvTQcbpMiazdbIGyxgN1K2fg",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjBUT2NzSUFvVnhn",
+        "snippet": {
+          "publishedAt": "2022-09-22T21:00:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 11 - Rock in Rio",
+          "description": "O décimo primeiro episódio da nossa série r e c o n e x ã o mostra os bastidores do nosso show histórico no Rock in Rio.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres / Esto Produtora (https://www.instagram.com/estoprodutora/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/0TOcsIAoVxg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/0TOcsIAoVxg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/0TOcsIAoVxg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/0TOcsIAoVxg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 199,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "0TOcsIAoVxg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "0TOcsIAoVxg",
+          "videoPublishedAt": "2022-09-22T21:00:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      }
+    ],
+    "pageInfo": {
+      "totalResults": 587,
+      "resultsPerPage": 50
+    }
+  }
+}

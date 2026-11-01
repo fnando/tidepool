@@ -1,0 +1,2726 @@
+{
+  "request": {
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNNSURJaEEwT1VRMU9FUTRORVV3T1RWR05USXg"
+    },
+    "if_none_match": null
+  },
+  "status": 200,
+  "etag": null,
+  "body": {
+    "kind": "youtube#playlistItemListResponse",
+    "etag": "dmY-etMfPF6H4KU8dKKhnovgTLs",
+    "nextPageToken": "EAAaH1BUOkNQUURJaEE1UmpFNFEwWkRSVUZCUWtGRU5EVTI",
+    "prevPageToken": "EAEaH1BUOkNNSURJaEEwT1VRMU9FUTRORVV3T1RWR05USXg",
+    "items": [
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "XtlUreyQeV-yVUgXcieFhdEOtJw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlZub2tfUTI3bks0",
+        "snippet": {
+          "publishedAt": "2016-11-01T23:53:49Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Bomba Relógio | Rogério | Supercombo",
+          "description": "Compre o CD no nosso site ◈ http://goo.gl/Alj3sM\n\n------------------------------------------------------------------------------------\nBomba Relógio | Supercombo\n------------------------------------------------------------------------------------\n\nPor favor vamos manter a calma\n\nSe eu corto um fio errado todos nós vamos explodir\n\nAí eu vou rir nossos pedaços pintando o chão\n\nE sou eu e vou ter que limpar, pois\n\nNinguém liga se meu timer zerou ou se tá quase lá\n\nE o meu esquadrão saiu pra almoçar (pra ir fumar)\n\nAlguém me ajuda a desarmar a bomba\n\nSe essa merda explodir vocês vão chorar e Rogério vai se mijar de rir\n\nEssa é minha rotina desarmando o que ninguém quer ter que lidar\n\nÉ sempre uma pressão\n\nA massagem de canhão\n\nMe leva pra outra dimensão\n\nÉ sempre uma pressão\n\nCarinho de tiros de canhão\n\nMe leva pra outra dimensão\n\n++++\n\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Vnok_Q27nK4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Vnok_Q27nK4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Vnok_Q27nK4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Vnok_Q27nK4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Vnok_Q27nK4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 450,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Vnok_Q27nK4"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Vnok_Q27nK4",
+          "videoPublishedAt": "2016-11-01T23:53:49Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "i5q_SgE7d_5RNoPhK5LPvfajEdw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjhSdmk4S1ZlUXJn",
+        "snippet": {
+          "publishedAt": "2016-11-01T23:53:29Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Embrulho | Rogério | Supercombo",
+          "description": "Compre o CD no nosso site ◈ http://goo.gl/Alj3sM\n\n------------------------------------------------------------------------------------\nEmbrulho | Supercombo\n------------------------------------------------------------------------------------\n\nQuando ela chegou no paraíso sentiu falta do sofrer\n\nSem cabimento não sai da cabeça como é que o embrulho é melhor que o presente\n\nDá meia volta, volta só rebobina aê\n\nA gente briga pelo que a gente quer mas o destino final não é\n\nA jornada é o que nos faz viver\n\nQuem ainda não se jogou tá esperando o que\n\nQuando ela chegou no céu querendo estar no chão\n\nDá meia volta volta só rebobina aê\n\nA jornada é o que nos faz viver\n\nA jornada é o que nos faz crescer\n\nQuem ainda não se jogou me diz\n\nQuem ainda não se jogou espera o que (omi)\n\n++++\n\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/8Rvi8KVeQrg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/8Rvi8KVeQrg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/8Rvi8KVeQrg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/8Rvi8KVeQrg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/8Rvi8KVeQrg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 451,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "8Rvi8KVeQrg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "8Rvi8KVeQrg",
+          "videoPublishedAt": "2016-11-01T23:53:29Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "EvNtnfnedQRcGw04TX1g9_sRBCw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjNsZE80LU1JdEFn",
+        "snippet": {
+          "publishedAt": "2016-11-01T23:53:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Eutanásia | Rogério | Supercombo",
+          "description": "Compre o CD no nosso site ◈ http://goo.gl/Alj3sM\n\n------------------------------------------------------------------------------------\nEutanásia | Supercombo\n------------------------------------------------------------------------------------\n\nTodo dia o mesmo teto\n\nEla não aguenta mais essa horizontal (todo dia)\n\nRespira pelos canos e ninguém vai te ouvir gritar\n\nA escuridão deve ser melhor que isso\n\nDeixa eu decidir não quero ser submisso\n\nA escuridão deve ser melhor que isso\n\nSolta minha mão deixa eu abraçar o abismo\n\nUm terno branco de aparelhos e a festa pode começar na uti\n\nRespira pelos canos e ninguém vai te ouvir gritar\n\nApagar a luz deve ser melhor\n\nSolta minha mão\n\n--Amar o abismo--\n\n++++\n\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/3ldO4-MItAg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/3ldO4-MItAg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/3ldO4-MItAg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/3ldO4-MItAg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/3ldO4-MItAg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 452,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "3ldO4-MItAg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "3ldO4-MItAg",
+          "videoPublishedAt": "2016-11-01T23:53:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "XfBCyWmQb0bdRLOD2v57A3yJ4_E",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjBaakVsN3VIR1BV",
+        "snippet": {
+          "publishedAt": "2016-11-01T23:52:08Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Jovem | Rogério | Supercombo",
+          "description": "Compre o CD no nosso site ◈ http://goo.gl/Alj3sM\n\n------------------------------------------------------------------------------------\nJovem | Supercombo\n------------------------------------------------------------------------------------\n\n\nEu fico esperando aquele ano que eu sei que eu vou bombar, que eu vou ganhar muito dinheiro\n\nEnquanto isso eu fico em standby com aquele pé atrás\n\nCai do berço, cai no mundo sem nenhum tutorial de como eu chego no sucesso\n\nE tudo vira as costas\n\nEu não me abandonei nem vou abandonar meus sonhos\n\nPois eu sou jovem, com um corpinho de ancião\n\nEu sou jovem, mentalidade de vovô\n\nEu sou jovem, e nunca sei aproveitar o que eu tenho em mãos\n\nE não importa o que disser eu sempre vou ser\n\nE não consigo aproveitar o que eu tenho em mãos\n\nTá todo mundo esperando o milênio que eu sei que eu vou bombar, que eu vou ganhar muito dinheiro\n\nCom o mundo abrindo as costas\n\nEu não me abandonei, eu nunca vou abandonar meus sonhos\n\nEu não me abandonei, eu nunca vou deixar Rogério perto dos meus sonhos\n\n++++\n\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/0ZjEl7uHGPU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/0ZjEl7uHGPU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/0ZjEl7uHGPU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/0ZjEl7uHGPU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/0ZjEl7uHGPU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 453,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "0ZjEl7uHGPU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "0ZjEl7uHGPU",
+          "videoPublishedAt": "2016-11-01T23:52:08Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "tn2Ly9HjhFHUhHsaVDYlEMIMAZs",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnhQRHh3X18xNjA0",
+        "snippet": {
+          "publishedAt": "2016-11-01T23:51:45Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Lentes | Rogério | Supercombo",
+          "description": "Compre o CD no nosso site ◈ http://goo.gl/Alj3sM\n\n------------------------------------------------------------------------------------\nLentes | Supercombo\n------------------------------------------------------------------------------------\n\nSe você quer parar, estagnar, quer interromper, deixa eu carrego\n\nNa garupa da minha bicicleta\n\nSe a porta fechar, boca calar, e o mundo ficar pequeno demais\n\nIntercâmbio pra outro planeta\n\nEu quero ver o que as lentes vão mostrar\n\nEu quero ver o pôr do sol em Okinawa\n\nEscalar o Monte Fuji só pra degustar as luzes acesas\n\nQuero ver seus olhos a se esticar\n\nO samurai com a sua velha katana\n\nQuando chegar em casa é só revelar\n\nAssistir e recomeçar\n\nSe você quer mudar, evoluir, reescrever todos os versos\n\nA musica move montanhas\n\nVejo pessoas que só reclamam e nunca estão olhando pra frente\n\nEu não pertenço a esse mundo\n\nÉ... o movimento é a vida\n\nA vida segue seus planos\n\nO ruído da paisagem milenar que eu amo\n\nDúvidas e certezas, minha escolha e ser verdadeira\n\nMeus segredos, meu destino\n\nEu quero é ser inteira\n\n++++\n\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/xPDxw__1604/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/xPDxw__1604/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/xPDxw__1604/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/xPDxw__1604/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/xPDxw__1604/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 454,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "xPDxw__1604"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "xPDxw__1604",
+          "videoPublishedAt": "2016-11-01T23:51:45Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "V5wp3tghQWfia6s1wZ-oOunMhB4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjY0MEU5Z0t6LU5N",
+        "snippet": {
+          "publishedAt": "2016-11-01T23:51:22Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Monstros | Rogério | Supercombo",
+          "description": "Compre o CD no nosso site ◈ http://goo.gl/Alj3sM\n\n------------------------------------------------------------------------------------\nMonstros | Supercombo\n------------------------------------------------------------------------------------\n\nOs monstros que me assombravam ao dormir\n\nMe propuseram o cessar fogo alegando que eu não sei sorrir\n\nQue eu não sou mais o mesmo\n\nQue eu vivo no passado\n\nE não me assusto com o que antes era meu tormento\n\nTambém queria ser imaginário\n\nAparecer só quando apropriado\n\nNão medir minhas palavras\n\nTambém queria ser imaginário\n\nSumir quando estiver dando tudo errado\n\nSem pesar na consciência\n\nMas como faz?\n\nAs criaturas das profundezas do edredom\n\nQuerem me expulsar do quarto\n\nVai tomar um sol\n\nQue eu não sou mais o mesmo\n\nQue eu vivo no passado\n\nE não me assusto com o que antes era meu Rogério\n\nSer adulto não é fácil\n\n--Se não pesar na consciência é porque não quero que faça parte de mim--\n\n++++\n\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/640E9gKz-NM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/640E9gKz-NM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/640E9gKz-NM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/640E9gKz-NM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/640E9gKz-NM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 455,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "640E9gKz-NM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "640E9gKz-NM",
+          "videoPublishedAt": "2016-11-01T23:51:22Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "YBarjWk752Wcd9pn1SzDp-kDlMU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnRjeXVQb2lQajlZ",
+        "snippet": {
+          "publishedAt": "2016-11-01T23:50:35Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Morar | Rogério | Supercombo",
+          "description": "Compre o CD no nosso site ◈ http://goo.gl/Alj3sM\n\n------------------------------------------------------------------------------------\nMorar | Supercombo\n------------------------------------------------------------------------------------\n\nSermão é só pra quem tem\n\nEnvergadura moral você não tem\n\nDe perto todos são doidão\n\nA louça cresce as roupa fede\n\nLá vem o palavrão\n\nPasta de dente sem tampa\n\nSujeira debaixo da cama\n\nDesde que você veio morar minha vida é um inferno\n\nO inferno mais bonito que se há\n\nNo planeta terra\n\nÀs vezes eu reclamo mas eu to sempre de pé.\n\nO dia mal começou eu vejo 20 shampoos vazios no box do banheiro\n\nCabelo no ralo da pia em 2012 o mundo não se acabou\n\nMas a paciência sim\n\n++++\n\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/tcyuPoiPj9Y/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/tcyuPoiPj9Y/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/tcyuPoiPj9Y/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/tcyuPoiPj9Y/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/tcyuPoiPj9Y/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 456,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "tcyuPoiPj9Y"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "tcyuPoiPj9Y",
+          "videoPublishedAt": "2016-11-01T23:50:35Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "QX0Qsbrx832ff2sj0I4tgdvasJc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkUzNmtwRGlTZnh3",
+        "snippet": {
+          "publishedAt": "2016-11-01T23:48:12Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Rogério | Rogério | Supercombo",
+          "description": "Compre o CD no nosso site ◈ http://goo.gl/Alj3sM\n\n------------------------------------------------------------------------------------\nRogério | Supercombo\n------------------------------------------------------------------------------------\n\nVocê não sabe como é ruim desejo pra ninguém viver nesse calor infernal\n\nE todo mundo te usar como garoto propaganda pra todo mal que existe nesse mundo\n\nSerá que alguém me entende mesmo eu sendo um camundongo em meio de serpentes\n\nNinguém me convidou\n\nEu quero subir e já chegar chegando\n\nNa festa dos que já acham que vão subir pro céu\n\nSó pra ver geral caindo de tobogã\n\nVocê não sabe como é legal viver com sete bilhões de dedos apontados na tua cara\n\nE todo mundo te odiar em nome do amor e todo bem que existe nesse mundo\n\nSerá que alguém me ouve mesmo eu sendo um espantalho dentro dessa creche\n\nNinguém me convidou\n\nQuero um pouco de atenção\n\nJá sofri demais amassando o pão\n\nNada justifica o ódio\n\nEu quero subir e arrombar a porta\n\nNa festa dos que já acham que vão subir pro céu\n\nSó pra ver geral caindo\n\nNa festa dos que já acham que vão subir pro céu\n\nSó pra ver geral caindo\n\n++++\n\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/E36kpDiSfxw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/E36kpDiSfxw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/E36kpDiSfxw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/E36kpDiSfxw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/E36kpDiSfxw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 457,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "E36kpDiSfxw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "E36kpDiSfxw",
+          "videoPublishedAt": "2016-11-01T23:48:12Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Cpzj7oRpI3xcQkKQ-56HJ94dVBw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnNkX0FxcVBEcko4",
+        "snippet": {
+          "publishedAt": "2016-08-26T21:00:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Rogério apresenta Rogério | Supercombo",
+          "description": "Escute o álbum completo no nosso site ◈ http://goo.gl/IjMvhH\n◈ Spotify : https://goo.gl/wDpksC\n◈ iTunes: https://goo.gl/DJ4U5F\n◈ Deezer: http://goo.gl/7uKrjr\n◈ Napster: http://goo.gl/SWgyf4\n◈ Google Play: https://goo.gl/RZaliR\n+\nEntre para o Fan-clube Oficial ◈ https://goo.gl/v7KL6m\nInscreva-se no canal do YT ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/sd_AqqPDrJ8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/sd_AqqPDrJ8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/sd_AqqPDrJ8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/sd_AqqPDrJ8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/sd_AqqPDrJ8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 458,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "sd_AqqPDrJ8"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "sd_AqqPDrJ8",
+          "videoPublishedAt": "2016-08-26T21:00:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "5-Dvqf8l_v27-iTi2r_jeKFgwU4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnBEbVFlelFqN0lz",
+        "snippet": {
+          "publishedAt": "2016-07-29T03:39:46Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Apresentação do CD Rogério | Supercombo",
+          "description": "Escute o álbum completo no nosso site ◈ http://goo.gl/IjMvhH\n◈ Spotify : https://goo.gl/wDpksC\n◈ iTunes: https://goo.gl/DJ4U5F\n◈ Deezer: http://goo.gl/7uKrjr\n◈ Napster: http://goo.gl/SWgyf4\n◈ Google Play: https://goo.gl/RZaliR\n\n++\n\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/pDmQezQj7Is/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/pDmQezQj7Is/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/pDmQezQj7Is/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/pDmQezQj7Is/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/pDmQezQj7Is/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 459,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "pDmQezQj7Is"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "pDmQezQj7Is",
+          "videoPublishedAt": "2016-07-29T03:39:46Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "tt8NB7G18IZRpV8xJnTs4UGU2G8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmF6S1pJN2pQMDhB",
+        "snippet": {
+          "publishedAt": "2016-07-24T20:00:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #23 - Bonsai",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/azKZI7jP08A/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/azKZI7jP08A/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/azKZI7jP08A/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/azKZI7jP08A/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/azKZI7jP08A/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 460,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "azKZI7jP08A"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "azKZI7jP08A",
+          "videoPublishedAt": "2016-07-24T20:00:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "xfHQacPFPS1-IStJ-vhekQmWrbw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLi1oZGlTcV9jMVhn",
+        "snippet": {
+          "publishedAt": "2016-07-23T20:00:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #22 - Magaiver",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/-hdiSq_c1Xg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/-hdiSq_c1Xg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/-hdiSq_c1Xg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/-hdiSq_c1Xg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/-hdiSq_c1Xg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 461,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "-hdiSq_c1Xg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "-hdiSq_c1Xg",
+          "videoPublishedAt": "2016-07-23T20:00:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "rqRS89uYpmzSfIVtJjQaJKauMeU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkM2NjVqZmtvZmlz",
+        "snippet": {
+          "publishedAt": "2016-07-22T20:00:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #21 - Jovem",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/C665jfkofis/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/C665jfkofis/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/C665jfkofis/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/C665jfkofis/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/C665jfkofis/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 462,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "C665jfkofis"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "C665jfkofis",
+          "videoPublishedAt": "2016-07-22T20:00:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "C7gvVdDSYaxAXAFbjC8QyWs13KY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjdXb2pKYUFibjVN",
+        "snippet": {
+          "publishedAt": "2016-07-21T20:00:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #20 - Morar",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/7WojJaAbn5M/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/7WojJaAbn5M/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/7WojJaAbn5M/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/7WojJaAbn5M/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/7WojJaAbn5M/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 463,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "7WojJaAbn5M"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "7WojJaAbn5M",
+          "videoPublishedAt": "2016-07-21T20:00:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "WRdUazCqG2UdI18rMffrmCQpewQ",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnhCX3ZldU1ySnk4",
+        "snippet": {
+          "publishedAt": "2016-07-20T21:29:56Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo -  Making Of Rogério #19 - Grão de Areia",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/xB_veuMrJy8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/xB_veuMrJy8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/xB_veuMrJy8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/xB_veuMrJy8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/xB_veuMrJy8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 464,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "xB_veuMrJy8"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "xB_veuMrJy8",
+          "videoPublishedAt": "2016-07-20T21:29:56Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Jo3R_Y8-Y2ULPmI2RNAF6gVHoOk",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlZXdU1iNzRhb2Fz",
+        "snippet": {
+          "publishedAt": "2016-07-19T21:00:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #18 - Monstros",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/VWuMb74aoas/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/VWuMb74aoas/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/VWuMb74aoas/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/VWuMb74aoas/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/VWuMb74aoas/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 465,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "VWuMb74aoas"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "VWuMb74aoas",
+          "videoPublishedAt": "2016-07-19T21:00:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "rp9k40JkCvoz2rybF3c8FxwPY4o",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnNyQ0lhMjdHQkpF",
+        "snippet": {
+          "publishedAt": "2016-07-16T19:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #17",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/srCIa27GBJE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/srCIa27GBJE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/srCIa27GBJE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/srCIa27GBJE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/srCIa27GBJE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 466,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "srCIa27GBJE"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "srCIa27GBJE",
+          "videoPublishedAt": "2016-07-16T19:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Z7FSdJbHV87AV3ElOtRHwOncmew",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlYwUXd2bGVKUkRr",
+        "snippet": {
+          "publishedAt": "2016-07-14T19:30:31Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #16",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/V0QwvleJRDk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/V0QwvleJRDk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/V0QwvleJRDk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/V0QwvleJRDk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/V0QwvleJRDk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 467,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "V0QwvleJRDk"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "V0QwvleJRDk",
+          "videoPublishedAt": "2016-07-14T19:30:31Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "vM2gE0RcdEgrtgHv0u5Bb_flCR0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnFUdEhxaXVTMDRz",
+        "snippet": {
+          "publishedAt": "2016-07-12T19:30:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #15",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/qTtHqiuS04s/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/qTtHqiuS04s/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/qTtHqiuS04s/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/qTtHqiuS04s/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/qTtHqiuS04s/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 468,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "qTtHqiuS04s"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "qTtHqiuS04s",
+          "videoPublishedAt": "2016-07-12T19:30:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "ucuxmxSp_Fn81W6Dn5izHI1_69g",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnp1SzVsSEEyZjFZ",
+        "snippet": {
+          "publishedAt": "2016-07-09T19:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #14",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/zuK5lHA2f1Y/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/zuK5lHA2f1Y/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/zuK5lHA2f1Y/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/zuK5lHA2f1Y/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/zuK5lHA2f1Y/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 469,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "zuK5lHA2f1Y"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "zuK5lHA2f1Y",
+          "videoPublishedAt": "2016-07-09T19:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "pI3m9NXz2x70cM43FeG4zBdImc4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkFnQmRJUG95QXVn",
+        "snippet": {
+          "publishedAt": "2016-07-07T19:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #13",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/AgBdIPoyAug/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/AgBdIPoyAug/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/AgBdIPoyAug/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/AgBdIPoyAug/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/AgBdIPoyAug/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 470,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "AgBdIPoyAug"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "AgBdIPoyAug",
+          "videoPublishedAt": "2016-07-07T19:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "K5hRRAnrFKme0igCFN-MRZojR_w",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmtOS0NSbHk2QW1N",
+        "snippet": {
+          "publishedAt": "2016-07-05T19:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #12",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/kNKCRly6AmM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/kNKCRly6AmM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/kNKCRly6AmM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/kNKCRly6AmM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/kNKCRly6AmM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 471,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "kNKCRly6AmM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "kNKCRly6AmM",
+          "videoPublishedAt": "2016-07-05T19:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "4OcLhIgCDI4LmUYofSY1haZfquc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnZYVVl1RlZDQ0lJ",
+        "snippet": {
+          "publishedAt": "2016-07-02T19:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #11",
+          "description": "Inscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/vXUYuFVCCII/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/vXUYuFVCCII/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/vXUYuFVCCII/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/vXUYuFVCCII/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/vXUYuFVCCII/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 472,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "vXUYuFVCCII"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "vXUYuFVCCII",
+          "videoPublishedAt": "2016-07-02T19:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "vTWHB4vlI97tYuHGkVcRTy54Ukg",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkUtVGFYak9ZMXJZ",
+        "snippet": {
+          "publishedAt": "2016-06-30T19:30:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #10",
+          "description": "Inscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/E-TaXjOY1rY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/E-TaXjOY1rY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/E-TaXjOY1rY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/E-TaXjOY1rY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/E-TaXjOY1rY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 473,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "E-TaXjOY1rY"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "E-TaXjOY1rY",
+          "videoPublishedAt": "2016-06-30T19:30:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "ut0RtbhwNJp2ksjX8vuyw6AaPPI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmJXbEpTaVp6bl9B",
+        "snippet": {
+          "publishedAt": "2016-06-28T19:30:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #9",
+          "description": "Inscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/bWlJSiZzn_A/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/bWlJSiZzn_A/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/bWlJSiZzn_A/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/bWlJSiZzn_A/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/bWlJSiZzn_A/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 474,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "bWlJSiZzn_A"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "bWlJSiZzn_A",
+          "videoPublishedAt": "2016-06-28T19:30:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "h3-Xih2xvb0Ml6SdLNtTyY9MW1Q",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLldLYlpwbWU5aFBn",
+        "snippet": {
+          "publishedAt": "2016-06-25T19:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #8",
+          "description": "Inscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/WKbZpme9hPg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/WKbZpme9hPg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/WKbZpme9hPg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/WKbZpme9hPg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/WKbZpme9hPg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 475,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "WKbZpme9hPg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "WKbZpme9hPg",
+          "videoPublishedAt": "2016-06-25T19:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "cjnfbc1Zh62r47FIayr6cf2CL5Y",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkVWRDZvRmJPOXdR",
+        "snippet": {
+          "publishedAt": "2016-06-23T19:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #7",
+          "description": "Inscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/EVD6oFbO9wQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/EVD6oFbO9wQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/EVD6oFbO9wQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/EVD6oFbO9wQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/EVD6oFbO9wQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 476,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "EVD6oFbO9wQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "EVD6oFbO9wQ",
+          "videoPublishedAt": "2016-06-23T19:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "IUQCNLCNdDlDtxkv4B-7WKRBB7o",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm5nNWJzckl5UXZJ",
+        "snippet": {
+          "publishedAt": "2016-06-21T19:30:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #6",
+          "description": "Inscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ng5bsrIyQvI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ng5bsrIyQvI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ng5bsrIyQvI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ng5bsrIyQvI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ng5bsrIyQvI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 477,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ng5bsrIyQvI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ng5bsrIyQvI",
+          "videoPublishedAt": "2016-06-21T19:30:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "2aagVXmJtlph_qWcoufSLDi7s5E",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkZJeFJjYkRNTzMw",
+        "snippet": {
+          "publishedAt": "2016-06-17T19:54:04Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Rogério (Lyric Video)",
+          "description": "Ouça o melhor do Rock Nacional:  https://ONErpm.lnk.to/YTRockNacional\n\nEscute o álbum completo no nosso site ◈ http://goo.gl/IjMvhH\n◈ Spotify : https://goo.gl/wDpksC\n◈ iTunes: https://goo.gl/DJ4U5F\n◈ Deezer: http://goo.gl/7uKrjr\n◈ Napster: http://goo.gl/SWgyf4\n◈ Google Play: https://goo.gl/RZaliR\n\ne se inscreve no nosso canal ◈ http://goo.gl/E0R6Mw\n+\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nFICHA TÉCNICA:\n\nDIREÇÃO/EDIÇÃO/FINALIZAÇÃO: Juarez Tanure (http://www.behance.net/juareztanure)\nPRODUÇÃO EXECUTIVA: Elemess Music N' Services\n\nLETRA\n\nVocê não sabe como é ruim\nDesejo pra ninguém\nViver nesse calor infernal\nE todo mundo te usar\nComo garoto propaganda pra todo mal que existe nesse mundo\n\nSerá que alguém me entende?\nMesmo eu sendo um camundongo\nEm meio de serpentes\nNinguém me convidou\n\nEu quero subir e já chegar chegando\nNa festa dos que já acham que vão subir pro céu\nSó pra ver geral caindo de tobogã\n\nVocê não sabe como é legal\nViver com 7 bilhões de dedos apontados na tua cara\nE todo mundo te odiar\nEm nome do amor e todo bem que existe nesse mundo\n\nSerá que alguém me ouve\nMesmo eu sendo um espantalho \nDentro dessa creche\nNinguém me convidou\n\nEu quero subir e já chegar chegando\nNa festa dos que já acham que vão subir pro céu\nSó pra ver geral caindo de tobogã\n\nEu quero um pouco de atenção\nJá sofri demais amassando o pão\nNada justifica o ódio\n\nEu quero subir e arrombar a porta\nNa festa dos que já acham que vão subir pro céu\n(Só pra ver geral caindo) \nNa festa dos que já acham que vão subir pro céu\nSó pra ver geral caindo.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/FIxRcbDMO30/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/FIxRcbDMO30/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/FIxRcbDMO30/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/FIxRcbDMO30/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/FIxRcbDMO30/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 478,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "FIxRcbDMO30"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "FIxRcbDMO30",
+          "videoPublishedAt": "2016-06-17T19:54:04Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "7Vmhb4YPOhjoH_QQj1Pj0UvRjmQ",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjd0eXBkZUlyeHBV",
+        "snippet": {
+          "publishedAt": "2016-06-17T16:20:39Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo | Mini.doc Tour #3 - SESC Parque Dom Pedro II",
+          "description": "foi Show no Pq Dom Pedro!\n\naproveita e se inscreve no nosso canal e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/7typdeIrxpU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/7typdeIrxpU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/7typdeIrxpU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/7typdeIrxpU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/7typdeIrxpU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 479,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "7typdeIrxpU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "7typdeIrxpU",
+          "videoPublishedAt": "2016-06-17T16:20:39Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "5yROMafdoPOx5h5DpWxGkEvsX2o",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm9jWGU1S3d0SGww",
+        "snippet": {
+          "publishedAt": "2016-06-16T19:00:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #5",
+          "description": "Inscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ocXe5KwtHl0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ocXe5KwtHl0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ocXe5KwtHl0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ocXe5KwtHl0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ocXe5KwtHl0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 480,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ocXe5KwtHl0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ocXe5KwtHl0",
+          "videoPublishedAt": "2016-06-16T19:00:03Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "ZtsSnmQJ6qtj2g5M_10_uhaH12Q",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlhMYkxScUh2ZTlV",
+        "snippet": {
+          "publishedAt": "2016-06-15T19:00:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo | Mini.doc Tour #2 - Cascavel",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/XLbLRqHve9U/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/XLbLRqHve9U/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/XLbLRqHve9U/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/XLbLRqHve9U/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/XLbLRqHve9U/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 481,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "XLbLRqHve9U"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "XLbLRqHve9U",
+          "videoPublishedAt": "2016-06-15T19:00:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "jaeoA9hf8u3H1JDsFwiB5zQTpqo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkdyWjNva3RzSmhJ",
+        "snippet": {
+          "publishedAt": "2016-06-14T20:30:30Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo | Mini.doc Tour #1 - Maringá",
+          "description": "Aloaeh! se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/GrZ3oktsJhI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/GrZ3oktsJhI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/GrZ3oktsJhI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/GrZ3oktsJhI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/GrZ3oktsJhI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 482,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "GrZ3oktsJhI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "GrZ3oktsJhI",
+          "videoPublishedAt": "2016-06-14T20:30:30Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "PGd5ewfPzw3TlycD6tH7oB733b0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlN4NGl5QjJydWN3",
+        "snippet": {
+          "publishedAt": "2016-06-13T18:21:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #4",
+          "description": "Inscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Sx4iyB2rucw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Sx4iyB2rucw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Sx4iyB2rucw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Sx4iyB2rucw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Sx4iyB2rucw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 483,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Sx4iyB2rucw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Sx4iyB2rucw",
+          "videoPublishedAt": "2016-06-13T18:21:03Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "xdYGHuUDvwb0K-HxRhzGkMcJz9k",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmpsTDNsQXdOak1Z",
+        "snippet": {
+          "publishedAt": "2016-06-10T18:00:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #3",
+          "description": "Inscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/jlL3lAwNjMY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/jlL3lAwNjMY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/jlL3lAwNjMY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/jlL3lAwNjMY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/jlL3lAwNjMY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 484,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "jlL3lAwNjMY"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "jlL3lAwNjMY",
+          "videoPublishedAt": "2016-06-10T18:00:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "wQ_wU6IgcieWkzmkbUs_rfX-g84",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkFBal92Y0lrQWI4",
+        "snippet": {
+          "publishedAt": "2016-06-09T19:28:38Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Vem aí Rogerio | Supercombo",
+          "description": "Dia 17 de JUNHO lançaremos o single Rogério, primeira música do novo álbum... \n\nenquanto isso, se inscreve no nosso canal, entre pro nosso fan-clube e siga nossa rede :-D\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/AAj_vcIkAb8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/AAj_vcIkAb8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/AAj_vcIkAb8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/AAj_vcIkAb8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/AAj_vcIkAb8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 485,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "AAj_vcIkAb8"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "AAj_vcIkAb8",
+          "videoPublishedAt": "2016-06-09T19:28:38Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "coAnk4munYQ7imwuZe9joqFQlig",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjVTa3hqNms0WlRj",
+        "snippet": {
+          "publishedAt": "2016-06-08T23:00:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #2",
+          "description": "Inscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/5Skxj6k4ZTc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/5Skxj6k4ZTc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/5Skxj6k4ZTc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/5Skxj6k4ZTc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/5Skxj6k4ZTc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 486,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "5Skxj6k4ZTc"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "5Skxj6k4ZTc",
+          "videoPublishedAt": "2016-06-08T23:00:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "T7NSpfPsYW3Ib7R2pyAIRG_wVfQ",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkxRaGpSZWQ4bzlj",
+        "snippet": {
+          "publishedAt": "2016-06-02T17:58:34Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Rogério #1",
+          "description": "Veja alguns momentos da gravação do nosso novo álbum Rogério.\n\nSe inscreve no nosso canal, se junte no nosso fan-clube e siga nossa rede:\nFan-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\nImagens: Gustavo Ortiz \nFinalização: Gublic Films",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/LQhjRed8o9c/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/LQhjRed8o9c/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/LQhjRed8o9c/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/LQhjRed8o9c/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/LQhjRed8o9c/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 487,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "LQhjRed8o9c"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "LQhjRed8o9c",
+          "videoPublishedAt": "2016-06-02T17:58:34Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Td00gH9UjlNOE3E02pfmeJBT5Yk",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLktCM24wdWZEdmt3",
+        "snippet": {
+          "publishedAt": "2016-06-01T22:45:29Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Intro - Rogério | Supercombo",
+          "description": "Rogério está chegando, já está mostrando a cara nova...\nvai lá ver ◈ supercomborock.com\n\nE se inscreve no nosso canal, se cadastre no nosso fan-clube e siga nossa rede:\nFã-clube Oficial ◈ http://eepurl.com/b3MwqD\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/KB3n0ufDvkw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/KB3n0ufDvkw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/KB3n0ufDvkw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/KB3n0ufDvkw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/KB3n0ufDvkw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 488,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "KB3n0ufDvkw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "KB3n0ufDvkw",
+          "videoPublishedAt": "2016-06-01T22:45:29Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "o1-z5F8bdtS9QMheAf-SQ3sovmg",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnA3dzVrOURSOUNr",
+        "snippet": {
+          "publishedAt": "2016-05-28T19:02:29Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Agradecimento - Amianto 2016 | Supercombo",
+          "description": "E que venha Rogério!\nNosso agradecimento a todos nossos fãs pelo que o álbum Amianto representou em nossas vidas e em nossa carreira.\n\nInscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/bnMzwn\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n+\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/p7w5k9DR9Ck/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/p7w5k9DR9Ck/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/p7w5k9DR9Ck/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/p7w5k9DR9Ck/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/p7w5k9DR9Ck/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 489,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "p7w5k9DR9Ck"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "p7w5k9DR9Ck",
+          "videoPublishedAt": "2016-05-28T19:02:29Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "NtLVZqmXig7_9yiipPaXM6ay0ak",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlNPcFhhZzB2VDhr",
+        "snippet": {
+          "publishedAt": "2016-05-27T15:10:39Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Making Of Lollapalooza",
+          "description": "Making of Supercombo no Lollapalooza! Assiste aee!\n\nInscreva-se no nosso canal, cadastre-se no nosso fã-clube e siga nossa rede para ficar ligado no Supercombo:\nFã-clube Oficial ◈ http://eepurl.com/bnMzwn\nInscreva-se no canal ◈ http://goo.gl/E0R6Mw\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/SOpXag0vT8k/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/SOpXag0vT8k/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/SOpXag0vT8k/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/SOpXag0vT8k/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/SOpXag0vT8k/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 490,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "SOpXag0vT8k"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "SOpXag0vT8k",
+          "videoPublishedAt": "2016-05-27T15:10:39Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "oMof-9ljACwHRFLbbubh5zXuWh0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkNRNmJYWVZ1M0VZ",
+        "snippet": {
+          "publishedAt": "2016-03-11T14:06:14Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Lentes (Feat. Negra Li)",
+          "description": "Vídeo oficial da música \"Lentes\" © Elemess 2016\n\nLentes\n(Supercombo, Simoninha)\n\nSe você quer parar, estagnar\nQuer interromper\nDeixa eu carrego\n\nNa garupa da minha bicicleta\n\nSe a porta fechar\nBoca calar\nE o mundo ficar pequeno demais\n\nIntercâmbio para outro planeta\n\nQuero ver o que as lentes vão mostrar\nQuero ver o pôr-do-sol onde não há\nEscalar o monte fuji só pra degustar\nAs luzes acesas\n\nQuero ver seus olhos a se esticar\nSamurai com a sua velha katana\nQuando chegar em casa é so revelar\n\nSe você quer mudar, evoluir, reescrever\nTodos os versos\n\nA música move montanhas\n\nVejo pessoas\nQue so reclamam e nunca estão olhando pra frente\n\nEu não pertenço a esse mundo\n\nQuero ver o que as lentes vão mostrar\nQuero ver o pôr-do-sol onde não há\nEscalar o monte fuji só pra degustar\nAs luzes acesas\n\nQuero ver seus olhos a se esticar\nSamurai com a sua velha katana\nQuando chegar em casa é so revelar\nAssistir e recomeçar\n\nÉ...\nO movimento é a vida\nA vida segue os seus planos\nOs ruídos das paisagens milenar\nDuvidas e certezas\nMinha escolha ser verdadeira\nMeus segredos, meu destino\nEu quero é ser inteira\n\nQuero ver o que as lentes vão mostrar\nQuero ver o pôr-do-sol onde não há\nEscalar o monte fuji só pra degustar\nAs luzes acesas\n\nQuero ver seus olhos a se esticar\nSamurai com a sua velha katana\nQuando chegar em casa é so revelar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/CQ6bXYVu3EY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/CQ6bXYVu3EY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/CQ6bXYVu3EY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/CQ6bXYVu3EY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/CQ6bXYVu3EY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 491,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "CQ6bXYVu3EY"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "CQ6bXYVu3EY",
+          "videoPublishedAt": "2016-03-11T14:06:14Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "tCeVKV9G3qAO_SMP8appiFSqhmU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlcxUmJsQTRLWm1J",
+        "snippet": {
+          "publishedAt": "2015-12-17T12:43:09Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Surrendo - Supercombo & Far From Alaska (Official Recording Session)",
+          "description": "Official Recording Session da música \"Surrendo\" © Elemess 2015\n\nFICHA TÉCNICA:\n\nDIREÇÃO/CAPTAÇÃO/EDIÇÃO: Gustavo Ortiz\nFINALIZAÇÃO: Gublic Films\nGRAVAÇÃO/MIXAGEM/MASTERIZAÇÃO: Gritaria Mix e Master\nPRODUÇÃO EXECUTIVA: Elemess Music N' Services\n\nSURRENDO\n(Supercombo e Far From Alaska)\n\nEla pediu um café e eu achei que ela queria um cofre Levantei os braços\nDerrubei o açúcar no seu brownie \nAchei que era um assalto, achei que era um assalto \nJá gritei \"eu me rendo, eu me rendo, eu me rendo\" em CAPSLOCK.\n\n Please put your hands down\nYou got me wrong.\nI ain't no mugger\nYou got me wrong \nHow come you're so dumb?\nYou got me wrong\n\nI'm feeling homesick\nI miss my mom, I'm going home\nI've always heard that English used to be an universal language \nThat I could travel all the world and everybody would still understand me \nI just wanted some coffee, I just wanted some coffee \nHe kept saying \"me rendo\"\nThis guy is so random\n\nA clientela passando mal, passando mal\nMal entendido, Seu policial, policial\nPorque não nascemos falando tudo igual, tudo igual?\n\nLá no Alaska não tem feijão.\nNão tem feijão\nYou got me wrong",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/W1RblA4KZmI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/W1RblA4KZmI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/W1RblA4KZmI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/W1RblA4KZmI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/W1RblA4KZmI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 492,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "W1RblA4KZmI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "W1RblA4KZmI",
+          "videoPublishedAt": "2015-12-17T12:43:09Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "SmADgwaUDrmaUVOLq2kWIEr6BN4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkc4NEJYLU9yU3Jr",
+        "snippet": {
+          "publishedAt": "2015-12-14T14:07:40Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo & Far From Alaska - Surrendo",
+          "description": "Vídeo oficial da música \"Surrendo\" © Elemess 2015\n\nFICHA TÉCNICA:\n\nGRAVAÇÃO/MIXAGEM/MASTERIZAÇÃO: Gritaria Mix e Master\nPRODUÇÃO EXECUTIVA: Elemess Music N' Services\n\nSURRENDO\n(Supercombo e Far From Alaska)\n\nEla pediu um café e eu achei que ela queria um cofre Levantei os braços\nDerrubei o açúcar no seu brownie \nAchei que era um assalto, achei que era um assalto \nJá gritei \"eu me rendo, eu me rendo, eu me rendo\" em CAPSLOCK.\n\n Please put your hands down\nYou got me wrong.\nI ain't no mugger\nYou got me wrong \nHow come you're so dumb?\nYou got me wrong\n\nI'm feeling homesick\nI miss my mom, I'm going home\nI've always heard that English used to be an universal language \nThat I could travel all the world and everybody would still understand me \nI just wanted some coffee, I just wanted some coffee \nHe kept saying \"me rendo\"\nThis guy is so random\n\nA clientela passando mal, passando mal\nMal entendido, Seu policial, policial\nPorque não nascemos falando tudo igual, tudo igual?\n\nLá no Alaska não tem feijão.\nNão tem feijão\nYou got me wrong",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/G84BX-OrSrk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/G84BX-OrSrk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/G84BX-OrSrk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/G84BX-OrSrk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/G84BX-OrSrk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 493,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "G84BX-OrSrk"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "G84BX-OrSrk",
+          "videoPublishedAt": "2015-12-14T14:07:40Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "H0kw19_NqHiOYhI3lAZhZyBCeQQ",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmN1ajZuanUtM3Z3",
+        "snippet": {
+          "publishedAt": "2015-11-17T13:58:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Amianto (Making Of)",
+          "description": "Making Of - Clipe Amianto\n\nCaptação, Montagem e Finalização: Leka Romão (VIRALATA Produções)\n\nProdução: VIRALATA\nhttp://viralata.co/\nhttps://www.youtube.com/c/VIRALATACO/\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/cuj6nju-3vw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/cuj6nju-3vw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/cuj6nju-3vw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/cuj6nju-3vw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/cuj6nju-3vw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 494,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "cuj6nju-3vw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "cuj6nju-3vw",
+          "videoPublishedAt": "2015-11-17T13:58:06Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "kkaTsXBj8ky6VgRkQmmVsbMVjXE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm5WbENNUldwNUY0",
+        "snippet": {
+          "publishedAt": "2015-10-29T14:00:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Amianto (Clipe Oficial)",
+          "description": "Clipe oficial do single \"Amianto\" © Elemess 2014\n\nhttp://supercomborock.com\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nFICHA TÉCNICA:\n\nConcepção e Direção de arte: Juarez Tanure\nProdução: VIRALATA\nCriação: Débora Scaldelai / Miguel Nascimento / Guga Gessullo\nDireção: Débora Scaldelai\nAssistente de Direção: Viviane Fernandez\nDiretor de Fotografia: Ricardo Pelissari\nAssistente de Câmera: Diego Garcia\nLogger: Carol Vigari\nCoordenação de Produção: Tamara Marques\nProdutor: Priscila Moreira\nAssistente de Produção: Carlos Scaldelai\nMake: Natália Stracieri\nFigurinista: Andreia Sant´Ana\nCamareira: Marcia Storti\nEletricista: Marcelo Monteiro\nMaquinista: Alexandre Haroldo do Nascimento\nAssistente de Elétrica: Leandro Oliveira\nAjudante: Rafael Santos\nContra-Regra: Leonardo Mattos\nCoordenação de Pós-Produção: Tica Carvalho\nAssistente de Pós-Produção: Marília  Beck\nEdição: André Espósito / Leka Romão / Thiago Reys\nFinalização: Leka Romão / Thiago Reys\nColorista: Paulo Navajas\nEfeitos Visuais: Rafael Zacchi\nAtor: Átila Batista Souza Santos\nAtendimento: Miguel Nascimento\nColaboradores: Gabriel Parente de Mello / Universo Imagens / Cine Video / Dorival Mappelli Transportes\n\nAMIANTO\n(Supercombo)\n\nMoça, sai da sacada\nVocê é muito nova pra brincar de morrer\nMe diz o que há, o que que a vida aprontou dessa vez\n\nVenha, desce daí\nDeixa eu te levar pra um café\nPra conversar, te ouvir e tentar te convencer\n\nQue a vida é como mãe\nQue faz o jantar e obriga os filhos a comer os vegetais\nPois sabe que faz bem\nE a morte é como pai\nQue bate na mãe e rouba os filhos do prazer\nDe brincar como se não houvesse amanhã\n\nMoça, não olha pra baixo\nAí é muito alto pra você se jogar\nVou te ouvir, e tentar te convencer\n(Somos programados pra cair)\n\nQue a vida é como mãe\nQue faz o jantar e obriga os filhos a comer os vegetais\nPois sabe que faz bem\nE a morte é como pai\nQue bate na mãe e rouba os filhos do prazer\nDe brincar como se não houvesse amanhã\n\nMas tudo bem, nem sempre estamos na melhor\n\nMoço, ninguém é de ferro\nSomos programados pra cair",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/nVlCMRWp5F4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/nVlCMRWp5F4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/nVlCMRWp5F4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/nVlCMRWp5F4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/nVlCMRWp5F4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 495,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "nVlCMRWp5F4"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "nVlCMRWp5F4",
+          "videoPublishedAt": "2015-10-29T14:00:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "9NEb1NU4hxhOAFASmum8xDSsFfw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkk3UExLR0hHUzY4",
+        "snippet": {
+          "publishedAt": "2015-10-16T20:03:23Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Amianto (Teaser)",
+          "description": "Teaser do clipe oficial da música Amianto.\n\nData de lançamento: 28/10/2015\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/I7PLKGHGS68/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/I7PLKGHGS68/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/I7PLKGHGS68/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/I7PLKGHGS68/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/I7PLKGHGS68/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 496,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "I7PLKGHGS68"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "I7PLKGHGS68",
+          "videoPublishedAt": "2015-10-16T20:03:23Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "fkraW2VK4MhHMP_KvLjDQFh5iCo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkVqOGFwODk0M2Zv",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:58Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Vou Assombrar Seus Amigos e Parentes",
+          "description": "VOU ASSOMBRAR SEUS AMIGOS E PARENTES\n\nSeu rosto ficou na minha cabeça\nQuando quebrei nosso mural\nSofrer era tudo o que eu queria\nDepois de uma noite no hospital\n\nMomentos dos quais eu me arrependo\nTer deixado você entrar\nTer escrito seu nome no cimento\nPra ninguém poder apagar\n\nO que você não me conta, eu quero saber\nQuais são as coisas que você sempre pensa em falar?\n\nNão quero estar por aqui\nNem quero ver o que restou\nHá alguns segundos atrás é capaz de eu ter falado muito\n\nSeus livros tirei da minha estante\nO nosso contrato chegou ao final\nVou assombrar seus amigos e parentes\nQue nem ligaram pro meu funeral\n\nO que você não me conta, eu quero saber\nQuais são as coisas que você sempre pensa em falar?\n\nNão quero estar por aqui\nNem quero ver o que restou\nHá alguns segundos atrás é capaz de eu ter falado muito\n\nSe eu me convenço a voltar\nNão será mais o mesmo\nHá alguns segundos atrás é capaz de ter falado muito\n\nVou assombrar seus amigos e parentes (4x)\n\nDramatizar sempre foi o nosso forte (4x)\n\n(Dramatizar sempre foi o nosso forte (2x)\nNão quero estar por aqui\n(Dramatizar sempre foi o nosso forte (2x)\nNem quero ver o que restou\n(Dramatizar sempre foi o nosso forte (2x)\nHá alguns segundos atrás é capaz de eu ter falado muito\n\n(Dramatizar sempre foi o nosso forte (2x)\nSe eu me convenço a voltar\n(Dramatizar sempre foi o nosso forte (2x)\nNão será mais o mesmo\n(Dramatizar sempre foi o nosso forte (2x)\nHá alguns segundos atrás é capaz de ter falado muito\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Ej8ap8943fo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Ej8ap8943fo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Ej8ap8943fo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Ej8ap8943fo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Ej8ap8943fo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 497,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Ej8ap8943fo"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Ej8ap8943fo",
+          "videoPublishedAt": "2015-09-28T19:24:58Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "uRNVNQQdQ067ftcGV3rMR5RIdOc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLk50Q2tJazQ2TkRN",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:58Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Wallace",
+          "description": "WALLACE\n\nDeixei a minha sorte\nApontada pro céu\nQueimando em você\nAfinal de Contas\nPassar a vida com você\nO pensamento que não sou real\n\nHey (paparara)\nHey (paparara)\nHey (paparara)\nHey (paparara)\n\nHoje me dei conta\nQue eu não posso escolher\nNão sei escolher\nA cor dos meus cadarços\nFecho os meus olhos\nE aperto os meu passos\n\nNão dá pra entender\nA razão do prazer\nQue eu sinto em me machucar\n\nSe não for demais\nEu quero saber\nQuem eu sou\n\nSe não for demais\nEu quero saber\nEu quero saber\n\n(Hey)\nEu nem sei porque estou aqui\n(Hey)\nNão me pessa pra falar de mim\n\nHey (paparara)\nNão consigo esconder\nHey (paparara)\nDisfarçar o poder\nHey (paparara)\nQue eu tenho pra me machucar\n(Hey,Hey,Hey)\n\nSe não for demais\nEu quero saber\nQuem eu sou\n\nSe não for demais\nEu quero saber\nEu quero saber\n\nQuem diria que um dia agente diria adeus\n(eu queria ser o sol em você)\nQuem diria que um dia agente diria adeus\n(eu queria ser o sol em você)\nQuem diria que um dia agente diria adeus\n(eu queria ser o sol em você)\nQuem diria que um dia agente diria adeus\n(fazer seu mundo brilhar)\n(eu queria ser o sol em você)\nSe não for demais eu quero saber, eu quero saber\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/NtCkIk46NDM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/NtCkIk46NDM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/NtCkIk46NDM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/NtCkIk46NDM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/NtCkIk46NDM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 498,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "NtCkIk46NDM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "NtCkIk46NDM",
+          "videoPublishedAt": "2015-09-28T19:24:58Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "WFw-uj22rzsynrbF_I5EK98EOxo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLldZLWNZZDJQb0NJ",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:58Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Dois na Estrada",
+          "description": "DOIS NA ESTRADA\n\nEu digo \"olá\" pro futuro\nSó de saber que você vai estar em meus planos\nQuem nunca lutou pra tentar ser feliz?\n\nEu vou me levantar e te provar\nQue tudo que eu quis já não importa mais\n\n- Refrão -\nHey, heey \nNinguém sabe como vai ser \nDaqui pra frente, dois na estrada\nHey, heey\nAndei demais pra perceber\nQue você é o que eu sempre quis... encontrar.\n\nSuas mãos, tocam minha pele\nE eu não paro de pensar que tudo é real\nEstamos na tv onde tudo é feliz\nNão dá pra ver se há uma cicatriz\n\nNa minha mente a sua porta \nÉ por onde eu quero entrar, entrar, entrar.\n\n- Refrão -\n\nEstamos na tv onde tudo é feliz\nNão dá pra ver se há uma cicatriz\n\nEu vou me levantar e te provar\nQue tudo que eu quis já não importa mais\nImporta mais.\n\n- Refrão -\nHey, heey \nA gasolina acabou\nDaqui pra frente, pé na estrada\nHey, heey\nAndei demais pra perceber\nQue você é o que eu sempre quis... \nAndei demais pra perceber\nQue você é o que eu sempre quis... encontrar.\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/WY-cYd2PoCI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/WY-cYd2PoCI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/WY-cYd2PoCI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/WY-cYd2PoCI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/WY-cYd2PoCI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 499,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "WY-cYd2PoCI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "WY-cYd2PoCI",
+          "videoPublishedAt": "2015-09-28T19:24:58Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      }
+    ],
+    "pageInfo": {
+      "totalResults": 587,
+      "resultsPerPage": 50
+    }
+  }
+}

@@ -52,6 +52,7 @@ CREATE TABLE config_revisions (
 
 CREATE TABLE quota_usage (
   day TEXT NOT NULL,               -- Pacific-time date, matching Google's reset
+  key_id TEXT NOT NULL,            -- which API key: the start of its SHA-256, never the key
   source_key TEXT, run_id INTEGER,
   units INTEGER NOT NULL
 );

@@ -29,6 +29,8 @@ pub mod exit {
     pub const USAGE: i32 = 2;
     /// The run finished, but at least one source, video or hook failed.
     pub const PARTIAL: i32 = 3;
+    /// The YouTube API couldn't be used and `fallback_to_ytdlp = false`.
+    pub const NO_FALLBACK: i32 = 4;
 }
 
 /// A command-line usage problem found after parsing (exit 2).
@@ -42,6 +44,8 @@ struct App<'a> {
     paths: StatePaths,
     /// Ctrl-C and `kill`, for commands that run yt-dlp, ffmpeg or hooks.
     shutdown: crate::shutdown::Shutdown,
+    /// A source couldn't use the API and `fallback_to_ytdlp = false` (exit 4).
+    no_fallback: std::cell::Cell<bool>,
 }
 
 /// Run a parsed command; returns the process exit code.
@@ -62,6 +66,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         dirs,
         paths,
         shutdown,
+        no_fallback: Default::default(),
     };
     if cli.config.is_some() && !cli.dry_run && uses_stored_config(&cli.command) {
         app.import_config_flag()?;
@@ -450,7 +455,13 @@ impl App<'_> {
         }
         self.finish_problems(&state, &loaded.config, tracker, &ytdlp)
             .await?;
-        Ok(if failed > 0 { exit::PARTIAL } else { exit::OK })
+        Ok(if self.no_fallback.get() {
+            exit::NO_FALLBACK
+        } else if failed > 0 {
+            exit::PARTIAL
+        } else {
+            exit::OK
+        })
     }
 
     /// Index `sources`, printing a line per source; returns how many failed.
@@ -465,6 +476,7 @@ impl App<'_> {
     ) -> anyhow::Result<usize> {
         let now = jiff::Timestamp::now();
         let mut failed = 0;
+        let mut apis = crate::pipeline::ApiPool::default();
         for source in sources {
             if self.shutdown.is_stopping() {
                 break;
@@ -475,12 +487,14 @@ impl App<'_> {
                 source,
                 &self.dirs,
                 ytdlp,
+                &mut apis,
+                tracker,
                 &self.shutdown,
                 now,
             )
             .await
             {
-                Err(err) if err == "stopped" => break,
+                Err(crate::pipeline::IndexFailure::Stopped) => break,
                 Ok(summary) => {
                     tracker.index_succeeded(&source.key);
                     tracker.regex_limit(
@@ -495,7 +509,11 @@ impl App<'_> {
                 }
                 Err(err) => {
                     failed += 1;
-                    tracker.index_failed(&source.key, &err);
+                    if matches!(err, crate::pipeline::IndexFailure::NoFallback(_)) {
+                        self.no_fallback.set(true);
+                    } else {
+                        tracker.index_failed(&source.key, &err.to_string());
+                    }
                     tracing::error!("{}: {err}", source.key);
                 }
             }
@@ -687,7 +705,12 @@ impl App<'_> {
             self.finish_problems(&state, &loaded.config, tracker, &ytdlp)
                 .await?;
         }
-        Ok(Self::exit_code(&summary, failed))
+        let code = Self::exit_code(&summary, failed);
+        Ok(if self.no_fallback.get() && summary.interrupted.is_none() {
+            exit::NO_FALLBACK
+        } else {
+            code
+        })
     }
 
     /// `tidepool problems [ack <id>]`.

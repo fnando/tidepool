@@ -34,10 +34,14 @@ pub enum Kind {
     HookFailing,
     /// The managed Deno couldn't be installed or updated.
     DenoFailed,
+    /// YouTube rejected an API key.
+    ApiKeyRejected,
+    /// An API key's daily quota is used up.
+    ApiQuota,
 }
 
 impl Kind {
-    pub const ALL: [Kind; 12] = [
+    pub const ALL: [Kind; 14] = [
         Kind::Extraction,
         Kind::BotCheck,
         Kind::RateLimited,
@@ -50,6 +54,8 @@ impl Kind {
         Kind::RegexLimit,
         Kind::HookFailing,
         Kind::DenoFailed,
+        Kind::ApiKeyRejected,
+        Kind::ApiQuota,
     ];
 
     pub fn as_str(self) -> &'static str {
@@ -66,6 +72,8 @@ impl Kind {
             Kind::RegexLimit => "regex_limit",
             Kind::HookFailing => "hook_failing",
             Kind::DenoFailed => "deno_failed",
+            Kind::ApiKeyRejected => "api_key_rejected",
+            Kind::ApiQuota => "api_quota",
         }
     }
 
@@ -89,6 +97,8 @@ impl Kind {
             Kind::DenoFailed => {
                 "Deno (the JavaScript runtime yt-dlp needs) couldn't be installed or updated"
             }
+            Kind::ApiKeyRejected => "YouTube rejected your API key",
+            Kind::ApiQuota => "your YouTube API quota is used up for today",
         }
     }
 
@@ -102,6 +112,8 @@ impl Kind {
                 | Kind::RegexLimit
                 | Kind::HookFailing
                 | Kind::DenoFailed
+                | Kind::ApiKeyRejected
+                | Kind::ApiQuota
         )
     }
 
@@ -147,6 +159,8 @@ impl Kind {
             Kind::SourceFailed => "check the source's url: the playlist may have been deleted or made private (private playlists need cookies_file)".into(),
             Kind::UpdateFailed => format!("tidepool keeps using {version}; check your network, or run `tidepool tools update yt-dlp`"),
             Kind::RegexLimit => "simplify the rule, or raise general.regex_backtrack_limit; affected videos are held until then".into(),
+            Kind::ApiKeyRejected => "replace youtube.api_key in your config (and run `tidepool config import`); until then, sources are checked with yt-dlp".into(),
+            Kind::ApiQuota => "the quota resets at midnight Pacific time; until then, sources are checked with yt-dlp. If Google granted your project more, raise youtube.daily_quota".into(),
             Kind::DenoFailed => "check your network, or run `tidepool tools update deno`; without Deno, YouTube downloads may fail. To use your own, set managed = false in [tools.deno]".into(),
             Kind::HookFailing => "see the hook's log in ~/.local/share/tidepool/logs/hooks/<video_id>.log; after fixing it, run `tidepool hooks run <video_id>` (videos whose download failed are retried on later runs)".into(),
         }
@@ -395,6 +409,7 @@ pub struct Tracker {
     failures: BTreeMap<Kind, Seen>,
     downloads_succeeded: bool,
     hooks_succeeded: bool,
+    api_ok: bool,
     sources_ok: BTreeSet<String>,
     regex_ok: BTreeSet<String>,
 }
@@ -425,6 +440,16 @@ impl Tracker {
 
     pub fn download_succeeded(&mut self) {
         self.downloads_succeeded = true;
+    }
+
+    /// The API couldn't be used for `source` (a rejected key, no quota left).
+    pub fn api_failed(&mut self, kind: Kind, source: &str, message: &str) {
+        self.seen(kind, message, source, true);
+    }
+
+    /// A source was listed through the API.
+    pub fn api_succeeded(&mut self) {
+        self.api_ok = true;
     }
 
     /// A hook failed for a video of `source`.
@@ -515,6 +540,13 @@ impl Tracker {
         }
         if self.hooks_succeeded && !self.failures.contains_key(&Kind::HookFailing) {
             resolve(conn, Kind::HookFailing, now)?;
+        }
+        if self.api_ok {
+            for kind in [Kind::ApiKeyRejected, Kind::ApiQuota] {
+                if !self.failures.contains_key(&kind) {
+                    resolve(conn, kind, now)?;
+                }
+            }
         }
         Ok(recorded)
     }

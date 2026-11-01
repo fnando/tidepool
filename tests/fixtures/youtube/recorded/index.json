@@ -1,0 +1,339 @@
+[
+  {
+    "name": "playlist-page-1",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "PLfSl2rOZ6Zto"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "playlist-videos-1",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "jCUWP3au1rw,OzR8M5IG39A,o9LxeJR9xCc,X_SytEAcpLM,bDTFQEl50B0,xENnYpCzfdk,eDOn_xN-nSI,dH15wxHGBoY,o3jRbL2ykF4,8Jk_qZjPauM"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "playlist-page-1-unchanged",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "PLfSl2rOZ6Zto"
+    },
+    "if_none_match": "RQ-thIh9dOkuzMlGoB-ZsUw_rjk",
+    "status": 304
+  },
+  {
+    "name": "channel-by-handle",
+    "endpoint": "channels",
+    "params": {
+      "part": "snippet,contentDetails",
+      "forHandle": "@supercombooficial"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "channel-by-id",
+    "endpoint": "channels",
+    "params": {
+      "part": "snippet,contentDetails",
+      "id": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-1",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-2",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaHlBUOkNESWlFRGhEUmpkQ01EUkRRMFUzTlRCR05VWQ"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-3",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaHlBUOkNHUWlFRU16T0RRME5qRkVRa0V4TnpJeE1Eaw"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-4",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNKWUJJaEEyTTBJelFrRTVOMEZEUkRJNFJEUTM"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-5",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNNZ0JJaEEyTlVSRE1VRkZPREZCUlRnd01EQXo"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-6",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNQb0JJaEJCT1VGQ05rRTBNVGt4TlRnMlEwUkU"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-7",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNLd0NJaEEyUWtGQ1FqWkJRVGN4T1VReFFqTTQ"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-8",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNONENJaEJETTBaQlEwVTRPRFkxTWpNd00wWkU"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-9",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNKQURJaEJFTjBOQ01qWkJRVFZHUkRsRE1VTkQ"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-10",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNNSURJaEEwT1VRMU9FUTRORVV3T1RWR05USXg"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-11",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNQUURJaEE1UmpFNFEwWkRSVUZCUWtGRU5EVTI"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-page-12",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNLWUVJaEEzUWtGR05qbEdNamsxUVRCRVFVSTU"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-1",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "DdmxNoj2cGQ,nX_knikbXdE,a603fpH3RAs,0IWXDlMcKIo,8h_bpVagc0g,c05L9G0Z_A8,SxLHiZsbLrA,2q5iyYT3xQQ,theTuMCqHqI,6vnWxWYKcQE,lKuA_hTskSg,QxP5ZzuPdzA,oLRTEfwcmbc,dU0LYa-YWKc,HF1aUFFI-N0,p-wXGCXxMZI,nJk7qD4DCVo,xCXhz9ooO2I,4siDLCF42HY,LqG4Z9Mtf9M,8MSJdg3QYeQ,I_w4EJz6Afc,zWuAQFO-6ik,XA5FWp-rZFI,3ZIw38Nm39w,z6iy0ACM2vE,nHq3JVoYAnY,l3_nHFBez1Y,sv0I2xmyapE,kKBQjw5Zyxc,i4IJmEPceEs,93eaGqMFuHQ,YQPQAFjGbbE,4Pb93bWY-aw,kPYWusxsTh8,02TiOnFt5Cc,Q8GSHfcGWBI,xxoY46ZT7wI,iDD28YmCUzE,oXJgkRKYq88,XZvpAGk5V1w,P559ykxlA_E,KzWbK4mxTA0,1OJwyBO0toc,aITT_525nKg,1bJcOVbJtmM,94qPzA3Gj80,_lA53wHBbGM,aVDbnUsiX3c,gVsxiK_FFyA"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-2",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "7cH6xamrbvk,1jMQ-lx5BE4,dLg2AzTF020,XSBhS87krqw,MZxJy2U2H3M,frci3jre__c,SESsOREHFs0,24L2lrwvGms,Umx9scoInt8,cE0ZvyoTEMU,tWVAZ0h35ZQ,mZ5DkfFGTOk,LIEkYjTCzUU,-gK2oZmEJzM,p6BcIY7deQo,8KnCxH9ln_I,49Aw7LBdKVE,w_TwdLnkUgY,IYXGu0ichKo,LaPNzD8uHys,Tb6A2yqIB0c,r0pNLJuriuw,ysV2zfhKJWc,ASyi4-pSfmA,Mi9txdFHNgU,cfLZ399pPZY,9FXZhBXr7ag,X2iITnff37c,HxKwr1xXunQ,nXxGRx74ElI,02G3umcCmHs,4xw6HvgkS94,o7z6TNo8RZw,G6feRgdPbGE,J0bHV8TQR9c,gCuiMnT53ik,vAlGQ0TS-S0,x7_Sa3cf3Fw,gcY-x-eOXrY,009tipQAjQk,2tITjWWO82k,qmckm7-c47k,hcWIPf_0E6s,jATejkrEIR4,3yhiFFs_e2Y,d1vwkMf4nL0,ur9gsZBEyv0,Aw9BWxNM1Jw,fLgmTNRYbZI,czGevPOJkfk"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-3",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "v3jk4D6fYQU,Ab5S7UsKRgY,9gnnJjyHohE,fb5yY8Q5sUc,Lm1rMl5CnCM,NK6YDyI4rMA,_q5aQjhfox8,UBx6tm86Ekg,EZxZ4cxegQ4,JIbagrnNlmk,1cNIm-Xl97s,v31z3jiF4bQ,JUZPqYvDoqc,VFiKHBe46Ac,iPf2-2wLjiE,cZxRjP8Qan0,JMDHtUOduwE,sCDxmsZBop8,gTiGQiItF5c,PjrM0ZC1NYs,BjRN0rHuecM,p-7QAzciZtE,-bxl5X_FEBs,kR9Befewp9s,w2dhlFhXeI4,6KGy00WSJss,joYIaL1uoqQ,n_leNytS3RA,UUhlvRdGjXk,ArRVJDJ8Qjc,TiZXDT7hWqU,zE0ElpWlzhg,HiElXyRzLyo,w2yy1hXxw7I,4OXK0nGt_8E,APwZQ8JgbU0,CVHxiK6PkCk,353vl2achFs,XAzkdwLKy7k,De2fp2UUS_U,FWhw9t_n8ZQ,Sfvw2IEQuQY,rQYZV7wuYyw,TXTyPnByWB4,Boq-V4KdRtI,-3AtVHpQ560,2QCXL57KUjU,8we_iF9H9CU,CWxf5mrdI-4,PLBzUuaGZ40"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-4",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "YK5PtvNhe_U,cfQ4f0E59os,kL2G1_-axi0,tZOkLRkJw4Q,nKd0ol9dcwU,8ZaKoUmDWjQ,cxNaJflXHRQ,AfkxxiDC6AY,iRz8RALbDcI,PN8v9g8pUzQ,EJOKHbyS0B4,zKr1Y4bkAbA,PY1kuyu9NfA,PL1KUPRPl0c,ZlMjZLAHe9Y,v836yS8AfWw,F3qtupWW1bQ,IH-YgD4OWwI,GEyReHRRNkU,eaY79ukAHOk,fVTbEFT2XiM,Ys4pZINd8o8,RQnDg6RU66s,QUlns2xHM0A,mWtZv5Eoe3U,gcGjMpaeDzM,tYTOGTivoGo,xI-277zMrhU,NKQOZ-Bp22k,MoIn2qkNvEM,dJkbfKpZdWM,ahMlDhGe8YQ,xAfEaZJGtSA,-sFoYjuS2j0,IftAJXp7xro,RfSeApujPD8,WrVBIq6ccj0,AqPFkwdLLyE,OYd4WA8uhkc,yqZsVEj_rjU,Bn2UhCwCFNY,kPHyXCrNAck,F_JEyuCQ7Ro,NY-yaUmgAsA,5gtp17VIzFo,egW9uGx0cQg,r2-NdMbpFv8,z3JbwHQnz-E,Q3kw87JQxIU,0TOcsIAoVxg"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-5",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "1j-vZkL-Df0,3lCe0Ajagnc,4QUrPTNLWcM,gc2081JfQLU,Tjffa25OKYo,vC9TQK-xZ84,rPNaJtjE_ZU,sKXruhUNhsw,oulwryo4iwQ,Ti8jRNMje78,oxTpqSsI0hM,jQ3x8XCQXoM,997EF1xIRyg,0_89j2Blop0,UIW6ujXGbRE,PVopmOj_eq0,6iAX2Ml0uUs,CdPe2nS1ObU,1JV3SzlbnUM,Y8fqpUC7r1U,fbl9_0AwhYk,Em0p5Ovu1mg,yIZ8iMn_zTE,11Pl12ZQD4A,SA8Orkc46KQ,gxbjvt7U4dE,rwmr-XUYKiQ,etev00SYBiI,jlHDN_GmpCE,GBX_JTjwZp8,7Idaksdo68A,2YCU6cql67g,xdGGxTjxDBU,1rd1ziBPm_I,ltJ5fbq65OE,EGwedGuxeqM,QR-0dbNTbt0,arBbaObEp2I,zGlvAMa5mZw,amO1cxRItTw,CsOyP8rmvQA,Us7kEfLf5rY,XW3dnA4_y68,uvsGLbDhj_E,LFeBgNOXzZg,MuQf8x1oMnk,z67OcEplc30,ZRbU-jgdzDY,K8bWsxedj4o,Sd8Z3uRCMSQ"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-6",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "S0aMmHfiWaY,F3w49MHLcSc,n3jTDcC-It0,kq9HkOAXUlM,T_3Nwae1PkU,omsMYCUEbdQ,NHPAPPr2pns,Ke8_qyGbIn4,mrkn81LIdLg,pgYAp0ATIXE,iepYclE3V60,8-JoB4UsCo8,VhE6rJTGw0E,RoYoND1aJxQ,zCInHDU3Lx0,NzAzDaRBUW0,kjHr_sSeFn4,IkX66b7e4No,3miRjyvRIPE,hvV4iYNdbr8,arT0LrFd9d4,hKklOSCs3n4,aRfni1WeNDk,YP7gHaGbnBk,_bb535g-S1s,Au0UydQ89Ew,MjI1GfSW3ww,Vm55lQ0x4Dg,QQx5Gb1Z7Ic,IbVwkk3FI_g,mIVdGzluplc,aT--OjvRtr4,dL7V1TjVpmA,o9HRzRCS5ns,ZqkuiWGCnag,ib-XiFT4DfI,n5NzJhoDxyE,8CZIoXMXx_I,RJbLAcXwCuw,f251S3naLa4,M2SjNnckFu0,W9AIzYCFG4s,bmPxF1CoqvU,z0TDMq2ACo8,BCJtViCx63s,NTjkOpir-GI,J2l3Of-JV8g,CIJvKv9iqPk,qgxeR1gsbSM,Mgn94t1VceQ"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-7",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "vjp5Mzk2HNA,iCLp8iLs_qU,Wl4riaMzCpQ,Wms2ojyKuiM,jbFhldBG2mI,C2YxwQx4iJ8,89kGaDXUW8k,CHKwPBHY6yo,GpCMRCxk5zA,SoUyUtLG38Y,9a159jn6-IQ,0o2EVGTTTEo,rGh_xukjPok,2fbF5dxIpOM,YF35W9TmRtw,MZ6nHQ_NRxk,-NGlGxtPoGc,NWLJRrEKrbw,W8z9rVGRXIg,Am0Cx_ONucg,8x2-2m4qfGA,AfyO-DSjExQ,Ev3vrH4j3dU,IJ4kRxSb-bs,jc5Oz43XggM,HnRILlNboXM,YGX8XTwHYSA,Umffu5hHIwQ,6J0bPPp0oJU,rXVAId839Ks,IlOWFW_zKgA,1taJVRxjR0w,2buSXqqo5hg,0K7kfRXvJnE,USDv_tqjqr0,5nwLfAQOzdI,Qt1HEQNQRPU,ZvOSPinhAWY,oIQ8wAajWb0,hlOM5AtfMBQ,1mskXQFP9yQ,E4lq8zjf4c0,-m9QCC-f7E4,348EeMIlen4,UDdZ_a2v1HE,lj6b-R9HwaA,glcSYvO7EEk,07ax86foH-g,pcCTb0JfrGc,n1zOS_XKQN4"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-8",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "vTihx-BKxJQ,DLXDMJmgenA,W6GlZau_fFE,y9i_uq1dTr4,abDi7LjiBzU,fleE0jTxNvk,d7N1EUZ8jpo,iW1MFJu_Bh0,CqtMTwqT0gk,a_oxq2Cil7U,_54Vl3qmJgM,I42WQLsIo_s,h2LTo5day_o,8bVWr9wRUZ8,h06GquMvvmc,RmnfWkK8-ZM,D0R703OFs2A,CEjgu2Iovt4,vaqaixk5z5g,SVS6xC2zC3c,9D3C1yyDKGw,Pi8JpIUU17k,-WUvBwXhf9Y,ZrSUqcVlK38,9cHbDKmWZ4g,BRm6mGAwrcY,sTarowhWdfo,6EgKegeAcuQ,n0HbHKnl7yw,XXU2WrePYnc,vh-nudKm31c,gcyW_pgtagw,W0JSPOvp2BM,_A_t43ixjR4,Uv2d1OY9qqM,6cCnWKLMZ-0,tyeLriiG9gM,JhvKhj_vDfE,tJ_N3FHfk2U,MUMreW6UBSU,c6IFiiiSRMw,Nc2vUeQoAB8,ogU5F8DRbSM,_AJ8pOEFA6Y,OS17cq3G4Fc,dXETpxhUwVA,QtmwtS60DwQ,ymZP3jG28DA,FWsOdI82yKc,fpXtBSueFcE"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-9",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "mSL53EzxtDo,N0VBbE148RA,kwdZ92OpuJk,9444i_5Xn4k,Vj5RwKvmJZs,9XNVj3GV7Es,RH5UbeRmUl8,GyiekK3Q1zs,i1F0FaYvy2g,lDoL_t7VAfM,aPtJ1Fcq1xM,iZhdQfctWQU,v2cygbef-Es,9auEAb3ZTPw,_ld73-C_41M,z1BBCRpsazs,bYD4Iml1qFk,8b8qwOyWzrw,LNgKDQVkFJ8,FNbWMZ73tP8,7epBO_roz4o,ydNuS4zJzXg,Yp34iiMeWeM,y98YVPEZ7Cw,fiSU-sqKK3o,rXiWgkkrQ5o,XlGnJ9gzuzg,ct9HVBxyZ6I,INF7cz7FQTY,SL55K6v4jzI,XUe4exgx6JQ,IB4CwFkeRZA,OBecCC0F10g,ulPTsRp5jjQ,gleNezOyezo,TG1DutWT_nU,-Y3q4Xs8Kck,tq_plzbGo2s,0fFMeffKmhk,pKJ8nTxOPI4,w4jN0YSyzjk,G_5aXy6OIKA,DBITC8w0z6o,SpM79CjPuuI,W2p9t6NNnOI,KykJRRpvkLM,3-X0ft1_x-Q,YedM9Mhfh3w,Ja8qOXsZUFg,Zvq_gDjy7pw"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-10",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "Vnok_Q27nK4,8Rvi8KVeQrg,3ldO4-MItAg,0ZjEl7uHGPU,xPDxw__1604,640E9gKz-NM,tcyuPoiPj9Y,E36kpDiSfxw,sd_AqqPDrJ8,pDmQezQj7Is,azKZI7jP08A,-hdiSq_c1Xg,C665jfkofis,7WojJaAbn5M,xB_veuMrJy8,VWuMb74aoas,srCIa27GBJE,V0QwvleJRDk,qTtHqiuS04s,zuK5lHA2f1Y,AgBdIPoyAug,kNKCRly6AmM,vXUYuFVCCII,E-TaXjOY1rY,bWlJSiZzn_A,WKbZpme9hPg,EVD6oFbO9wQ,ng5bsrIyQvI,FIxRcbDMO30,7typdeIrxpU,ocXe5KwtHl0,XLbLRqHve9U,GrZ3oktsJhI,Sx4iyB2rucw,jlL3lAwNjMY,AAj_vcIkAb8,5Skxj6k4ZTc,LQhjRed8o9c,KB3n0ufDvkw,p7w5k9DR9Ck,SOpXag0vT8k,CQ6bXYVu3EY,W1RblA4KZmI,G84BX-OrSrk,cuj6nju-3vw,nVlCMRWp5F4,I7PLKGHGS68,Ej8ap8943fo,NtCkIk46NDM,WY-cYd2PoCI"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-11",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "ukqPOsw67gM,XA9bnivThWw,t_s2F3ej410,yVA4lpd6elc,ayKH2PGsAs0,gqNOI-EPIRg,R9spsFFUdA0,_NnigrAWE18,baLJOeRUJ6E,NcHehCb8lf0,mnqAa6OoJdA,s4j2MjSnjVw,HchzZX3iLAk,pfv70H1eCXg,nOsWtVo9KpE,LevqxTd4Buw,zflfRVMg5M0,9IjEkt2VBAA,LpJi8_2rL2g,H_pjwSBzzR0,UqaW_2GwkxM,PBhw2WynxaI,o87Pt_YEjxA,bEMKDlpwwHg,lim60wYtZgM,5DAbRz2l_2M,ilze9j2YfYM,0QiqveV1KFU,UjadPIHrstI,qgQsDcl_ruU,vMKpPS5MWGs,vRiA8cq0ZtA,sk3irZchQAg,U7KNMkSztAg,jNJsLEXSk5g,YW4-V0xQkTg,6_Ssim3fD3c,8ORZoxsMRqs,LITYQd0yVs4,M0IuGqHir5c,zA4iF_hf_to,W8YskHzzIao,T1DauD4K_DM,hW6_1m19-gM,U1c6Ij_HWpo,ACFBQd2j07Y,Udjp0GAWn2E,pXFIfo36omo,kzUEKgk-ijI,tB9a8m50QyM"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "uploads-videos-12",
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "ybxV3oCkPCw,xGDUsKiyEoY,ygUIGILjB-M,_2ZwNSXNIRs,wFO26CxDBjA,IYG0fUEcJEs,-kGJ5Tpo_4k,wHJ8AM-0tC4,FlmmUIE4prI,EUa54xAOIhg,gKGHtSQHpa0,RfBGgj8wuko,yD5EHBJE-0k,UtchQHGvVnQ,OXLq4P0pwVE,psNqfWCdVxE,plCLctVIg0M,qJfJS_wrgaQ,46WanmGm7jI,RWtCtmZhZRY,7dcsUmpLeLA,W8pXkZ40KaM,EgWHjct3Y-E,5ZEvW5vxr4o,gAJ79fE82z0,zccCkSVuSLw,7zenuyOgpSo,RwGLtudatjY,PCNq4w8L9Ww,YasJvFULnc4,br0eKAm0ot8,ynM1pSwoWg4,PStPMX2rxJE,lqEsk7EKt0g,GdHWd824YTk,-hGOvB-fdgM,nvCMby8Fez8"
+    },
+    "if_none_match": null,
+    "status": 200
+  },
+  {
+    "name": "playlist-not-found",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "PLdoesnotexist000"
+    },
+    "if_none_match": null,
+    "status": 400
+  },
+  {
+    "name": "key-invalid",
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "PLfSl2rOZ6Zto"
+    },
+    "if_none_match": null,
+    "status": 400
+  }
+]

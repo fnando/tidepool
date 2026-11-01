@@ -1,0 +1,2666 @@
+{
+  "request": {
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNNZ0JJaEEyTlVSRE1VRkZPREZCUlRnd01EQXo"
+    },
+    "if_none_match": null
+  },
+  "status": 200,
+  "etag": null,
+  "body": {
+    "kind": "youtube#playlistItemListResponse",
+    "etag": "96CalCvJ7rIM84vUkx96m_NB170",
+    "nextPageToken": "EAAaH1BUOkNQb0JJaEJCT1VGQ05rRTBNVGt4TlRnMlEwUkU",
+    "prevPageToken": "EAEaH1BUOkNNZ0JJaEEyTlVSRE1VRkZPREZCUlRnd01EQXo",
+    "items": [
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "obisNtBjYsPd7oSJ1pUyc4yfA28",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjFqLXZaa0wtRGYw",
+        "snippet": {
+          "publishedAt": "2022-07-28T21:00:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 10",
+          "description": "O décimo episódio da nossa série r e c o n e x ã o mostra os bastidores do show de São Paulo, no Carioca Club.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres / Esto Produtora (https://www.instagram.com/estoprodutora/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/1j-vZkL-Df0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/1j-vZkL-Df0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/1j-vZkL-Df0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/1j-vZkL-Df0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/1j-vZkL-Df0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 200,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "1j-vZkL-Df0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "1j-vZkL-Df0",
+          "videoPublishedAt": "2022-07-28T21:00:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "cbzonxxrHyzRioW0W3zjcOnQ22c",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjNsQ2UwQWphZ25j",
+        "snippet": {
+          "publishedAt": "2022-07-14T23:00:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 9",
+          "description": "O nono episódio da nossa série r e c o n e x ã o mostra os bastidores do show de Porto Alegre.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres / Esto Produtora (https://www.instagram.com/estoprodutora/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/3lCe0Ajagnc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/3lCe0Ajagnc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/3lCe0Ajagnc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/3lCe0Ajagnc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 201,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "3lCe0Ajagnc"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "3lCe0Ajagnc",
+          "videoPublishedAt": "2022-07-14T23:00:03Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "m6nbxlgnCEh_0hfQKMstn-2oEdU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjRRVXJQVE5MV2NN",
+        "snippet": {
+          "publishedAt": "2022-06-29T21:00:04Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 8",
+          "description": "O oitavo episódio da nossa série r e c o n e x ã o mostra os bastidores do show de Porto Alegre.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres / Esto Produtora (https://www.instagram.com/estoprodutora/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/4QUrPTNLWcM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/4QUrPTNLWcM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/4QUrPTNLWcM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/4QUrPTNLWcM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/4QUrPTNLWcM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 202,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "4QUrPTNLWcM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "4QUrPTNLWcM",
+          "videoPublishedAt": "2022-06-29T21:00:04Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "VfEVe5x1qE8Xr65btmp-DbbR62U",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmdjMjA4MUpmUUxV",
+        "snippet": {
+          "publishedAt": "2022-05-30T21:00:14Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 7",
+          "description": "O sétimo episódio da nossa série r e c o n e x ã o mostra os bastidores do nosso show no festival Somos Rock, em São Paulo.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres / Esto Produtora (https://www.instagram.com/estoprodutora/)\n\nImagens de drone - Alumiô\n(https://instagram.com/alumio.live)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/gc2081JfQLU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/gc2081JfQLU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/gc2081JfQLU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/gc2081JfQLU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/gc2081JfQLU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 203,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "gc2081JfQLU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "gc2081JfQLU",
+          "videoPublishedAt": "2022-05-30T21:00:14Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "NwnL0Vea7Rpoe5lDovoq5FOb6Ho",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlRqZmZhMjVPS1lv",
+        "snippet": {
+          "publishedAt": "2022-05-19T21:00:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 6",
+          "description": "O sexto episódio da nossa série r e c o n e x ã o mostra os bastidores do show de Curitiba.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres / Esto Produtora (https://www.instagram.com/estoprodutora/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Tjffa25OKYo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Tjffa25OKYo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Tjffa25OKYo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Tjffa25OKYo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Tjffa25OKYo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 204,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Tjffa25OKYo"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Tjffa25OKYo",
+          "videoPublishedAt": "2022-05-19T21:00:11Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "SOEfY4CI2kt5-gFmQIO-6oyZ9l4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnZDOVRRSy14Wjg0",
+        "snippet": {
+          "publishedAt": "2022-05-05T21:00:19Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 5",
+          "description": "O quinto episódio da nossa série r e c o n e x ã o mostra os bastidores do show no Brasuca, em Campinas.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres / Esto Produtora (https://www.instagram.com/estoprodutora/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/vC9TQK-xZ84/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/vC9TQK-xZ84/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/vC9TQK-xZ84/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/vC9TQK-xZ84/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/vC9TQK-xZ84/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 205,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "vC9TQK-xZ84"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "vC9TQK-xZ84",
+          "videoPublishedAt": "2022-05-05T21:00:19Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "JX_fpawJ2Tdn1bKl6F0W8fOfThw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnJQTmFKdGpFX1pV",
+        "snippet": {
+          "publishedAt": "2022-02-18T15:10:16Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Todo Dia é Dia de Comemorar - Ao Vivo Quando a Terra Era Redonda",
+          "description": "Siga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomboroc...\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPedro Ramos\nPaulo Vaz\nAndré Dea\n\nProdução Executiva - Gritaria Produções\nDireção - Gabs Hand\nEdição - Renan Queiroz\nEngenheiro de áudio - Zeca Leme\nFotógrafo - Yvã Santos\n\nGravado ao vivo em São Paulo no dia 24 de Novembro de 2019 @ Audio Club\nMixado e Masterizado por Leo Ramos\n\nLançamento: Olga Music",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/rPNaJtjE_ZU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/rPNaJtjE_ZU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/rPNaJtjE_ZU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/rPNaJtjE_ZU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 206,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "rPNaJtjE_ZU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "rPNaJtjE_ZU",
+          "videoPublishedAt": "2022-02-18T15:10:16Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "YQYEbF_KY_yPZ9EIJZA1B7OMq60",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnNLWHJ1aFVOaHN3",
+        "snippet": {
+          "publishedAt": "2022-02-16T23:00:30Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 4",
+          "description": "O quarto episódio da nossa série r e c o n e x ã o mostra os bastidores da mixagem do show Ao Vivo Quando a Terra Era Redonda, em São Paulo. \n\nDia 17 de FEVEREIRO nos CINEMAS!!!!\nPré-venda: https://www.cinemark.com.br/filme/supercombo-ao-vivo-quando-a-terra-era-redonda\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPedro Ramos\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres (https://www.instagram.com/eurenatoperes/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/sKXruhUNhsw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/sKXruhUNhsw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/sKXruhUNhsw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/sKXruhUNhsw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/sKXruhUNhsw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 207,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "sKXruhUNhsw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "sKXruhUNhsw",
+          "videoPublishedAt": "2022-02-16T23:00:30Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "mM3-tl39fFa3kJQr1tHAOzZwpTk",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm91bHdyeW80aXdR",
+        "snippet": {
+          "publishedAt": "2022-02-03T21:30:09Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Ao Vivo Quando a Terra Era Redonda (Trailer Oficial)",
+          "description": "Dia 17.2.2022 na rede Cinemark\nPré-venda:  https://www.cinemark.com.br/filme/supercombo-ao-vivo-quando-a-terra-era-redonda\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomboroc...\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPedro Ramos\nPaulo Vaz\nAndré Dea",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/oulwryo4iwQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/oulwryo4iwQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/oulwryo4iwQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/oulwryo4iwQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 208,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "oulwryo4iwQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "oulwryo4iwQ",
+          "videoPublishedAt": "2022-02-03T21:30:09Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Igl1IfhawJpPRX7gzNCubUPkSuw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlRpOGpSTk1qZTc4",
+        "snippet": {
+          "publishedAt": "2022-01-29T14:00:25Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 3",
+          "description": "O terceiro episódio da nossa série r e c o n e x ã o mostra os bastidores do show no Espaço Leste, em São Paulo. O último de 2021.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPedro Ramos\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres (https://www.instagram.com/eurenatoperes/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Ti8jRNMje78/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Ti8jRNMje78/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Ti8jRNMje78/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Ti8jRNMje78/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Ti8jRNMje78/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 209,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Ti8jRNMje78"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Ti8jRNMje78",
+          "videoPublishedAt": "2022-01-29T14:00:25Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "H3ivhXLZJscX4YIEEuYFc3BTYVE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm94VHBxU3NJMGhN",
+        "snippet": {
+          "publishedAt": "2021-12-29T15:00:33Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 2",
+          "description": "O segundo episódio da nossa série r e c o n e x ã o mostra os bastidores do show no Sesc Guarulhos, o terceiro após uma longa pausa longe dos palcos.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPedro Ramos\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres (https://www.instagram.com/eurenatoperes/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/oxTpqSsI0hM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/oxTpqSsI0hM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/oxTpqSsI0hM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/oxTpqSsI0hM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/oxTpqSsI0hM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 210,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "oxTpqSsI0hM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "oxTpqSsI0hM",
+          "videoPublishedAt": "2021-12-29T15:00:33Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "g2doLb8twOjl1sdTO0SQ6MuYsFo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmpRM3g4WENRWG9N",
+        "snippet": {
+          "publishedAt": "2021-12-01T14:59:55Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Maremotos - Ao Vivo Quando a Terra Era Redonda",
+          "description": "Siga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomboroc...\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPedro Ramos\nPaulo Vaz\nAndré Dea\n\nProdução Executiva - Gritaria Produções\nDireção - Gabriel Hand\nEdição - Renan Queiroz\nEngenheiro de áudio - Zeca Leme\nFotógrafo - Yvã Santos\n\nGravado ao vivo em São Paulo no dia 24 de Novembro de 2019 @ Audio Club\nMixado e Masterizado por Leo Ramos\n\nLançamento: Olga Music",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/jQ3x8XCQXoM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/jQ3x8XCQXoM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/jQ3x8XCQXoM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/jQ3x8XCQXoM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/jQ3x8XCQXoM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 211,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "jQ3x8XCQXoM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "jQ3x8XCQXoM",
+          "videoPublishedAt": "2021-12-01T14:59:55Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "yMaOU2IxnZ5eF4vda67XEYfkEg4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjk5N0VGMXhJUnln",
+        "snippet": {
+          "publishedAt": "2021-11-27T15:00:09Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Reconexão - Episódio 1",
+          "description": "O primeiro episódio da nossa série r e c o n e x ã o mostra os bastidores dos primeiros shows realizados pela banda após 655 dias longe dos palcos.\n\nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPedro Ramos\nPaulo Vaz\nAndré Dea\n\n\nCaptação, Edição e Finalização - Renato Peres (https://www.instagram.com/eurenatoperes/)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/997EF1xIRyg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/997EF1xIRyg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/997EF1xIRyg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/997EF1xIRyg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/997EF1xIRyg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 212,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "997EF1xIRyg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "997EF1xIRyg",
+          "videoPublishedAt": "2021-11-27T15:00:09Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "kceWPfqERcmAel1Evm_5Yv85ty4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjBfODlqMkJsb3Aw",
+        "snippet": {
+          "publishedAt": "2021-10-29T03:00:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Bonsai - Ao Vivo Quando a Terra Era Redonda",
+          "description": "Siga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://www.youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo\n\nLeo Ramos\nCarol Navarro\nPedro Ramos\nPaulo Vaz\nAndré Dea\n\nProdução Executiva - Gritaria Produções\nDireção - Gabriel Hand\nEdição - Renan Queiroz\nEngenheiro de áudio - Zeca Leme\nFotógrafo - Yvã Santos\n\nGravado ao vivo em São Paulo no dia 24 de Novembro de 2019 @ Audio Club\nMixado e Masterizado por Leo Ramos\n\nLançamento: Olga Music",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/0_89j2Blop0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/0_89j2Blop0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/0_89j2Blop0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/0_89j2Blop0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/0_89j2Blop0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 213,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "0_89j2Blop0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "0_89j2Blop0",
+          "videoPublishedAt": "2021-10-29T03:00:11Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "kE8Wn469jr9Xh2kJ8TACEFY4RCI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlVJVzZ1alhHYlJF",
+        "snippet": {
+          "publishedAt": "2021-08-06T21:00:57Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Gravidade (Lyric Video)",
+          "description": "Lyric Vídeo Oficial da música “Gravidade”, presente no EP “Supercombo”, lançado em 2021\n\nOuça o EP aqui: https://ditto.fm/supercombo-ep \nSiga a Supercombo no Instagram: http://instagram.com/supercombooficial \nSe inscreva no canal: https://youtube.com/supercomborock?sub_confirmation=1\n\nSupercombo é:\nLeo Ramos\nCarol Navarro\nPedro Ramos\nPaulo Vaz\nAndré Dea\n\nDireção e Fotografia: Supercombo e Stéfano Loscalzo\nProdução: Supercombo e Gritaria\nEdição, Colorização e Finalização: Stéfano Loscalzo\nAgradecimentos especiais: Jeff Lacerda - Jeff Som, Sandro Silveira\n\nLetra:\nEu vou te mostrar\nO quanto eu sou capaz\nCapaz de aguentar o quanto for preciso\n\nPode até chover\nPode desabar (Pode Desabar)\nE o que tiver que ser será\nE o que tiver que ser não há nada\n\nQue nos prenda de alcançar um lugar ao sol\nLargar o que é ruim\nNão esquenta um dia a gente vai envelhecer\nE rir do que passou\n\nApaga essa luz\nApaga e vem deitar\nNão vou me importar de só te ver dormir\nTe ver dormir\n\nO que tiver que ser será\nNão tem como impedir\nO que tiver que ser será\nNão ha nada\n\nPode até chover em mim que eu não vou sair daqui lutando contra a gravidade\n\nE o que tiver que ser será\nE o que tiver que ser será",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/UIW6ujXGbRE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/UIW6ujXGbRE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/UIW6ujXGbRE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/UIW6ujXGbRE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/UIW6ujXGbRE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 214,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "UIW6ujXGbRE"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "UIW6ujXGbRE",
+          "videoPublishedAt": "2021-08-06T21:00:57Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "MwuoIiCbYbekcap1Uzn0KbSA4nI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlBWb3BtT2pfZXEw",
+        "snippet": {
+          "publishedAt": "2020-12-08T21:00:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Saudade (Lyric Video)",
+          "description": "Não querer lidar com pessoas\nÉ proteção pra você nunca se machucar\nSe esconde e esquece, pois quando a gente perde alguém\nNão quer nem pensar em esquecer\n\nDas vezes que eu te encontrei\nLembrar, e sentir o que foi pra mim\nAquela sensação de ter o mundo nas mãos\nMe fez acordar e ser quem sou\n\nEu sei que a vida é curta\nE que todos nós somos frágeis feito papel\nQue dobra e rasga, pois quando a gente perde alguém\nNão quer nunca ouvir que é natural\nA saudade que sinto\n\nDas vezes que eu te encontrei\nLembrar e sentir o que foi pra mim\nAquela sensação de ter o mundo nas mãos\nMe fez acordar e ser quem sou\n\nEspero que esteja em paz\nE a gente segue como dá\nSem sufocar\n\nA saudade que sinto no coração\nNão cabe nesse mundo\nA saudade que sinto no coração\nNão cabe nesse mundo\n\nAonde foi que eu errei?\nVoltar\nDecidir o que foi pra mim\nNão te culpo por tudo\nEu sei\nUm dia veremos o que sobrou\nA saudade que sinto no coração\nNão cabe nesse mundo\nA saudade que sinto no coração\nNão cabe nesse mundo\n\nFicha Técnica:\n\nVideo: Supercombo\nEdição: Carol Navarro e Carol Hallack",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/PVopmOj_eq0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/PVopmOj_eq0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/PVopmOj_eq0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/PVopmOj_eq0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/PVopmOj_eq0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 215,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "PVopmOj_eq0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "PVopmOj_eq0",
+          "videoPublishedAt": "2020-12-08T21:00:11Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "qiy4uRIKfc2hVjHNz9MLLx_BNGc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjZpQVgyTWwwdVVz",
+        "snippet": {
+          "publishedAt": "2020-10-07T16:00:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Cebolas feat. Lucas Silveira (Lyric Video)",
+          "description": "Que sejam cebolas\nPra me fazer chorar\nJá que sou uma pedra\nEu sei que eu te cobro\nBem mais que eu deveria estar fazendo de graça\n\nNão é possível, não é possível\nRessuscitar meu coração\nNão é possível, não é possível\nViver somente de razão\nNão é possível, não é possível\n\nEscondo as cartas\nEscondo de mim mesmo\nEntão não pergunte o que passa\nQue venha o tédio\nPra reclamar que eu sou monótono e chato\n\nNão é possível, não é possível\nRessuscitar meu coração\nNão é possível, não é possível\nViver somente de razão\nNão é possível, não é possível\n\nTe devolvo tudo\nPode ficar com o que eu te dei\nTe devolvo tudo...\nPode ficar..\n\n\nFicha Técnica:\n\nVideo e edição: Carol Navarro e Carol Hallack\nMotion: Pérsio Guerreiro\n\n*Nenhum alimento foi desperdiçado para a gravação desse video. Carol fez todas as variações POSSÍVEIS e IMAGINÁVEIS de receitas que incluem cebolas durante quase uma semana! DILIÇA!! #quefomekatia :))",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/6iAX2Ml0uUs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/6iAX2Ml0uUs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/6iAX2Ml0uUs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/6iAX2Ml0uUs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 216,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "6iAX2Ml0uUs"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "6iAX2Ml0uUs",
+          "videoPublishedAt": "2020-10-07T16:00:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "pLb3ujlIVjh00herxFjVe2d-p2Y",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkNkUGUyblMxT2JV",
+        "snippet": {
+          "publishedAt": "2020-08-15T00:03:20Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Piloto Automático [em casa] - Jul2020",
+          "description": "LOJA OFICIAL: www.gritaria.com/supercombo \n\nSite Oficial: www.supercomborock.com\nFacebook: www.facebook.com/supercombooficial\nTwitter: www.twitter.com/supercombo\nInstagram: www.instagram.com/supercombooficial\n\nImagens / Edição: \nToledo https://www.instagram.com/toledoone/\nPaulo Vaz https://www.instagram.com/paulovaz\nCarol Navarro https://www.instagram.com/carolnavarro\nAndre Dea https://www.instagram.com/andredea\nLeo Ramos https://www.instagram.com/reolamos\n\nSupercombo https://www.instagram.com/supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/CdPe2nS1ObU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/CdPe2nS1ObU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/CdPe2nS1ObU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/CdPe2nS1ObU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/CdPe2nS1ObU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 217,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "CdPe2nS1ObU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "CdPe2nS1ObU",
+          "videoPublishedAt": "2020-08-15T00:03:20Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "JBhg1-iOiLOAQCa6fNL9FUF_-Xo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjFKVjNTemxiblVN",
+        "snippet": {
+          "publishedAt": "2020-07-07T15:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "2 e 1 no Violão da Tia",
+          "description": "Toledin te ensina a tocar 2 e 1 no violão. #ficaemcasa\n\nLOJA OFICIAL: www.gritaria.com/supercombo \n\n\n\nViolão Lag: http://www.habro.com.br/lag/violao-eletro-acustico-tramontane-90-parlor-lag/\n\nCordas SG: http://www.sgstrings.com.br/produto/ouro-custom-light/\n\nSite Oficial: www.supercomborock.com\nFacebook: www.facebook.com/supercombooficial\nTwitter: www.twitter.com/supercombo\nInstagram: www.instagram.com/supercombooficial\n\nImagens / Edição: \nToledo https://www.instagram.com/toledoone/\n\nMusicas:\nSupercombo https://www.instagram.com/supercombooficial/\n\nAgradecimento:\n\nhttps://www.instagram.com/sgstrings\nhttps://www.instagram.com/habrobr\nhttps://www.instagram.com/lagguitars\nhttps://www.instagram.com/izzo.musical",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/1JV3SzlbnUM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/1JV3SzlbnUM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/1JV3SzlbnUM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/1JV3SzlbnUM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/1JV3SzlbnUM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 218,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "1JV3SzlbnUM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "1JV3SzlbnUM",
+          "videoPublishedAt": "2020-07-07T15:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "LDeFY_TfsLkgpTJwpz335cqWD2A",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlk4ZnFwVUM3cjFV",
+        "snippet": {
+          "publishedAt": "2020-06-23T15:30:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Cela no Violão da Tia",
+          "description": "Toledin te ensina a tocar Cela no violão. #ficaemcasa\n\nViolão Lag: http://www.habro.com.br/lag/violao-eletro-acustico-tramontane-90-parlor-lag/\n\nCordas SG: http://www.sgstrings.com.br/produto/ouro-custom-light/\n\nMerch: www.gritaria.com/supercombo \nSite Oficial: www.supercomborock.com\nFacebook: www.facebook.com/supercombooficial\nTwitter: www.twitter.com/supercombo\nInstagram: www.instagram.com/supercombooficial\n\nImagens / Edição: \nToledo https://www.instagram.com/toledoone/\n\nMusicas:\nSupercombo https://www.instagram.com/supercombooficial/\n\nAgradecimento:\n\nhttps://www.instagram.com/sgstrings\nhttps://www.instagram.com/habrobr\nhttps://www.instagram.com/lagguitars\nhttps://www.instagram.com/izzo.musical",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Y8fqpUC7r1U/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Y8fqpUC7r1U/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Y8fqpUC7r1U/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Y8fqpUC7r1U/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Y8fqpUC7r1U/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 219,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Y8fqpUC7r1U"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Y8fqpUC7r1U",
+          "videoPublishedAt": "2020-06-23T15:30:11Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "vKhR5ELFu7PIp9ieVaW35G8eVhE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmZibDlfMEF3aFlr",
+        "snippet": {
+          "publishedAt": "2020-06-09T15:30:10Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Xepa das Estrelas no Violão da Tia",
+          "description": "Toledin te ensina a tocar Xepa das Estrelas no violão. #ficaemcasa\n\nViolão Lag: http://www.habro.com.br/lag/violao-eletro-acustico-tramontane-90-parlor-lag/\n\nCordas SG: http://www.sgstrings.com.br/produto/ouro-custom-light/\n\nMerch: www.gritaria.com/supercombo \nSite Oficial: www.supercomborock.com\nFacebook: www.facebook.com/supercombooficial\nTwitter: www.twitter.com/supercombo\nInstagram: www.instagram.com/supercombooficial\n\nImagens / Edição: \nToledo https://www.instagram.com/toledoone/\n\nMusicas:\nSupercombo https://www.instagram.com/supercombooficial/\n\nAgradecimento:\n\nhttps://www.instagram.com/sgstrings\nhttps://www.instagram.com/habrobr\nhttps://www.instagram.com/lagguitars\nhttps://www.instagram.com/izzo.musical",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/fbl9_0AwhYk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/fbl9_0AwhYk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/fbl9_0AwhYk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/fbl9_0AwhYk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/fbl9_0AwhYk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 220,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "fbl9_0AwhYk"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "fbl9_0AwhYk",
+          "videoPublishedAt": "2020-06-09T15:30:10Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "-haCrZ3ya-cCddeREkbXTPQPiWM",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkVtMHA1T3Z1MW1n",
+        "snippet": {
+          "publishedAt": "2020-05-26T21:30:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Robozin no Violão da Tia",
+          "description": "Toledin te ensina a tocar Robozin no violão. #ficaemcasa\n\nViolão Lag: http://www.habro.com.br/lag/violao-eletro-acustico-tramontane-90-parlor-lag/\n\nCordas SG: http://www.sgstrings.com.br/produto/ouro-custom-light/\n\nMerch: www.gritaria.com/supercombo \nSite Oficial: www.supercomborock.com\nFacebook: www.facebook.com/supercombooficial\nTwitter: www.twitter.com/supercombo\nInstagram: www.instagram.com/supercombooficial\n\nImagens / Edição: \nToledo https://www.instagram.com/toledoone/\n\nMusicas:\nSupercombo https://www.instagram.com/supercombooficial/\n\nAgradecimento:\n\nhttps://www.instagram.com/sgstrings\nhttps://www.instagram.com/habrobr\nhttps://www.instagram.com/lagguitars\nhttps://www.instagram.com/izzo.musical",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Em0p5Ovu1mg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Em0p5Ovu1mg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Em0p5Ovu1mg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Em0p5Ovu1mg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Em0p5Ovu1mg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 221,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Em0p5Ovu1mg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Em0p5Ovu1mg",
+          "videoPublishedAt": "2020-05-26T21:30:11Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Pqj52RILWUsDS7JUBVv_tIvGXbE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnlJWjhpTW5felRF",
+        "snippet": {
+          "publishedAt": "2020-05-12T15:00:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Meu Colorista no Violão da Tia",
+          "description": "Toledin te ensina a tocar Meu Colorista no violão. #ficaemcasa\n\nViolão Lag: http://www.habro.com.br/lag/violao-eletro-acustico-tramontane-90-parlor-lag/\n\nCordas SG: http://www.sgstrings.com.br/produto/ouro-custom-light/\n\nMerch: www.gritaria.com/supercombo \nSite Oficial: www.supercomborock.com\nFacebook: www.facebook.com/supercombooficial\nTwitter: www.twitter.com/supercombo\nInstagram: www.instagram.com/supercombooficial\n\nImagens / Edição: \nToledo https://www.instagram.com/toledoone/\n\nMusicas:\nSupercombo https://www.instagram.com/supercombooficial/\n\nAgradecimento:\n\nhttps://www.instagram.com/sgstrings\nhttps://www.instagram.com/habrobr\nhttps://www.instagram.com/lagguitars\nhttps://www.instagram.com/izzo.musical",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/yIZ8iMn_zTE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/yIZ8iMn_zTE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/yIZ8iMn_zTE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/yIZ8iMn_zTE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/yIZ8iMn_zTE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 222,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "yIZ8iMn_zTE"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "yIZ8iMn_zTE",
+          "videoPublishedAt": "2020-05-12T15:00:11Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "qwSJ7NxZ6yAQzXSP-G6FtNK3s0Y",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjExUGwxMlpRRDRB",
+        "snippet": {
+          "publishedAt": "2019-10-08T15:30:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - O Guerreiro e a Selva | Drum Cam |",
+          "description": "Confira a NUNCA ANTES VISTA e TOTALMENTE EXCELENTE série de Drum Cams gravadas pelo nosso querido recém chegado André Dea. \n\n\n\n\nBatera mais lindo do Brasil: @andredea\n\n\n\n\nE aí, conseguiu tocar? Manda pra gente seu vídeo tocando O Guerreiro e a Selva na batera lá no instagram! @supercombooficial\n\n\n\n\nNovo modelo de camiseta disponível no nosso site:\nhttps://www.supercomborock.com\n\n\n\n\n\n\n\n\nfacebook.com/supercombooficial\ntwitter.com/supercombo\ninstagram.com/supercombooficial\n\n\n\n\nFicha Técnica\n\n\n\n\nImagens: \n\n\n\n\nYvã Santos - @santosyva\nYgor Aléxis - @alexisygor\n\n\n\n\nCaptação de Áudio:\n\n\n\n\nEstúdio BTG - @btgstudio\nZeca Leme - @zecaleme\nPedro Ramos - @toledo \n\n\n\n\nEdição:\n\n\n\n\nGabriel Hand - @gabrielhand\n\n\n\n\nAndré Dea usa:\n\n\n\n\n@vicfirth\n@gretschdrums\n@orioncymbals\n@cavalera",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/11Pl12ZQD4A/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/11Pl12ZQD4A/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/11Pl12ZQD4A/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/11Pl12ZQD4A/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/11Pl12ZQD4A/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 223,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "11Pl12ZQD4A"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "11Pl12ZQD4A",
+          "videoPublishedAt": "2019-10-08T15:30:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "pz-7K7JVHJr1hDMeBksZQr7qTC0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlNBOE9ya2M0NktR",
+        "snippet": {
+          "publishedAt": "2019-10-01T15:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Parafuso a Menos | Drum Cam |",
+          "description": "Confira a NUNCA ANTES VISTA e TOTALMENTE EXCELENTE série de Drum Cams gravadas pelo nosso querido recém chegado André Dea. \n\n\n\n\nBatera mais lindo do Brasil: @andredea\n\n\n\n\nE aí, conseguiu tocar? Manda pra gente seu vídeo tocando Parafuso a Menos na batera lá no instagram! @supercombooficial\n\n\n\n\nNovo modelo de camiseta disponível no nosso site:\nhttps://www.supercomborock.com\n\n\n\n\n\n\n\n\nfacebook.com/supercombooficial\ntwitter.com/supercombo\ninstagram.com/supercombooficial\n\n\n\n\nFicha Técnica\n\n\n\n\nImagens: \n\n\n\n\nYvã Santos - @santosyva\nYgor Aléxis - @alexisygor\n\n\n\n\nCaptação de Áudio:\n\n\n\n\nEstúdio BTG - @btgstudio\nZeca Leme - @zecaleme\nPedro Ramos - @toledo \n\n\n\n\nEdição:\n\n\n\n\nGabriel Hand - @gabrielhand\n\n\n\n\nAndré Dea usa:\n\n\n\n\n@vicfirth\n@gretschdrums\n@orioncymbals\n@cavalera",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/SA8Orkc46KQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/SA8Orkc46KQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/SA8Orkc46KQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/SA8Orkc46KQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/SA8Orkc46KQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 224,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "SA8Orkc46KQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "SA8Orkc46KQ",
+          "videoPublishedAt": "2019-10-01T15:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "QVdq_7-DUX95haK0fMpH06H2iYY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmd4Ymp2dDdVNGRF",
+        "snippet": {
+          "publishedAt": "2019-09-24T15:30:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Maremotos | Drum Cam |",
+          "description": "Confira a NUNCA ANTES VISTA e TOTALMENTE EXCELENTE série de Drum Cams gravadas pelo nosso querido recém chegado André Dea. \n\n\n\n\nBatera mais lindo do Brasil: @andredea\n\n\n\n\nE aí, conseguiu tocar? Manda pra gente seu vídeo tocando Maremotos na batera lá no instagram! @supercombooficial\n\n\n\n\nNovo modelo de camiseta disponível no nosso site:\nhttps://www.supercomborock.com\n\n\n\n\n\n\n\n\nfacebook.com/supercombooficial\ntwitter.com/supercombo\ninstagram.com/supercombooficial\n\n\n\n\nFicha Técnica\n\n\n\n\nImagens: \n\n\n\n\nYvã Santos - @santosyva\nYgor Aléxis - @alexisygor\n\n\n\n\nCaptação de Áudio:\n\n\n\n\nEstúdio BTG - @btgstudio\nZeca Leme - @zecaleme\nPedro Ramos - @toledo \n\n\n\n\nEdição:\n\n\n\n\nGabriel Hand - @gabrielhand\n\n\n\n\nAndré Dea usa:\n\n\n\n\n@vicfirth\n@gretschdrums\n@orioncymbals\n@cavalera",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/gxbjvt7U4dE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/gxbjvt7U4dE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/gxbjvt7U4dE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/gxbjvt7U4dE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/gxbjvt7U4dE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 225,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "gxbjvt7U4dE"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "gxbjvt7U4dE",
+          "videoPublishedAt": "2019-09-24T15:30:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "EsowbpF7_WY1-3_ougIL4a69p-M",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnJ3bXItWFVZS2lR",
+        "snippet": {
+          "publishedAt": "2019-09-17T15:30:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Meu Colorista | Drum Cam |",
+          "description": "Confira a NUNCA ANTES VISTA e TOTALMENTE EXCELENTE série de Drum Cams gravadas pelo nosso querido recém chegado André Dea. \n\n\n\n\nBatera mais lindo do Brasil: @andredea\n\n\n\n\nE aí, conseguiu tocar? Manda pra gente seu vídeo tocando Meu Colorista na batera lá no instagram! @supercombooficial\n\n\n\n\nNovos produtos disponíveis para compra em:\nhttps://www.supercomborock.com\n\n\n\n\n\n\n\n\nfacebook.com/supercombooficial\ntwitter.com/supercombo\ninstagram.com/supercombooficial\n\n\n\n\nFicha Técnica\n\n\n\n\nImagens: \n\n\n\n\nYvã Santos - @santosyva\nYgor Aléxis - @alexisygor\n\n\n\n\nCaptação de Áudio:\n\n\n\n\nEstúdio BTG - @btgstudio\nZeca Leme - @zecaleme\nPedro Ramos - @toledo \n\n\n\n\nEdição:\n\n\n\n\nGabriel Hand - @gabrielhand\n\n\n\n\nAndré Dea usa:\n\n\n\n\n@vicfirth\n@gretschdrums\n@orioncymbals\n@cavalera",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/rwmr-XUYKiQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/rwmr-XUYKiQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/rwmr-XUYKiQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/rwmr-XUYKiQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/rwmr-XUYKiQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 226,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "rwmr-XUYKiQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "rwmr-XUYKiQ",
+          "videoPublishedAt": "2019-09-17T15:30:03Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "5PyLgKPOhDYryyE_dmtXh86oTPo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmV0ZXYwMFNZQmlJ",
+        "snippet": {
+          "publishedAt": "2019-09-10T15:30:04Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Guarda-Chuva | Drum Cam |",
+          "description": "Confira a NUNCA ANTES VISTA e TOTALMENTE EXCELENTE série de Drum Cams gravadas pelo nosso querido recém chegado André Dea. \n\n\n\n\nBatera mais lindo do Brasil: @andredea\n\n\n\n\nE aí, conseguiu tocar? Manda pra gente seu vídeo tocando Guarda-Chuva na batera lá no instagram! @supercombooficial\n\n\n\n\nNovos produtos disponíveis para compra em:\nhttps://www.supercomborock.com\n\n\n\n\n\n\n\n\nfacebook.com/supercombooficial\ntwitter.com/supercombo\ninstagram.com/supercombooficial\n\n\n\n\nFicha Técnica\n\n\n\n\nImagens: \n\n\n\n\nYvã Santos - @santosyva\nYgor Aléxis - @alexisygor\n\n\n\n\nCaptação de Áudio:\n\n\n\n\nEstúdio BTG - @btgstudio\nZeca Leme - @zecaleme\nPedro Ramos - @toledo \n\n\n\n\nEdição:\n\n\n\n\nGabriel Hand - @gabrielhand\n\n\n\n\nAndré Dea usa:\n\n\n\n\n@vicfirth\n@gretschdrums\n@orioncymbals\n@cavalera",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/etev00SYBiI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/etev00SYBiI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/etev00SYBiI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/etev00SYBiI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/etev00SYBiI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 227,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "etev00SYBiI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "etev00SYBiI",
+          "videoPublishedAt": "2019-09-10T15:30:04Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "flLnMsF5MBRqqHDDg7VuRvcmCdo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmpsSEROX0dtcENF",
+        "snippet": {
+          "publishedAt": "2019-09-03T15:30:05Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Robozin | Drum Cam |",
+          "description": "Confira a NUNCA ANTES VISTA e TOTALMENTE EXCELENTE série de Drum Cams gravadas pelo nosso querido recém chegado André Dea. \n\n\n\n\nBatera mais lindo do Brasil: @andredea\n\n\n\n\nE aí, conseguiu tocar? Manda pra gente seu vídeo tocando Robozin na batera lá no instagram! @supercombooficial\n\n\n\n\nNovos produtos disponíveis para compra em:\nhttps://www.supercomborock.com\n\n\n\n\n\n\n\n\nfacebook.com/supercombooficial\ntwitter.com/supercombo\ninstagram.com/supercombooficial\n\n\n\n\nFicha Técnica\n\n\n\n\nImagens: \n\n\n\n\nYvã Santos - @santosyva\nYgor Aléxis - @alexisygor\n\n\n\n\nCaptação de Áudio:\n\n\n\n\nEstúdio BTG - @btgstudio\nZeca Leme - @zecaleme\nPedro Ramos - @toledo \n\n\n\n\nEdição:\n\n\n\n\nGabriel Hand - @gabrielhand\n\n\n\n\nAndré Dea usa:\n\n\n\n\n@vicfirth\n@gretschdrums\n@orioncymbals\n@cavalera",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/jlHDN_GmpCE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/jlHDN_GmpCE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/jlHDN_GmpCE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/jlHDN_GmpCE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/jlHDN_GmpCE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 228,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "jlHDN_GmpCE"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "jlHDN_GmpCE",
+          "videoPublishedAt": "2019-09-03T15:30:05Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "daR-yshOAtbMk-09MhIFjS9FwIQ",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkdCWF9KVGp3WnA4",
+        "snippet": {
+          "publishedAt": "2019-08-27T15:30:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - 2 e 1 | Drum Cam |",
+          "description": "Confira a NUNCA ANTES VISTA e TOTALMENTE EXCELENTE série de Drum Cams gravadas pelo nosso querido recém chegado André Dea. \n\nBatera mais lindo do Brasil: @andredea\n\nE aí, conseguiu tocar? Manda pra gente seu vídeo tocando 2 e 1 na batera lá no instagram! @supercombooficial\n\nOs nossos combos estão disponíveis para compra em:\nhttps://www.supercomborock.com\n\n\nfacebook.com/supercombooficial\ntwitter.com/supercombo\ninstagram.com/supercombooficial\n\nFicha Técnica\n\nImagens: \n\nYvã Santos - @santosyva\nYgor Aléxis - @alexisygor\n\nCaptação de Áudio:\n\nEstúdio BTG - @btgstudio\nZeca Leme - @zecaleme\nPedro Ramos - @toledo \n\nEdição:\n\nGabriel Hand - @gabrielhand\n\nAndré Dea usa:\n\n@vicfirth\n@gretschdrums\n@orioncymbals\n@cavalera",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/GBX_JTjwZp8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/GBX_JTjwZp8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/GBX_JTjwZp8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/GBX_JTjwZp8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/GBX_JTjwZp8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 229,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "GBX_JTjwZp8"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "GBX_JTjwZp8",
+          "videoPublishedAt": "2019-08-27T15:30:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "jFp6Aao0g-STYe8yyO5mMJGB2-I",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjdJZGFrc2RvNjhB",
+        "snippet": {
+          "publishedAt": "2019-08-20T15:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Cela | Drum Cam |",
+          "description": "Confira a NUNCA ANTES VISTA e TOTALMENTE EXCELENTE série de Drum Cams gravadas pelo nosso querido recém chegado André Dea. \n\nBatera mais lindo do Brasil: @andredea\n\nE aí, conseguiu tocar? Manda pra gente seu vídeo tocando Cela na batera lá no instagram! @supercombooficial\n\nCompre Merch exclusivo da Supercombo aqui no link:\nhttps://www.supercomborock.com\n\n\nfacebook.com/supercombooficial\ntwitter.com/supercombo\ninstagram.com/supercombooficial\n\nFicha Técnica\n\nImagens: \n\nYvã Santos - @santosyva\nYgor Aléxis - @alexisygor\n\nCaptação de Áudio:\n\nEstúdio BTG - @btgstudio\nZeca Leme - @zecaleme\nPedro Ramos - @toledo \n\nEdição:\n\nGabriel Hand - @gabrielhand\n\nAndré Dea usa:\n\n@vicfirth\n@gretschdrums\n@orioncymbals\n@cavalera",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/7Idaksdo68A/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/7Idaksdo68A/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/7Idaksdo68A/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/7Idaksdo68A/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/7Idaksdo68A/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 230,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "7Idaksdo68A"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "7Idaksdo68A",
+          "videoPublishedAt": "2019-08-20T15:30:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "JAumWWMHM6ck0VKP8ietR-77t_Y",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjJZQ1U2Y3FsNjdn",
+        "snippet": {
+          "publishedAt": "2019-08-13T15:30:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Xepa das Estrelas | Drum Cam |",
+          "description": "Confira a NUNCA ANTES VISTA e TOTALMENTE EXCELENTE série de Drum Cams gravadas pelo nosso querido recém chegado André Dea. \n\nBatera mais lindo do Brasil: @andredea\n\nE aí, conseguiu tocar? Manda pra gente seu vídeo tocando Xepa na batera lá no instagram! @supercombooficial\n\nCompre Merch exclusivo da Supercombo aqui no link:\nhttps://www.supercomborock.com\n\n*Promoção de COMBOS com preço camarada!\n\nfacebook.com/supercombooficial\ntwitter.com/supercombo\ninstagram.com/supercombooficial\n\nFicha Técnica\n\nImagens: \n\nYvã Santos - @santosyva\nYgor Aléxis - @alexisygor\n\nCaptação de Áudio:\n\nEstúdio BTG - @btgstudio\nZeca Leme - @zecaleme\nPedro Ramos - @toledo \n\nEdição:\n\nGabriel Hand - @gabrielhand\n\nAndré Dea usa:\n\n@vicfirth\n@gretschdrums\n@orioncymbals\n@cavalera",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/2YCU6cql67g/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/2YCU6cql67g/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/2YCU6cql67g/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/2YCU6cql67g/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/2YCU6cql67g/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 231,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "2YCU6cql67g"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "2YCU6cql67g",
+          "videoPublishedAt": "2019-08-13T15:30:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "9XcsP46BpTorTluW3y0qMT_Erew",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnhkR0d4VGp4REJV",
+        "snippet": {
+          "publishedAt": "2019-08-06T15:00:15Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Menina Largata | Drum Cam |",
+          "description": "Confira a NUNCA ANTES VISTA e TOTALMENTE EXCELENTE série de Drum Cams gravadas pelo nosso querido recém chegado André Dea. \n\nBatera mais lindo do Brasil: @andredea\n\nE aí, conseguiu tocar? Manda pra gente seu vídeo tocando Menina Largata na batera lá no instagram! @supercombooficial\n\nCompre seu Moletop exclusivo de \"Menina Largata\" aqui no link:\nhttps://www.supercomborock.com\n\n\nfacebook.com/supercombooficial\ntwitter.com/supercombo\ninstagram.com/supercombooficial\n\nFicha Técnica\n\nImagens: \n\nYvã Santos - @santosyva\nYgor Aléxis - @alexisygor\n\nCaptação de Áudio:\n\nEstúdio BTG - @btgstudio\nZeca Leme - @zecaleme\nPedro Ramos - @toledo \n\nEdição:\n\nGabriel Hand - @gabrielhand\n\nAndré Dea usa:\n\n@vicfirth\n@gretschdrums\n@orioncymbals\n@cavalera",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/xdGGxTjxDBU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/xdGGxTjxDBU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/xdGGxTjxDBU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/xdGGxTjxDBU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/xdGGxTjxDBU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 232,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "xdGGxTjxDBU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "xdGGxTjxDBU",
+          "videoPublishedAt": "2019-08-06T15:00:15Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "tkh7tLqad06XnSKyDi_H5IbcigI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjFyZDF6aUJQbV9J",
+        "snippet": {
+          "publishedAt": "2019-05-08T21:57:47Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Dot Legacy Feat. Supercombo - HeartBrake City (Oficial Videoclip)",
+          "description": "Single de uma colab internacional do ABRUSH feita a um tempo atras relançada no nosso canal para vocês!\n\nSe inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n\n◈ https://www.supercomborock.com\n◈ facebook.com/supercombooficial\n◈ twitter.com/supercombo\n◈ instagram.com/supercombooficial\n\n◈ https://www.dotlegacyband.com/\n◈ facebook.com/dotlegacy\n◈ twitter.com/dotlegacy\n◈ instagram.com/dotlegacy\n\nImagens e edição: \nDot Legacy e Supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/1rd1ziBPm_I/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/1rd1ziBPm_I/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/1rd1ziBPm_I/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/1rd1ziBPm_I/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/1rd1ziBPm_I/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 233,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "1rd1ziBPm_I"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "1rd1ziBPm_I",
+          "videoPublishedAt": "2019-05-08T21:57:47Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "xTWVwlkwMuhpyfal_XxCDBwk61s",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmx0SjVmYnE2NU9F",
+        "snippet": {
+          "publishedAt": "2019-03-30T20:45:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Menina Largata (Clipe Oficial)",
+          "description": "Menina Largata\n\nEssa menina sempre foi ‘largata’\nBrigou com os pais e agora quer fugir da casca\nVocê tá triste, teias na tua alma\nMas o casulo é pra fortalecer tuas asas\nVai ser bom pra você!\n\nQuando tu sair o céu será teu território\nVoe pra você seja quem quiser\nFaz do teu jeito!\nQuanto tu sair ame tua metamorfose\nCuide de você seja como for\nFaz do teu jeito!\nSem tropeçar (calma)\n\nFloresta é triste cheia de maldade\nTua armadura só cresce com a idade\nVai ser bom pra você\n\nSegue as antenas\nQuando tu se assumir\nQuando tu se aceitar\nDeixa o para-brisa vir\nEle que vai se quebrar\nDeixa o tempo construir\nO teu sonho de voar\n\nFicha Técnica: \n\nDireção e Fotografia: _hvnd (Hand)\nProdução: Ygor Alexis, Julia Ribeiro, Gritaria. \nAssistentes de Produção: Gabriel Dantas, Karilson Mello.\nFoto Still : Yvã Santos\nConcept das cabeças: Hand, Toledo, Carol Navarro. \nProdução das cabeças: Carol Navarro \nFigurino: Cavalera , Carol Navarro, Carol Canon\nMaquiagem: Carol Navarro \nEdição, Colorização e Finalização: Hand\nAgradecimento: Cris Simplão\nFigurinos: Press Pass / Cavalera / Ocksa",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ltJ5fbq65OE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ltJ5fbq65OE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ltJ5fbq65OE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ltJ5fbq65OE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ltJ5fbq65OE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 234,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ltJ5fbq65OE"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ltJ5fbq65OE",
+          "videoPublishedAt": "2019-03-30T20:45:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "tAQyjMvP7_Sy8RSd68IhJX-XykU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkVHd2VkR3V4ZXFN",
+        "snippet": {
+          "publishedAt": "2019-03-15T15:21:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - 2 e 1 (Clipe Oficial)",
+          "description": "Antes de sermos dois\nA gente tem que saber ser um\nDegustar um pôr do sol sozinho\n\nAntes de por os pés \nA gente tem que observar\nSe vai dar pé ou só te afogar\n\nDeixa puxar a rede\nFiltrar o que interessa\nO mar não tá pra pesca\nSe o ódio nos divide\nE o amor nos completa\nVamos juntar as peças\n\nDepois de sermos um\nA gente tem que saber ser dois\nSe botar a prova\nConfiança não pode falhar\nTem que se jogar\nA jangada faz cruzeiro em alto mar\n\nDeixa puxar a rede\nFiltrar o que interessa\nO mar não tá pra pesca\nSe o ódio nos divide\nE o amor nos completa\nVamos juntar as peças\n\nVamos puxar a rede\nSem cabo-de-guerra\nVamos quebrar a cabeça\n\nVamos puxar a rede\nFiltrar o que interessa\nO mar não tá pra pesca\nSe o ódio nos divide\nE o amor nos completa\nVamos juntar as peças\n\nFicha Técnica: \n\nDireção: BAMA Duo (Lucas Ferreira)\nDireção de Fotografia: Vitor D'Angelo\nArgumento: Marcel Klackzo e Lucas Ferreira\nRoteiro: Lucas Ferreira\nProdução: Gritaria\nCasting: Paulo Leal e Lucas Ferreira\nDireção de Arte: Túlio Capuano e Akemi Shimada\n1º Assistente de Câmera: Lucci Antunes\n2º Assistente de Câmera: Adilson Marques Pedro\nGaffer: Paulo Cesar Elias\nMaquinista: Antonio Eduardo Bosco\nAssistentes de Produção: Débora Caires\nAssistente de Arte: Luis Filipe Favarelo\nContra Regra: Cesar Rodrigues Junior\nMake: Tassya Piolli\nElenco: Giovanna Grigio e Pedro Lopes \nEdição: Lucas Ferreira e Marcel Klackzo\nLocadora: MR5\n\n\nProduzido por: Gritaria",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/EGwedGuxeqM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/EGwedGuxeqM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/EGwedGuxeqM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/EGwedGuxeqM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/EGwedGuxeqM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 235,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "EGwedGuxeqM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "EGwedGuxeqM",
+          "videoPublishedAt": "2019-03-15T15:21:06Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "fPCKGmyzwxtldnl-M4nPpc0EkwI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlFSLTBkYk5UYnQw",
+        "snippet": {
+          "publishedAt": "2018-11-23T01:59:43Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - 2 e 1",
+          "description": "Antes de sermos dois\nA gente tem que saber ser um\nDegustar um pôr do sol sozinho\n\nAntes de por os pés \nA gente tem que observar\nSe vai dar pé ou só te afogar\n\nDeixa puxar a rede\nFiltrar o que interessa\nO mar não tá pra pesca\nSe o ódio nos divide\nE o amor nos completa\nVamos juntar as peças\n\nDepois de sermos um\nA gente tem que saber ser dois\nSe botar a prova\nConfiança não pode falhar\nTem que se jogar\nA jangada faz cruzeiro em alto mar\n\nDeixa puxar a rede\nFiltrar o que interessa\nO mar não tá pra pesca\nSe o ódio nos divide\nE o amor nos completa\nVamos juntar as peças\n\nVamos puxar a rede\nSem cabo-de-guerra\nVamos quebrar a cabeça\n\nVamos puxar a rede\nFiltrar o que interessa\nO mar não tá pra pesca\nSe o ódio nos divide\nE o amor nos completa\nVamos juntar as peças\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/QR-0dbNTbt0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/QR-0dbNTbt0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/QR-0dbNTbt0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/QR-0dbNTbt0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 236,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "QR-0dbNTbt0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "QR-0dbNTbt0",
+          "videoPublishedAt": "2018-11-23T01:59:43Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "2xyBmSyD_Ui-7jXVmZnIrzSjjkQ",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmFyQmJhT2JFcDJJ",
+        "snippet": {
+          "publishedAt": "2018-10-05T16:38:28Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - GAMEXP 2018  [90]",
+          "description": "O nonagésimo.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/arBbaObEp2I/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/arBbaObEp2I/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/arBbaObEp2I/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/arBbaObEp2I/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/arBbaObEp2I/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 237,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "arBbaObEp2I"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "arBbaObEp2I",
+          "videoPublishedAt": "2018-10-05T16:38:28Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "loszDhdNmDjCq954wCoEb4jH9CM",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnpHbHZBTWE1bVp3",
+        "snippet": {
+          "publishedAt": "2018-09-28T18:54:47Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - Show no Teatro Eva Wilma [89]",
+          "description": "O octogésimo nono.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/zGlvAMa5mZw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/zGlvAMa5mZw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/zGlvAMa5mZw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/zGlvAMa5mZw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/zGlvAMa5mZw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 238,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "zGlvAMa5mZw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "zGlvAMa5mZw",
+          "videoPublishedAt": "2018-09-28T18:54:47Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "OdjKVLAUJilBUfkwdjr_P_x6FHY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmFtTzFjeFJJdFR3",
+        "snippet": {
+          "publishedAt": "2018-09-21T17:45:36Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - Sessão de fotos pra capa de Maremotos [88]",
+          "description": "O octogésimo oitavo.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/amO1cxRItTw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/amO1cxRItTw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/amO1cxRItTw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/amO1cxRItTw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/amO1cxRItTw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 239,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "amO1cxRItTw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "amO1cxRItTw",
+          "videoPublishedAt": "2018-09-21T17:45:36Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Rz34Epbz0fdug46k6vXTm1xwWro",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkNzT3lQOHJtdlFB",
+        "snippet": {
+          "publishedAt": "2018-09-14T16:00:04Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - Curitiba/PR [87]",
+          "description": "O octogésimo sétimo.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/CsOyP8rmvQA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/CsOyP8rmvQA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/CsOyP8rmvQA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/CsOyP8rmvQA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/CsOyP8rmvQA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 240,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "CsOyP8rmvQA"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "CsOyP8rmvQA",
+          "videoPublishedAt": "2018-09-14T16:00:04Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "uTATsuKPQYVWtJ_anKN6NViugK0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlVzN2tFZkxmNXJZ",
+        "snippet": {
+          "publishedAt": "2018-09-09T04:37:18Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Maremotos (Clipe Oficial)",
+          "description": "Video clipe oficial de Maremotos.\n\n[LETRA]\n\nAs vezes é fácil sorrir\nAs vezes só fecha a cara\nAs vezes é só dormir\nAs vezes não melhora\n\nAs vezes é fácil ouvir\nAs vezes é gritaria\nAs vezes é um poço sem fim\nAs vezes é uma escada\n\n\nCalma vai passar\nEspera a tempestade clarear\nOs maremotos de química surgem\nBagunçam tua cabeça a todo vapor\nCalma vai passar\nEspera a tempestade clarear\nOs travesseiros derretem a noite\nTodos que cobram você não sabem a dor / não entendem a dor / não sentem dor\n\nAs vezes esconde de si\nAs vezes dá a cara a tapa\nAs vezes não dá pra fugir\nAs vezes tu só viaja\n\nO eu de dentro sempre fica enterrado\nPra conhecer você precisa cavar\nNossas sementes sempre ficam isoladas \nPra conhecer você precisa plantar\nNossos espinhos sempre ficam apontados (afiados)\nÉ proteção pra não se decepcionar\nOs nossos medos são os nossos papagaios\nPesam os ombros e repetem mantras infernais\n\n[FICHA TÉCNICA]\n\nDireção: Marcel Klaczko (@warcel)\nDireção de Fotografia: Gabriel Hand (@grabrielhand)\nIdealização/produção: Marcel Klaczko e Pedro Ramos (@toledoone)\nEdição: Gabriel Hand e Marcel Klaczko \nProdução Executiva: Gritaria Produções (@gritariaprod)\n\nAgradecimentos:\n\nLucas Ferreira (@lucasferreira0)\nVictor Fuchs (@fuchsroadie)\nCarol Canon (@carolcanon)\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Us7kEfLf5rY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Us7kEfLf5rY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Us7kEfLf5rY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Us7kEfLf5rY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Us7kEfLf5rY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 241,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Us7kEfLf5rY"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Us7kEfLf5rY",
+          "videoPublishedAt": "2018-09-09T04:37:18Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "lM7Cgxiso22zYXUU3vTyKpS07Ck",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlhXM2RuQTRfeTY4",
+        "snippet": {
+          "publishedAt": "2018-09-07T20:00:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - Campos dos Goitacazes/RJ [86]",
+          "description": "O octogésimo sexto.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/XW3dnA4_y68/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/XW3dnA4_y68/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/XW3dnA4_y68/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/XW3dnA4_y68/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/XW3dnA4_y68/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 242,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "XW3dnA4_y68"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "XW3dnA4_y68",
+          "videoPublishedAt": "2018-09-07T20:00:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "tsqN6fX-A7OTS7RmHu5XlLmzCLg",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnV2c0dMYkRoal9F",
+        "snippet": {
+          "publishedAt": "2018-08-31T22:45:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - VILA VELHA/ES [85]",
+          "description": "O octagésimo quinto.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/uvsGLbDhj_E/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/uvsGLbDhj_E/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/uvsGLbDhj_E/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 243,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "uvsGLbDhj_E"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "uvsGLbDhj_E",
+          "videoPublishedAt": "2018-08-31T22:45:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "2NXR2nxXGxQeLJaE0VggCOvPot8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkxGZUJnTk9Yelpn",
+        "snippet": {
+          "publishedAt": "2018-08-24T19:23:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - SHOW Teatro Odisséia [84]",
+          "description": "O octagésimo quarto.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/LFeBgNOXzZg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/LFeBgNOXzZg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/LFeBgNOXzZg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/LFeBgNOXzZg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/LFeBgNOXzZg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 244,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "LFeBgNOXzZg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "LFeBgNOXzZg",
+          "videoPublishedAt": "2018-08-24T19:23:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "t6ms9pzJQRNIgEnHLGGbunajkbw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLk11UWY4eDFvTW5r",
+        "snippet": {
+          "publishedAt": "2018-08-17T21:57:37Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - Manutenção dos Pedais do Toledones [83]",
+          "description": "O octagésimo terceiro.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/MuQf8x1oMnk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/MuQf8x1oMnk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/MuQf8x1oMnk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/MuQf8x1oMnk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 245,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "MuQf8x1oMnk"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "MuQf8x1oMnk",
+          "videoPublishedAt": "2018-08-17T21:57:37Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "1vdosXRwyIuTLbpqN8eJbeWzTKo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLno2N09jRXBsYzMw",
+        "snippet": {
+          "publishedAt": "2018-08-11T00:39:56Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - João Rock 2 [82]",
+          "description": "O octagésimo segundo.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/z67OcEplc30/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/z67OcEplc30/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/z67OcEplc30/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/z67OcEplc30/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 246,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "z67OcEplc30"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "z67OcEplc30",
+          "videoPublishedAt": "2018-08-11T00:39:56Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "0-soK3A0e2U04BsBzc-PbFy0v40",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlpSYlUtamdkekRZ",
+        "snippet": {
+          "publishedAt": "2018-08-04T02:45:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - João Rock 1 [81]",
+          "description": "O octogésimo primeiro.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ZRbU-jgdzDY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ZRbU-jgdzDY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ZRbU-jgdzDY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 247,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ZRbU-jgdzDY"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ZRbU-jgdzDY",
+          "videoPublishedAt": "2018-08-04T02:45:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "3hCJ6WNvHmMw6kcWyz6-ekjkm1g",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLks4YldzeGVkajRv",
+        "snippet": {
+          "publishedAt": "2018-07-27T21:36:49Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - Ensaio JOÃO ROCK. [80]",
+          "description": "O octagésimo.\n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/K8bWsxedj4o/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/K8bWsxedj4o/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/K8bWsxedj4o/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/K8bWsxedj4o/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 248,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "K8bWsxedj4o"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "K8bWsxedj4o",
+          "videoPublishedAt": "2018-07-27T21:36:49Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "PScFd6BILmGzgrqnrkTxqfwnuc0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlNkOFozdVJDTVNR",
+        "snippet": {
+          "publishedAt": "2018-07-20T15:45:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SuperVlog - TREZE MIL pessoas na PAULISTA. [79]",
+          "description": "O septuagésimo nono.\n\nSessão de fotos com Teffyn (@stefanoloscalzo), show da Session da Tarde em São Bernardo e show do Rogério na paulista em SP.\n\nMuito Obrigado por nos proporcionarem esses momentos lindos! \n\nToda SEMANA tem video novo.\n\nEntão se inscreve no nosso canal, junte-se ao fan-clube e siga nossa rede de pesca:\n+\n◈ supercomborock.com\n◈ fb/supercombooficial\n◈ twt/supercombo\n◈ inst/supercombooficial\n\nImagens: \nToledo /toledoone/\n\nEdição: \nLucas /lucasferreira0/\n\nMusicas:\nSupercombo /supercombooficial/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Sd8Z3uRCMSQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Sd8Z3uRCMSQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Sd8Z3uRCMSQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Sd8Z3uRCMSQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Sd8Z3uRCMSQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 249,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Sd8Z3uRCMSQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Sd8Z3uRCMSQ",
+          "videoPublishedAt": "2018-07-20T15:45:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      }
+    ],
+    "pageInfo": {
+      "totalResults": 587,
+      "resultsPerPage": 50
+    }
+  }
+}

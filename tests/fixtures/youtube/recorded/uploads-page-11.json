@@ -1,0 +1,2706 @@
+{
+  "request": {
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaH1BUOkNQUURJaEE1UmpFNFEwWkRSVUZCUWtGRU5EVTI"
+    },
+    "if_none_match": null
+  },
+  "status": 200,
+  "etag": null,
+  "body": {
+    "kind": "youtube#playlistItemListResponse",
+    "etag": "l-SLnWCsFdlimNcpO02oOLTNGD4",
+    "nextPageToken": "EAAaH1BUOkNLWUVJaEEzUWtGR05qbEdNamsxUVRCRVFVSTU",
+    "prevPageToken": "EAEaH1BUOkNQUURJaEE1UmpFNFEwWkRSVUZCUWtGRU5EVTI",
+    "items": [
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "mMOVlUC9jgFXKAA5GR22IvdJ7CU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnVrcVBPc3c2N2dN",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:58Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Sem Sal",
+          "description": "SEM SAL\n\nNão vai parar essa dor que eu sinto\nDói muito mais que qualquer queda\nE eu acho que estou\nSem sal, sem sal\n\nUoooh\n\nEu não consigo explicar, então minto\nSó pra você não falar nada\nE ainda acho que estamos\nSem sal sem sal\n\n- Refrão -\nAgora eu preciso me concentrar \nPra isso nunca acontecer\nProcuro esquecer todos fatos letais\nE guardo o que eu puder\nCaminhando pra melhor\n\nFoi você que inventou essa briga\nNão tive culpa de nada\nSe você acha que estamos\nSem sal, sem sal\n\nAfinal, o que você quer de mim? 4x\n\n- Refrão - 2x\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ukqPOsw67gM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ukqPOsw67gM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ukqPOsw67gM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ukqPOsw67gM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ukqPOsw67gM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 500,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ukqPOsw67gM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ukqPOsw67gM",
+          "videoPublishedAt": "2015-09-28T19:24:58Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "4RpoLb1E0BUALreOPvCdnn3oy1I",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlhBOWJuaXZUaFd3",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:57Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Boas Vindas Fã Clube (19/06/2015)",
+          "description": "Subscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/XA9bnivThWw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/XA9bnivThWw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/XA9bnivThWw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/XA9bnivThWw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/XA9bnivThWw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 501,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "XA9bnivThWw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "XA9bnivThWw",
+          "videoPublishedAt": "2015-09-28T19:24:57Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "JI-kU0dogQOASqTbKDap1lRm_vA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnRfczJGM2VqNDEw",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:57Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Making Of Supercombo",
+          "description": "Vídeo feito durante as filmagens e sessão de fotos do Disco Sal Grosso",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/t_s2F3ej410/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/t_s2F3ej410/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/t_s2F3ej410/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/t_s2F3ej410/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/t_s2F3ej410/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 502,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "t_s2F3ej410"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "t_s2F3ej410",
+          "videoPublishedAt": "2015-09-28T19:24:57Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "kJVP6P3z3807OfVa9A5B3sF14bc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnlWQTRscGQ2ZWxj",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:57Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Nós Somos Reais",
+          "description": "NÓS SOMOS REAIS\n\nSerá que um dia você vai acordar\nE ver que essa casa não é o seu lugar?\n\nEu não agüento ver\nVocê espera demais\nSe dá um passo pra frente\nPor que dois passos pra trás?\n\nNão espere demais\nA sua vida passa num instante\nNão olhe pra trás\nJá se passaram mais de vinte anos\n\nÀs vezes a sorte já não quer sorrir\nA fé já se foi e só restou você\n\nEu não agüento ver\nVocê espera demais\nSe dá um passo pra frente\nPor que dois passos pra trás?\n\nNós somos reais\nEstamos bem aqui na sua frente\nNão somos normais\nNão adianta fugir do que se sente\n\nNós somos reais\nEstamos bem aqui na sua frente\nNão somos normais\nNão adianta fugir do que se sente\n\nVão... Se romper... As cordas amarradas em você...\n\nNão espere demais\nA sua vida passa num instante\nNão olhe pra trás\nJá se passaram mais de vinte anos\n\nNós somos reais\nEstamos bem aqui na sua frente\nNão somos normais\nNão adianta fugir do que se sente\n\nSerá que um dia você vai perceber\nO quão valioso é o tempo que se perdeu?\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/yVA4lpd6elc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/yVA4lpd6elc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/yVA4lpd6elc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/yVA4lpd6elc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/yVA4lpd6elc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 503,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "yVA4lpd6elc"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "yVA4lpd6elc",
+          "videoPublishedAt": "2015-09-28T19:24:57Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "UBOcKHtddZoRfF9jO6dkDxglxbw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmF5S0gyUEdzQXMw",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:56Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Eu Prefiro Assim",
+          "description": "EU PREFIRO ASSIM\n\nPerdi a fé em suas palavras\nIndependente do que for falar\n\nNem sei por onde eu andava\nUma estrada sem asfalto ou cor\nE uma explosão...\n\n...Revelou o lado bom de uma tragédia\nNão mostrar sofrer e esquecer as rédias\nQuem me dera ser assim\n\n(Refrão) \nEu não sirvo para festas\nGosto de promessas\nSei que eu não sou normal\nMas eu prefiro assim\nAssim, assim...\n\nEstou ficando sem tempo\nE quero só um segundo\nPra mostrar o que eu tenho aqui\nSem mais delongas\n\nCorro em meu caminho\nQuase sempre sozinho\nEsquecendo o quanto é bom sorrir\nSem me preocupar\n\nEu lamento se já me deu a sua hora\nSe quiser me ver, estarei lá fora\nLá fora.\n\n(Refrão) \nEu não deixo a porta aberta\nOlho pela fresta\nEsperando um dia alguém olhar de volta pra mim\nEu não sirvo para festas\nGosto de promessas\nSei que eu não sou normal\nMas eu prefiro assim\nAssim, assim.\n\n(Refrão 2x)\n\nEu prefiro assim\nEmbora esteja só no fim\nAgora que eu te vi\nE vi você olhando pra mim.\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ayKH2PGsAs0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ayKH2PGsAs0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ayKH2PGsAs0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ayKH2PGsAs0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ayKH2PGsAs0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 504,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ayKH2PGsAs0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ayKH2PGsAs0",
+          "videoPublishedAt": "2015-09-28T19:24:56Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "EgrpNdRM38Oe1yomUz0SWTTbitA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmdxTk9JLUVQSVJn",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:56Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Senso",
+          "description": "SENSO\n\nEu sou um poço sem fundo\ne posso falar, que em matéria de posse\nEu sou exemplar\nNo ranking de possessivo 2°lugar\nMais a verdade é que você é quem me pro...\n\nVou te avisar meu bem\nQue essa noite...\n\n[Refrão]\nVocê vai gostar - Do meu\nVocê vai gostar - Do meu\nVocê vai gostar -\nDo meu senso de humor\n\nVocê vai gostar - Do meu\nVocê vai gostar - Do meu\nVocê vai gostar -\nDo meu senso de humor\n\nJá amanheceu tao cedo\nque eu nem vi passar\nachei que era o poste na luz do luar\n\nSe for possível, eu vou querer\nouvir você me agradecer\npelos momentos que eu te fiz passar a..a..\n\nVou te avisar meu bem\nQue essa noite\ntudo pode acontecer\n\n[Refrão]\n\nVou te avisar meu bem\nQue essa noite [2x]\n\nVou te avisar meu bem\nQue essa noite\ntudo pode acontecer\n\nVocê vai gostar\nVocê vai gostar do meu senso de humor [2x]\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/gqNOI-EPIRg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/gqNOI-EPIRg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/gqNOI-EPIRg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/gqNOI-EPIRg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/gqNOI-EPIRg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 505,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "gqNOI-EPIRg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "gqNOI-EPIRg",
+          "videoPublishedAt": "2015-09-28T19:24:56Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "WB_njeEcnd0WuHKYPU5ZyEOjnV8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlI5c3BzRkZVZEEw",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:55Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo na escola Novo Anglo Taquaral (Campinas) - Making Of",
+          "description": "Subscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/R9spsFFUdA0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/R9spsFFUdA0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/R9spsFFUdA0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/R9spsFFUdA0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/R9spsFFUdA0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 506,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "R9spsFFUdA0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "R9spsFFUdA0",
+          "videoPublishedAt": "2015-09-28T19:24:55Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "gbep6NryUqNyVkRBNgPipD3g9nU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLl9ObmlnckFXRTE4",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:55Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Eu Poderia",
+          "description": "EU PODERIA\n\nEu poderia escrever uma canção de amor pra você\nSem ter que esconder \nO que quero, o que sinto e o que você não precisa saber\n\nEu poderia te dar meu coração se você me pedir\nSó pra te agradar\nNão me importo de ficar sem viver só pra te ver sorrir\n\nSó posso estar perdendo a cabeça, perdendo a cabeça\n\nSerá que isso é amor? (2x)\nEu acho que talvez, não sei\n\nSei que hoje em dia o mundo não se importa com o que eu tenho a dizer\nE isso inclui você \nSe estivéssemos há mil anos atrás você ia queimar, queimar\n\nSó posso estar perdido no tempo, perdido e sem tempo\n\nSerá que isso é amor? (3x)\nEu vou me levantar daqui\n\nSerá que isso é amor? (2x)\nEu acho que talvez, não sei\n\nEu vou me levantar daqui.\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/_NnigrAWE18/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/_NnigrAWE18/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/_NnigrAWE18/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/_NnigrAWE18/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/_NnigrAWE18/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 507,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "_NnigrAWE18"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "_NnigrAWE18",
+          "videoPublishedAt": "2015-09-28T19:24:55Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "ttVm6UtmSWic5iXPvcsO_elPWWE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmJhTEpPZVJVSjZF",
+        "snippet": {
+          "publishedAt": "2015-09-28T19:24:55Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Refrões",
+          "description": "REFRÕES\n\nEu sou tão capaz quanto você de operar este coração\nNão há mistério não\nÉ muito fácil de usar\nÉ só andar devagar cair em qualquer ilusão\n\n(Refrão)\nRefrões não fazem mais nada\nPor nós, por nós\n\nVocê é quem faz tudo fluir\nDois pontos e um travessão\nNão quero impedir a porta de se fechar\nTalvez em outro lugar eu encontre algo de bom\nEu ouvi você chorar ao sair\n\n(Refrão)\n\nQuando me ver, lembre de que não sou mais o mesmo\nRompemos o lacre (2x)\n\nMas quem vai te ajudar quando o som dos trilhos te perturbar a noite inteira\nQuem vai?\nQuem vai?\n\n(Refrão)\n\nQuando me ver, lembre de que não sou mais o mesmo\nRompemos o lacre\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/baLJOeRUJ6E/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/baLJOeRUJ6E/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/baLJOeRUJ6E/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/baLJOeRUJ6E/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/baLJOeRUJ6E/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 508,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "baLJOeRUJ6E"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "baLJOeRUJ6E",
+          "videoPublishedAt": "2015-09-28T19:24:55Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "fksTVTI8O9qnNJ7jH1eB8NETvKw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLk5jSGVoQ2I4bGYw",
+        "snippet": {
+          "publishedAt": "2015-07-02T19:36:31Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Ensaio Fotográfico com Eduardo Biermann (Making Of)",
+          "description": "Making Of do ensaio feito por Eduardo Biermann no Rio de Janeiro (Junho 2015). \n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nSite Oficial: www.supercomborock.com\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/NcHehCb8lf0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/NcHehCb8lf0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/NcHehCb8lf0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/NcHehCb8lf0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/NcHehCb8lf0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 509,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "NcHehCb8lf0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "NcHehCb8lf0",
+          "videoPublishedAt": "2015-07-02T19:36:31Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "zZyhlqgcSoLtC63nKuQQ4hGUhEE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm1ucUFhNk9vSmRB",
+        "snippet": {
+          "publishedAt": "2015-05-01T22:02:05Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Menino (Lyric Video)",
+          "description": "Lyric Video da música \"Menino\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nFICHA TÉCNICA:\n\nDIREÇÃO/EDIÇÃO/FINALIZAÇÃO: Juarez Tanure\nPRODUÇÃO EXECUTIVA: Elemess Music N' Services\n\nMENINO\n(Supercombo)\n\nMenino foi pro mato brincar com os seu irmãos\nFurou o pé, ralou a mão\nMenino da cidade não sabe andar descalço\nNão sabe respirar\n\nDe onde menino vem\nOs carros levam as pessoas pra passear\nO sol é cinza, o mar esgoto\nO sol é cinza, o mar esgoto\n\nMenino\nSai desse corpo que não te penteia\n\nO sol é cinza, o mar esgoto\nSai desse corpo que não te penteia",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/mnqAa6OoJdA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/mnqAa6OoJdA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/mnqAa6OoJdA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/mnqAa6OoJdA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/mnqAa6OoJdA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 510,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "mnqAa6OoJdA"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "mnqAa6OoJdA",
+          "videoPublishedAt": "2015-05-01T22:02:05Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "ZZBIDJepubO-yoxb06WwdHqPIy8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnM0ajJNalNualZ3",
+        "snippet": {
+          "publishedAt": "2014-12-23T14:52:14Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo e Scalene - Trans-Aparecer",
+          "description": "TRANS-APARECER\n\nNo contexto ideal\nSomos parte não o total\nMaquiar, formatar, se esconder não é opção\n\nQuem não vê pode ser \nQue não queira mesmo aceitar\nNão importa o canal\nDesaguamos no mesmo lugar\n\nFormulas formatam o sentido é uma prisão\nDisfarçam o que é errado e o foco vira distração\n\nEU SEI ALGO TRANSPARECE\nDENTRO DE QUEM SE PERMITE VER\n\nDescansa, desliga a chave não somos crianças fique a vontade pra fazer\n\nMonte suas histórias não espere alguém contar\nJunte suas memórias não espere alguém montar\n\n\nSejamos livres pra ser\n\n\n\n_____________\nFicha Técnica\n\nProduzido por Supercombo e Scalene\nGravado no estudio Lua Nova\nMixado e Masterizado por Leo Ramos (Gritaria Mix & Master)\n\n\nLetra por Diego Marques, Gustavo Bertoni, Tomás Bertoni e Pedro Ramos\nArranjo por Gustavo Bertoni, Leo Ramos, Tomás Bertoni e Pedro Ramos\n\n\nTodos instrumentos gravados por Pedro Ramos, Gustavo Bertoni e Paulo Vaz\nVozes por Gustavo Bertoni, Leo Ramos, Carol Navarro e Pedro Ramos\n\n\nProjeto Grafico por Juarez Tanure\nFoto por Ygor de Oliveira\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/s4j2MjSnjVw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/s4j2MjSnjVw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/s4j2MjSnjVw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/s4j2MjSnjVw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/s4j2MjSnjVw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 511,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "s4j2MjSnjVw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "s4j2MjSnjVw",
+          "videoPublishedAt": "2014-12-23T14:52:14Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Mcja4Lp4UvrFUbSbzmUcn1luoAE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkhjaHpaWDNpTEFr",
+        "snippet": {
+          "publishedAt": "2014-10-16T01:16:13Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Show Supercombo @Chilli Beans Flagship | Ao Vivo no ClapMe",
+          "description": "Subscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/HchzZX3iLAk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/HchzZX3iLAk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/HchzZX3iLAk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/HchzZX3iLAk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/HchzZX3iLAk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 512,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "HchzZX3iLAk"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "HchzZX3iLAk",
+          "videoPublishedAt": "2014-10-16T01:16:13Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "PVqF1gyz9tENFtoHrba1mjMCcus",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnBmdjcwSDFlQ1hn",
+        "snippet": {
+          "publishedAt": "2014-10-16T00:07:58Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "supercombo",
+          "description": "Subscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/pfv70H1eCXg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/pfv70H1eCXg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/pfv70H1eCXg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 513,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "pfv70H1eCXg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "pfv70H1eCXg",
+          "videoPublishedAt": "2014-10-16T00:07:58Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "hs1Ln5LHD0UkpcCe0NfkQluH5Ec",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm5Pc1d0Vm85S3BF",
+        "snippet": {
+          "publishedAt": "2014-10-03T15:03:14Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Autonomia",
+          "description": "Video da música \"Autonomia\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nAUTONOMIA\n(Supercombo)\n\nVou começar a mentir\nFingir que tudo está suave e sorrir\nIsso foi tema nas palestras semanais\nQue tenho na minha cabeça\n\nQuero ser um anti-depressivo pra poder me medicar\nTotal autonomia sobre mim\nE demitir quem não me respeitar\n\nVou começar a mentir\nFingir que não bateu na trave e comemorar\n\nQuero ser um anti-depressivo pra poder me medicar\nNão depender de mais ninguém\nTotal autonomia sobre mim\nE demitir quem não me respeitar\n\nQuero ser um anti-depressivo\nNão depender de mais ninguém\n\nMe salvar\nTe salvar\nSalvar\n\nQuero ser um anti-depressivo pra poder reconstruir\nMeu teto e painel solar\n\nQuero ser um anti-depressivo pra poder me medicar\nNão depender de mais ninguém\nTotal autonomia sobre mim\nMandar embora quem não respeitar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/nOsWtVo9KpE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/nOsWtVo9KpE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/nOsWtVo9KpE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/nOsWtVo9KpE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/nOsWtVo9KpE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 514,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "nOsWtVo9KpE"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "nOsWtVo9KpE",
+          "videoPublishedAt": "2014-10-03T15:03:14Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "_bfo8pQsJ9tsJ-uObX6kYvxoH1k",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkxldnF4VGQ0QnV3",
+        "snippet": {
+          "publishedAt": "2014-08-20T14:13:45Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Campo de Força (Como Tocar)",
+          "description": "#AjudaSupercombo\n\nToledo ensina como tocar \"Campo de Força\" do álbum \"Amianto\"\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/LevqxTd4Buw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/LevqxTd4Buw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/LevqxTd4Buw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/LevqxTd4Buw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/LevqxTd4Buw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 515,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "LevqxTd4Buw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "LevqxTd4Buw",
+          "videoPublishedAt": "2014-08-20T14:13:45Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "wqP4bOSssD6041C83HhZyTdqczY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnpmbGZSVk1nNU0w",
+        "snippet": {
+          "publishedAt": "2014-08-13T16:12:23Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - \"Piloto Automático\" - ONErpm Sky Sessions",
+          "description": "Durante sua participação na ONErpm Sky Sessions, a Supercombo apresenta uma versão de \"Piloto Automático\".\n\n♬  Baixe a versão de estúdio de \"Piloto Automático\" no iTunes: http://www.smarturl.it/pilotoautomatico\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/zflfRVMg5M0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/zflfRVMg5M0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/zflfRVMg5M0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/zflfRVMg5M0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/zflfRVMg5M0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 516,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "zflfRVMg5M0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "zflfRVMg5M0",
+          "videoPublishedAt": "2014-08-13T16:12:23Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "3tIMrxwzIOKZRX4k0MCm7Ag6QE4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjlJakVrdDJWQkFB",
+        "snippet": {
+          "publishedAt": "2014-07-25T20:27:54Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Matagal (Como Tocar)",
+          "description": "#AjudaSupercombo\n\nToledo ensina VOCÊ a tocar Matagal.\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/9IjEkt2VBAA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/9IjEkt2VBAA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/9IjEkt2VBAA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/9IjEkt2VBAA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/9IjEkt2VBAA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 517,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "9IjEkt2VBAA"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "9IjEkt2VBAA",
+          "videoPublishedAt": "2014-07-25T20:27:54Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "eq_vDO8Wd4uREntkYTC1CVbj9FE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkxwSmk4XzJyTDJn",
+        "snippet": {
+          "publishedAt": "2014-06-30T13:30:30Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Todo Dia é Dia de Comemorar",
+          "description": "Lyric Video da música \"Todo Dia é Dia de Comemorar\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nFICHA TÉCNICA:\n\nDIREÇÃO/EDIÇÃO/FINALIZAÇÃO: Juarez Tanure\nPRODUÇÃO EXECUTIVA: Elemess Music N' Services\n\n\nTODO DIA É DIA DE COMEMORAR\n(Supercombo)\n\nEu não nasci quadrado\nTenho um quadro clínico de excessos\nUma compulsão que tenho por arriscar\n\nEu já abracei estranhos\nCaí de escadas, fiz yoga\nTudo pra suprir a hiperatividade\n\nEu já tomei florais e pró depressivos\nAntiácidos, anteontem eu testei\nAlgo que a anvisa nem aprovou\n\nJá me joguei no chão\nMachuquei os dedos\nTomei mijada, não adianta\nTodo dia é dia de comemorar\n\nEu desafio você a ter\nUma overdose de felicidade\nQuero ver você se transbordar\nVocê se transformar\n\nEu já tomei florais e pró depressivos\nAntiácidos, anteontem eu testei\nAlgo que a anvisa nem aprovou\nJá me joguei no chão\nMachuquei os dedos\nTomei mijada, não adianta\nTodo dia é dia de comemorar\n\nEu já tomei florais e pró depressivos\nAntiácidos, anteontem eu testei\nAlgo que a anvisa nem aprovou\n\nEu tomo os florais e pró depressivos\nAntiácidos, anteontem eu testei\nAlgo que a anvisa nem aprovou\nJá me joguei no chão\nMachuquei os dedos\nTomei mijada, não adianta\nTodo dia é dia de comemorar\n\nTodo dia é dia de comemorar\nTodo dia é dia de comemorar\n\n(Já me joguei no chão\nMachuquei os dedos\nTomei mijada, não adianta)\nTodo dia é dia de comemorar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/LpJi8_2rL2g/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/LpJi8_2rL2g/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/LpJi8_2rL2g/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/LpJi8_2rL2g/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/LpJi8_2rL2g/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 518,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "LpJi8_2rL2g"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "LpJi8_2rL2g",
+          "videoPublishedAt": "2014-06-30T13:30:30Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "p6uxmSwasepdA-5dDEomZDKvsOo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkhfcGp3U0J6elIw",
+        "snippet": {
+          "publishedAt": "2014-06-06T20:33:50Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Todo Dia é Dia de Comemorar",
+          "description": "Single para a Copa do Mundo de Futebol 2014 no Brasil.\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/H_pjwSBzzR0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/H_pjwSBzzR0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/H_pjwSBzzR0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/H_pjwSBzzR0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/H_pjwSBzzR0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 519,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "H_pjwSBzzR0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "H_pjwSBzzR0",
+          "videoPublishedAt": "2014-06-06T20:33:50Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "i-C8i4gFZpJ01vMO2zN3uKHyi10",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlVxYVdfMkd3a3hN",
+        "snippet": {
+          "publishedAt": "2014-05-21T18:32:09Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - O Peso da Cruz",
+          "description": "Video da música \"O Peso da Cruz\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nO PESO DA CRUZ\n(Supercombo)\n\nTodos de pé, podem sentar\nNão tem como fugir agora é só rezar\nBota pra fora, se salve por dentro\nTodos aqui já querem almoçar\n\nNão sei se você já sabe, estão comentando por aí\nSe é pra sair atirando, coloca um silenciador\n\nSem provas, nem testemunhas\nA tua própria defesa não quis te ajudar\nAcha mesmo que você é inocente com tanto karma pra pagar?\n\nNão sei se você já sabe, estão comentando por aí\nQue você sai atirando e não usa silenciador\nCom seus conselhos quebrados\nO peso do mundo pesa ainda mais\n\nNão sei se você já sabe, estão comentando por aí\nQuando você abre a boca as suas palavras causam dor\nCom seus conselhos quebrados\nO peso do mundo pesa ainda mais\nTire os joelhos do banco, erga seu corpo e não volte mais",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/UqaW_2GwkxM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/UqaW_2GwkxM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/UqaW_2GwkxM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/UqaW_2GwkxM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/UqaW_2GwkxM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 520,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "UqaW_2GwkxM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "UqaW_2GwkxM",
+          "videoPublishedAt": "2014-05-21T18:32:09Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "AceW_woYwi5YtJCcgZk0EDm5lXA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlBCaHcyV3lueGFJ",
+        "snippet": {
+          "publishedAt": "2014-05-20T20:13:42Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Fundo do Mar",
+          "description": "Video da música \"Fundo do Mar\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nFUNDO DO MAR\n(Supercombo)\n\nAi mais uma pane no painel\nQuem mandou abrir as escotilhas\nNo fundo do mar\nSó reclama quem não sabe esperar\nFica a mercê de toda a opressão\nQue te impede de ser teu oxigênio\n\nAfundo com a tripulação\nSem fazer nada, sem fazer nada\nÁgua nos meus pés, sonar no dez\nSem ouvir nada, sem ouvir nada\n\nAtiro os torpedos no que se mover no radar\nSempre finjo que o alarme não tocou\nSó pra ninguém ver\nQue eu já me afoguei há muito tempo\n\nSomos um eco do que imaginamos ser",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/PBhw2WynxaI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/PBhw2WynxaI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/PBhw2WynxaI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/PBhw2WynxaI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/PBhw2WynxaI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 521,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "PBhw2WynxaI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "PBhw2WynxaI",
+          "videoPublishedAt": "2014-05-20T20:13:42Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "ZjDHoSCSlz32X9LcBaOit--JmG8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm84N1B0X1lFanhB",
+        "snippet": {
+          "publishedAt": "2014-05-20T20:00:51Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Memorial",
+          "description": "Video da música \"Memorial\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nMEMORIAL\n(Supercombo)\n\nEu furei o vermelho e fui dormir,\nLarguei meu pé do freio\nNo asfalto eu consigo relaxar\n\nAgora é tarde\nO mundo inteiro girou e eu fiquei aqui\n(Parado, suspenso)\nMe deu saudade de tudo que eu\nNão vivi\nMas quero que você viva aí\n\nAssinei um contrato que eu não li\nMe prendeu no passado, acho\nCulpado é o tempo que passou\n\nFicou tão tarde que o mundo nem\nMe viu passar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/o87Pt_YEjxA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/o87Pt_YEjxA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/o87Pt_YEjxA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/o87Pt_YEjxA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/o87Pt_YEjxA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 522,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "o87Pt_YEjxA"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "o87Pt_YEjxA",
+          "videoPublishedAt": "2014-05-20T20:00:51Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "M3A1gra__QDDT5azlMhEes3NQ3I",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmJFTUtEbHB3d0hn",
+        "snippet": {
+          "publishedAt": "2014-05-12T20:53:14Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Chamada Netshow.me",
+          "description": "Chamada para o show online do dia 13 de Maio de 2014 na plataforma www.netshow.me\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/bEMKDlpwwHg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/bEMKDlpwwHg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/bEMKDlpwwHg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/bEMKDlpwwHg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 523,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "bEMKDlpwwHg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "bEMKDlpwwHg",
+          "videoPublishedAt": "2014-05-12T20:53:14Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "7p27JXs1bKaPWS3h79gUL0w1-i8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmxpbTYwd1l0WmdN",
+        "snippet": {
+          "publishedAt": "2014-04-30T16:54:49Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - O Calculista",
+          "description": "Subscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/lim60wYtZgM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/lim60wYtZgM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/lim60wYtZgM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/lim60wYtZgM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/lim60wYtZgM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 524,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "lim60wYtZgM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "lim60wYtZgM",
+          "videoPublishedAt": "2014-04-30T16:54:49Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "hVt_Di5S_lb0VubalkpkI8TUj2w",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjVEQWJSejJsXzJN",
+        "snippet": {
+          "publishedAt": "2014-04-30T16:46:24Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Campo de Força",
+          "description": "Video da música \"Campo de Força\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nCAMPO DE FORÇA\n(Supercombo)\n\nPenso em você\nTento te ajudar\nMas seu campo de força não me deixa entrar\n\nPara de esconder\nSe a ponta do iceberg já é maior do que o Everest\nImagina a raiz\nE tudo o que tem por lá\nEnterrado, soterrado embaixo do chão\n\nVocê faz coleção do que eu tento evitar\nVocê faz coleção\nVocê faz promoção do que eu quero me livrar\nVocê faz promoção até acabar\n\nA felicidade é de quem não se importa\nDe ligar o \"F\" pro mundo inteiro\nPreservando a matriz\nCom todos os Zeros e Ums empilhados\nEncranhados na programação\n\nVocê faz coleção do que eu tento evitar\nVocê faz coleção\n(Você não deixa eu entrar)\nVocê faz promoção\n(Você não deixa eu entrar)\nDo que eu quero me livrar\n(Você não deixa eu entrar)\nVocê faz promoção até\n\nVocê não precisa se fechar deixa eu te salvar\nVocê não precisa se fechar deixa eu entrar\n\nVocê faz coleção do que eu tento evitar\nVocê faz\nVocê faz promoção do que eu quero me livrar\nVocê faz promoção até acabar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/5DAbRz2l_2M/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/5DAbRz2l_2M/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/5DAbRz2l_2M/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/5DAbRz2l_2M/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/5DAbRz2l_2M/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 525,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "5DAbRz2l_2M"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "5DAbRz2l_2M",
+          "videoPublishedAt": "2014-04-30T16:46:24Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "gW6aQMKzaXB9sR4xGa1uEH7BKiI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmlsemU5ajJZZllN",
+        "snippet": {
+          "publishedAt": "2014-04-25T13:45:32Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Soldadinho",
+          "description": "Lyric Video da música \"Soldadinho\" © Elemess 2014\nSpotify: https://open.spotify.com/artist/73HkjgziMO6I83vFOS8mo1\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nSOLDADINHO\n(Supercombo)\n\nLembro de quando eu era novo\nPlanejava dominar o mundo com o pessoal da creche\nE mãe cortava meu cabelo\nIgnorava qualquer senso de estética que eu poderia vir a ter\n\nNão consigo dormir com tantos filmes passando\nSe eu fecho os olhos vejo infinitos momentos\nSempre voltando no tempo e mudando o futuro\nTentando me encaixar\n\nNão pensava em qualidade de vida\nEu só queria sal, açúcar e aromatizantes\nEi soldadinho, tá perdidinho\nO lance é inventar\nFazer teu próprio rolimã\n\nNão consigo dormir com tantos filmes passando\nSe eu fecho os olhos vejo infinitos momentos\nSempre voltando no tempo e mudando o futuro\nTentando me encaixar\n\nEu não preciso disso\nAlguém desliga os aparelhos e me ajuda a respirar\nEu não preciso disso\nAlguém desliga os aparelhos e me ajuda a levantar\n\nEi soldadinho, tá perdidinho\nO lance é inventar\nFazer teu próprio rolimã\n\nNão consigo dormir com tantos filmes passando\nSe eu fecho os olhos vejo infinitos momentos\nSempre voltando no tempo e mudando o futuro\nTentando me encaixar\n\nSempre voltando no tempo e mudando o futuro\n\nEi soldadinho, tá perdidinho\nO lance é inventar\nFazer teu próprio amanhã",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ilze9j2YfYM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ilze9j2YfYM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ilze9j2YfYM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ilze9j2YfYM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ilze9j2YfYM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 526,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ilze9j2YfYM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ilze9j2YfYM",
+          "videoPublishedAt": "2014-04-25T13:45:32Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "jufkr-vsnAbEr5qAmvZ0FuTAYrI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjBRaXF2ZVYxS0ZV",
+        "snippet": {
+          "publishedAt": "2014-04-14T13:17:35Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Ela",
+          "description": "Video da música \"Ela\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nELA\n(Supercombo)\n\nSopro as velas como quem não quer ver apagar\nEu sempre soube muito bem aonde isso vai dar\n\nToda vez que ganho uma, perco duas\nToda vez ela me estica e me puxa\n\nEla vai me acorrentar na areia e esperar a razão me devorar\nQuanto mais me afundo mais difícil de escapar\nNadar até a superfície e te alcançar\n\nEu não suporto esses balões\nE nem os \"com quem será\"\nE eu nem conheço a maioria das pessoas\n\nToda vez que ganho uma, perco duas\nToda vez ela me estica e me puxa\n\nEla vai me acorrentar na areia e esperar a razão me devorar\nQuanto mais me afundo mais difícil de escapar\nNadar até a superfície e te alcançar\n\nEla vai me acorrentar na areia e esperar a razão me devorar\nQuanto mais\nMais difícil de escapar\nNadar até a superfície e te alcançar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/0QiqveV1KFU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/0QiqveV1KFU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/0QiqveV1KFU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/0QiqveV1KFU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/0QiqveV1KFU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 527,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "0QiqveV1KFU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "0QiqveV1KFU",
+          "videoPublishedAt": "2014-04-14T13:17:35Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "M9xrmgtZgl1wUh_cCK2otVK6dak",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlVqYWRQSUhyc3RJ",
+        "snippet": {
+          "publishedAt": "2014-04-03T14:17:08Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Sol da Manhã",
+          "description": "Video da música \"Sol da Manhã\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nSOL DA MANHÃ\n(Supercombo)\n\nComo eu adoro esses fogos embelezando o céu.\nEu quase me esqueço que você tá \ndo meu lado.\nExigindo atenção. Que hoje está em falta.\n\nEu sou assim.\nMe distraio facilmente: 'Olha lá o avião'\n\nEnquanto você me espera no escuro, eu aproveito pra tomar um sol da manha.\nSei que o clima ta tenso e eu to rindo.\nNão consigo evitar enxergar o que é bom\n\nAs luzes refletem no seu rosto tirando a minha concentração.\nEnquanto você se alimenta de ódio.\nMe preparo pra juntar os teus pedaços.\n\nÉ sempre assim.\nMe distraio.\nMe distraio facilmente: 'Olha lá o avião'\n\n(não reclama eu preciso me espera \neu preciso\neu reclamo mas preciso de você)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/UjadPIHrstI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/UjadPIHrstI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/UjadPIHrstI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/UjadPIHrstI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/UjadPIHrstI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 528,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "UjadPIHrstI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "UjadPIHrstI",
+          "videoPublishedAt": "2014-04-03T14:17:08Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "sMqiNIcPKSgxz2NHrD2l7wsomoU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnFnUXNEY2xfcnVV",
+        "snippet": {
+          "publishedAt": "2014-03-27T19:59:38Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Menino",
+          "description": "Video da música \"Menino\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nMENINO\n(Supercombo)\n\nMenino foi pro mato brincar com os seu irmãos\nFurou o pé, ralou a mão\nMenino da cidade não sabe andar descalço\nNão sabe respirar\n\nDe onde menino vem\nOs carros levam as pessoas pra passear\nO sol é cinza, o mar esgoto\nO sol é cinza, o mar esgoto\n\nMenino\nSai desse corpo que não te penteia\n\nO sol é cinza, o mar esgoto\nSai desse corpo que não te penteia",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/qgQsDcl_ruU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/qgQsDcl_ruU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/qgQsDcl_ruU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/qgQsDcl_ruU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 529,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "qgQsDcl_ruU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "qgQsDcl_ruU",
+          "videoPublishedAt": "2014-03-27T19:59:38Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "WkjKi0YhggchGJUjvUiSxiWk6js",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnZNS3BQUzVNV0dz",
+        "snippet": {
+          "publishedAt": "2014-03-19T22:26:57Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Matagal",
+          "description": "Video da música \"Matagal\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nMATAGAL\n(Supercombo)\n\nÉ, eu temo que sim, chegou um novo dia\nE agora é acordar, pisar com o pé esquerdo e cair no chão\nLigar pra ambulância e ficar feliz\n\nE eu espero que não\nA gente não precisa ir comemorar\nSentar em um boteco as 6 da manhã\nJogar conversa pra quem não quer te ouvir\n\nEu gostava de quando era um bebê,\nNão tinha que pensar e sempre tinha alguém ali pra me limpar\n\nEu sei que o mundo inteiro esta errado\n(Eu sempre soube)\nMe deixa ter meu próprio universo\n(Tudo invertido) (oditrevni odut)\nUm matagal no meio do oceano\n\nMais Supercombo:\nhttp://www.facebook.com/supercombooficial\nhttps://plus.google.com/105843825062795203520/posts\nhttp://www.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/vMKpPS5MWGs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/vMKpPS5MWGs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/vMKpPS5MWGs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/vMKpPS5MWGs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/vMKpPS5MWGs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 530,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "vMKpPS5MWGs"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "vMKpPS5MWGs",
+          "videoPublishedAt": "2014-03-19T22:26:57Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "BDmhXbYHpSy8jR1ooBB2V63_j4Y",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnZSaUE4Y3EwWnRB",
+        "snippet": {
+          "publishedAt": "2014-02-04T19:18:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Amianto (Lyric Video)",
+          "description": "Lyric Video da música \"Amianto\" \n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nFICHA TÉCNICA:\n\nDIREÇÃO/EDIÇÃO/FINALIZAÇÃO: Juarez Tanure\nPRODUÇÃO EXECUTIVA: Elemess Music N' Services\n\nAMIANTO\n(Supercombo)\n\nMoça, sai da sacada\nVocê é muito nova pra brincar de morrer\nMe diz o que há, o que que a vida aprontou dessa vez\n\nVenha, desce daí\nDeixa eu te levar pra um café\nPra conversar, te ouvir e tentar te convencer\n\nQue a vida é como mãe\nQue faz o jantar e obriga os filhos a comer os vegetais\nPois sabe que faz bem\nE a morte é como pai\nQue bate na mãe e rouba os filhos do prazer\nDe brincar como se não houvesse amanhã\n\nMoça, não olha pra baixo\nAí é muito alto pra você se jogar\nVou te ouvir, e tentar te convencer\n(Somos programados pra cair)\n\nQue a vida é como mãe\nQue faz o jantar e obriga os filhos a comer os vegetais\nPois sabe que faz bem\nE a morte é como pai\nQue bate na mãe e rouba os filhos do prazer\nDe brincar como se não houvesse amanhã\n\nMas tudo bem, nem sempre estamos na melhor\n\nMoço, ninguém é de ferro\nSomos programados pra cair",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/vRiA8cq0ZtA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/vRiA8cq0ZtA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/vRiA8cq0ZtA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/vRiA8cq0ZtA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/vRiA8cq0ZtA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 531,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "vRiA8cq0ZtA"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "vRiA8cq0ZtA",
+          "videoPublishedAt": "2014-02-04T19:18:03Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "3QMhrH8dtfbAdf5TwrlHiqAfYx8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnNrM2lyWmNoUUFn",
+        "snippet": {
+          "publishedAt": "2014-01-17T16:50:54Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Chamada Santo André - SP 01/02/14",
+          "description": "Supercombo em Santo André no Dragon Sushi Bar dia 01/02/2014.\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/sk3irZchQAg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/sk3irZchQAg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/sk3irZchQAg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/sk3irZchQAg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/sk3irZchQAg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 532,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "sk3irZchQAg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "sk3irZchQAg",
+          "videoPublishedAt": "2014-01-17T16:50:54Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "D0WzL2M-M1BdMRA_4Kz5hFMRi9k",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlU3S05Na1N6dEFn",
+        "snippet": {
+          "publishedAt": "2014-01-15T19:45:36Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Amianto (Álbum Sampler)",
+          "description": "Sampler do álbum Amianto (disponível a partir do dia 29/01/2014)\n\nPré venda disponível:\niTunes https://itunes.apple.com/br/album/amianto/id787634165\ntanlup http://www.tanlup.com/product/853133/supercombo-amianto\n\n\nSubscreva no página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nhttp://www.facebook.com/supercombooficial\nhttps://plus.google.com/105843825062795203520/posts\nhttp://www.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/U7KNMkSztAg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/U7KNMkSztAg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/U7KNMkSztAg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/U7KNMkSztAg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/U7KNMkSztAg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 533,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "U7KNMkSztAg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "U7KNMkSztAg",
+          "videoPublishedAt": "2014-01-15T19:45:36Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "sYu_trluHASWiitycUFrxcSmwL4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmpOSnNMRVhTazVn",
+        "snippet": {
+          "publishedAt": "2013-12-12T20:31:33Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Piloto Automático (Ao Vivo Em POA)",
+          "description": "Clipe ao vivo no Black Bull Pub em Porto Alegre - RS no dia 10/11/2013 para o #ProjectRock3Anos\n\nSubscreva na página no youtube e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo\n\n_____________________________________________\n\nFICHA TÉCNICA\n\nCâmeras: Lucas Portal e Eduardo Vincent\nEdição e Finalização: Lucas Portal\nCaptação Audio ao vivo: Philippe Branco (PH)\n\n_____________________________________________\n\nAGRADECIMENTOS\n\nLeo (Amor de Guri)\nMichel Basgal\nSandro Silveira\nFelipe Nickel",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/jNJsLEXSk5g/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/jNJsLEXSk5g/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/jNJsLEXSk5g/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/jNJsLEXSk5g/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/jNJsLEXSk5g/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 534,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "jNJsLEXSk5g"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "jNJsLEXSk5g",
+          "videoPublishedAt": "2013-12-12T20:31:33Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "nfD5di8uWVh-_DLuI9uLZYo3phU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLllXNC1WMHhRa1Rn",
+        "snippet": {
+          "publishedAt": "2013-10-23T19:02:59Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Piloto Automático (Clipe Oficial)",
+          "description": "Clipe oficial do primeiro single do álbum Amianto\n____________________________________________________\n\nFICHA TÉCNICA\n\nDireção / Câmeras: Alexandre Barcelos\nAssistente de direção / Câmeras: Santiago Emanoel\nRoteiro: Alexandre Barcelos, Leonardo Ramos e Pedro Ramos\nCorreção de cor e Finalização: Diago Navarro\nEfeitos visuais: Gustavo Senna Martins\nLocação: Estúdio Trad\nAtriz: Bel Rojas\nMaquiagem: Natália Stracieri\nProdução: Supercombo e Fábio Aguiar\n____________________________________________________\n\nAGRADECIMENTOS\n\nMarcelo Trad\nJúlia Pires\nFlávia Costa\nFábio Aguiar\nVitor Rolim\nDylan Bolsas\nDom Acessórios\nElemess\nLua Music\nAll Screens Films\nExpurgação\n____________________________________________________\n\nLETRA\n\nEu nunca fiz questão de estar aqui\nMuito menos participar\nE ainda acho que o meu cotidiano\nVai me largar\n\nUm dia eu vou morrer\nUm dia eu chego lá\nE eu sei que o piloto automático\nVai me levar\n\nEu devia sorrir mais\nAbraçar meus pais\nViajar o mundo\ne socializar\nNunca reclamar\nSó agradecer\nTudo o que vier eu fiz por merecer\n\nEu devia sorrir mais\nAbraçar meus pais\nViajar o mundo \ne socializar\nNunca reclamar\nSó agradecer\nFácil de falar, difícil fazer\n\nQuase toda vez que eu vou dormir\nNão consigo relaxar\nAté parece que meus travesseiros pesam\nUma tonelada\n\nEu devia sorrir mais\nAbraçar meus pais\nViajar o mundo \ne socializar\nNunca reclamar\nSó agradecer\nTudo o que vier eu fiz por merecer\n\nEu devia sorrir mais\nAbraçar meus pais\nViajar o mundo \ne socializar\nNunca reclamar\nSó agradecer\nFácil de falar, difícil fazer\n\nEu nunca fiz questão de existir\nNão queria incomodar\nUm dia eu acho um jeito de aparecer\nE você notar\nVocê notar, você notar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/YW4-V0xQkTg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/YW4-V0xQkTg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/YW4-V0xQkTg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/YW4-V0xQkTg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/YW4-V0xQkTg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 535,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "YW4-V0xQkTg"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "YW4-V0xQkTg",
+          "videoPublishedAt": "2013-10-23T19:02:59Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "HqEL2f_Wqpejj0c-Dux2GSFCpus",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjZfU3NpbTNmRDNj",
+        "snippet": {
+          "publishedAt": "2013-10-11T19:57:51Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Piloto Automático - Teaser",
+          "description": "Teaser do Clipe de Piloto Automático.\nLançamento OFICIAL no dia 23/10/2013.\n___________\n**PROMO**\n\nSortearemos 10 (DEZ) pessoas que compartilharem o link com a HASHTAG #ClipePilotoAutomatico no FACEBOOK pra assistir o clipe junto com a banda ANTES de TODO O MUNDO. \nCom direito a pipoca e uma 'espiadinha' no novo disco: AMIANTO.\n\n*Anunciaremos os ganhadores na SEXTA-FEIRA (18/10/13)\n**Só vai ganhar pipoca e a 'espiada' no AMIANTO quem for de SP e puder vir até o estudio.\n***Quem for de fora vai participar via Google Hangout.\n\nFOI!?? ;))\n\n\n______________________________________________________________________\n\nInscreva-se na nossa página aqui e curta nossa fanpage no facebook para receber novidades sobre nosso novo álbum AMIANTO.:\n\nwww.facebook.com/supercombooficial\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/6_Ssim3fD3c/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/6_Ssim3fD3c/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/6_Ssim3fD3c/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/6_Ssim3fD3c/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/6_Ssim3fD3c/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 536,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "6_Ssim3fD3c"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "6_Ssim3fD3c",
+          "videoPublishedAt": "2013-10-11T19:57:51Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "wDjwE1n8CW83ruLqV3dbmGwlQ04",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjhPUlpveHNNUnFz",
+        "snippet": {
+          "publishedAt": "2013-09-04T15:38:18Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Vê Se Não Morre",
+          "description": "Vê Se Não Morre\n\nEram explosões, incêndios em praças\nE confusões, pessoas armadas\nVocê se foi\n(Cadê você?)\nEu me preocupo\n\nVê se não morre\nToma cuidado\nMande noticias\nSeja um sinal de fumaça\n\nFoi assim, nem deu tempo pra pensar\nQuando eu cai, os prédios em chamas\nEu vi você me olhando de longe\nE o sol se pôs\nSeguiu você\n\nFicou pra mim um buquê\nNum altar ao sol, vim buscar\n\nEu me preocupo\n\nVê se não morre\nToma cuidado\nMande noticias\nSeja um sinal de fumaça\n\nVê se não morre\nToma cuidado\nMande noticias\nSeja um sinal de fumaça\n\nEsta tão distante\nSumiu na multidão\nLevou meu coração\nEsta tão distante\n\nSumiu na multidão\nLevou meu coração\nEsta tão distante\n\nVê se não morre\nToma cuidado\nMande noticias\nSeja um sinal de fumaça\n_______________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/8ORZoxsMRqs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/8ORZoxsMRqs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/8ORZoxsMRqs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/8ORZoxsMRqs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/8ORZoxsMRqs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 537,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "8ORZoxsMRqs"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "8ORZoxsMRqs",
+          "videoPublishedAt": "2013-09-04T15:38:18Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "qkNHqthbzw2nMryyfKf6z9zMrnc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkxJVFlRZDB5VnM0",
+        "snippet": {
+          "publishedAt": "2013-09-04T15:35:54Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Oculto",
+          "description": "Oculto\n\nE dai se você for a presidenta?\nNão a lei que me obriga a ser\nSó mais um, só mais um\nOlha, com a luz batendo na cara, é impossível de te ver anoitecer\nE dai se você não exige tanto?\nNão é razão, pra que eu queira ser\nMais comum , mais comum\nOlha, com a luz batendo na cara, é impossível de dizer,\nQuem é você?\n\nEu posso ser melhor se confiar em mim, eu posso te mostrar que tem outro lugar\nEsquecido\nSe alguém abriu uma porta , todos querem entrar,\nMesmo sem saber pra onde ela vai,\nPrecipício\nOlha, com a luz batendo na cara, é impossível de te ver anoite...\nOlha com a luz batendo na cara é impossível de dizer,\nQuem é você?\n\n_______________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/LITYQd0yVs4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/LITYQd0yVs4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/LITYQd0yVs4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/LITYQd0yVs4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/LITYQd0yVs4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 538,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "LITYQd0yVs4"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "LITYQd0yVs4",
+          "videoPublishedAt": "2013-09-04T15:35:54Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "FMa-sqtO2Ly7jZqGWt3w9fv8VrM",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLk0wSXVHcUhpcjVj",
+        "snippet": {
+          "publishedAt": "2013-09-04T15:08:29Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Anestesia",
+          "description": "Anestesia\n\nSe isso não é problema meu\nNão é de ninguém\nTodos querem meter\nColher pra fora dos pratos\n\nEu não acho essa curiosidade saudável\nCoisa boa não é\n\nAnestesia, por favor\nA minha vontade de saber\nAnestesia a minha dor\nPra eu me conformar\nDormir no rancor\n\nSe isso não é problema nosso\nNão é de ninguém\nTodos querem meter\nO pé em outros sapatos\n\nEu não acho essa curiosidade saudável\nCoisa boa não pode ser\n\nAnestesia, por favor\nA minha vontade de saber\nAnestesia a minha dor\nPra eu me conformar\n\nAnestesia, Seu Doutor\nA minha vontade de saber\nAnestesia, por favor\nPra eu me conformar\nDormir no rancor\n\nCansado de ver meus sapatos andando nos pés de alguém\n\nAnestesia, por favor\nMinha vontade de saber\nAnestesia\n\nAnestesia, por favor\nAnestesia\nMinha vontade de saber\n\nPra eu me conformar\nDormir no rancor\n\n_______________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/M0IuGqHir5c/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/M0IuGqHir5c/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/M0IuGqHir5c/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/M0IuGqHir5c/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/M0IuGqHir5c/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 539,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "M0IuGqHir5c"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "M0IuGqHir5c",
+          "videoPublishedAt": "2013-09-04T15:08:29Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "KtIoaqCuF0-DfuyQOgxQqs8BRS4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnpBNGlGX2hmX3Rv",
+        "snippet": {
+          "publishedAt": "2013-09-04T14:42:59Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Faz Parte",
+          "description": "Faz Parte\n\nNuma tacada só\nVocê ganhou e eu perdi\nE comecei a sorrir\nFez lembrar do que é lutar\nSem querer\n\nA gente briga, chora\nDiscute mas se ama\nFaz parte\nFaz parte\nA vida a dois é um esporte\n\nNão era a intenção\nMe entregar fácil assim\nPorque eu prefiro ter paz do que ter razão\n\nA gente briga, chora\nDiscute mas se ama\nFaz parte\nFaz parte\nA vida a dois é um esporte\n\nA gente briga, chora\nDiscute mas se ama\n\nFaz parte\nFaz parte\nA vida a dois é um esporte\n\n_______________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/zA4iF_hf_to/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/zA4iF_hf_to/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/zA4iF_hf_to/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/zA4iF_hf_to/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/zA4iF_hf_to/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 540,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "zA4iF_hf_to"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "zA4iF_hf_to",
+          "videoPublishedAt": "2013-09-04T14:42:59Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "gs50fFGKTYMexO-VYr0GEDCxRsw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlc4WXNrSHp6SWFv",
+        "snippet": {
+          "publishedAt": "2013-09-04T14:40:44Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Por Essa Eu Não Esperava",
+          "description": "Por Essa Eu Não Esperava\n\nPor essa eu não esperava\nVocê com medo de ler com a luz apagada\nDizendo quando for velha\nVai ter problemas pra ver os nosso retratos\nSempre que eu falo, você finge que não vê\n\nCantamos pro amanha\nE venha o que vier\nDeixa o passado pra trás\nVocê não sabe o quão alto vai conseguir chegar\n\nA sua vida é uma caixa, cheia de ilusões, rolando as escadas\nE eu digo quando eu for velho , vou estar ferrado de vez\nVai ser engraçado\nSempre que eu falo você finge que não vê\nMais sei que se importa\nCantamos pro amanha\nE venha o que vier\nDeixa o passado pra trás\nJogue esse espelho pro alto, e vamos nos inventar\nOutra vez\nEstamos aqui pra variar\nE só me resta cuidar de nós\nCantamos pro amanhã , e venha o que vier\nDeixa o passado pra trás\nVocê não sabe quão alto, você vai conseguir chegar\n\n_______________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/W8YskHzzIao/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/W8YskHzzIao/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/W8YskHzzIao/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/W8YskHzzIao/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/W8YskHzzIao/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 541,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "W8YskHzzIao"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "W8YskHzzIao",
+          "videoPublishedAt": "2013-09-04T14:40:44Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "mLir20F5H5V60y5Pbr7KwSEiraY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlQxRGF1RDRLX0RN",
+        "snippet": {
+          "publishedAt": "2013-09-04T14:09:44Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Saco Cheio",
+          "description": "Spotify: https://open.spotify.com/artist/73HkjgziMO6I83vFOS8mo1\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/\n\nSaco Cheio (Letra)\n\nTô de saco cheio, amor\nEu não nasci pra te esperar\nSó escolhe a roupa e vem\nNão precisa se maquiar\n\nPra onde vamos, eu não sei e digo\nEscolhe você que eu já cansei de escolher\nSó de olhar pra sua cara, eu sei\nO termômetro vai suar\n\nE não venha com esse pa-pa-para-ow.\nE não venha com esse pa-pa-para-ow\n\nEsta me sufocando\nNão precisa roubar meu ar\nA noite vai ser, vai ser longa\n\nPra onde vamos, eu não sei e digo\nEscolhe você que eu já cansei de escolher\nSó de olhar pra sua cara, eu sei\nO termômetro vai suar\n\nE não venha com esse pa-pa-para-ow.\nE não venha com esse pa-pa-para-ow\n\nEsse tempo perdido, não faz mais sentido\nNa próxima eu vou sem você\nCaiu em desuso, eu cansei do discurso\nEsse sofá me faz envelhecer\n\nEu não aguento mais tanta indecisão\nSe eu estresso eu perco a razão\nEu não aguento mais tanta indecisão\nSe eu estresso eu perco a razão\n_______________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/T1DauD4K_DM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/T1DauD4K_DM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/T1DauD4K_DM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/T1DauD4K_DM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/T1DauD4K_DM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 542,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "T1DauD4K_DM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "T1DauD4K_DM",
+          "videoPublishedAt": "2013-09-04T14:09:44Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "FzdMumxyIbXN7CnC760Edyw7QCg",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmhXNl8xbTE5LWdN",
+        "snippet": {
+          "publishedAt": "2013-09-04T14:08:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Como São As Coisas",
+          "description": "Como São As Coisas\n\nQuem me garante que a vida\nVai me levar pra onde eu devo ir\nCom tantos lugares, pessoas, situações\ncoisas que eu nunca vi, nunca vi nem a metade\nDesse mundo\n\nPara de achar que o que é bom pra você\nÉ bom pra mim, não é assim\nTa um calor agora, você agasalhada\nMe diz por que, só você não entende como são as coisas?\n\nSomos cometas num campo de asteróides\nEvitando colisões, na medida do possível\nDeixe eu falar, sem ter que ouvir\n\nPara de achar que o que é bom pra você\nÉ bom pra mim, não é assim\nTa um calor agora, você agasalhada\nMe diz por que, só você não entende como são\nNão entende como são as coisas\n\nE eu te pergunto, depois disso tudo, como vai?\nEspero que esteja bem\nEu nunca penso antes de falar\n\nEu sempre durmo antes de sonhar\n\nPara de achar que o que é bom pra você\nÉ bom pra mim, não é assim\nSe eu não quero ir embora, você já está na porta\nMe diz por que, só você não entende como são\nNão entende como são\nNão entende como são as coisas\n\n_______________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/hW6_1m19-gM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/hW6_1m19-gM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/hW6_1m19-gM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/hW6_1m19-gM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/hW6_1m19-gM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 543,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "hW6_1m19-gM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "hW6_1m19-gM",
+          "videoPublishedAt": "2013-09-04T14:08:01Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "VDKD1YJNUJCmJ1GY8kSeuxyZPDU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlUxYzZJal9IV3Bv",
+        "snippet": {
+          "publishedAt": "2013-09-03T21:49:05Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Mulher da Vida",
+          "description": "Mulher da Vida\n\nEla mudou de nome, quis se aventurar\nJá não tinha medo de se machucar\nSem os pés no chão, pés no chão , pés no chão\nSempre andou de costas\n\nE não aprendeu, quis inventar\nDesculpas pra ignorar\nO fato de que sempre, deixa pra lá\nas coisas que te impedem de amar\n\nEla tentou a sorte, quis se libertar\nEscapar da morte espiritual\nNão é fácil, não é fácil, não é fácil não\nSempre dá errado, sempre diz que\n\nNão aprendeu, quis inventar\nDesculpas pra ignorar\nO fato de que sempre deixa pra lá\nAs coisas que te impedem de amar\n\nEla não soube segurar, tava lá na frente,já não tinha mais pra onde ir\nE não mais se abriu pra niguém\nE o tempo , ela não soube segurar\nE não mais se abriu pra ninguem\nNão vai mais recomeçar\n\nNão aprendeu , quis inventar\nDesculpas pra ignorar\nO fato de que sempre deixa pra lá\nAs coisas que te impedem de amar\n\nO fato de que sempre deixa pra lá,\nAs coisas que te impedem de amar\n\n_______________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/U1c6Ij_HWpo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/U1c6Ij_HWpo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/U1c6Ij_HWpo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/U1c6Ij_HWpo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/U1c6Ij_HWpo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 544,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "U1c6Ij_HWpo"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "U1c6Ij_HWpo",
+          "videoPublishedAt": "2013-09-03T21:49:05Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "MrRCcAjc8M6Xg3WR-XbMoxvudmU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkFDRkJRZDJqMDdZ",
+        "snippet": {
+          "publishedAt": "2013-09-03T21:41:31Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Não Da Certo",
+          "description": "Não da Certo\n\nVários dias passam e eu não presto atenção\nE aquele sonho adormecido afunda no lençol\n\nEu sempre quis bater na cara do meu chefe\nE ficar desempregado e viver de luz incandescente\n\nFecho os olhos, torço pra dar certo\nMeus pés estão em blocos de concreto\nAgora seria o momento de acordar\nFecho os olhos, torço pra dar certo\nSe realmente existe alguém lá em cima\nAgora seria o momento de provar que eu posso abrir o mar\n\nAlguém devia ir bater, gritar na porta do céu\nPra tirar satisfação, porque não nascemos ali desde o princípio\n\nEu acho que vou matar o meu chefe\nE ficar desempregado pra sempre\n\nFecho os olhos, torço pra dar certo\nMeus pés estão em blocos de concreto\nAgora seria o momento de acordar\nFecho os olhos, rezo pra dar certo\nSe realmente existe alguém lá em cima\nAgora seria o momento de provar que eu posso abrir o mar\nQue eu posso abrir o mar\nQue eu posso acreditar\n\nFoi-se o tempo que eu achava que o mundo era meu\nA vida, agora, não passa de um vilão\nNão passa de um vilão\nFoi-se o tempo que eu achava que o mundo era meu\nA vida, agora, não passa de um vilão\nNão passa de um vilão\n\nQuando eu paro pra pensar\n\nAh, quem dera se isso desse certo\n\n_______________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ACFBQd2j07Y/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ACFBQd2j07Y/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ACFBQd2j07Y/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ACFBQd2j07Y/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ACFBQd2j07Y/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 545,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ACFBQd2j07Y"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ACFBQd2j07Y",
+          "videoPublishedAt": "2013-09-03T21:41:31Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "FOOVoQK_WOiyzGygo6aRP4N4Ig4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlVkanAwR0FXbjJF",
+        "snippet": {
+          "publishedAt": "2013-09-03T21:13:49Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Chuva de Granito",
+          "description": "Chuva de Granito\n\nSinceramente não sei o que quer provar\nQuando tu chega brava, xingado até a mãe\nÉ tanta chuva pra um copo quebrado\n\nQue a gente esquece de perguntar:\nQual é o motivo? Será que é preciso?\nQual é o motivo? Pra que tudo isso?\n\nNos somos tão iguais\nVocê sabe disso, então porque\n\nVocê não diz qual é que é da parada?\nMeu amor não é a inquisição\nNão te enforca.\n\nEssa vida só te fazer reclamar\nReclamar que está vivendo sem gostar\nDaqui a pouco chega a hora\n\nQual é o motivo? Será que é preciso?\nQual é o motivo, motivo\nPra que tudo isso, tudo isso\n\nNos somos tão iguais\nVocê sabe disso\nEntão porque\n\nVocê não diz qualé que é da parada?\nMeu amor não é inquisição\nNão te julga\nNão te queima\nNão te força\n\n(Nos somos tão iguais\nVocê sabe disso\nEntão porque)\n\nQual é o motivo, motivo?\nQual é o motivo, motivo?\n\n___________________________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Udjp0GAWn2E/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Udjp0GAWn2E/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Udjp0GAWn2E/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Udjp0GAWn2E/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Udjp0GAWn2E/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 546,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Udjp0GAWn2E"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Udjp0GAWn2E",
+          "videoPublishedAt": "2013-09-03T21:13:49Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "J1VaOGH5o8eIX3WVPYz7cZZ0k8o",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnBYRklmbzM2b21v",
+        "snippet": {
+          "publishedAt": "2013-09-03T20:26:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Se Eu Quiser",
+          "description": "Se Eu Quiser\n\nOi, eu tenho problemas\nPra acordar e sobreviver\nNa minha jaula\n\nFalar em trabalho\nEu mal comecei\nJá quero me aposentar\n\nTava em pensando em batalhar, casar\nCom meu dinheiro\nE acordar só seis da manhã\n\nTalvez assim eu consiga mostrar\nQue eu também posso ser igual\n\nSe eu quiser\nSe eu quiser\nSe eu quiser\n\nÁgua na cara e partir pro busão\nAtrasado com muita fome\nPra chegar lá\n\nFazer o que eu não gosto\nCom pessoas que eu nunca quero interagir\nNunca!\n\nSe eu quiser\nSe eu quiser\n\nSe eu olho pro lado tem sempre alguém\nEsticando uma perna pra eu cair\nMas eu tenho certeza que se eu não morrer\nNada nessa vida vai me surpreender\n\n______________________________________________________________________\n\nAlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/pXFIfo36omo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/pXFIfo36omo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/pXFIfo36omo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/pXFIfo36omo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/pXFIfo36omo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 547,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "pXFIfo36omo"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "pXFIfo36omo",
+          "videoPublishedAt": "2013-09-03T20:26:06Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "FE2pjH4WOR3jAv6tUQBRvdcHWFA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmt6VUVLZ2staWpJ",
+        "snippet": {
+          "publishedAt": "2013-09-03T20:12:18Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Desabafo (Intro)",
+          "description": "Desabafo (Intro)\n\nO que que aconteceu\nCom a música nesse país?\nNão agrada mais meu coração\nSurpreenda-me se for capaz\n\nSurpreenda-me se for capaz\n\n___________________________________________________________________\n\nÁlbum Sal Grosso lançado no final de 2011, gravado e mixado por Leo Ramos e masterizado no Sterling Sound Studio em Nova Iorque por Ted Jensen.\n\nFaixas:\n1 - Desabafo (Intro)\n2 - Se Eu Quiser\n3 - Chuva De Granito\n4 - Não dá Certo\n5 - Mulher Da Vida\n6 - Saco Cheio\n7 - Como São As Coisas\n8 - Faz Parte\n9 - Por Essa Eu Não Esperava\n10 - Anestesia\n11 - Vê se não morre\n12 - Oculto\n\nhttp://www.facebook.com/supercombooficial\nhttp://www.twitter.com/supercombo\nhttp://supercomboloja.tanlup.com/",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/kzUEKgk-ijI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/kzUEKgk-ijI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/kzUEKgk-ijI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/kzUEKgk-ijI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/kzUEKgk-ijI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 548,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "kzUEKgk-ijI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "kzUEKgk-ijI",
+          "videoPublishedAt": "2013-09-03T20:12:18Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "A4tvuiH4e73-t6fP6CCtAIr4Tu0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnRCOWE4bTUwUXlN",
+        "snippet": {
+          "publishedAt": "2013-08-29T17:45:07Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Piloto Automático",
+          "description": "Video da música \"Piloto Automático\" © Elemess 2014\nSpotify: https://open.spotify.com/artist/73HkjgziMO6I83vFOS8mo1\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nPILOTO AUTOMÁTICO\n(Supercombo)\n\nEu nunca fiz questão de estar aqui\nMuito menos participar\nE ainda acho que o meu cotidiano\nVai me largar\n\nUm dia eu vou morrer\nUm dia eu chego lá\nE eu sei que o piloto automático\nVai me levar\n\nEu devia sorrir mais\nAbraçar meus pais\nViajar o mundo e socializar\nNunca reclamar\nSó agradecer\nTudo o que vier eu fiz por merecer\n\nEu devia sorrir mais\nAbraçar meus pais\nViajar o mundo e socializar\nNunca reclamar\nSó agradecer\nFácil de falar, difícil fazer\n\nQuase toda vez que eu vou dormir\nNão consigo relaxar\nAté parece que meus travesseiros pesam\nUma tonelada\n\nEu devia sorrir mais\nAbraçar meus pais\nViajar o mundo e socializar\nNunca reclamar\nSó agradecer\nTudo o que vier eu fiz por merecer\n\nEu devia sorrir mais\nAbraçar meus pais\nViajar o mundo e socializar\nNunca reclamar\nSó agradecer\nFácil de falar, difícil fazer\n\nEu nunca fiz questão de existir\nNão queria incomodar\nUm dia eu acho um jeito de aparecer\nE você notar\nVocê notar, você notar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/tB9a8m50QyM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/tB9a8m50QyM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/tB9a8m50QyM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/tB9a8m50QyM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/tB9a8m50QyM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 549,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "tB9a8m50QyM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "tB9a8m50QyM",
+          "videoPublishedAt": "2013-08-29T17:45:07Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      }
+    ],
+    "pageInfo": {
+      "totalResults": 587,
+      "resultsPerPage": 50
+    }
+  }
+}

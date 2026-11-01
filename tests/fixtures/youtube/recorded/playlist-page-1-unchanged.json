@@ -1,0 +1,14 @@
+{
+  "request": {
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "PLfSl2rOZ6Zto"
+    },
+    "if_none_match": "RQ-thIh9dOkuzMlGoB-ZsUw_rjk"
+  },
+  "status": 304,
+  "etag": null,
+  "body": ""
+}

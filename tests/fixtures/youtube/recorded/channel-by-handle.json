@@ -1,0 +1,61 @@
+{
+  "request": {
+    "endpoint": "channels",
+    "params": {
+      "part": "snippet,contentDetails",
+      "forHandle": "@supercombooficial"
+    },
+    "if_none_match": null
+  },
+  "status": 200,
+  "etag": null,
+  "body": {
+    "kind": "youtube#channelListResponse",
+    "etag": "zZ0R5AgEDefSwPjwxZQsSzuuwo4",
+    "pageInfo": {
+      "totalResults": 1,
+      "resultsPerPage": 5
+    },
+    "items": [
+      {
+        "kind": "youtube#channel",
+        "etag": "TZz7zLHOXQ50_WZJzeaVK-PkzOE",
+        "id": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+        "snippet": {
+          "title": "Supercombo",
+          "description": "Supercombo é: Leo Ramos (voz e guitarra), Carol Navarro (baixo e voz), Paulo Vaz (teclados) e André Dea (bateria). \n\nContato para shows: supercomboshows@gmail.com \n",
+          "customUrl": "@supercombooficial",
+          "publishedAt": "2010-02-02T16:39:34Z",
+          "thumbnails": {
+            "default": {
+              "url": "https://yt3.ggpht.com/MY2poLYXh4HTD-Ls9tJhKujrlqZT2OOAJIsHH8RlBGIguOsLl-mWQda_01V3ll-IkXDGiv4=s88-c-k-c0x00ffffff-no-rj",
+              "width": 88,
+              "height": 88
+            },
+            "medium": {
+              "url": "https://yt3.ggpht.com/MY2poLYXh4HTD-Ls9tJhKujrlqZT2OOAJIsHH8RlBGIguOsLl-mWQda_01V3ll-IkXDGiv4=s240-c-k-c0x00ffffff-no-rj",
+              "width": 240,
+              "height": 240
+            },
+            "high": {
+              "url": "https://yt3.ggpht.com/MY2poLYXh4HTD-Ls9tJhKujrlqZT2OOAJIsHH8RlBGIguOsLl-mWQda_01V3ll-IkXDGiv4=s800-c-k-c0x00ffffff-no-rj",
+              "width": 800,
+              "height": 800
+            }
+          },
+          "localized": {
+            "title": "Supercombo",
+            "description": "Supercombo é: Leo Ramos (voz e guitarra), Carol Navarro (baixo e voz), Paulo Vaz (teclados) e André Dea (bateria). \n\nContato para shows: supercomboshows@gmail.com \n"
+          },
+          "country": "BR"
+        },
+        "contentDetails": {
+          "relatedPlaylists": {
+            "likes": "",
+            "uploads": "UU5eeDHYjTWF9pPWYDKpVMYQ"
+          }
+        }
+      }
+    ]
+  }
+}

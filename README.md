@@ -592,14 +592,40 @@ decision: keep (matches include[0])
 
 ### YouTube API key
 
-An API key is optional. A future version will use it to check playlists for
-new videos faster, with more details per video. Today tidepool uses yt-dlp for
-everything. To add a key later, set it in the config file and apply the change:
+An API key is optional, but worth it: with one, tidepool checks your sources
+through YouTube's official API instead of yt-dlp. It's faster, and it gets the
+full details of each video (exact dates, full descriptions, tags, every
+thumbnail size), so rules on descriptions or tags don't have to wait for the
+download.
 
 ```toml
 [category.default.youtube]
 api_key = "AIza..."
 ```
+
+Get a free key from the [Google Cloud console](https://console.cloud.google.com/apis/credentials)
+with the *YouTube Data API v3* enabled, put it in your config file and apply
+the change with `tidepool config import`.
+
+**Quota.** Google gives each project 10,000 units a day. Checking a source
+costs 1 unit for every 50 videos in it, plus 1 unit for every 50 videos tidepool
+hasn't seen before; a 1,000-video playlist costs about 20 units once nothing is
+new. tidepool keeps count, warns you at 80% (`quota_warn_at`), and stops using
+the key before Google would refuse it. The count resets at midnight Pacific
+time, like Google's. If Google granted your project more, raise `daily_quota`.
+
+**When the key can't be used** (the quota is used up, YouTube rejects the key,
+or YouTube's API is having trouble), tidepool checks your sources with yt-dlp
+instead and tells you about it in `tidepool problems`. To stop instead, set
+`fallback_to_ytdlp = false`: tidepool then ends with exit code 4.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `api_key` | none | Your key; without one, tidepool uses yt-dlp |
+| `daily_quota` | `10000` | Your project's daily quota |
+| `quota_warn_at` | `0.8` | Warn once this share of the quota is used |
+| `fallback_to_ytdlp` | `true` | Use yt-dlp when the key can't be used |
+| `requests_per_second` | `5` | How fast tidepool may call the API |
 
 A category (or a single source) can use its own key, with its own quota
 settings, e.g. under `[category.music.youtube]`. Quota is counted per key.
@@ -725,4 +751,5 @@ For scripts:
 | 1 | Something went wrong (e.g. a config mistake); the message says what |
 | 2 | The command was used incorrectly (unknown option, unknown source) |
 | 3 | Something failed for some sources, videos or hooks, but the rest finished |
+| 4 | The YouTube API couldn't be used and `fallback_to_ytdlp = false` |
 | 130 / 143 | Stopped by Ctrl-C / `kill` |

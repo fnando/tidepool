@@ -888,6 +888,85 @@ pub fn update_files(
     Ok(())
 }
 
+/// Videos tidepool knows in full (description, tags and duration from the
+/// API), as index items; the API path skips fetching their details again.
+pub fn known_details(
+    conn: &Connection,
+    ids: &[String],
+) -> rusqlite::Result<std::collections::HashMap<String, RemoteItem>> {
+    let mut stmt = conn.prepare(
+        "SELECT id, title, channel, channel_id, description, tags_json, duration_s, published_at,
+           availability, thumbs_json
+         FROM videos WHERE id = ?1 AND description IS NOT NULL AND tags_json IS NOT NULL
+           AND duration_s IS NOT NULL",
+    )?;
+    let mut out = std::collections::HashMap::new();
+    for id in ids {
+        let found = stmt
+            .query_row([id], |r| {
+                let tags: Option<String> = r.get(5)?;
+                let published: Option<String> = r.get(7)?;
+                let availability: Option<String> = r.get(8)?;
+                let thumbs: Option<String> = r.get(9)?;
+                Ok(RemoteItem {
+                    video_id: r.get(0)?,
+                    position: 0,
+                    title: r.get::<_, Option<String>>(1)?.unwrap_or_default(),
+                    channel: r.get(2)?,
+                    channel_id: r.get(3)?,
+                    description: r.get(4)?,
+                    tags: tags.and_then(|t| serde_json::from_str(&t).ok()),
+                    duration: r.get::<_, Option<i64>>(6)?.map(|d| d.max(0) as u64),
+                    published_at: published.and_then(|p| p.parse().ok()),
+                    availability: crate::index::Availability::parse(
+                        availability.as_deref().unwrap_or("public"),
+                    ),
+                    thumbnails: thumbs
+                        .and_then(|t| serde_json::from_str(&t).ok())
+                        .unwrap_or_default(),
+                })
+            })
+            .optional()?;
+        if let Some(item) = found {
+            out.insert(id.clone(), item);
+        }
+    }
+    Ok(out)
+}
+
+/// The Pacific-time date YouTube's quota day runs on.
+pub fn quota_day(now: Timestamp) -> String {
+    now.in_tz("America/Los_Angeles")
+        .map(|z| z.date().to_string())
+        .unwrap_or_else(|_| now.to_string()[..10].to_string())
+}
+
+/// Units an API key spent on `day`.
+pub fn quota_used(conn: &Connection, key_id: &str, day: &str) -> rusqlite::Result<u32> {
+    conn.query_row(
+        "SELECT COALESCE(SUM(units), 0) FROM quota_usage WHERE key_id = ?1 AND day = ?2",
+        params![key_id, day],
+        |r| r.get::<_, i64>(0).map(|u| u.max(0) as u32),
+    )
+}
+
+/// Record units an API key spent indexing a source.
+pub fn add_quota(
+    conn: &Connection,
+    key_id: &str,
+    day: &str,
+    source_key: &str,
+    units: u32,
+) -> rusqlite::Result<()> {
+    if units > 0 {
+        conn.execute(
+            "INSERT INTO quota_usage (day, key_id, source_key, units) VALUES (?1, ?2, ?3, ?4)",
+            params![day, key_id, source_key, units],
+        )?;
+    }
+    Ok(())
+}
+
 /// After a crash or an interrupt: downloads that didn't finish go back to
 /// `pending`. Returns how many.
 pub fn reset_interrupted(conn: &Connection) -> rusqlite::Result<usize> {

@@ -1,0 +1,3769 @@
+{
+  "request": {
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "v3jk4D6fYQU,Ab5S7UsKRgY,9gnnJjyHohE,fb5yY8Q5sUc,Lm1rMl5CnCM,NK6YDyI4rMA,_q5aQjhfox8,UBx6tm86Ekg,EZxZ4cxegQ4,JIbagrnNlmk,1cNIm-Xl97s,v31z3jiF4bQ,JUZPqYvDoqc,VFiKHBe46Ac,iPf2-2wLjiE,cZxRjP8Qan0,JMDHtUOduwE,sCDxmsZBop8,gTiGQiItF5c,PjrM0ZC1NYs,BjRN0rHuecM,p-7QAzciZtE,-bxl5X_FEBs,kR9Befewp9s,w2dhlFhXeI4,6KGy00WSJss,joYIaL1uoqQ,n_leNytS3RA,UUhlvRdGjXk,ArRVJDJ8Qjc,TiZXDT7hWqU,zE0ElpWlzhg,HiElXyRzLyo,w2yy1hXxw7I,4OXK0nGt_8E,APwZQ8JgbU0,CVHxiK6PkCk,353vl2achFs,XAzkdwLKy7k,De2fp2UUS_U,FWhw9t_n8ZQ,Sfvw2IEQuQY,rQYZV7wuYyw,TXTyPnByWB4,Boq-V4KdRtI,-3AtVHpQ560,2QCXL57KUjU,8we_iF9H9CU,CWxf5mrdI-4,PLBzUuaGZ40"
+    },
+    "if_none_match": null
+  },
+  "status": 200,
+  "etag": null,
+  "body": {
+    "kind": "youtube#videoListResponse",
+    "etag": "uw_ZUAorevbXsZZSzgVupigImGM",
+    "items": [
+      {
+        "kind": "youtube#video",
+        "etag": "F_CaDOWDYceH676boKGjl5-6apc",
+        "id": "v3jk4D6fYQU",
+        "snippet": {
+          "publishedAt": "2025-05-08T15:19:41Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "#tbt Intervenção ao vivo no Sonastério! #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/v3jk4D6fYQU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/v3jk4D6fYQU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/v3jk4D6fYQU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/v3jk4D6fYQU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/v3jk4D6fYQU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "#tbt Intervenção ao vivo no Sonastério! #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT54S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "r-C3wTZqELGz-dcYSJQ4be-iXO8",
+        "id": "Ab5S7UsKRgY",
+        "snippet": {
+          "publishedAt": "2025-04-29T20:00:10Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Histórias de terror na gravação do clipe 💥🫨 trecho do Xablaw #shorts",
+          "description": "Episódio completo no canal @Xablawoficial",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Ab5S7UsKRgY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Ab5S7UsKRgY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Ab5S7UsKRgY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Ab5S7UsKRgY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Ab5S7UsKRgY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Histórias de terror na gravação do clipe 💥🫨 trecho do Xablaw #shorts",
+            "description": "Episódio completo no canal @Xablawoficial"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT45S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "aBS59UrvG1U9Ku8-tRh6v0zJF7g",
+        "id": "9gnnJjyHohE",
+        "snippet": {
+          "publishedAt": "2025-04-14T14:00:12Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "INFAME com Kamaitachi - Quem também adora essa? #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/9gnnJjyHohE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/9gnnJjyHohE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/9gnnJjyHohE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/9gnnJjyHohE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/9gnnJjyHohE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "INFAME com Kamaitachi - Quem também adora essa? #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT37S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "Mh-uDZH7wtjFp_diXOe_2hMtFdI",
+        "id": "fb5yY8Q5sUc",
+        "snippet": {
+          "publishedAt": "2025-04-07T21:27:35Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "E assim encerramos a turnê REMÉDIOS 💊! VALEU DEMAIS! Vídeo Rafael Novak #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/fb5yY8Q5sUc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/fb5yY8Q5sUc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/fb5yY8Q5sUc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/fb5yY8Q5sUc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/fb5yY8Q5sUc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "E assim encerramos a turnê REMÉDIOS 💊! VALEU DEMAIS! Vídeo Rafael Novak #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "BLZoUTsvXmCWo4v11TLwjRMZWp0",
+        "id": "Lm1rMl5CnCM",
+        "snippet": {
+          "publishedAt": "2025-03-31T21:54:55Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "E temos set list do show com Nova Orquestra na Casa Natura, dia 5/4! #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Lm1rMl5CnCM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Lm1rMl5CnCM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Lm1rMl5CnCM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Lm1rMl5CnCM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Lm1rMl5CnCM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "E temos set list do show com Nova Orquestra na Casa Natura, dia 5/4! #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT47S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "PG7PsA_9D5hNi7u4lwqkAl_fcEU",
+        "id": "NK6YDyI4rMA",
+        "snippet": {
+          "publishedAt": "2025-03-27T17:00:33Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "As vezes nem a gente entende... trecho do podcast Os Bastidores de Tudo 🎧🎙️ #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/NK6YDyI4rMA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/NK6YDyI4rMA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/NK6YDyI4rMA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/NK6YDyI4rMA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/NK6YDyI4rMA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "As vezes nem a gente entende... trecho do podcast Os Bastidores de Tudo 🎧🎙️ #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT51S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "Sd5EL0AeMWjLd9_qBN9QgGaJ7h4",
+        "id": "_q5aQjhfox8",
+        "snippet": {
+          "publishedAt": "2025-03-14T15:04:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "ESTÁTUA! 📹: Marcela Sanches #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/_q5aQjhfox8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/_q5aQjhfox8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/_q5aQjhfox8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/_q5aQjhfox8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/_q5aQjhfox8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "ESTÁTUA! 📹: Marcela Sanches #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "IU6TeJo31x73QZBywuqaE2oP7YI",
+        "id": "UBx6tm86Ekg",
+        "snippet": {
+          "publishedAt": "2025-03-06T13:14:43Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Amianto - 10 anos - os últimos shows vão ser no Nordeste esse mês! #shorts",
+          "description": "14/3 em Recife/PE\n15/3 em Fortaleza/CE\n16/3 em Teresina/PI\n\nIngressos em linktr.ee/supercombooficial\n🎥: Opinião",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/UBx6tm86Ekg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/UBx6tm86Ekg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/UBx6tm86Ekg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/UBx6tm86Ekg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/UBx6tm86Ekg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Amianto - 10 anos - os últimos shows vão ser no Nordeste esse mês! #shorts",
+            "description": "14/3 em Recife/PE\n15/3 em Fortaleza/CE\n16/3 em Teresina/PI\n\nIngressos em linktr.ee/supercombooficial\n🎥: Opinião"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT44S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "F9dve3SKz4gwzBOTQ5ABPTr5N0c",
+        "id": "EZxZ4cxegQ4",
+        "snippet": {
+          "publishedAt": "2025-02-25T21:00:16Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Valeu geral que colou no Noel Rock Fest em Sorocada, foi irado! Próxima parada: Nordeste! #shorts",
+          "description": "RECIFE/PE - 14/3 - Festival Rota Independente\nFORTALEZA/CE - 15/3 - Ophera Music Bar\nTERESINA/PI - 16/3 - Casa Barro\nIngressos: linktr.ee/supercombooficial\n\nVídeo: Marcela Sanches",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/EZxZ4cxegQ4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/EZxZ4cxegQ4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/EZxZ4cxegQ4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/EZxZ4cxegQ4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/EZxZ4cxegQ4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Valeu geral que colou no Noel Rock Fest em Sorocada, foi irado! Próxima parada: Nordeste! #shorts",
+            "description": "RECIFE/PE - 14/3 - Festival Rota Independente\nFORTALEZA/CE - 15/3 - Ophera Music Bar\nTERESINA/PI - 16/3 - Casa Barro\nIngressos: linktr.ee/supercombooficial\n\nVídeo: Marcela Sanches"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT58S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "JroduOhN6kIK6ndeaTl4U_ZUm5o",
+        "id": "JIbagrnNlmk",
+        "snippet": {
+          "publishedAt": "2025-02-17T18:00:23Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Eiii, bora de show? Tem uma pá de datas na agenda, se liga na descrição!  ~ Vídeo: Gabriel Hand",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/JIbagrnNlmk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/JIbagrnNlmk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/JIbagrnNlmk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/JIbagrnNlmk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/JIbagrnNlmk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Eiii, bora de show? Tem uma pá de datas na agenda, se liga na descrição!  ~ Vídeo: Gabriel Hand",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT37S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "MQ5hRqDYelw5YaUa-9mQf_sG5Gw",
+        "id": "1cNIm-Xl97s",
+        "snippet": {
+          "publishedAt": "2025-02-08T13:00:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Remédios 💊 já vai completar 2 anos... parece que foi ontem! Prontos pro próximo? #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/1cNIm-Xl97s/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/1cNIm-Xl97s/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/1cNIm-Xl97s/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/1cNIm-Xl97s/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/1cNIm-Xl97s/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Remédios 💊 já vai completar 2 anos... parece que foi ontem! Prontos pro próximo? #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT54S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "1dOcZ9-bRFcRTJ8v1JyCgvQ7JE8",
+        "id": "v31z3jiF4bQ",
+        "snippet": {
+          "publishedAt": "2024-10-11T15:01:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "FUI NA BGS 2024",
+          "description": "Dei aquela perambulada pela Brasil Game Show, vi um monte de coisa e vloguei um resumo do que eu achei mais interessante.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/v31z3jiF4bQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/v31z3jiF4bQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/v31z3jiF4bQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/v31z3jiF4bQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/v31z3jiF4bQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "BGS",
+            "Brasil game show",
+            "supercombo na bgs",
+            "leo ramos na bgs",
+            "bgs 2024"
+          ],
+          "categoryId": "24",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "FUI NA BGS 2024",
+            "description": "Dei aquela perambulada pela Brasil Game Show, vi um monte de coisa e vloguei um resumo do que eu achei mais interessante."
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M10S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "u6a5kPOLMeIkmyaCeClarWHvriA",
+        "id": "JUZPqYvDoqc",
+        "snippet": {
+          "publishedAt": "2024-10-03T16:00:28Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "CHA DE AEROPORTO E SHOW EM MANAUS",
+          "description": "Vlog da nossa ida para tocar em Manaus no Teatro Manauara.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/JUZPqYvDoqc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/JUZPqYvDoqc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/JUZPqYvDoqc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/JUZPqYvDoqc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/JUZPqYvDoqc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "teatro manauara",
+            "supercombo manaus",
+            "supercombo teatro manauara",
+            "vlog manaus"
+          ],
+          "categoryId": "24",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "CHA DE AEROPORTO E SHOW EM MANAUS",
+            "description": "Vlog da nossa ida para tocar em Manaus no Teatro Manauara."
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT7M49S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "0-i4TnTyBv5cVo1IKhXj7Pw7gss",
+        "id": "VFiKHBe46Ac",
+        "snippet": {
+          "publishedAt": "2024-09-26T16:00:28Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "NÃO TEVE SHOW EM BROTAS",
+          "description": "infelizmente não teve o show, mas já estamos remarcando pra poder voltar ainda esse ano, anunciaremos a nova data em breve.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/VFiKHBe46Ac/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/VFiKHBe46Ac/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/VFiKHBe46Ac/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/VFiKHBe46Ac/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/VFiKHBe46Ac/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "festival",
+            "brotas",
+            "show em brotas",
+            "supercombo em brotas",
+            "show cancelado",
+            "show em brotas cancelado"
+          ],
+          "categoryId": "24",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "NÃO TEVE SHOW EM BROTAS",
+            "description": "infelizmente não teve o show, mas já estamos remarcando pra poder voltar ainda esse ano, anunciaremos a nova data em breve."
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT7M5S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "HGxzKUg8_5gUqzr_ErhTETRPxTU",
+        "id": "iPf2-2wLjiE",
+        "snippet": {
+          "publishedAt": "2024-09-19T16:00:45Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "VOLTAMOS A GOIANIA",
+          "description": "Vlog ta de volta, dessa vez, a Supercombo foi pra Goiania tocar no festival Piribier.\n\nAgradecimentos especiais para:\n\n- @vacacomidavegana pelos rangos veganos absolutamente incriveis \n- @mahchuahy pelas pamonhas maravilhosas",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/iPf2-2wLjiE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/iPf2-2wLjiE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/iPf2-2wLjiE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/iPf2-2wLjiE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/iPf2-2wLjiE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "goiania",
+            "piribier",
+            "festival piribier",
+            "festival piribier banda supercombo"
+          ],
+          "categoryId": "24",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "VOLTAMOS A GOIANIA",
+            "description": "Vlog ta de volta, dessa vez, a Supercombo foi pra Goiania tocar no festival Piribier.\n\nAgradecimentos especiais para:\n\n- @vacacomidavegana pelos rangos veganos absolutamente incriveis \n- @mahchuahy pelas pamonhas maravilhosas"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT6M31S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "rfw3S39U-uqk1iNQWz0twpImgSA",
+        "id": "cZxRjP8Qan0",
+        "snippet": {
+          "publishedAt": "2024-03-12T20:21:19Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Por que \"Pneu e a Lombada\"? @supercombooficial | Tudo Sobre o Disco",
+          "description": "Neste episódio, Leo Ramos, Carol Navarro, Paulo Vaz e André Dea contam detalhes e histórias sobre o processo de composição e gravação das faixas do álbum \"Remédios\", ⁠que está disponível em todas as plataformas.\n\nConfira o podcast \"Tudo Sobre o Disco\" em todas as plataformas: https://tudosobreodisco.lnk.to/Supercombo_RemediosID\n\n#Supercombo #TudoSobreODisco #Remédios #Deckdisc",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/cZxRjP8Qan0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/cZxRjP8Qan0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/cZxRjP8Qan0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/cZxRjP8Qan0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/cZxRjP8Qan0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "pneu e a lombada",
+            "tudo sobre o disco",
+            "podcast",
+            "deckdisc",
+            "deck"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Por que \"Pneu e a Lombada\"? @supercombooficial | Tudo Sobre o Disco",
+            "description": "Neste episódio, Leo Ramos, Carol Navarro, Paulo Vaz e André Dea contam detalhes e histórias sobre o processo de composição e gravação das faixas do álbum \"Remédios\", ⁠que está disponível em todas as plataformas.\n\nConfira o podcast \"Tudo Sobre o Disco\" em todas as plataformas: https://tudosobreodisco.lnk.to/Supercombo_RemediosID\n\n#Supercombo #TudoSobreODisco #Remédios #Deckdisc"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT20S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "ggrF-MOD6haWHNI8XepJgMNDUOg",
+        "id": "JMDHtUOduwE",
+        "snippet": {
+          "publishedAt": "2024-02-05T15:00:18Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo toca ROGÉRIO no RIO DE JANEIRO! 06/04 no @circovoador  #shorts #Supercombo #ShowRogério",
+          "description": "Início das vendas: terça 06/02 ao meio-dia.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/JMDHtUOduwE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/JMDHtUOduwE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/JMDHtUOduwE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/JMDHtUOduwE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/JMDHtUOduwE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo toca ROGÉRIO no RIO DE JANEIRO! 06/04 no @circovoador  #shorts #Supercombo #ShowRogério",
+            "description": "Início das vendas: terça 06/02 ao meio-dia."
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "novmUKKbuLpZ9LYRkLUswbuP2gY",
+        "id": "sCDxmsZBop8",
+        "snippet": {
+          "publishedAt": "2024-02-01T16:37:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "10 ANOS DE AMIANTO! Parece que 2014 foi ontem... (Vídeo: @FiltrMusicBR) #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/sCDxmsZBop8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/sCDxmsZBop8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/sCDxmsZBop8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/sCDxmsZBop8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/sCDxmsZBop8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "10 ANOS DE AMIANTO! Parece que 2014 foi ontem... (Vídeo: @FiltrMusicBR) #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT59S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "sw8yhuDPtUakTB8gYyZEvkE_spc",
+        "id": "gTiGQiItF5c",
+        "snippet": {
+          "publishedAt": "2024-01-27T16:21:38Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Ainda estamos presos no show especial Rogério! 😈 #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/gTiGQiItF5c/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/gTiGQiItF5c/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/gTiGQiItF5c/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/gTiGQiItF5c/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/gTiGQiItF5c/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Ainda estamos presos no show especial Rogério! 😈 #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "bmmxaeN5u-n6ZyxtwbrO4W_VR2o",
+        "id": "PjrM0ZC1NYs",
+        "snippet": {
+          "publishedAt": "2024-01-14T22:00:09Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Seremos mto JOVENS daqui 1 semana tocando o disco Rogério na íntegra em SP - ESGOTADO! #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/PjrM0ZC1NYs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/PjrM0ZC1NYs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/PjrM0ZC1NYs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/PjrM0ZC1NYs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/PjrM0ZC1NYs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Seremos mto JOVENS daqui 1 semana tocando o disco Rogério na íntegra em SP - ESGOTADO! #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT33S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "OhlyXuOx0HOAJ2tlHkA65s58Zr8",
+        "id": "BjRN0rHuecM",
+        "snippet": {
+          "publishedAt": "2024-01-08T12:45:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Pólen ultrapassou 200k por aqui 🥀🐝 Já assistiu? #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/BjRN0rHuecM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/BjRN0rHuecM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/BjRN0rHuecM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/BjRN0rHuecM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/BjRN0rHuecM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Pólen ultrapassou 200k por aqui 🥀🐝 Já assistiu? #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT23S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "KTziumuz47j6NXKgVkxm6ZxS7Wk",
+        "id": "p-7QAzciZtE",
+        "snippet": {
+          "publishedAt": "2023-12-30T14:15:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "QUE ANO! Valeu demais, galera! Vem muito mais por aí! #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/p-7QAzciZtE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/p-7QAzciZtE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/p-7QAzciZtE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/p-7QAzciZtE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/p-7QAzciZtE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "QUE ANO! Valeu demais, galera! Vem muito mais por aí! #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT25S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "N3dWbwo4PfvAH4OOtIIwlkIBm04",
+        "id": "-bxl5X_FEBs",
+        "snippet": {
+          "publishedAt": "2023-12-21T14:00:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Hoje é um ótimo dia pra maratonar os nossos vlogs aqui no canal! #Shorts #Supercombo",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/-bxl5X_FEBs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/-bxl5X_FEBs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/-bxl5X_FEBs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/-bxl5X_FEBs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/-bxl5X_FEBs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Hoje é um ótimo dia pra maratonar os nossos vlogs aqui no canal! #Shorts #Supercombo",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT26S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "nh76jG5-7AFf0UzrCQvzc0-UTYk",
+        "id": "kR9Befewp9s",
+        "snippet": {
+          "publishedAt": "2023-12-14T13:56:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Esse álbum é um marco pra gente, e dia 21/01 tocaremos ele na íntegra em SP. Bora? #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/kR9Befewp9s/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/kR9Befewp9s/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/kR9Befewp9s/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/kR9Befewp9s/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/kR9Befewp9s/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Esse álbum é um marco pra gente, e dia 21/01 tocaremos ele na íntegra em SP. Bora? #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT48S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "BODA8696XFs5EpPsdRP75NqaRc8",
+        "id": "w2dhlFhXeI4",
+        "snippet": {
+          "publishedAt": "2023-12-09T19:48:36Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Sobe? Não, DESCE! #supercombo #rogério #shorts",
+          "description": "Supercombo toca ROGÉRIO - o disco, na íntegra. São Paulo, Casa Rockambole, 21 de janeiro de 2024. Vamo?\n\nInício das vendas: segunda-feira 11/12 ao meio-dia.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/w2dhlFhXeI4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/w2dhlFhXeI4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/w2dhlFhXeI4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/w2dhlFhXeI4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/w2dhlFhXeI4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Sobe? Não, DESCE! #supercombo #rogério #shorts",
+            "description": "Supercombo toca ROGÉRIO - o disco, na íntegra. São Paulo, Casa Rockambole, 21 de janeiro de 2024. Vamo?\n\nInício das vendas: segunda-feira 11/12 ao meio-dia."
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT26S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "KAvhJortvpOqkQ98MywYlOv_GPs",
+        "id": "6KGy00WSJss",
+        "snippet": {
+          "publishedAt": "2023-11-22T14:00:05Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Alguém jogou aí e agora eu preciso sair, antes que a terra nos cubra #shorts #supercombo #tuyo",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/6KGy00WSJss/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/6KGy00WSJss/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/6KGy00WSJss/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/6KGy00WSJss/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/6KGy00WSJss/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Alguém jogou aí e agora eu preciso sair, antes que a terra nos cubra #shorts #supercombo #tuyo",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT29S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "xM0sKYZ7QODSsk3y24pe088J3f0",
+        "id": "joYIaL1uoqQ",
+        "snippet": {
+          "publishedAt": "2023-11-15T12:00:40Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Daqui 1 mês estaremos no Allianz ao lado de Nx Zero! Quem vai? #shorts   #supercombo #nxzero",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/joYIaL1uoqQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/joYIaL1uoqQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/joYIaL1uoqQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/joYIaL1uoqQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/joYIaL1uoqQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Daqui 1 mês estaremos no Allianz ao lado de Nx Zero! Quem vai? #shorts   #supercombo #nxzero",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT44S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "OTqWPZnwKz9cP7rPbd9aKk7VFCU",
+        "id": "n_leNytS3RA",
+        "snippet": {
+          "publishedAt": "2023-11-12T14:00:34Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Quando a gente recebeu esse convite da Pitty nossa reação foi só essa: quando? como? onde? 🤩 #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/n_leNytS3RA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/n_leNytS3RA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/n_leNytS3RA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/n_leNytS3RA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/n_leNytS3RA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Quando a gente recebeu esse convite da Pitty nossa reação foi só essa: quando? como? onde? 🤩 #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT45S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "tOFIBwo8tWhC1s4AVCXcrbTE8X0",
+        "id": "UUhlvRdGjXk",
+        "snippet": {
+          "publishedAt": "2023-11-02T20:55:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Quis voar até onde o destino dá pé 🐝🥀 #shorts #tuyo #supercombo",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/UUhlvRdGjXk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/UUhlvRdGjXk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/UUhlvRdGjXk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/UUhlvRdGjXk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/UUhlvRdGjXk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Quis voar até onde o destino dá pé 🐝🥀 #shorts #tuyo #supercombo",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT23S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "uGEZLcf2kaAvQA-Zzk82QZSA9tw",
+        "id": "ArRVJDJ8Qjc",
+        "snippet": {
+          "publishedAt": "2023-10-27T15:16:14Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Em um estalar de dedos o clipe de Pólen nasceu 🐝🥀  (imagina se fosse assim né... kkkkk) #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ArRVJDJ8Qjc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ArRVJDJ8Qjc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ArRVJDJ8Qjc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ArRVJDJ8Qjc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ArRVJDJ8Qjc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Em um estalar de dedos o clipe de Pólen nasceu 🐝🥀  (imagina se fosse assim né... kkkkk) #shorts",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT10S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "lSIVFJuTSUh_OEgwV3ZoLBYiCWo",
+        "id": "TiZXDT7hWqU",
+        "snippet": {
+          "publishedAt": "2023-10-20T15:02:53Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo, @oituyo - Pólen",
+          "description": "Ouça nas plataformas: http://Supercombo.lnk.to/Tuyo_Polen\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\nLETRA\nPólen\n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea)\n\nVento, se você me soprar \nEu perco a chance de voar \nAté onde o destino me quer\n\nTempo, não espere amanhecer \nEu não aguento não saber\nQue hora a gente vai embora\n\nOnde, pouco importa \nMelhor que essa cova\nEsse buquê não tem histórias\n\nAlguém jogou aí e agora eu preciso sair\nAntes que a terra nos cubra\n\nEspere por mim\nNão enterra o que podia ser \nEspere por mim\nAqui tá muito escuro pra te ver\nAcende aí\nAcende aí\nAcende...\n \nVento, se você me soprar \nEu perco meu norte\nQuis voar até onde o destino dá pé\n\nTempo, não espere amanhecer \nEu não aguento não saber\nQue hora a gente vai embora\n\nOnde, pouco importa \nMelhor que essa cova\nEsse buquê não tem histórias\n\nAlguém jogou aí e agora eu preciso sair \nAntes que a terra nos cubra\n\nEspere por mim\nNão enterra o que podia ser \nEspere por mim\nAqui tá muito escuro pra te ver\nAcende...\n \nEspere por mim\nNão enterra o que podia ser \n(Não enterra o que podia ser)\nEspere por mim\nAqui tá muito escuro pra te ver\nAcende aí\nAcende a...\nAcende a...\n\n--\n\nVIDEO\nDireção: Renato Peres\nAssistente de Direção: Leia Saraiva\nDireção de Fotografia: Renato Peres\nGaffer: Noel Filho\nAssistente de Câmera/Logger: Ana Prieto\nAssistente de Set: Adriel Bismark\nCenografia: Carol Navarro\nFigurino: Carol Navarro e André Dea\nMaquiagem e Cabelo: Natália Stracieri\nArgumento: Leonardo Ramos\nRoteiro: Supercombo e Renato Peres\nLocação: A Casa da Babette\nLocadoras: Bahia e Locadora Equipamentos Cinematográficos\nEdição e Finalização: Renato Peres\n\nAgradecimento: Bruna Haddad Leme da Silva\n\nAUDIO\nProduzido por Supercombo\nParticipação Especial: Tuyo\n\nSupercombo:\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\nTuyo:\nLilian Soares (Lio)\nLayane Soares (Lay)\nJean Machado\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\n\nCapa:\nFoto: Gabriel Hand\nArte: Bruno Queiroz\n\n#Supercombo #Tuyo #Pólen",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/TiZXDT7hWqU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/TiZXDT7hWqU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/TiZXDT7hWqU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/TiZXDT7hWqU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/TiZXDT7hWqU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "tuyo",
+            "tuio",
+            "pólen",
+            "polem",
+            "rock"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo, @oituyo - Pólen",
+            "description": "Ouça nas plataformas: http://Supercombo.lnk.to/Tuyo_Polen\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\nLETRA\nPólen\n(Leo Ramos / Carol Navarro / Paulo Vaz / André Dea)\n\nVento, se você me soprar \nEu perco a chance de voar \nAté onde o destino me quer\n\nTempo, não espere amanhecer \nEu não aguento não saber\nQue hora a gente vai embora\n\nOnde, pouco importa \nMelhor que essa cova\nEsse buquê não tem histórias\n\nAlguém jogou aí e agora eu preciso sair\nAntes que a terra nos cubra\n\nEspere por mim\nNão enterra o que podia ser \nEspere por mim\nAqui tá muito escuro pra te ver\nAcende aí\nAcende aí\nAcende...\n \nVento, se você me soprar \nEu perco meu norte\nQuis voar até onde o destino dá pé\n\nTempo, não espere amanhecer \nEu não aguento não saber\nQue hora a gente vai embora\n\nOnde, pouco importa \nMelhor que essa cova\nEsse buquê não tem histórias\n\nAlguém jogou aí e agora eu preciso sair \nAntes que a terra nos cubra\n\nEspere por mim\nNão enterra o que podia ser \nEspere por mim\nAqui tá muito escuro pra te ver\nAcende...\n \nEspere por mim\nNão enterra o que podia ser \n(Não enterra o que podia ser)\nEspere por mim\nAqui tá muito escuro pra te ver\nAcende aí\nAcende a...\nAcende a...\n\n--\n\nVIDEO\nDireção: Renato Peres\nAssistente de Direção: Leia Saraiva\nDireção de Fotografia: Renato Peres\nGaffer: Noel Filho\nAssistente de Câmera/Logger: Ana Prieto\nAssistente de Set: Adriel Bismark\nCenografia: Carol Navarro\nFigurino: Carol Navarro e André Dea\nMaquiagem e Cabelo: Natália Stracieri\nArgumento: Leonardo Ramos\nRoteiro: Supercombo e Renato Peres\nLocação: A Casa da Babette\nLocadoras: Bahia e Locadora Equipamentos Cinematográficos\nEdição e Finalização: Renato Peres\n\nAgradecimento: Bruna Haddad Leme da Silva\n\nAUDIO\nProduzido por Supercombo\nParticipação Especial: Tuyo\n\nSupercombo:\nLeo Ramos\nCarol Navarro\nPaulo Vaz\nAndré Dea\n\nTuyo:\nLilian Soares (Lio)\nLayane Soares (Lay)\nJean Machado\n\nGravado no estúdio BTG, em São Paulo\nEngenheiro de áudio: Zeca Leme\nEdição por Renan Martins\nMixado por Leo Ramos\nMasterizado por Fili Filizzola\nMixagem em Dolby Atmos por Zeca Leme\n\nCapa:\nFoto: Gabriel Hand\nArte: Bruno Queiroz\n\n#Supercombo #Tuyo #Pólen"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT4M15S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "hOvVKSfrZf5fsi5sq0nhS9QvWi4",
+        "id": "zE0ElpWlzhg",
+        "snippet": {
+          "publishedAt": "2023-10-20T15:01:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "CLIPE DA MÚSICA NOVA TÁ ON! Pólen - Supercombo + @oituyo  ✨ #shorts #supercombo #tuyo",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/zE0ElpWlzhg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/zE0ElpWlzhg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/zE0ElpWlzhg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/zE0ElpWlzhg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/zE0ElpWlzhg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "CLIPE DA MÚSICA NOVA TÁ ON! Pólen - Supercombo + @oituyo  ✨ #shorts #supercombo #tuyo",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT29S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "ASiXbXqPX0egj6nlEl8yw4wH0vY",
+        "id": "HiElXyRzLyo",
+        "snippet": {
+          "publishedAt": "2023-10-17T11:39:13Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Já passamos dos 150 mil plays nessa versão! já ouviu? ❤️ #shorts #pitty #supercombo #acnxx",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/HiElXyRzLyo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/HiElXyRzLyo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/HiElXyRzLyo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/HiElXyRzLyo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/HiElXyRzLyo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Já passamos dos 150 mil plays nessa versão! já ouviu? ❤️ #shorts #pitty #supercombo #acnxx",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "UHfAqGaoaYECnMyV8qtz49eljDM",
+        "id": "w2yy1hXxw7I",
+        "snippet": {
+          "publishedAt": "2023-09-28T15:30:16Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "TIREI UNS DIAS DE FÉRIAS",
+          "description": "Leo resolveu tirar uns dias de férias e esse vlog é um resumo do descanço.\nTambém é o unico registro de Leo de sunga no youtube, ou talvez na historia das redes sociais.\nAproveitando esse espaço aqui pra falar que semana que vem não vai ter vlog(acho) pois: FÉRIAS.\nMas ainda não é o fim do vlog.\n\nobs1: imagens do show de santos por Gabs Hand.\nobs2: A pousada que ficamos se chama \"Refugio Port Sahy\".",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/w2yy1hXxw7I/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/w2yy1hXxw7I/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/w2yy1hXxw7I/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/w2yy1hXxw7I/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/w2yy1hXxw7I/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "ferias",
+            "barra do sahy",
+            "praia",
+            "skate",
+            "boiçucanga"
+          ],
+          "categoryId": "19",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "TIREI UNS DIAS DE FÉRIAS",
+            "description": "Leo resolveu tirar uns dias de férias e esse vlog é um resumo do descanço.\nTambém é o unico registro de Leo de sunga no youtube, ou talvez na historia das redes sociais.\nAproveitando esse espaço aqui pra falar que semana que vem não vai ter vlog(acho) pois: FÉRIAS.\nMas ainda não é o fim do vlog.\n\nobs1: imagens do show de santos por Gabs Hand.\nobs2: A pousada que ficamos se chama \"Refugio Port Sahy\"."
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT5M4S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "xrQUxd5Cg412buc1iY2nLU5CKo0",
+        "id": "4OXK0nGt_8E",
+        "snippet": {
+          "publishedAt": "2023-09-07T16:00:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "DE VOLTA A SÃO BERNARDO",
+          "description": "abrimos um bloco no nosso show pra fazer um karaoke com a galera.\nno video a gente mostra um trechinho desse acontecimento, será que vale o repeteco?",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/4OXK0nGt_8E/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/4OXK0nGt_8E/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/4OXK0nGt_8E/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/4OXK0nGt_8E/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/4OXK0nGt_8E/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "Karaoke",
+            "teatro lauro gomes",
+            "São bernardo do campo",
+            "Show no abc"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "DE VOLTA A SÃO BERNARDO",
+            "description": "abrimos um bloco no nosso show pra fazer um karaoke com a galera.\nno video a gente mostra um trechinho desse acontecimento, será que vale o repeteco?"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT5M53S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "QUl869yLnXK3ERXX2JmsbhC0q_Y",
+        "id": "APwZQ8JgbU0",
+        "snippet": {
+          "publishedAt": "2023-08-31T15:30:05Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "DOIS SHOWS NO MESMO DIA",
+          "description": "Tocamos 2 shows no mesmo dia:\nPrimeiro no Baconday, depois no RockFest em Santa Barbara do Oeste.\nimagens extras por Gabriel Hand, que também ensinou a preparar um expresso tônico.\n\nProximos shows:\n\n01/09/2023 - São Bernardo do Campo - Teatro Lauro Gomes",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/APwZQ8JgbU0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/APwZQ8JgbU0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/APwZQ8JgbU0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/APwZQ8JgbU0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/APwZQ8JgbU0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "Baconday",
+            "Brazilian bacon day",
+            "Rock fest",
+            "Rock nacional",
+            "Vlog",
+            "Vlog de banda"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "DOIS SHOWS NO MESMO DIA",
+            "description": "Tocamos 2 shows no mesmo dia:\nPrimeiro no Baconday, depois no RockFest em Santa Barbara do Oeste.\nimagens extras por Gabriel Hand, que também ensinou a preparar um expresso tônico.\n\nProximos shows:\n\n01/09/2023 - São Bernardo do Campo - Teatro Lauro Gomes"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT9M25S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "mKh-dgfHuduL3a2QrcP-R8fuH-8",
+        "id": "CVHxiK6PkCk",
+        "snippet": {
+          "publishedAt": "2023-08-25T16:30:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SKATE , MIC NOVO , HACKTOWN & VIROSE",
+          "description": "Leo comprou um microfone novo pra dar um upgrade no som das vozes nos vlogs.\nVLOGÃO maneiro do nosso show no hacktown 2023.\n\nJá ouviu nosso disco novo, \"Remédios\"?\nSaiba que ele esta disponível em todas as plataformas de streaming, inclusive aqui no nosso canal tem vários clipes incríveis, SÓ VAI =)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/CVHxiK6PkCk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/CVHxiK6PkCk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/CVHxiK6PkCk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/CVHxiK6PkCk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/CVHxiK6PkCk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "SKATE , MIC NOVO , HACKTOWN & VIROSE",
+            "description": "Leo comprou um microfone novo pra dar um upgrade no som das vozes nos vlogs.\nVLOGÃO maneiro do nosso show no hacktown 2023.\n\nJá ouviu nosso disco novo, \"Remédios\"?\nSaiba que ele esta disponível em todas as plataformas de streaming, inclusive aqui no nosso canal tem vários clipes incríveis, SÓ VAI =)"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT6M38S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "TDEHSerf8axsRdBVuJzlez6wsz0",
+        "id": "353vl2achFs",
+        "snippet": {
+          "publishedAt": "2023-08-22T02:18:08Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "AndréBet & Frozen Yogurt @supercombooficial",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/353vl2achFs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/353vl2achFs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/353vl2achFs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/353vl2achFs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/353vl2achFs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "AndréBet & Frozen Yogurt @supercombooficial",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT11M11S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "UeQvHXcSwGSYN4hBLWghA3FJzOo",
+        "id": "XAzkdwLKy7k",
+        "snippet": {
+          "publishedAt": "2023-08-17T16:00:23Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "CABELO BRANCO & MASHUP",
+          "description": "Vlog de 2 shows da @supercombooficial seguidos no sesc belenzinho.\nPresenças ilustres, passagem de som, ausência de rango vegano, trechos do show e leo quase não foi no dia seguinte porque passou mal.\n\ne no fim um mashup de \"Cheia de manias\" com \"Changes\"...porque sim...",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/XAzkdwLKy7k/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/XAzkdwLKy7k/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/XAzkdwLKy7k/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/XAzkdwLKy7k/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/XAzkdwLKy7k/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "CABELO BRANCO & MASHUP",
+            "description": "Vlog de 2 shows da @supercombooficial seguidos no sesc belenzinho.\nPresenças ilustres, passagem de som, ausência de rango vegano, trechos do show e leo quase não foi no dia seguinte porque passou mal.\n\ne no fim um mashup de \"Cheia de manias\" com \"Changes\"...porque sim..."
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT9M8S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "yZUkK6XPIoLlItW7tu7Q4s_W_xg",
+        "id": "De2fp2UUS_U",
+        "snippet": {
+          "publishedAt": "2023-08-15T03:38:14Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Pão verde e Zelda @supercombooficial",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/De2fp2UUS_U/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/De2fp2UUS_U/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/De2fp2UUS_U/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/De2fp2UUS_U/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/De2fp2UUS_U/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "piloto automatico",
+            "supervlog",
+            "remédios"
+          ],
+          "categoryId": "23",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Pão verde e Zelda @supercombooficial",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT7M41S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "true",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "ENF3zzAVcrtZcbb40SYbjuWQ1HY",
+        "id": "FWhw9t_n8ZQ",
+        "snippet": {
+          "publishedAt": "2023-08-10T16:00:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "TOCAMOS EM GOIANIA E BRASILIA @supercombooficial",
+          "description": "Vlogzin da nossa passagem por GYN e BSB!\nfoi brabo demais",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/FWhw9t_n8ZQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/FWhw9t_n8ZQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/FWhw9t_n8ZQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/FWhw9t_n8ZQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/FWhw9t_n8ZQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "TOCAMOS EM GOIANIA E BRASILIA @supercombooficial",
+            "description": "Vlogzin da nossa passagem por GYN e BSB!\nfoi brabo demais"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT6M46S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "uBZESUOhv4QFpVcEzo1gF9BiOjM",
+        "id": "Sfvw2IEQuQY",
+        "snippet": {
+          "publishedAt": "2023-08-10T03:20:44Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Metallica, Lindo & azeite @supercombooficial",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Sfvw2IEQuQY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Sfvw2IEQuQY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Sfvw2IEQuQY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Sfvw2IEQuQY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Sfvw2IEQuQY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Metallica, Lindo & azeite @supercombooficial",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT12M28S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "regionRestriction": {
+            "blocked": [
+              "RU"
+            ]
+          },
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "B1KNlXp_J69XHqouW28-CGJA7CM",
+        "id": "rQYZV7wuYyw",
+        "snippet": {
+          "publishedAt": "2023-08-09T00:30:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Doce de leite & com Cerveja @supercombooficial",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/rQYZV7wuYyw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/rQYZV7wuYyw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/rQYZV7wuYyw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/rQYZV7wuYyw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/rQYZV7wuYyw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Doce de leite & com Cerveja @supercombooficial",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT7M40S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "wGm-IZsTlIEyQjJLk_jCI4vnYIU",
+        "id": "TXTyPnByWB4",
+        "snippet": {
+          "publishedAt": "2023-08-08T03:32:54Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Kibe ds abóbora & Mundo Bita @supercombooficial",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/TXTyPnByWB4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/TXTyPnByWB4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/TXTyPnByWB4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/TXTyPnByWB4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/TXTyPnByWB4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Kibe ds abóbora & Mundo Bita @supercombooficial",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT11M40S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "---0Gkjr-IoNdgf2Xx2XoNl9CS8",
+        "id": "Boq-V4KdRtI",
+        "snippet": {
+          "publishedAt": "2023-08-04T00:37:36Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "89FM & Avestruz @supercombooficial",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Boq-V4KdRtI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Boq-V4KdRtI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Boq-V4KdRtI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Boq-V4KdRtI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "89FM & Avestruz @supercombooficial",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT13M5S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "dLPr4ZaV1Kl0glQWL-0eGaiI9S8",
+        "id": "-3AtVHpQ560",
+        "snippet": {
+          "publishedAt": "2023-08-02T16:00:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Bastidores do Show & Doidera",
+          "description": "Bastidores do nosso show no Sesc Taubaté!\nTeve participação da queridíssima Mary More, presença ilustre de Zero e companhia!\n\nPróximos shows:\n\n04/08 - Brasília \n05/08 - Goiânia \n\n\n❤️",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/-3AtVHpQ560/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/-3AtVHpQ560/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/-3AtVHpQ560/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/-3AtVHpQ560/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/-3AtVHpQ560/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Bastidores do Show & Doidera",
+            "description": "Bastidores do nosso show no Sesc Taubaté!\nTeve participação da queridíssima Mary More, presença ilustre de Zero e companhia!\n\nPróximos shows:\n\n04/08 - Brasília \n05/08 - Goiânia \n\n\n❤️"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT10M39S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "PGEjIUBX7HD9nomRX872VJNlzAI",
+        "id": "2QCXL57KUjU",
+        "snippet": {
+          "publishedAt": "2023-07-25T21:00:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Passagem de Som & Fofura @supercombooficial",
+          "description": "Vlog marotasso do nosso show no Sesc Santo André!\nLeo levou Alice na passagem de som e Paulinho levou a Mãe!\n\nPróximos shows:\n\n29/07 - Sesc Taubaté\n04/08 - Brasília \n05/08 - Goiânia",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/2QCXL57KUjU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/2QCXL57KUjU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/2QCXL57KUjU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/2QCXL57KUjU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/2QCXL57KUjU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Passagem de Som & Fofura @supercombooficial",
+            "description": "Vlog marotasso do nosso show no Sesc Santo André!\nLeo levou Alice na passagem de som e Paulinho levou a Mãe!\n\nPróximos shows:\n\n29/07 - Sesc Taubaté\n04/08 - Brasília \n05/08 - Goiânia"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT5M39S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "v1iAFXIu8EvHNy9vnBue9ywsHvM",
+        "id": "8we_iF9H9CU",
+        "snippet": {
+          "publishedAt": "2023-07-19T18:00:09Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Manga & Maratona de shows @supercombooficial",
+          "description": "Gabriel Hand realmente não gosta de manga, várias situs aleatorias, visita à fabrica da Aslan, shows e doidera.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/8we_iF9H9CU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/8we_iF9H9CU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/8we_iF9H9CU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/8we_iF9H9CU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/8we_iF9H9CU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Manga & Maratona de shows @supercombooficial",
+            "description": "Gabriel Hand realmente não gosta de manga, várias situs aleatorias, visita à fabrica da Aslan, shows e doidera."
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT10M4S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "qhHgDi9EJWHQA8Z8Sd1ikaJoLTo",
+        "id": "CWxf5mrdI-4",
+        "snippet": {
+          "publishedAt": "2023-07-15T01:55:58Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Homenagem ao Canisso, Pinhão e Sala de Estar @supercombooficial",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/CWxf5mrdI-4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/CWxf5mrdI-4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/CWxf5mrdI-4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/CWxf5mrdI-4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/CWxf5mrdI-4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Homenagem ao Canisso, Pinhão e Sala de Estar @supercombooficial",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT14M52S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "3Ude8fqLXZsJwqYjsXhP__0Z0-c",
+        "id": "PLBzUuaGZ40",
+        "snippet": {
+          "publishedAt": "2023-07-11T23:09:13Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Gralha Azul & Pinhão @supercombooficial",
+          "description": "Pindé trouxe conhecimento milenar depois de sua convivência com os pássaros, muitos dirão que nasceu sabendo…Também teve trechin do nosso show no SESC Itaquera e outras coisas aleatorias!\n\nNossos próximos show são:\n• dia 13 de julho no SESC mogi das cruzes\n• dia 15 de julho no Autêntica em BH\n• dia 16 de julho no esquenta do Rock Fun fest em São Paulo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/PLBzUuaGZ40/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/PLBzUuaGZ40/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/PLBzUuaGZ40/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/PLBzUuaGZ40/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/PLBzUuaGZ40/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Gralha Azul & Pinhão @supercombooficial",
+            "description": "Pindé trouxe conhecimento milenar depois de sua convivência com os pássaros, muitos dirão que nasceu sabendo…Também teve trechin do nosso show no SESC Itaquera e outras coisas aleatorias!\n\nNossos próximos show são:\n• dia 13 de julho no SESC mogi das cruzes\n• dia 15 de julho no Autêntica em BH\n• dia 16 de julho no esquenta do Rock Fun fest em São Paulo"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT5M58S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      }
+    ],
+    "pageInfo": {
+      "totalResults": 50,
+      "resultsPerPage": 50
+    }
+  }
+}

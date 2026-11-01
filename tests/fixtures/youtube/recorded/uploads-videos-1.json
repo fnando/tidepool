@@ -1,0 +1,4043 @@
+{
+  "request": {
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "DdmxNoj2cGQ,nX_knikbXdE,a603fpH3RAs,0IWXDlMcKIo,8h_bpVagc0g,c05L9G0Z_A8,SxLHiZsbLrA,2q5iyYT3xQQ,theTuMCqHqI,6vnWxWYKcQE,lKuA_hTskSg,QxP5ZzuPdzA,oLRTEfwcmbc,dU0LYa-YWKc,HF1aUFFI-N0,p-wXGCXxMZI,nJk7qD4DCVo,xCXhz9ooO2I,4siDLCF42HY,LqG4Z9Mtf9M,8MSJdg3QYeQ,I_w4EJz6Afc,zWuAQFO-6ik,XA5FWp-rZFI,3ZIw38Nm39w,z6iy0ACM2vE,nHq3JVoYAnY,l3_nHFBez1Y,sv0I2xmyapE,kKBQjw5Zyxc,i4IJmEPceEs,93eaGqMFuHQ,YQPQAFjGbbE,4Pb93bWY-aw,kPYWusxsTh8,02TiOnFt5Cc,Q8GSHfcGWBI,xxoY46ZT7wI,iDD28YmCUzE,oXJgkRKYq88,XZvpAGk5V1w,P559ykxlA_E,KzWbK4mxTA0,1OJwyBO0toc,aITT_525nKg,1bJcOVbJtmM,94qPzA3Gj80,_lA53wHBbGM,aVDbnUsiX3c,gVsxiK_FFyA"
+    },
+    "if_none_match": null
+  },
+  "status": 200,
+  "etag": null,
+  "body": {
+    "kind": "youtube#videoListResponse",
+    "etag": "yrX88KDnOWrQ1AhXfL9aQ095QRs",
+    "items": [
+      {
+        "kind": "youtube#video",
+        "etag": "z09vDtrJy8C61sPxX2dd3s7uPe0",
+        "id": "DdmxNoj2cGQ",
+        "snippet": {
+          "publishedAt": "2026-10-29T21:00:29Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Esse ano a gente se despede da tour Caranguejo e tem só mais 2 shows: 12/12 Fortaleza e 20/12 SP.",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/DdmxNoj2cGQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/DdmxNoj2cGQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/DdmxNoj2cGQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/DdmxNoj2cGQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/DdmxNoj2cGQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Esse ano a gente se despede da tour Caranguejo e tem só mais 2 shows: 12/12 Fortaleza e 20/12 SP.",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT37S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "GquBGf1OWRLXzYdN9sQBxjAy9Tg",
+        "id": "nX_knikbXdE",
+        "snippet": {
+          "publishedAt": "2026-10-24T21:00:32Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "☂️💜",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/nX_knikbXdE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/nX_knikbXdE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/nX_knikbXdE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/nX_knikbXdE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/nX_knikbXdE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "☂️💜",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M1S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "w2PuWB9wtpu3ileMlGwo6mOBpYQ",
+        "id": "a603fpH3RAs",
+        "snippet": {
+          "publishedAt": "2026-10-20T17:30:39Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Último show do Carangas na última semana útil do ano! 🦀",
+          "description": "📆 20.12.26\n📍 Cine Joia (São Paulo/SP)\n🎟️ Ingressos em https://articket.com.br/e/6961/supercombo-em-sao-paulo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/a603fpH3RAs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/a603fpH3RAs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/a603fpH3RAs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/a603fpH3RAs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/a603fpH3RAs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Último show do Carangas na última semana útil do ano! 🦀",
+            "description": "📆 20.12.26\n📍 Cine Joia (São Paulo/SP)\n🎟️ Ingressos em https://articket.com.br/e/6961/supercombo-em-sao-paulo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT12S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "7ighOtYfKO6duKUbSapl6c136S4",
+        "id": "0IWXDlMcKIo",
+        "snippet": {
+          "publishedAt": "2026-10-11T21:00:35Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Quem tá ansioso pra ouvir essa ao vivo na tour Rogério 10 anos?",
+          "description": "TOUR ROGÉRIO 10 ANOS! 👹\n\n24/jan. Santos/SP - Arena Club30/jan. Curitiba/PR - Stage Garden31/jan. Florianópolis/SC - John Bull20/fev. Campinas/SP - Brasuca28/fev. Belo Horizonte/MG - Mister Rock06/mar. Rio de Janeiro/RJ - Circo Voador07/mar. São José dos Campos/SP - Honey Club03/abr. Porto Alegre/RS - Opinião\n\n👉 INGRESSOS: https://tr.ee/EaVNgk3k9E\nEm breve novas datas e cidades!",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/0IWXDlMcKIo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/0IWXDlMcKIo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/0IWXDlMcKIo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/0IWXDlMcKIo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/0IWXDlMcKIo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Quem tá ansioso pra ouvir essa ao vivo na tour Rogério 10 anos?",
+            "description": "TOUR ROGÉRIO 10 ANOS! 👹\n\n24/jan. Santos/SP - Arena Club30/jan. Curitiba/PR - Stage Garden31/jan. Florianópolis/SC - John Bull20/fev. Campinas/SP - Brasuca28/fev. Belo Horizonte/MG - Mister Rock06/mar. Rio de Janeiro/RJ - Circo Voador07/mar. São José dos Campos/SP - Honey Club03/abr. Porto Alegre/RS - Opinião\n\n👉 INGRESSOS: https://tr.ee/EaVNgk3k9E\nEm breve novas datas e cidades!"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT57S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "Y3_vwr6uYj9dODQDDfwkAqZ8FR4",
+        "id": "8h_bpVagc0g",
+        "snippet": {
+          "publishedAt": "2026-10-06T21:00:37Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "ROGÉRIO 👹 TOUR 10 ANOS | Datas e ingressos AMANHÃ ÀS 18H!",
+          "description": "📽️ Renato Dias Peres\n\nOuça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/8h_bpVagc0g/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/8h_bpVagc0g/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/8h_bpVagc0g/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/8h_bpVagc0g/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/8h_bpVagc0g/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "ROGÉRIO 👹 TOUR 10 ANOS | Datas e ingressos AMANHÃ ÀS 18H!",
+            "description": "📽️ Renato Dias Peres\n\nOuça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT35S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "PdX_LiasHrLyZz5n42uaG0pUpco",
+        "id": "c05L9G0Z_A8",
+        "snippet": {
+          "publishedAt": "2026-10-02T18:57:41Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Vlog do Rock in Rio 2026 | SUPERCOMBO #SuperVlog",
+          "description": "Mais um SuperVlog no ar! Vem ver como foi nossa viagem pro RJ e o show no Rock in Rio!\n\nVídeo:\nJorge Daux http://instagram.com/jorgedaux\n\nOuça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/c05L9G0Z_A8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/c05L9G0Z_A8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/c05L9G0Z_A8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/c05L9G0Z_A8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/c05L9G0Z_A8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático",
+            "rock in rio",
+            "vlog",
+            "supervlog",
+            "filtr brasil",
+            "palco supernova",
+            "2026"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Vlog do Rock in Rio 2026 | SUPERCOMBO #SuperVlog",
+            "description": "Mais um SuperVlog no ar! Vem ver como foi nossa viagem pro RJ e o show no Rock in Rio!\n\nVídeo:\nJorge Daux http://instagram.com/jorgedaux\n\nOuça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT21M1S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "jXpm8Kckh2_cgzOThDdUdgQrgyM",
+        "id": "SxLHiZsbLrA",
+        "snippet": {
+          "publishedAt": "2026-09-25T20:00:10Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Vale um remember do Rock in Rio? Pois já já tem vlog aqui no canal!",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/SxLHiZsbLrA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/SxLHiZsbLrA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/SxLHiZsbLrA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/SxLHiZsbLrA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/SxLHiZsbLrA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Vale um remember do Rock in Rio? Pois já já tem vlog aqui no canal!",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "wL8q4xG-eijlg4s-ZLVy2W5XVHs",
+        "id": "2q5iyYT3xQQ",
+        "snippet": {
+          "publishedAt": "2026-09-20T13:00:18Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Dia do baterista é dia de ✨ Pindé Appreciation Post ✨ | 📽️ Jorge Daux",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/2q5iyYT3xQQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/2q5iyYT3xQQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/2q5iyYT3xQQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/2q5iyYT3xQQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/2q5iyYT3xQQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Dia do baterista é dia de ✨ Pindé Appreciation Post ✨ | 📽️ Jorge Daux",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT42S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "7cT-s2Csl5Q_fpkkyB8InTY91P0",
+        "id": "theTuMCqHqI",
+        "snippet": {
+          "publishedAt": "2026-09-10T15:00:22Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo no Rock in Rio 2026 (aftermovie)",
+          "description": "Aftermovie do nosso show no Palco Supernova do Rock in Rio 2026.\n\nVídeo:\nJorge Daux http://instagram.com/jorgedaux\nWilliam de Souza http://instagram.com/williandesouza_\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/theTuMCqHqI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/theTuMCqHqI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/theTuMCqHqI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/theTuMCqHqI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/theTuMCqHqI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            },
+            "uhd": {
+              "url": "https://i.ytimg.com/vi/theTuMCqHqI/uhddefault.jpg",
+              "width": 3840,
+              "height": 2160
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo no Rock in Rio 2026 (aftermovie)",
+            "description": "Aftermovie do nosso show no Palco Supernova do Rock in Rio 2026.\n\nVídeo:\nJorge Daux http://instagram.com/jorgedaux\nWilliam de Souza http://instagram.com/williandesouza_\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT52S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "8xFgemlL0_j4tlyRDZJhyNTsxNY",
+        "id": "6vnWxWYKcQE",
+        "snippet": {
+          "publishedAt": "2026-09-09T17:25:24Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SBO Rock Fest foi animal! | SUPERCOMBO #SuperVlog",
+          "description": "Gravado em Santa Bárbara d'Oeste em 22 de agosto de 2026.\nGravação e edição por Jorge Daux.\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://twitter.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/6vnWxWYKcQE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/6vnWxWYKcQE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/6vnWxWYKcQE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/6vnWxWYKcQE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/6vnWxWYKcQE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            },
+            "fhd": {
+              "url": "https://i.ytimg.com/vi/6vnWxWYKcQE/fhddefault.jpg",
+              "width": 1920,
+              "height": 1080
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático",
+            "santa barbara d'oeste",
+            "sbo rock fest",
+            "festival de rock",
+            "supervlog",
+            "vlog",
+            "bastidores"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "SBO Rock Fest foi animal! | SUPERCOMBO #SuperVlog",
+            "description": "Gravado em Santa Bárbara d'Oeste em 22 de agosto de 2026.\nGravação e edição por Jorge Daux.\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://twitter.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT13M7S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "-5Q8H5Sut8sgSmSFghEs4aALCFE",
+        "id": "lKuA_hTskSg",
+        "snippet": {
+          "publishedAt": "2026-09-04T11:55:46Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Foi muito massa participar da WE4Sessions! Já assistiu? Completo aqui no canal!",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/lKuA_hTskSg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/lKuA_hTskSg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/lKuA_hTskSg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/lKuA_hTskSg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/lKuA_hTskSg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Foi muito massa participar da WE4Sessions! Já assistiu? Completo aqui no canal!",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT46S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "MdtPDP1hH4KRRqhaKoRi2AHgmIc",
+        "id": "QxP5ZzuPdzA",
+        "snippet": {
+          "publishedAt": "2026-08-29T18:00:24Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Da última vez que estivemos no #rockinrio foi assim! 🤘 Em 1 semana nos vemos lá de novo!",
+          "description": "05/09 às 20h10 no Palco Supernova.\n📽️ Felipe Liel\n\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/QxP5ZzuPdzA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/QxP5ZzuPdzA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/QxP5ZzuPdzA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/QxP5ZzuPdzA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/QxP5ZzuPdzA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Da última vez que estivemos no #rockinrio foi assim! 🤘 Em 1 semana nos vemos lá de novo!",
+            "description": "05/09 às 20h10 no Palco Supernova.\n📽️ Felipe Liel\n\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT44S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "KCM6FFiy-mj8R-AUwxaEkjqPnb8",
+        "id": "oLRTEfwcmbc",
+        "snippet": {
+          "publishedAt": "2026-08-24T21:00:30Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Making of do short film Como Se Fosse Ontem & Deixa a Maré Te Levar ✨ Já tá lá no nosso Youtube!",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/oLRTEfwcmbc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/oLRTEfwcmbc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/oLRTEfwcmbc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/oLRTEfwcmbc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/oLRTEfwcmbc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Making of do short film Como Se Fosse Ontem & Deixa a Maré Te Levar ✨ Já tá lá no nosso Youtube!",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT27S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "Iw03G8T-z1aWoDAxfis8km68fDo",
+        "id": "dU0LYa-YWKc",
+        "snippet": {
+          "publishedAt": "2026-08-20T15:00:33Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "MAKING OF Como Se Fosse Ontem & Deixa a Maré Te Levar - Supercombo",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/dU0LYa-YWKc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/dU0LYa-YWKc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/dU0LYa-YWKc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/dU0LYa-YWKc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/dU0LYa-YWKc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático",
+            "short film",
+            "jorge daux",
+            "como se fosse ontem",
+            "deixa a maré te levar",
+            "making of",
+            "bastidores"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "MAKING OF Como Se Fosse Ontem & Deixa a Maré Te Levar - Supercombo",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT6M14S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "wVJ6V52ETKd4tmV9JpK35T_dO4c",
+        "id": "HF1aUFFI-N0",
+        "snippet": {
+          "publishedAt": "2026-08-18T15:57:31Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Deixa a Maré Te Levar (Clipe Oficial)",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n\n♫ LETRA\nJá começou errado\nNavio naufragou\nAntes de zarpar\nAntes de ancorar, pois\n\nTem pedra em todo lugar\nTem pedra em todo lugar\nNão tem como saber\nSe a gente vai afundar\nSe a gente vai afundar\nMelhor é esquecer\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nSente a maré te levar\n\nEu vejo um mar de sonhos\nPresos em garrafas\nEsperando alguém abrir\nE se encontrar\n\nTem pedra em todo lugar\nTem pedra em todo lugar\nNão tem como saber\nSe a gente vai afundar\nSe a gente vai afundar\nMe leva com você\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nMe dê a mão, me leva\nLeva, leva\n\nComo o calor do sol do amanhecer\nSal afasta tudo de ruim de mim\nQue eu quero renascer\nPois mais um dia sempre há de aparecer\n\nQuero o calor do sol do amanhecer\nSal afasta tudo de ruim de mim\nQue eu quero renascer\nPois mais um dia sempre há de aparecer\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nSente a maré te levar\n\n\n--\n\nFICHA TÉCNICA\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nMÚSICA\nProduzidas por Supercombo e Victor de Souza (Jotta)\nGravadas nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixadas por Leo Ramos\nMasterizadas por Fernando Delgado\n\nVÍDEO\nDirigido por Jorge Daux\nDireção Criativa por CAROL BARRAGANA\nDireção de Fotografia e Edição por Willian de Souza\nImagens por Willian de Souza e Renan Casarin\nProdução por Carol Folha\n\n\n#supercombo #deixaamaretelevar #caranguejo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/HF1aUFFI-N0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/HF1aUFFI-N0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/HF1aUFFI-N0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/HF1aUFFI-N0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/HF1aUFFI-N0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            },
+            "fhd": {
+              "url": "https://i.ytimg.com/vi/HF1aUFFI-N0/fhddefault.jpg",
+              "width": 1920,
+              "height": 1080
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "Caranguejo",
+            "caranguejo parte 1",
+            "caranguejo álbum",
+            "deixa a maré te levar"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo - Deixa a Maré Te Levar (Clipe Oficial)",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n\n♫ LETRA\nJá começou errado\nNavio naufragou\nAntes de zarpar\nAntes de ancorar, pois\n\nTem pedra em todo lugar\nTem pedra em todo lugar\nNão tem como saber\nSe a gente vai afundar\nSe a gente vai afundar\nMelhor é esquecer\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nSente a maré te levar\n\nEu vejo um mar de sonhos\nPresos em garrafas\nEsperando alguém abrir\nE se encontrar\n\nTem pedra em todo lugar\nTem pedra em todo lugar\nNão tem como saber\nSe a gente vai afundar\nSe a gente vai afundar\nMe leva com você\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nMe dê a mão, me leva\nLeva, leva\n\nComo o calor do sol do amanhecer\nSal afasta tudo de ruim de mim\nQue eu quero renascer\nPois mais um dia sempre há de aparecer\n\nQuero o calor do sol do amanhecer\nSal afasta tudo de ruim de mim\nQue eu quero renascer\nPois mais um dia sempre há de aparecer\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nSente a maré te levar\n\n\n--\n\nFICHA TÉCNICA\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nMÚSICA\nProduzidas por Supercombo e Victor de Souza (Jotta)\nGravadas nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixadas por Leo Ramos\nMasterizadas por Fernando Delgado\n\nVÍDEO\nDirigido por Jorge Daux\nDireção Criativa por CAROL BARRAGANA\nDireção de Fotografia e Edição por Willian de Souza\nImagens por Willian de Souza e Renan Casarin\nProdução por Carol Folha\n\n\n#supercombo #deixaamaretelevar #caranguejo"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M40S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "DIHhqzP9ygI5dVMbwvOQfAJ7DJE",
+        "id": "p-wXGCXxMZI",
+        "snippet": {
+          "publishedAt": "2026-08-18T15:56:55Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Como Se Fosse Ontem (Clipe Oficial)",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n\n♫ LETRA\nBateu a nostalgia\nO déjà vu\nParalisado, babando\nNós na locadora\nProcurando filmes, rebobinando\nQuando tudo era mais fácil\n\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nDe noite na lan house, os corujões\nA madrugada era nossa\nA gente era feliz sem saber\nRebobinando quando tudo era\n\nQuando tudo era mais fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nPra quando tudo era mais fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\nComo se fosse ontem\n\n--\n\nFICHA TÉCNICA\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nMÚSICA\nProduzidas por Supercombo e Victor de Souza (Jotta)\nGravadas nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixadas por Leo Ramos\nMasterizadas por Fernando Delgado\n\nFILME\nDirigido por Jorge Daux\nDireção Criativa por CAROL BARRAGANA\nDireção de Fotografia e Edição por Willian de Souza\nImagens por Willian de Souza e Renan Casarin\nProdução por Carol Folha\n\n\n#supercombo #comosefosseontem #caranguejo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/p-wXGCXxMZI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/p-wXGCXxMZI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/p-wXGCXxMZI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/p-wXGCXxMZI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/p-wXGCXxMZI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            },
+            "fhd": {
+              "url": "https://i.ytimg.com/vi/p-wXGCXxMZI/fhddefault.jpg",
+              "width": 1920,
+              "height": 1080
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "caranguejo",
+            "caranguejo parte 1",
+            "como se fosse ontem",
+            "rock"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo - Como Se Fosse Ontem (Clipe Oficial)",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n\n♫ LETRA\nBateu a nostalgia\nO déjà vu\nParalisado, babando\nNós na locadora\nProcurando filmes, rebobinando\nQuando tudo era mais fácil\n\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nDe noite na lan house, os corujões\nA madrugada era nossa\nA gente era feliz sem saber\nRebobinando quando tudo era\n\nQuando tudo era mais fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nPra quando tudo era mais fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\nComo se fosse ontem\n\n--\n\nFICHA TÉCNICA\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nMÚSICA\nProduzidas por Supercombo e Victor de Souza (Jotta)\nGravadas nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixadas por Leo Ramos\nMasterizadas por Fernando Delgado\n\nFILME\nDirigido por Jorge Daux\nDireção Criativa por CAROL BARRAGANA\nDireção de Fotografia e Edição por Willian de Souza\nImagens por Willian de Souza e Renan Casarin\nProdução por Carol Folha\n\n\n#supercombo #comosefosseontem #caranguejo"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M44S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "9m8qZI8_h-q13NvjM0FLyVf3KgY",
+        "id": "nJk7qD4DCVo",
+        "snippet": {
+          "publishedAt": "2026-08-17T21:00:17Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Paulinho não ficou quase surdo pra você não ir lá assistir aos clipes!",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/nJk7qD4DCVo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/nJk7qD4DCVo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/nJk7qD4DCVo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/nJk7qD4DCVo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/nJk7qD4DCVo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Paulinho não ficou quase surdo pra você não ir lá assistir aos clipes!",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT13S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "PKGBXabiTWhDOjKoKVgO1x5BuVw",
+        "id": "xCXhz9ooO2I",
+        "snippet": {
+          "publishedAt": "2026-08-12T15:14:23Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Como Se Fosse Ontem & Deixa a Maré Te Levar (short film) - Assista agora no nosso canal! ✨",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/xCXhz9ooO2I/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/xCXhz9ooO2I/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/xCXhz9ooO2I/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/xCXhz9ooO2I/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/xCXhz9ooO2I/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "leo ramos",
+            "carol navarro",
+            "andre dea",
+            "rock nacional",
+            "rock brasil",
+            "música brasileira",
+            "banda de rock br",
+            "indie brasil",
+            "banda nacional anos 2000",
+            "amianto",
+            "rogério",
+            "piloto automático"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Como Se Fosse Ontem & Deixa a Maré Te Levar (short film) - Assista agora no nosso canal! ✨",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT32S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "NDY65dL-mooEeMhsKa5Mpa9O5_0",
+        "id": "4siDLCF42HY",
+        "snippet": {
+          "publishedAt": "2026-08-11T22:41:51Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Como Se Fosse Ontem + Deixa a Maré Te Levar (Short Film)",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n\n--\n\nFICHA TÉCNICA\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nMÚSICA\nProduzidas por Supercombo e Victor de Souza (Jotta)\nGravadas nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixadas por Leo Ramos\nMasterizadas por Fernando Delgado\n\nFILME\nDirigido por Jorge Daux\nDireção Criativa por CAROL BARRAGANA\nDireção de Fotografia e Edição por Willian de Souza\nImagens por Willian de Souza e Renan Casarin\nProdução por Carol Folha\n\n\n#supercombo #caranguejo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/4siDLCF42HY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/4siDLCF42HY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/4siDLCF42HY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/4siDLCF42HY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/4siDLCF42HY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            },
+            "fhd": {
+              "url": "https://i.ytimg.com/vi/4siDLCF42HY/fhddefault.jpg",
+              "width": 1920,
+              "height": 1080
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "DEIXA A MARÉ TE LEVAR",
+            "COMO SE FOSSE ONTEM",
+            "rock brasil",
+            "rock nacional",
+            "caranguejo",
+            "música brasileira",
+            "brasil 2026",
+            "short film",
+            "clipe de rock",
+            "reolamos",
+            "jorge daux",
+            "nostalgia",
+            "música nostalgica",
+            "música de saudades"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "SUPERCOMBO - Como Se Fosse Ontem + Deixa a Maré Te Levar (Short Film)",
+            "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n\n--\n\nFICHA TÉCNICA\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nMÚSICA\nProduzidas por Supercombo e Victor de Souza (Jotta)\nGravadas nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixadas por Leo Ramos\nMasterizadas por Fernando Delgado\n\nFILME\nDirigido por Jorge Daux\nDireção Criativa por CAROL BARRAGANA\nDireção de Fotografia e Edição por Willian de Souza\nImagens por Willian de Souza e Renan Casarin\nProdução por Carol Folha\n\n\n#supercombo #caranguejo"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT7M28S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "egAwYv0JdAB7vyNfedyx23Iqotg",
+        "id": "LqG4Z9Mtf9M",
+        "snippet": {
+          "publishedAt": "2026-08-09T15:00:04Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Mocidade Sem Muito Juízo ®︎",
+          "description": "SUPERCOMBO - Como Se Fosse Ontem & Deixa a Maré te Levar (shortfilm) | 12/08 às 12h",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/LqG4Z9Mtf9M/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/LqG4Z9Mtf9M/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/LqG4Z9Mtf9M/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/LqG4Z9Mtf9M/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/LqG4Z9Mtf9M/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Mocidade Sem Muito Juízo ®︎",
+            "description": "SUPERCOMBO - Como Se Fosse Ontem & Deixa a Maré te Levar (shortfilm) | 12/08 às 12h"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT56S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "0T5yQyUu1LEm3ZNv3i0TPtU7yJg",
+        "id": "8MSJdg3QYeQ",
+        "snippet": {
+          "publishedAt": "2026-08-06T21:11:50Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "É bem tranquilinho fazer clipe, galera.",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/8MSJdg3QYeQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/8MSJdg3QYeQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/8MSJdg3QYeQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/8MSJdg3QYeQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/8MSJdg3QYeQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "É bem tranquilinho fazer clipe, galera.",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT41S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "RcVJ35FblbKWYCvhijLy4udzgRo",
+        "id": "I_w4EJz6Afc",
+        "snippet": {
+          "publishedAt": "2026-07-29T15:00:07Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "10 ANOS DE ROGÉRIO! 😈 Comenta aí qual a sua favorita desse disco! (📽️: gabshand)",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/I_w4EJz6Afc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/I_w4EJz6Afc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/I_w4EJz6Afc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/I_w4EJz6Afc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/I_w4EJz6Afc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "10 ANOS DE ROGÉRIO! 😈 Comenta aí qual a sua favorita desse disco! (📽️: gabshand)",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT32S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "-wI8S3fKM_znN8S-IWCfWLhsHH4",
+        "id": "zWuAQFO-6ik",
+        "snippet": {
+          "publishedAt": "2026-07-16T16:00:36Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Nossa participação no @Sonastério é uma das coisas mais bonitas que você vai ver hoje! ✨",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/zWuAQFO-6ik/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/zWuAQFO-6ik/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/zWuAQFO-6ik/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/zWuAQFO-6ik/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/zWuAQFO-6ik/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Nossa participação no @Sonastério é uma das coisas mais bonitas que você vai ver hoje! ✨",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT33S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "XiJfn8TrDyHfr-Bkk8-AjUoBLHI",
+        "id": "XA5FWp-rZFI",
+        "snippet": {
+          "publishedAt": "2026-07-10T15:00:22Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Aquele momento...",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/XA5FWp-rZFI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/XA5FWp-rZFI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/XA5FWp-rZFI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/XA5FWp-rZFI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/XA5FWp-rZFI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Aquele momento...",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT15S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "XopIwdlQ6dGz0WIIby1aVDWPAw8",
+        "id": "3ZIw38Nm39w",
+        "snippet": {
+          "publishedAt": "2026-07-04T21:00:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo toca Los Hermanos #supercombo #loshermanos #tributo #sesc #guarulhos",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/3ZIw38Nm39w/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/3ZIw38Nm39w/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/3ZIw38Nm39w/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/3ZIw38Nm39w/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/3ZIw38Nm39w/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo toca Los Hermanos #supercombo #loshermanos #tributo #sesc #guarulhos",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT49S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "fq7yI_5a8pgZCzu-dJx6AGjS_jU",
+        "id": "z6iy0ACM2vE",
+        "snippet": {
+          "publishedAt": "2026-06-29T15:00:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "moço, ninguém é de ferro, somos programados pra cair.",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/z6iy0ACM2vE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/z6iy0ACM2vE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/z6iy0ACM2vE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/z6iy0ACM2vE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/z6iy0ACM2vE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "moço, ninguém é de ferro, somos programados pra cair.",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT43S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "regionRestriction": {
+            "blocked": [
+              "RU"
+            ]
+          },
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "ZGL9KEUcEm_UAWbcaCrfUPaiuic",
+        "id": "nHq3JVoYAnY",
+        "snippet": {
+          "publishedAt": "2026-06-21T14:00:36Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "impossível.",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/nHq3JVoYAnY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/nHq3JVoYAnY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/nHq3JVoYAnY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/nHq3JVoYAnY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/nHq3JVoYAnY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "impossível.",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT32S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "regionRestriction": {
+            "blocked": [
+              "RU"
+            ]
+          },
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "js9qW4zARhYrgKah-J-js_cDhUY",
+        "id": "l3_nHFBez1Y",
+        "snippet": {
+          "publishedAt": "2026-06-13T15:00:20Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Sua dor, minha dor, nosso amor 🎵",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/l3_nHFBez1Y/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/l3_nHFBez1Y/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/l3_nHFBez1Y/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/l3_nHFBez1Y/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/l3_nHFBez1Y/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Sua dor, minha dor, nosso amor 🎵",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "U4cjW_gztk5WU0AQZ3jC6Qa9IPI",
+        "id": "sv0I2xmyapE",
+        "snippet": {
+          "publishedAt": "2026-06-07T14:00:12Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Alento na #AudioSessions",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/sv0I2xmyapE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/sv0I2xmyapE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/sv0I2xmyapE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/sv0I2xmyapE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/sv0I2xmyapE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Alento na #AudioSessions",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT36S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "AuZSv5CXtSuR7p8nz_QC2ZBqTAA",
+        "id": "kKBQjw5Zyxc",
+        "snippet": {
+          "publishedAt": "2026-06-01T18:59:47Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Tocamos no ItaGeek! | SUPERCOMBO #SuperVlog",
+          "description": "Gravado em Itaguaí/RJ em 23 de maio de 2026.\nGravação e edição por Jorge Daux.\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/kKBQjw5Zyxc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/kKBQjw5Zyxc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/kKBQjw5Zyxc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/kKBQjw5Zyxc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/kKBQjw5Zyxc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA",
+            "itageek",
+            "itaguaí",
+            "rio de janeiro",
+            "supercombo ao vivo",
+            "show",
+            "geek",
+            "nerd",
+            "feira",
+            "games"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Tocamos no ItaGeek! | SUPERCOMBO #SuperVlog",
+            "description": "Gravado em Itaguaí/RJ em 23 de maio de 2026.\nGravação e edição por Jorge Daux.\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT7M14S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "9Sp_Tb3HNXl3TPHKniIAbems00Q",
+        "id": "i4IJmEPceEs",
+        "snippet": {
+          "publishedAt": "2026-05-29T20:00:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "KD OS FÃ DE ONE PIECE? Diz aí se combinou!",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/i4IJmEPceEs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/i4IJmEPceEs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/i4IJmEPceEs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/i4IJmEPceEs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/i4IJmEPceEs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "ONE PIECE",
+            "LUFFY",
+            "RUFFY",
+            "MONKEY D LUFFY",
+            "TRAFALGAR LAW",
+            "EICHIRO ODA",
+            "ANIME",
+            "ABERTURA DE ANIME",
+            "ARCO DE WANO",
+            "WANO",
+            "KAIDO",
+            "EDIT ANIME",
+            "EDIT ONE PIECE",
+            "DEIXA A MARÉ TE LEVAR",
+            "MÚSICA SOBRE O MAR",
+            "PIRATAS",
+            "ANIME DE PIRATA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "KD OS FÃ DE ONE PIECE? Diz aí se combinou!",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "5R5DTZmeuX44HTpRdeYuLBRDtEk",
+        "id": "93eaGqMFuHQ",
+        "snippet": {
+          "publishedAt": "2026-05-13T22:00:38Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Próximos shows!",
+          "description": "🦀 23/05 Itaguaí/RJ - ItaGeek (GRATUITO)\n🦀 06/06 Campo Grande/MS - Blues Bar\n🦀 22/08 Santa Bárbara do Oeste/SP - SBO Rock Fest (GRATUITO)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/93eaGqMFuHQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/93eaGqMFuHQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/93eaGqMFuHQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/93eaGqMFuHQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/93eaGqMFuHQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Próximos shows!",
+            "description": "🦀 23/05 Itaguaí/RJ - ItaGeek (GRATUITO)\n🦀 06/06 Campo Grande/MS - Blues Bar\n🦀 22/08 Santa Bárbara do Oeste/SP - SBO Rock Fest (GRATUITO)"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT25S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "_L14PaPJ3mqj4UhNIlzU1Y1M1Kg",
+        "id": "YQPQAFjGbbE",
+        "snippet": {
+          "publishedAt": "2026-05-13T19:51:45Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Vlog do show em Curitiba | SUPERCOMBO #SuperVlog",
+          "description": "Gravado em Curitiba em 9 de maio de 2026.\nGravação e edição por Jorge Daux.\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/YQPQAFjGbbE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/YQPQAFjGbbE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/YQPQAFjGbbE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/YQPQAFjGbbE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/YQPQAFjGbbE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Vlog do show em Curitiba | SUPERCOMBO #SuperVlog",
+            "description": "Gravado em Curitiba em 9 de maio de 2026.\nGravação e edição por Jorge Daux.\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M13S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "vmqnZMnmFngC1pBYbF8XdFKdiRg",
+        "id": "4Pb93bWY-aw",
+        "snippet": {
+          "publishedAt": "2026-05-07T11:47:19Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Ribeirão Preto - Bacon Day | SUPERCOMBO #supervlog",
+          "description": "Gravado em Ribeirão Preto/SP em 25 de abril de 2026.\nGravação e edição por Jorge Daux.\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/4Pb93bWY-aw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/4Pb93bWY-aw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/4Pb93bWY-aw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/4Pb93bWY-aw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/4Pb93bWY-aw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "paulo vaz",
+            "carol navarro",
+            "andré dea",
+            "leo ramos",
+            "reo lamos",
+            "caranguejo",
+            "deixa a maré te levar",
+            "ribeirão preto",
+            "bacon day",
+            "2026"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Ribeirão Preto - Bacon Day | SUPERCOMBO #supervlog",
+            "description": "Gravado em Ribeirão Preto/SP em 25 de abril de 2026.\nGravação e edição por Jorge Daux.\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "BUmfTa8uNzyfj_Xr5nIVeM7BBDg",
+        "id": "kPYWusxsTh8",
+        "snippet": {
+          "publishedAt": "2026-05-04T17:38:31Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "😬😬",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/kPYWusxsTh8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/kPYWusxsTh8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/kPYWusxsTh8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/kPYWusxsTh8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/kPYWusxsTh8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "😬😬",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT37S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "qnHm6JUJWRMPCmmL9G28q6uWUw8",
+        "id": "02TiOnFt5Cc",
+        "snippet": {
+          "publishedAt": "2026-04-21T17:00:27Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "COMBUSTÃO 🦀 | Ouça Caranguejo no seu app de música favorito! 🎧",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/02TiOnFt5Cc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/02TiOnFt5Cc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/02TiOnFt5Cc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/02TiOnFt5Cc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/02TiOnFt5Cc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "COMBUSTÃO 🦀 | Ouça Caranguejo no seu app de música favorito! 🎧",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT58S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "diQEEXZcugLFD-KlFNpNgqIdXeU",
+        "id": "Q8GSHfcGWBI",
+        "snippet": {
+          "publishedAt": "2026-04-18T13:00:45Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "CARANGUEJO 🦀 novo disco disponível em todas as plataformas!",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Q8GSHfcGWBI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Q8GSHfcGWBI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Q8GSHfcGWBI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Q8GSHfcGWBI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Q8GSHfcGWBI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "CARANGUEJO 🦀 novo disco disponível em todas as plataformas!",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M14S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "v1irjfWjC7-zsxhUaFnqoNDRhhQ",
+        "id": "xxoY46ZT7wI",
+        "snippet": {
+          "publishedAt": "2026-04-10T03:01:05Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Explosão (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nÉ teleguiado\nNão tem abraço que aconchegue\nQuando a onça sobe no telhado e o sangue ferve\nQuem diria?\n\nNem sempre a gente aguenta\nA corda arrebenta o canivete\n\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\n\nE se sobrar algum pedaço, me remonte\nPra eu acumular, tipo mega-sena de ansiedade\nQuem diria?\nQue o ciclo se repete\nA chuva no molhado, o vinagrete\n\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\n\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\n\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\n\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\n\nSem julgar?\nSem julgar?\n\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/xxoY46ZT7wI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/xxoY46ZT7wI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/xxoY46ZT7wI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/xxoY46ZT7wI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/xxoY46ZT7wI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo - Explosão (Visualizer)",
+            "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nÉ teleguiado\nNão tem abraço que aconchegue\nQuando a onça sobe no telhado e o sangue ferve\nQuem diria?\n\nNem sempre a gente aguenta\nA corda arrebenta o canivete\n\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\n\nE se sobrar algum pedaço, me remonte\nPra eu acumular, tipo mega-sena de ansiedade\nQuem diria?\nQue o ciclo se repete\nA chuva no molhado, o vinagrete\n\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\n\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\n\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\n\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\nSe eu me abrir\nQuem vai ouvir a explosão\nSem julgar?\n\nSem julgar?\nSem julgar?\n\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M52S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "fi84B8i3TJFHDBW9nTeW1uqTv_o",
+        "id": "iDD28YmCUzE",
+        "snippet": {
+          "publishedAt": "2026-04-10T03:00:52Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Deixar Pra Lá (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nCê finalmente chegou\nComo vai você?\nEu tava preocupado\nNão sabia se ia te ver\n\nSaiu sem avisar\nDesligou o celular\nLiguei pra todo mundo\nEu só queria saber\n\nSe eu te machuquei, não percebi\nSe eu me fechei, não me abri\nSe ainda dá pra conversar\nOu se a gente vai deixar pra lá\n\nCê veio só buscar tuas malas\nE eu desesperado tentando conectar\nAcho que eu vou usar a carta de pai\nOu será que isso vai te afastar ainda mais?\n\nSe eu te machuquei, não percebi\nSe eu me fechei, não me abri\nSe ainda dá pra conversar\nOu se a gente vai deixar pra lá\n\nSe eu te machuquei, não percebi\nSe eu me fechei, não me abri\nSe ainda dá pra conversar\nOu se a gente vai deixar pra lá\n(Vai deixar pra lá)\n\nMais uma vez sem conversar\n(Vai deixar pra lá)\nMais uma vez sem se entender\n(Vai deixar pra lá)\nMe ajuda a quebrar esse muro que ajudei a construir\n(Vai deixar pra lá)\n\nSe eu te machuquei, não percebi (Vai deixar pra lá)\nSe eu me fechei, não me abri (Vai deixar pra lá)\nSe ainda dá pra conversar (Vai deixar pra lá)\nOu se a talvez, talvez melhor deixar pra lá (Vai deixar pra lá)\n\nSe eu te machuquei, não percebi (Vai deixar pra lá)\nSe eu me fechei, não me abri (Vai deixar pra lá)\nSe ainda dá pra conversar (Vai deixar pra lá)\nOu se a gente vai deixar pra lá (Vai deixar pra lá)\n\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/iDD28YmCUzE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/iDD28YmCUzE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/iDD28YmCUzE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/iDD28YmCUzE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/iDD28YmCUzE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo - Deixar Pra Lá (Visualizer)",
+            "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nCê finalmente chegou\nComo vai você?\nEu tava preocupado\nNão sabia se ia te ver\n\nSaiu sem avisar\nDesligou o celular\nLiguei pra todo mundo\nEu só queria saber\n\nSe eu te machuquei, não percebi\nSe eu me fechei, não me abri\nSe ainda dá pra conversar\nOu se a gente vai deixar pra lá\n\nCê veio só buscar tuas malas\nE eu desesperado tentando conectar\nAcho que eu vou usar a carta de pai\nOu será que isso vai te afastar ainda mais?\n\nSe eu te machuquei, não percebi\nSe eu me fechei, não me abri\nSe ainda dá pra conversar\nOu se a gente vai deixar pra lá\n\nSe eu te machuquei, não percebi\nSe eu me fechei, não me abri\nSe ainda dá pra conversar\nOu se a gente vai deixar pra lá\n(Vai deixar pra lá)\n\nMais uma vez sem conversar\n(Vai deixar pra lá)\nMais uma vez sem se entender\n(Vai deixar pra lá)\nMe ajuda a quebrar esse muro que ajudei a construir\n(Vai deixar pra lá)\n\nSe eu te machuquei, não percebi (Vai deixar pra lá)\nSe eu me fechei, não me abri (Vai deixar pra lá)\nSe ainda dá pra conversar (Vai deixar pra lá)\nOu se a talvez, talvez melhor deixar pra lá (Vai deixar pra lá)\n\nSe eu te machuquei, não percebi (Vai deixar pra lá)\nSe eu me fechei, não me abri (Vai deixar pra lá)\nSe ainda dá pra conversar (Vai deixar pra lá)\nOu se a gente vai deixar pra lá (Vai deixar pra lá)\n\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M4S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "fxqrE4G_JFC1sj5J6z_NF4FBSAc",
+        "id": "oXJgkRKYq88",
+        "snippet": {
+          "publishedAt": "2026-04-10T03:00:51Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Deixa a Maré Te Levar (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nJá começou errado\nNavio naufragou\nAntes de zarpar\nAntes de ancorar, pois\n\nTem pedra em todo lugar\nTem pedra em todo lugar\nNão tem como saber\nSe a gente vai afundar\nSe a gente vai afundar\nMelhor é esquecer\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nSente a maré te levar\n\nEu vejo um mar de sonhos\nPresos em garrafas\nEsperando alguém abrir\nE se encontrar\n\nTem pedra em todo lugar\nTem pedra em todo lugar\nNão tem como saber\nSe a gente vai afundar\nSe a gente vai afundar\nMe leva com você\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nMe dê a mão, me leva\nLeva, leva\n\nComo o calor do sol do amanhecer\nSal afasta tudo de ruim de mim\nQue eu quero renascer\nPois mais um dia sempre há de aparecer\n\nQuero o calor do sol do amanhecer\nSal afasta tudo de ruim de mim\nQue eu quero renascer\nPois mais um dia sempre há de aparecer\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nSente a maré te levar\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/oXJgkRKYq88/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/oXJgkRKYq88/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/oXJgkRKYq88/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/oXJgkRKYq88/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/oXJgkRKYq88/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo - Deixa a Maré Te Levar (Visualizer)",
+            "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nJá começou errado\nNavio naufragou\nAntes de zarpar\nAntes de ancorar, pois\n\nTem pedra em todo lugar\nTem pedra em todo lugar\nNão tem como saber\nSe a gente vai afundar\nSe a gente vai afundar\nMelhor é esquecer\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nSente a maré te levar\n\nEu vejo um mar de sonhos\nPresos em garrafas\nEsperando alguém abrir\nE se encontrar\n\nTem pedra em todo lugar\nTem pedra em todo lugar\nNão tem como saber\nSe a gente vai afundar\nSe a gente vai afundar\nMe leva com você\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nMe dê a mão, me leva\nLeva, leva\n\nComo o calor do sol do amanhecer\nSal afasta tudo de ruim de mim\nQue eu quero renascer\nPois mais um dia sempre há de aparecer\n\nQuero o calor do sol do amanhecer\nSal afasta tudo de ruim de mim\nQue eu quero renascer\nPois mais um dia sempre há de aparecer\n\nDeixa a maré te levar\nDeixa a maré te levar\nDeixa a maré te levar\nPra um outro oceano, um outro oceano, vai\n\nDeixa a maré te levar\nDeixa a maré te levar\nSente a maré te levar\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M39S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "URyyFnhIePctb1Fwfr7RxXQWiNA",
+        "id": "XZvpAGk5V1w",
+        "snippet": {
+          "publishedAt": "2026-04-10T03:00:40Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "TÁ NO MUNDÃO! Caranguejo (parte 2) 🦀 disponível em todas as plataformas!",
+          "description": "Ouça: https://supercombo.lnk.to/Caranguejo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/XZvpAGk5V1w/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/XZvpAGk5V1w/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/XZvpAGk5V1w/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/XZvpAGk5V1w/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/XZvpAGk5V1w/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "TÁ NO MUNDÃO! Caranguejo (parte 2) 🦀 disponível em todas as plataformas!",
+            "description": "Ouça: https://supercombo.lnk.to/Caranguejo"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT39S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "tvya4pM2ZAN3_vQyeZpoaKr66TY",
+        "id": "P559ykxlA_E",
+        "snippet": {
+          "publishedAt": "2026-04-10T03:00:21Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Combustão (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nNem só de ódio vive o coração\nNem todo leite derrama no chão\nSuor nos olhos é vermelhidão\nSe tu me chamas é combustão\n\nNem só de ódio vive o coração\nNem todo leite derrama no chão\nSuor nos olhos é vermelhidão\nSe tu me chamas é combustão\n\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/P559ykxlA_E/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/P559ykxlA_E/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/P559ykxlA_E/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/P559ykxlA_E/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/P559ykxlA_E/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo - Combustão (Visualizer)",
+            "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nNem só de ódio vive o coração\nNem todo leite derrama no chão\nSuor nos olhos é vermelhidão\nSe tu me chamas é combustão\n\nNem só de ódio vive o coração\nNem todo leite derrama no chão\nSuor nos olhos é vermelhidão\nSe tu me chamas é combustão\n\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M4S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "eJlglW-DKBb3k8TvI6TAEo3WYjc",
+        "id": "KzWbK4mxTA0",
+        "snippet": {
+          "publishedAt": "2026-04-10T03:00:20Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Peixe (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nDesconectado\nO pixel vermelho\nDesassociado da tela\nO óleo na água\n\nFora da tomada\nO elétron perdido\nO fio da meada\nVendo o mundo de dentro de um tanque de água\n\nSinto falta\nDo tanque de água\nSinto falta\nDo que cê acha\n\nPode ser, tanto faz\nEu sou um peixe, tanto faz\nO que cê diz, tanto faz\nEu só quero água\n\nPode ser, tanto faz\nÁgua pr’eu nadar\n\nPode ser, tanto faz\nEu sou um peixe, tanto faz\nO que cê quer, tanto faz\nEu só quero água\n\nPode ser, tanto faz\nÁgua pr’eu nadar (pr’eu nadar...)\n\nSempre deslocado\nPassar o pente fino\nÉ chover no molhado, é sarna\nO ódio na calma\n\nEsperando a descarga\nO abandono precoce que ninguém escapa\nVendo o mundo de dentro de um tanque de água\n\nSinto raiva\nDo tanque de água\nSinto raiva\nPor que, cê acha?\n\nPode ser, tanto faz\nEu sou um peixe, tanto faz\nO que cê diz, tanto faz\nEu só quero água\n\nPode ser, tanto faz\nÁgua pr’eu nadar\n\nPode ser, tanto faz\nEu sou um peixe, tanto faz\nO que cê quer, tanto faz\nEu só quero água\nPode ser, tanto faz\nÁgua pr’eu nadar\n\nPr’eu nadar\nPr’eu nadar\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/KzWbK4mxTA0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/KzWbK4mxTA0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/KzWbK4mxTA0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/KzWbK4mxTA0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/KzWbK4mxTA0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo - Peixe (Visualizer)",
+            "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nDesconectado\nO pixel vermelho\nDesassociado da tela\nO óleo na água\n\nFora da tomada\nO elétron perdido\nO fio da meada\nVendo o mundo de dentro de um tanque de água\n\nSinto falta\nDo tanque de água\nSinto falta\nDo que cê acha\n\nPode ser, tanto faz\nEu sou um peixe, tanto faz\nO que cê diz, tanto faz\nEu só quero água\n\nPode ser, tanto faz\nÁgua pr’eu nadar\n\nPode ser, tanto faz\nEu sou um peixe, tanto faz\nO que cê quer, tanto faz\nEu só quero água\n\nPode ser, tanto faz\nÁgua pr’eu nadar (pr’eu nadar...)\n\nSempre deslocado\nPassar o pente fino\nÉ chover no molhado, é sarna\nO ódio na calma\n\nEsperando a descarga\nO abandono precoce que ninguém escapa\nVendo o mundo de dentro de um tanque de água\n\nSinto raiva\nDo tanque de água\nSinto raiva\nPor que, cê acha?\n\nPode ser, tanto faz\nEu sou um peixe, tanto faz\nO que cê diz, tanto faz\nEu só quero água\n\nPode ser, tanto faz\nÁgua pr’eu nadar\n\nPode ser, tanto faz\nEu sou um peixe, tanto faz\nO que cê quer, tanto faz\nEu só quero água\nPode ser, tanto faz\nÁgua pr’eu nadar\n\nPr’eu nadar\nPr’eu nadar\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M50S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "dxthu4xWa0IiADiS9Jh48coYTFU",
+        "id": "1OJwyBO0toc",
+        "snippet": {
+          "publishedAt": "2026-04-10T03:00:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Redes Antissosociais (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nEu te sigo\nTô ligado\nEm tudo que você posta\nConteúdo duvidoso\nDa melhor qualidade\n\nMas o que interessa\nÉ o que você não mostra\nÉ de verdade ou de mentira?\nCê posta o que cê vive ou vive o que cê posta?\nDá dica, me explica\nMe ensina, fabrica\nTudo que você não é, ah\n\n‘Ceis', 'ceis' quer me enganar\n‘Ceis', ‘ceis' quer me vender\n‘Ceis', 'ceis' quer me enganar\n‘Ceis', 'ceis' quer nem saber\n\nEsse é irmão desse\nO meu cavalo nasceu no mar\nPra não puxar carroça\nPra não puxar carroça\n\nMas o que interessa, ha\nÉ o que você não mostra\nÉ de verdade ou de mentira?\nCê posta o que cê vive ou vive o que cê posta?\nDá dica, me explica\nMe ensina, fabrica\nTudo que você não é\n\nNão é!\nNão é!\n\nÉ de verdade ou de mentira?\nCê posta o que cê vive ou vive o que cê posta?\nDá dica, me explica\nMe ensina, fabrica\nTudo que você não, você não é\n\nNão é!\nNão é!\nNão é!\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/1OJwyBO0toc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/1OJwyBO0toc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/1OJwyBO0toc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/1OJwyBO0toc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/1OJwyBO0toc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo - Redes Antissosociais (Visualizer)",
+            "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nEu te sigo\nTô ligado\nEm tudo que você posta\nConteúdo duvidoso\nDa melhor qualidade\n\nMas o que interessa\nÉ o que você não mostra\nÉ de verdade ou de mentira?\nCê posta o que cê vive ou vive o que cê posta?\nDá dica, me explica\nMe ensina, fabrica\nTudo que você não é, ah\n\n‘Ceis', 'ceis' quer me enganar\n‘Ceis', ‘ceis' quer me vender\n‘Ceis', 'ceis' quer me enganar\n‘Ceis', 'ceis' quer nem saber\n\nEsse é irmão desse\nO meu cavalo nasceu no mar\nPra não puxar carroça\nPra não puxar carroça\n\nMas o que interessa, ha\nÉ o que você não mostra\nÉ de verdade ou de mentira?\nCê posta o que cê vive ou vive o que cê posta?\nDá dica, me explica\nMe ensina, fabrica\nTudo que você não é\n\nNão é!\nNão é!\n\nÉ de verdade ou de mentira?\nCê posta o que cê vive ou vive o que cê posta?\nDá dica, me explica\nMe ensina, fabrica\nTudo que você não, você não é\n\nNão é!\nNão é!\nNão é!\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M20S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "V7SrfQoEniNQsC3-tDhCeN4tpFk",
+        "id": "aITT_525nKg",
+        "snippet": {
+          "publishedAt": "2026-04-10T03:00:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Nó (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\n♫ LETRA\n\nVem\nConhecer um pouquin\nDo que rola dentro de mim\nTalvez assim\nO júri mude a condenação\n\nFiz amizade sim\nCom os meus demônios e...\nVejo que uns aqui\nTentam esconder de si\n\nCê vai pro inferno\nVai pro inferno\nQuebra as algemas\nChega\n\nE se eu danço no temporal\nDo dilúvio fiz carnaval\nNão estou sozinho\nO Karma é meu vizinho\nE tá comigo até o final\n\nE se eu não quiser ser igual\nNão mentir nenhum ritual\nSó pra parecer bom\nNão acho de bom tom\nFingir que é normal\n\nSe achar melhor\nE olha só\nQuanto nó no gogó\nE aponta os dedos mesmo assim\n\nFiz amizade sim\nCom os meus demônios e...\nPena que uns aqui\nProjetam tudo em mim\n\nCê vai pro inferno\nVai pro inferno\nQuebra as algemas\nChega\n\nE se eu danço no temporal\nDo dilúvio fiz carnaval\nNão estou sozinho\nO Karma é meu vizinho\nE tá comigo até o final\n\nE se eu não quiser ser igual\nNão mentir nenhum ritual\nSó pra parecer bom\nNão acho de bom tom\nFingir que é normal\n\nE se a gente só conviver\nE se a gente só conviver\nE se a gente só conviver\nVai ser bem melhor pra mim \nE pra você\n\nE se a gente dançar, dançar\nVocê não tá sozinho\nO Karma é teu vizinho\nE tá contigo até o final\n\nE se eu não quiser ser igual\nNão mentir nenhum ritual\nSó pra parecer bom\nNão acho de bom tom\nFingir que é normal\n\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/aITT_525nKg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/aITT_525nKg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/aITT_525nKg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/aITT_525nKg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/aITT_525nKg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo - Nó (Visualizer)",
+            "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\n♫ LETRA\n\nVem\nConhecer um pouquin\nDo que rola dentro de mim\nTalvez assim\nO júri mude a condenação\n\nFiz amizade sim\nCom os meus demônios e...\nVejo que uns aqui\nTentam esconder de si\n\nCê vai pro inferno\nVai pro inferno\nQuebra as algemas\nChega\n\nE se eu danço no temporal\nDo dilúvio fiz carnaval\nNão estou sozinho\nO Karma é meu vizinho\nE tá comigo até o final\n\nE se eu não quiser ser igual\nNão mentir nenhum ritual\nSó pra parecer bom\nNão acho de bom tom\nFingir que é normal\n\nSe achar melhor\nE olha só\nQuanto nó no gogó\nE aponta os dedos mesmo assim\n\nFiz amizade sim\nCom os meus demônios e...\nPena que uns aqui\nProjetam tudo em mim\n\nCê vai pro inferno\nVai pro inferno\nQuebra as algemas\nChega\n\nE se eu danço no temporal\nDo dilúvio fiz carnaval\nNão estou sozinho\nO Karma é meu vizinho\nE tá comigo até o final\n\nE se eu não quiser ser igual\nNão mentir nenhum ritual\nSó pra parecer bom\nNão acho de bom tom\nFingir que é normal\n\nE se a gente só conviver\nE se a gente só conviver\nE se a gente só conviver\nVai ser bem melhor pra mim \nE pra você\n\nE se a gente dançar, dançar\nVocê não tá sozinho\nO Karma é teu vizinho\nE tá contigo até o final\n\nE se eu não quiser ser igual\nNão mentir nenhum ritual\nSó pra parecer bom\nNão acho de bom tom\nFingir que é normal\n\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M30S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "uQhRTzxS5vyHd1AFqvaKNhT0Dow",
+        "id": "1bJcOVbJtmM",
+        "snippet": {
+          "publishedAt": "2026-04-10T03:00:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Como Se Fosse Ontem (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nBateu a nostalgia\nO déjà vu\nParalisado, babando\nNós na locadora\nProcurando filmes, rebobinando\nQuando tudo era mais fácil\n\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nDe noite na lan house, os corujões\nA madrugada era nossa\nA gente era feliz sem saber\nRebobinando quando tudo era\n\nQuando tudo era mais fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nPra quando tudo era mais fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\nComo se fosse ontem\n\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/1bJcOVbJtmM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/1bJcOVbJtmM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/1bJcOVbJtmM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/1bJcOVbJtmM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/1bJcOVbJtmM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo - Como Se Fosse Ontem (Visualizer)",
+            "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nBateu a nostalgia\nO déjà vu\nParalisado, babando\nNós na locadora\nProcurando filmes, rebobinando\nQuando tudo era mais fácil\n\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nDe noite na lan house, os corujões\nA madrugada era nossa\nA gente era feliz sem saber\nRebobinando quando tudo era\n\nQuando tudo era mais fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nPra quando tudo era mais fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\nLembrar é sempre fácil\nLembrar é fácil\n\nQuero ver viver\nComo se fosse ontem\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\n\nAlguém precisa apertar o play\nPorque se não o amanhã não vem\nAlguém precisa apertar o play\nComo se fosse ontem\n\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT3M30S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "D3xxcFOHjrOsh4ZAE6JTD4E_YGc",
+        "id": "94qPzA3Gj80",
+        "snippet": {
+          "publishedAt": "2026-04-03T12:00:20Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "1 SEMANA! CARANGUEJO PARTE 2 🦀 10 de abril em todas as plataformas. Faz o pre-saveeee!",
+          "description": "https://supercombo.lnk.to/Caranguejo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/94qPzA3Gj80/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/94qPzA3Gj80/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/94qPzA3Gj80/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/94qPzA3Gj80/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/94qPzA3Gj80/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "1 SEMANA! CARANGUEJO PARTE 2 🦀 10 de abril em todas as plataformas. Faz o pre-saveeee!",
+            "description": "https://supercombo.lnk.to/Caranguejo"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT40S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "rKn7KWSZtHuN8Yw04nornKQ4vgY",
+        "id": "_lA53wHBbGM",
+        "snippet": {
+          "publishedAt": "2026-03-26T19:00:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "FALTA SÓ 1 MÊS PRO SHOW DE LANÇAMENTO DA PARTE 2 DO DISCO!!!! ⚡",
+          "description": "26/04 na Casa Natura Musical (São Paulo/SP), ingressinho maroto no Sympla ou na bilheteria da casa!\n\nVAMOOOO!",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/_lA53wHBbGM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/_lA53wHBbGM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/_lA53wHBbGM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/_lA53wHBbGM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/_lA53wHBbGM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "FALTA SÓ 1 MÊS PRO SHOW DE LANÇAMENTO DA PARTE 2 DO DISCO!!!! ⚡",
+            "description": "26/04 na Casa Natura Musical (São Paulo/SP), ingressinho maroto no Sympla ou na bilheteria da casa!\n\nVAMOOOO!"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT15S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "3_-lcQ5uR_FDMJNJWh0DRfo1dq0",
+        "id": "aVDbnUsiX3c",
+        "snippet": {
+          "publishedAt": "2026-03-19T21:00:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo ❌ DJAVAN ✅",
+          "description": "📹 Marcela Sanches",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/aVDbnUsiX3c/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/aVDbnUsiX3c/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/aVDbnUsiX3c/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/aVDbnUsiX3c/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/aVDbnUsiX3c/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "Supercombo ❌ DJAVAN ✅",
+            "description": "📹 Marcela Sanches"
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M18S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "1QKVAqA7nY20nFwgNaXioUcy3AI",
+        "id": "gVsxiK_FFyA",
+        "snippet": {
+          "publishedAt": "2026-03-11T15:01:12Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "13 de março na Casa Rockambole - especiais FESTA? e ADEUS, AURORA. VAMOSSSS!",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/gVsxiK_FFyA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/gVsxiK_FFyA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/gVsxiK_FFyA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/gVsxiK_FFyA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/gVsxiK_FFyA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "BANDA SUPERCOMBO",
+            "BANDA SUPER COMBO",
+            "BANDA SUPER COMBI",
+            "BANDA DA MUSICA PILOTO AUTOMATICO",
+            "BANDA DA MUSICA DA MOÇA DA SACADA",
+            "SUPERCOMBO DO SUPERSTAR",
+            "SUPERCOMBO CAROL",
+            "SUPERCOMBO TOLEDO",
+            "SUPERCOMBO LEO RAMOS",
+            "SUPERCOMBO PAULO VAZ",
+            "SUPERCOMBO PAULO VAZ CONCORDA"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt",
+          "localized": {
+            "title": "13 de março na Casa Rockambole - especiais FESTA? e ADEUS, AURORA. VAMOSSSS!",
+            "description": ""
+          },
+          "defaultAudioLanguage": "pt"
+        },
+        "contentDetails": {
+          "duration": "PT1M50S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": false,
+          "madeForKids": false
+        }
+      }
+    ],
+    "pageInfo": {
+      "totalResults": 50,
+      "resultsPerPage": 50
+    }
+  }
+}

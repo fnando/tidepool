@@ -1,0 +1,2726 @@
+{
+  "request": {
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+      "pageToken": "EAAaHlBUOkNESWlFRGhEUmpkQ01EUkRRMFUzTlRCR05VWQ"
+    },
+    "if_none_match": null
+  },
+  "status": 200,
+  "etag": null,
+  "body": {
+    "kind": "youtube#playlistItemListResponse",
+    "etag": "Ose90JqqLmAgBVJWY4sfDhIgOPM",
+    "nextPageToken": "EAAaHlBUOkNHUWlFRU16T0RRME5qRkVRa0V4TnpJeE1Eaw",
+    "prevPageToken": "EAEaHlBUOkNESWlFRGhEUmpkQ01EUkRRMFUzTlRCR05VWQ",
+    "items": [
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "ldwr99Yye8_r9woKztbKb66ejok",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjdjSDZ4YW1yYnZr",
+        "snippet": {
+          "publishedAt": "2026-03-04T14:00:11Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "POV: você tá no show da Supercombo. | 📹 via @michelalves8243",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/7cH6xamrbvk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/7cH6xamrbvk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/7cH6xamrbvk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/7cH6xamrbvk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/7cH6xamrbvk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 50,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "7cH6xamrbvk"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "7cH6xamrbvk",
+          "videoPublishedAt": "2026-03-04T14:00:11Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "8hFuDYKk_yqUHj_NHk9gbTCR8ds",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjFqTVEtbHg1QkU0",
+        "snippet": {
+          "publishedAt": "2026-02-26T15:51:12Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "#tbt da última vez que tocamos na Casa Natura 🫰 E é lá que será o lançamento de CARANGUEJO (parte 2)",
+          "description": "📅 26 de abril, domingo\nAbertura da casa: 17h30 | Show: 19h\n🎟️ Ingressos: https://bileto.sympla.com.br/event/116342/d/365925\n\n📹: Alice Brondani",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/1jMQ-lx5BE4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/1jMQ-lx5BE4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/1jMQ-lx5BE4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/1jMQ-lx5BE4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/1jMQ-lx5BE4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 51,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "1jMQ-lx5BE4"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "1jMQ-lx5BE4",
+          "videoPublishedAt": "2026-02-26T15:51:12Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "6gAa6pRs7V1dosBg7CGodvuMhSc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmRMZzJBelRGMDIw",
+        "snippet": {
+          "publishedAt": "2026-02-19T14:01:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "🎵 Piloto Automático (Supercombo) | 📹 Audio Sessions",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/dLg2AzTF020/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/dLg2AzTF020/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/dLg2AzTF020/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/dLg2AzTF020/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/dLg2AzTF020/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 52,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "dLg2AzTF020"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "dLg2AzTF020",
+          "videoPublishedAt": "2026-02-19T14:01:03Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "-CHBuGVh3_popIS9vcrIJ5sFzIc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlhTQmhTODdrcnF3",
+        "snippet": {
+          "publishedAt": "2026-02-02T22:00:28Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Quantas músicas terá a segunda parte do álbum e o segredo da melhor intro de show!",
+          "description": "~ trecho do podcast Conecta+ Música & Mercado",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/XSBhS87krqw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/XSBhS87krqw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/XSBhS87krqw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/XSBhS87krqw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/XSBhS87krqw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 53,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "XSBhS87krqw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "XSBhS87krqw",
+          "videoPublishedAt": "2026-02-02T22:00:28Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "z2t1IQw4nHJn73Sq4KBt50YkenY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLk1aeEp5MlUySDNN",
+        "snippet": {
+          "publishedAt": "2026-01-30T13:00:46Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Dia da Saudade é dia de ouvir essa no repeat 🧡",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/MZxJy2U2H3M/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/MZxJy2U2H3M/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/MZxJy2U2H3M/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/MZxJy2U2H3M/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/MZxJy2U2H3M/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 54,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "MZxJy2U2H3M"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "MZxJy2U2H3M",
+          "videoPublishedAt": "2026-01-30T13:00:46Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "k_untRAzQkfyvjmTHbC8G2pGCsI",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmZyY2kzanJlX19j",
+        "snippet": {
+          "publishedAt": "2026-01-15T19:00:43Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "A gente fez uma sessions super bacana lá na Audio, já viram?",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/frci3jre__c/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/frci3jre__c/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/frci3jre__c/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/frci3jre__c/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/frci3jre__c/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 55,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "frci3jre__c"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "frci3jre__c",
+          "videoPublishedAt": "2026-01-15T19:00:43Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Eql0Mz2t6zxa1-Sq4wTj3yxitog",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlNFU3NPUkVIRnMw",
+        "snippet": {
+          "publishedAt": "2026-01-08T17:00:53Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Esse clipe ao vivo de A TRANSMISSÃO tá bonito demais pra gente não fazer um #tbt agora!",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/SESsOREHFs0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/SESsOREHFs0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/SESsOREHFs0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/SESsOREHFs0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/SESsOREHFs0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 56,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "SESsOREHFs0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "SESsOREHFs0",
+          "videoPublishedAt": "2026-01-08T17:00:53Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "yq8QBK9v3tyI_ZbNlyirZ3_UjUY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjI0TDJscnd2R21z",
+        "snippet": {
+          "publishedAt": "2026-01-04T14:00:02Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Falta 1 SEMANA pra gente se encontrar no palco do Polifonia de Verão no Rio de Janeiro! 🤩",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/24L2lrwvGms/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/24L2lrwvGms/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/24L2lrwvGms/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/24L2lrwvGms/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/24L2lrwvGms/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 57,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "24L2lrwvGms"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "24L2lrwvGms",
+          "videoPublishedAt": "2026-01-04T14:00:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "UwshZBpX6l8gEXMQDMgMwdgZwBc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlVteDlzY29JbnQ4",
+        "snippet": {
+          "publishedAt": "2025-12-31T16:00:53Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Só agradecer por mais um ano... tamo junto demaaaais! Brigadão por fazerem parte de tudo isso! ❤️✨",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Umx9scoInt8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Umx9scoInt8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Umx9scoInt8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Umx9scoInt8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Umx9scoInt8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 58,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Umx9scoInt8"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Umx9scoInt8",
+          "videoPublishedAt": "2025-12-31T16:00:53Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "r7iq_Z5310poNkg6pmK0ZvQ-_YU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmNFMFp2eW9URU1V",
+        "snippet": {
+          "publishedAt": "2025-12-25T03:00:47Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Ao Vivo Quando a Terra Era Redonda (DVD completo)",
+          "description": "Show completo do DVD Ao Vivo Quando a Terra Era Redonda.\n\nFAIXAS:\n1. ﻿﻿Matagal 00:00:10\n2. ﻿﻿Campo de Força 00:02:03\n3. ﻿﻿Rogério 00:05:45\n4. ﻿﻿Saco Cheio 00:09:19\n5. Bonsai 00:12:39\n6. Eutanásia 00:16:30\n7. O Guerreiro e a Selva 00:19:35\n- ENTREVISTA 00:23:02\n8. ﻿﻿Magaiver (part. Raoni e Keops) 00:23:55\n9. ﻿﻿Robozin 00:27:27\n10. Vê Se Não Morre 00:30:36\n11. Parafuso a Menos 00:34:23\n- ENTREVISTA 00:37:04\n12. Se Eu Quiser 00:38:45\n13. Maremotos 00:42:00\n14. Meu Colorista 00:45:33\n15. O Peso da Cruz (part. Juliana Vieira na guitarra) 00:50:00\n- ENTREVISTA 00:53:42\n16. ﻿﻿﻿Ela 00:55:07\n17. ﻿﻿﻿Memorial 00:58:29\n18. ﻿﻿﻿Autonomia 01:02:32\n- ENTREVISTA 01:05:45\n19. ﻿﻿﻿Grão de Areia (part. Kalera) 01:06:27\n20. Cebolas 01:10:23\n21. Xepa das Estrelas 01:14:03\n22. Todo Dia é Dia de Comemorar 01:17:08\n- ENTREVISTA 01:20:47\n23. ﻿﻿﻿Jovem (part. Sandro) 01:21:23\n24. ﻿﻿﻿Guarda-Chuva 01:24:44\n- ENTREVISTA 01:27:32\n25. A Piscina e o Karma (part. Emily Barreto) 01:28:05 \n26. 2 e 1 01:32:00\n- ENTREVISTA 01:35:35\n27. Menino (part. Cyz Mendes) 01:35:51\n28. Soldadinho 01:38:19\n- ENTREVISTA 01:41:55\n29. O Calculista (part. Kamaitachi e Stéfano Loscalzo) 01:42:16\n30. Labirintite 01:46:24\n31. Saudade 01:49:54\n32. ﻿﻿﻿Amianto 01:54:27\n- ENTREVSTA 01:58:14\n33. ﻿﻿﻿Fundo do Mar 01:59:20\n34. ﻿﻿﻿Cela 02:02:40\n35. ﻿﻿﻿Menina Largata 02:06:12\n36. ﻿﻿﻿Monstros 02:10:08\n- ENTREVISTA 02:14:41\n37. Sol da Manhã (part. Isa Salles) 02:15:05\n38. Piloto Automático 02:19:02\n- CRÉDITOS 02:23:58\n\n--\n\nFICHA TÉCNICA\nProdutor Artístico: Danniel “Bisteka”Machado\nProdutora Técnica de Gravação: Érika Fiocchi\nProdutor Geral: Carol Canon\nAssistente de Produção: Guilherme Marcondes\nEngenheiro FOH: Fabox\nEngenheiro de Monitor: Rafael Gonzales\nLuz: Diego Berlanga\nTelões: Gabs Hand e Felipe Mattos\nRoadie: Tiago Disto, Mário Zappa\nTécnico de Bateria: Peterson Fernandes\nFotógrafo: Yvã Santos\nEntrevistas: Mateus Simões\nMontagem: Pedro Ramos e André Dea\nMixagem 5.1: Ariel Henrique\nAssistente de Mixagem 5.1: Paula Homsi\nAssessor de Imprensa: Leonardo Almeida\nMerchandising: Júlia Ribeiro\nAssistente de Merchandising: Karilson Melo\nDesign: Juarez Tanure\nCompanhia de Som: Gabisom\nCompanhia de Luz: LPL\nTransporte: Luiz Gonzaga Paulino\nOperadores de Câmera: Lucas Queiroz, Mathe Mendes, Lucas Ferreira, Ygor de Oliveira, Renan Perobelli\nCâmeras adicionais: Cinecam\nLogger: Diego Martins\nFigurino: Youcom / Cavalera / Ocksa / High-High\n\nAGRADECIMENTOS ESPECIAIS:\nMarcel Klaczko, Jeff Lacerda, Audio, Dede Soares, Carol Feres Hallack, Carol Secchis, Francine Glock, Gabriel Dantas, Jean Diaz, Paulo Aguiar, Luiza Gonçalves, Edu Filgueira, Pamella Renha, Olívia Cozendey, Camila Teixeira, João Magalhães, Guta Tolhuizen, Bruno Freitas, Larissa Paparana, Olga Music, BTG Studio, School of Rock, Jack Daniels, Red Bull, Eisenbahn",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/cE0ZvyoTEMU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/cE0ZvyoTEMU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/cE0ZvyoTEMU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/cE0ZvyoTEMU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/cE0ZvyoTEMU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 59,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "cE0ZvyoTEMU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "cE0ZvyoTEMU",
+          "videoPublishedAt": "2025-12-25T03:00:47Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "YCtdvzAJRNjk8x29VMhRcrLzCBQ",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnRXVkFaMGgzNVpR",
+        "snippet": {
+          "publishedAt": "2025-12-19T15:01:46Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Clipe ao vivo de A TRANSMISSÃO tá no ar! 💥",
+          "description": "Gravado no show ABSURDO que rolou na Audio esse mês, pelas lentes da nossa grandessíssima Marcela Sanches.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/tWVAZ0h35ZQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/tWVAZ0h35ZQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/tWVAZ0h35ZQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/tWVAZ0h35ZQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/tWVAZ0h35ZQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 60,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "tWVAZ0h35ZQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "tWVAZ0h35ZQ",
+          "videoPublishedAt": "2025-12-19T15:01:46Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "ohNB4X_ean7qK8qdZc76zjjVRgs",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm1aNURrZkZHVE9r",
+        "snippet": {
+          "publishedAt": "2025-12-19T15:01:41Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - A Transmissão (Ao Vivo na Audio)",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoParte1ID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\nAlguém me ouve? \nTá dando interferência\nSerá que caiu a torre \nVarrendo as ondas no ar?\n\nRádio, parece que foi pro ca… rádio\nQuerem cortar o meu rádio\nO ruído branco tá no coração\n\nQuem vai sintonizar aqui?\nQuem vai sintonizar em mim?\nTocando numa frequência\n“Hipnóticadência” lenta\nAqui ninguém vai cortar a transmissão\n\nA transmissão\n\nLigar a tempestade, Samara, poço\nUns número doido, fantasma\nCaiu a torre e a gente vai continuar\n\nRádio, parece que foi pro ca… rádio\nQuerem cortar o meu rádio\nNosso canal de comunicação\n\nQuem vai sintonizar aqui?\nQuem vai sintonizar em mim?\nTocando numa frequência\n“Hipnóticadência” lenta\nAqui ninguém vai cortar\n\nSó mais uma vez, antes de acabar\nSeja AM ou FM ou rádio que o parta\nO importante é sentir\nConseguir captar e seguir\n(Hã)\n\n--\n\nVÍDEO:\nMarcela Sanches\n\nMÚSICA: \nProduzido por Supercombo e Victor de Souza (Jotta)\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\nGravadora: Deck\n\nSupercombo é:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/mZ5DkfFGTOk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/mZ5DkfFGTOk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/mZ5DkfFGTOk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/mZ5DkfFGTOk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/mZ5DkfFGTOk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 61,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "mZ5DkfFGTOk"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "mZ5DkfFGTOk",
+          "videoPublishedAt": "2025-12-19T15:01:41Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "zzcQMKt3jrv1dWqwEb2gov0Uj68",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkxJRWtZalRDelVV",
+        "snippet": {
+          "publishedAt": "2025-12-04T11:00:48Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Hoje no CCXP e amanhã em SALVADOR HEIN! 🦀 Nos vemos! 📽️ Marcela Sanches",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/LIEkYjTCzUU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/LIEkYjTCzUU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/LIEkYjTCzUU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/LIEkYjTCzUU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/LIEkYjTCzUU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 62,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "LIEkYjTCzUU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "LIEkYjTCzUU",
+          "videoPublishedAt": "2025-12-04T11:00:48Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "JbRKVxKlWVeUhPB73n4SZAX7myY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLi1nSzJvWm1FSnpN",
+        "snippet": {
+          "publishedAt": "2025-11-27T15:18:43Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "E temos doc making of de Testa! Completinho aqui no canal! 🦀📽️",
+          "description": "Assista: https://youtu.be/p6BcIY7deQo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/-gK2oZmEJzM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/-gK2oZmEJzM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/-gK2oZmEJzM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/-gK2oZmEJzM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/-gK2oZmEJzM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 63,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "-gK2oZmEJzM"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "-gK2oZmEJzM",
+          "videoPublishedAt": "2025-11-27T15:18:43Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "5Z29bZSlcoz65wakEUfNogiGdgE",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnA2QmNJWTdkZVFv",
+        "snippet": {
+          "publishedAt": "2025-11-27T15:17:05Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Making of / Mini Doc \"Testa\" - Supercombo",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoParte1ID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\n--\n\nFICHA TÉCNICA\n\nDireção: Renato Peres e Luke Martins\nAssistente de Direção: Miguel Oliveira\nRoteiro: Renato Peres e Supercombo\nDireção de Fotografia: Renato Peres\nOperador de Foco e Técnico Cinematográfico: Nestor Grun\n2º Assistente de Câmera: Leandro Vaz\n3ª Assistente de Câmera e Video Assist: Marina Paixão\nGaffer: Noel Filho\nMaquinária: Kiwi Willians\n1º Assistente de Maquinária: Flavio Viana\n2º Assistente de Maquinária: Ilverte Costa\nDireção de Arte: Douglas Sciola\nFigurino / Maquiagem: Carol Navarro\nObjetos de Cena: Pandora Box e A Casa De Babette\nStoryboard: Anderson Monteiro\nSom Direto: Humberto Dantas\nTrilha Sonora, Sound Fx e Mix: Leonardo Ramos\nMaster: Fernando Delgado\nProdução: Leia Saraiva e Renato Peres\nTransporte: Ernesto Coimbra e Tiago Mendes\nCâmera: Grün Cinema\nMaquinária e Luz: Bahia Locadora\nLocação: A Casa De Babette\nPós-Produção: Renato Peres\nFilm Process: Cinelab Londres\nCoordenação de Film Process: Andreia Kawakami\nEdição: Lucas Motta\nMaking Of: Severino Filmes\nFotografia Still: Marcela Sanches\n\n#supercombo #testa #caranguejo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/p6BcIY7deQo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/p6BcIY7deQo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/p6BcIY7deQo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/p6BcIY7deQo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/p6BcIY7deQo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 64,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "p6BcIY7deQo"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "p6BcIY7deQo",
+          "videoPublishedAt": "2025-11-27T15:17:05Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "wx8YhQQ4Y-2QyZRPdlW3KGGyVhA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjhLbkN4SDlsbl9J",
+        "snippet": {
+          "publishedAt": "2025-11-21T15:04:42Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "As nossas pitangas, eu planto pra ver...",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/8KnCxH9ln_I/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/8KnCxH9ln_I/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/8KnCxH9ln_I/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/8KnCxH9ln_I/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/8KnCxH9ln_I/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 65,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "8KnCxH9ln_I"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "8KnCxH9ln_I",
+          "videoPublishedAt": "2025-11-21T15:04:42Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "8GXtsQNOxxoHjlIBbgwUBLOOPyU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjQ5QXc3TEJkS1ZF",
+        "snippet": {
+          "publishedAt": "2025-11-14T14:00:07Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "1 MÊS PRO SHOW EM SP! Dia 14/12 a Audio vai dançar um PISEIRO BLACK SABBATH | 📽️ marcela sanches",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/49Aw7LBdKVE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/49Aw7LBdKVE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/49Aw7LBdKVE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/49Aw7LBdKVE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/49Aw7LBdKVE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 66,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "49Aw7LBdKVE"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "49Aw7LBdKVE",
+          "videoPublishedAt": "2025-11-14T14:00:07Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "01eNIP3IPIwZp6RnKtLSWiiYmxk",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLndfVHdkTG5rVWdZ",
+        "snippet": {
+          "publishedAt": "2025-11-04T18:00:12Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Brasília foi assim! 📽️ Cadu Andrade",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/w_TwdLnkUgY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/w_TwdLnkUgY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/w_TwdLnkUgY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/w_TwdLnkUgY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/w_TwdLnkUgY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 67,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "w_TwdLnkUgY"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "w_TwdLnkUgY",
+          "videoPublishedAt": "2025-11-04T18:00:12Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "T2CDguZffhs1TkR0qQ_oN3ao1mw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLklZWEd1MGljaEtv",
+        "snippet": {
+          "publishedAt": "2025-10-23T15:00:34Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "NASCEU! Tá no ar o clipe de Testa 🦀 Gravado em filme 16mm, bora assistir que tá lindão!",
+          "description": "Assista aqui: https://youtu.be/LaPNzD8uHys",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/IYXGu0ichKo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/IYXGu0ichKo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/IYXGu0ichKo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/IYXGu0ichKo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/IYXGu0ichKo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 68,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "IYXGu0ichKo"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "IYXGu0ichKo",
+          "videoPublishedAt": "2025-10-23T15:00:34Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "KItlFpw0gKfI9US1v2XRXsuTXl8",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkxhUE56RDh1SHlz",
+        "snippet": {
+          "publishedAt": "2025-10-23T15:00:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Testa (Clipe Oficial)",
+          "description": "Ouça nas plataformas: https://Supercombo.lnk.to/CaranguejoParte1ID\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\nPassei aqui só pra te ver\nVocê não faz ideia \nO quanto que eu ensaiei essas palavras\n\nE agora você descansou\nVirou uma estrela\nE o nosso encontro ficou pra depois\nMe espera\n\nQue eu vou continuar\nEu vou continuar tentando\n\nSei que os piores dias vão passar\nSigo esperando a luz pela fresta\nFazer um carinho na minha testa\nFazer um carinho na minha testa\n\nSei que os piores dias vão passar\nSigo esperando a luz pela fresta\nFazer um carinho na minha testa\nFazer um carinho na minha testa\n\nE hoje eu levo você sempre de carona\nAtrás dos olhos te mostrando essa bagunça\n\nPois quando você descansou\nVirou uma estrela\nPerdeu parte do filme que roteirizou\n\nMas eu vou continuar\nEu vou continuar filmando\n\nSei que os piores dias vão passar\nEu sigo esperando a luz pela fresta\nFazer um carinho na minha testa\nFazer um carinho na minha testa\n\nSei que os piores dias vão passar\nSigo esperando a luz pela fresta\nFazer um carinho na minha testa\nSem o teu carinho, dói à beça\n \nDói à beça\nDói à beça\n\n--\n\nFICHA TÉCNICA\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\nGravadora: @Deckdisc \n\nVÍDEO\nDireção: Renato Peres e Luke Martins\nCaranguejo: João Paulo Tourinho\nRoteiro: Renato Peres e Supercombo\nAssistente de Direção: Miguel Oliveira\nProdução: Leia Saraiva e Renato Peres\nDireção de Arte: Douglas Sciola\nFigurino e Maquiagem: Carol Navarro\nLocação: A Casa De Babette\nObjetos de Cena: Pandora Box e A Casa De Babette\nDireção de Fotografia: Renato Peres\nOperador de Foco e Técnico Cinematográfico: Nestor Grun\n2º Assistente de Câmera: Leandro Vaz\n3ª Assistente de Câmera e Video Assist: Marina Paixão\nGaffer: Noel Filho\nMaquinista: Kiwi Willians\n1º Assistente de Maquinária: Flavio Viana\n22 Assistente de Maquinária: Ilverte Costa\nStoryboard: Anderson Monteiro\nSom Direto: Humberto Dantas\nTrilha Sonora, Sound Fx e Mix: Leonardo Ramos\nMaster: Fernando Delgado\nEdição: Lucas Motta\nPós-Produção: Renato Peres\nFilm Process: Cinelab Londres\nCoordenação de Film Process: Andreia Kawakami\nLocadora de Câmera: Grün Cinema\nLocadora de Maquinária e Luz: Bahia Locadora\nTransporte De Equipamentos: Ernesto Coimbra e Tiago Mendes\nMaking Of e Mini Doc: Rapha Sousas / Severino Filmes\nMaking Of e Fotografia Still: Marcela Sanches\n\nUma produção: Esto\nCo-Produção: Umbrella Production e 8MM\nGravado na A Casa De Babette\nApoio: Grün Cinema, Bahia Locadora e Severino Filmes\n\n\n#supercombo #testa #caranguejo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/LaPNzD8uHys/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/LaPNzD8uHys/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/LaPNzD8uHys/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/LaPNzD8uHys/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/LaPNzD8uHys/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 69,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "LaPNzD8uHys"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "LaPNzD8uHys",
+          "videoPublishedAt": "2025-10-23T15:00:06Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "SBfCvh1b3f9jEIlm0dW9Hi1w66g",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlRiNkEyeXFJQjBj",
+        "snippet": {
+          "publishedAt": "2025-10-17T13:00:55Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Testa ao vivo tá assim ó... DE CHORÁ! 📽️ Marcela Sanches",
+          "description": "12/10 | CURITIBA/PR\n18/10 | RIO DE JANEIRO/RJ \n01/11 | BRASÍLIA/DF\n02/11| PORTO ALEGRE/RS\n06/11 | JOINVILLE/SC \n07/11 | BLUMENAU/SC \n08/11 | FLORIANÓPOLIS/SC \n23/11 | BELO HORIZONTE/MG\n14/12 | SÃO PAULO/SP\n\nMAIS DATAS EM BREVE! Ingressos em https://bnds.us/vomo0o",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Tb6A2yqIB0c/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Tb6A2yqIB0c/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Tb6A2yqIB0c/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Tb6A2yqIB0c/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Tb6A2yqIB0c/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 70,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Tb6A2yqIB0c"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Tb6A2yqIB0c",
+          "videoPublishedAt": "2025-10-17T13:00:55Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "YSP6-Ppf9jOLZsDgXv7Pl7Gox1Y",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnIwcE5MSnVyaXV3",
+        "snippet": {
+          "publishedAt": "2025-10-06T15:21:54Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "A estreia da nova turnê em Santos esse fim de semana foi assim! #shorts",
+          "description": "Valeuuuu Aurora Sounds e geral que colou! Bora pros próximos que tem MUITO MAIS!📽️ Marcela Sanches",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/r0pNLJuriuw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/r0pNLJuriuw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/r0pNLJuriuw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/r0pNLJuriuw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/r0pNLJuriuw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 71,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "r0pNLJuriuw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "r0pNLJuriuw",
+          "videoPublishedAt": "2025-10-06T15:21:54Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "NL8TJGBLJsNQibjFbi11qIWptC0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnlzVjJ6ZmhLSldj",
+        "snippet": {
+          "publishedAt": "2025-09-16T21:10:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Lendo as perguntas de vocês sobre o disco! (vídeo completo tá no ar no canal!)",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ysV2zfhKJWc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ysV2zfhKJWc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ysV2zfhKJWc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ysV2zfhKJWc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ysV2zfhKJWc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 72,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ysV2zfhKJWc"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ysV2zfhKJWc",
+          "videoPublishedAt": "2025-09-16T21:10:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "m2pclEYFlsYni7nf8pq3HIP4TuY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkFTeWk0LXBTZm1B",
+        "snippet": {
+          "publishedAt": "2025-09-16T21:00:17Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Respondendo perguntas sobre o álbum CARANGUEJO | Supercombo",
+          "description": "Podem perguntar mais, quem sabe não vem aí uma parte 2?",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ASyi4-pSfmA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ASyi4-pSfmA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ASyi4-pSfmA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ASyi4-pSfmA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ASyi4-pSfmA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 73,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ASyi4-pSfmA"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ASyi4-pSfmA",
+          "videoPublishedAt": "2025-09-16T21:00:17Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "RY6YueKA2ETHhJUEEx0fVuYtGXY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLk1pOXR4ZEZITmdV",
+        "snippet": {
+          "publishedAt": "2025-09-08T18:36:59Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "+ de 1M de plays no disco no Spotify 🤩🦀 BRIGADOOOOOO",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Mi9txdFHNgU/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Mi9txdFHNgU/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Mi9txdFHNgU/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Mi9txdFHNgU/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Mi9txdFHNgU/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 74,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Mi9txdFHNgU"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Mi9txdFHNgU",
+          "videoPublishedAt": "2025-09-08T18:36:59Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "OuTt9eucl7w6IAXlfKvbIKZZJb0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmNmTFozOTlwUFpZ",
+        "snippet": {
+          "publishedAt": "2025-09-04T21:00:42Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Vai começar a turnê nova! Datas e ingressos no link aqui na descrição!",
+          "description": "04/10 | SANTOS/SP - Aurora Sounds\n12/10 | CURITIBA/PR - Opera de Arame\n18/10 | RIO DE JANEIRO/RJ - Circo Voador\n02/11| PORTO ALEGRE/RS - Teatro da Amrigs\n06/11 | JOINVILLE/SC - Teatro da Liga\n07/11 | BLUMENAU/SC - Ahoy! Tavern Club\n08/11 | FLORIANÓPOLIS/SC - John Bull\n23/11 | BELO HORIZONTE/MG - Mister Rock\n14/12 | SÃO PAULO/SP - Audio\n\nIngressos em https://bnds.us/vomo0o",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/cfLZ399pPZY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/cfLZ399pPZY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/cfLZ399pPZY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/cfLZ399pPZY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/cfLZ399pPZY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 75,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "cfLZ399pPZY"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "cfLZ399pPZY",
+          "videoPublishedAt": "2025-09-04T21:00:42Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "gGHpd3pzHpPJhTg_4GVtLywE-oA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjlGWFpoQlhyN2Fn",
+        "snippet": {
+          "publishedAt": "2025-08-23T20:39:50Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "\"Testa\" acústico :)",
+          "description": "Essa música se chama \"Testa\" e tá no nosso novo disco CARANGUEJO (parte 1)  🦀 em todas as plataformas!",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/9FXZhBXr7ag/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/9FXZhBXr7ag/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/9FXZhBXr7ag/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/9FXZhBXr7ag/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/9FXZhBXr7ag/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 76,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "9FXZhBXr7ag"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "9FXZhBXr7ag",
+          "videoPublishedAt": "2025-08-23T20:39:50Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "4IlWaoTTSqXWtPmDRclxbgN212w",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLlgyaUlUbmZmMzdj",
+        "snippet": {
+          "publishedAt": "2025-08-18T19:19:33Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Piseiro Black Sabbath (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nUm envelope preto chegou\nUm convite escrito com sangue\nAcho que tinha até abadá\nConvocando os metaleiro de praia\n\nHoje a noite é nossa\nSom de cemitério\nSobretudo, coturno, corrente e prego\n\nO chão até levanta\nE a gente senta\n\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nTava tocando Black Sabbath\n\nUm calor de desidratar\nGeral balançando a cabeça\nAté os bodes vieram passear\nComo é bom ser metaleiro de praia\n\nHoje a noite é nossa\nSom de cemitério\nSobretudo, coturno, corrente e prego\nO chão até levanta\nE a gente senta\n\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nTava tocando Black Sabbath\n\nHoje eu não volto pra casa\nHoje eu não volto mais\nHoje eu não vou pra casa\nHoje eu não volto mais\nHoje eu não volto pra casa\nHoje eu não volto mais\nHoje eu não vou pra casa\nHoje eu não volto mais\n\n--\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nVissotto\n\n#supercombo #piseiroblacksabbath",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/X2iITnff37c/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/X2iITnff37c/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/X2iITnff37c/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/X2iITnff37c/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/X2iITnff37c/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 77,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "X2iITnff37c"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "X2iITnff37c",
+          "videoPublishedAt": "2025-08-18T19:19:33Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Gyesy-7yynvmqvNPouIdWm6IkTc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkh4S3dyMXhYdW5R",
+        "snippet": {
+          "publishedAt": "2025-08-15T21:05:19Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - O Alfaiate (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\nO alfaiate esqueceu a roupa amassada\nSaiu de casa pelado, de arara\nSacrificou mais um cabide, deu pras traças\nEm busca do “autosteamer”\nReza a lenda\n\nO tanto que eu rodei \nTanto que eu rodei nesse carretel\nE a pilha de tecido, ó, meu amigo\nVai até o céu\n\nTem outra versão de mim\nTentando se costurar\nEnquanto me desfaço em fios de seda\n\nO alfaiate esqueceu a roupa amassada\nSaiu de casa pelado, de arara\nSacrificou mais um cabide, deu pras traças\nEm busca do “autosteamer”\nReza a lenda\nMe sinto como aquela roupa amassada\nAmassada, amassada\n\nO tanto que eu suei\nTanto que eu suei virou um mar de fel\nÉ tanto corta, ajusta, já não assusta\nChega a ser cruel\n\nTem outra versão de mim\nTentando se equilibrar\nEnquanto me desfaço em fios de seda\n\nO alfaiate esqueceu a roupa amassada\nSaiu de casa pelado, de arara\nSacrificou mais um cabide, deu pras traças\nEm busca do “autosteamer”\nReza a lenda\nMe sinto como aquela roupa amassada\nAmassada, amassada\n\n--\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n \nProduzido por Supercombo e Victor de Souza (Jotta)\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\nCapa e visualizer: Vissotto\nFoto: Renato Peres\nGravadora: Deck\n\nVIDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/HxKwr1xXunQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/HxKwr1xXunQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/HxKwr1xXunQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/HxKwr1xXunQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/HxKwr1xXunQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 78,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "HxKwr1xXunQ"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "HxKwr1xXunQ",
+          "videoPublishedAt": "2025-08-15T21:05:19Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "yTLVEseTXuw-7SZJx9pKnE9arqg",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm5YeEdSeDc0RWxJ",
+        "snippet": {
+          "publishedAt": "2025-08-15T21:04:42Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Nossas Pitangas (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\nVocê me entende e me espeta tão bem\nFaz de gato e sapato e acho que eu também\nPorco espinho, de perto eu sei\nQue a gente se machuca\nE tá tudo bem\n\nSua dor, minha dor, nosso amor\nSua dor, minha dor, nosso amor\nSua dor, minha dor, nosso amor\nSua dor, minha dor\n\nSe viver é sofrer\nMe deixa chorar com você\nAs nossas pitangas\nEu planto pra ver (Eu pago pra ver)\n\nSe viver é sofrer\nMe deixa chorar com você\nAs nossas pitangas\n\nSe viver é sofrer\nMe deixa chorar com você\nAs nossas pitangas\n\nNinguém entende o que a gente tem\nÉ o doce salgado, frio que derrete\nPorco espinho, de perto eu sei\nQue a gente se machuca e tá tudo bem\n\nSua dor, minha dor, nosso amor\nSua dor, minha dor, nosso amor\nSua dor, minha dor, nosso amor\nSua dor, minha dor\n\nSe viver é sofrer\nMe deixa chorar com você\nAs nossas pitangas\nEu planto pra ver (Eu pago pra ver)\n\nSe viver é sofrer\nMe deixa chorar com você\nAs nossas pitangas\n\nSe viver é sofrer\nMe deixa chorar com você\nAs nossas pitangas\n\nNossas pitangas\nNossas pitangas\nNossas pitangas\nNossas pitangas\n\n--\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n \nProduzido por Supercombo e Victor de Souza (Jotta)\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\nCapa e visualizer: Vissotto\nFoto: Renato Peres\nGravadora: Deck\n\nVIDEO:\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/nXxGRx74ElI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/nXxGRx74ElI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/nXxGRx74ElI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/nXxGRx74ElI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/nXxGRx74ElI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 79,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "nXxGRx74ElI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "nXxGRx74ElI",
+          "videoPublishedAt": "2025-08-15T21:04:42Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "j4YZvenFtJxVogFIG1_5BdqwG7k",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjAyRzN1bWNDbUhz",
+        "snippet": {
+          "publishedAt": "2025-08-15T21:04:14Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Testa (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercomborock.com\n\n♫ LETRA\nPassei aqui só pra te ver\nVocê não faz ideia \nO quanto que eu ensaiei essas palavras\n\nE agora você descansou\nVirou uma estrela\nE o nosso encontro ficou pra depois\nMe espera\n\nQue eu vou continuar\nEu vou continuar tentando\n\nSei que os piores dias vão passar\nSigo esperando a luz pela fresta\nFazer um carinho na minha testa\nFazer um carinho na minha testa\n\nSei que os piores dias vão passar\nSigo esperando a luz pela fresta\nFazer um carinho na minha testa\nFazer um carinho na minha testa\n\nE hoje eu levo você sempre de carona\nAtrás dos olhos te mostrando essa bagunça\n\nPois quando você descansou\nVirou uma estrela\nPerdeu parte do filme que roteirizou\n\nMas eu vou continuar\nEu vou continuar filmando\n\nSei que os piores dias vão passar\nEu sigo esperando a luz pela fresta\nFazer um carinho na minha testa\nFazer um carinho na minha testa\n\nSei que os piores dias vão passar\nSigo esperando a luz pela fresta\nFazer um carinho na minha testa\nSem o teu carinho, dói à beça\n \nDói à beça\nDói à beça\n\n--\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n \nProduzido por Supercombo e Victor de Souza (Jotta)\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\nCapa e visualizer: Vissotto\nFoto: Renato Peres\nGravadora: Deck\n\nVIDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/02G3umcCmHs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/02G3umcCmHs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/02G3umcCmHs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/02G3umcCmHs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/02G3umcCmHs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 80,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "02G3umcCmHs"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "02G3umcCmHs",
+          "videoPublishedAt": "2025-08-15T21:04:14Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "3CfJYltdHufIbz0WEEr4Gvzk29Q",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjR4dzZIdmdrUzk0",
+        "snippet": {
+          "publishedAt": "2025-08-15T21:03:50Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Alento (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\nSe eu pudesse eu parava o tempo\nPra aproveitar cada momento\nTe ver crescer é um alento\nÉ reviver com outros olhos\n\nVocê me ensina mais que posso aprender\nRevela os mistérios que guardo e nem sei\nA cada dia me encanto cada vez mais por você\n\nSe eu pudesse eu parava o tempo\nPra aproveitar cada momento\nTe ver crescer é um alento\nÉ reviver com outros olhos\n\nSe eu pudesse eu parava o tempo\nPra aproveitar cada momento\nTe ver crescer é um alento\nÉ reviver com outros olhos\n\nQuem diria um dia a gente ia se encontrar\nA mais bela das flores veio pra ficar\nE a cada dia me encanto cada vez mais por você\n\nSe eu pudesse eu parava o tempo\nPra aproveitar cada momento\nTe ver crescer é um alento\nÉ reviver com outros olhos\n\nSe eu pudesse eu parava o tempo\nPra aproveitar cada momento\nTe ver crescer é um alento\nÉ reviver com outros olhos\n\nEu amo os dias com você\nEu amo os dias com você\nEu amo os dias com você\nEu amo os dias com você (com você)\n\n--\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n \nProduzido por Supercombo e Victor de Souza (Jotta)\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\nCapa e visualizer: Vissotto\nFoto: Renato Peres\nGravadora: Deck\n\nVIDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/4xw6HvgkS94/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/4xw6HvgkS94/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/4xw6HvgkS94/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/4xw6HvgkS94/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/4xw6HvgkS94/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 81,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "4xw6HvgkS94"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "4xw6HvgkS94",
+          "videoPublishedAt": "2025-08-15T21:03:50Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "sQddVJ8p_pMOum4WMzmCogzGQEo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLm83ejZUTm84Ulp3",
+        "snippet": {
+          "publishedAt": "2025-08-15T21:03:23Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Hoje Eu Tô Zen (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\nHoje eu acendi mais de mil incensos\nDei “high five” no sol\nAbracei umas “árvres”\n\nHoje eu meditei\nPensei positivo\nSem ranger os dentes\nSem tremer o olho\n\nHoje eu tô zen\nHoje eu tô zen, hoje\n\nHoje eu tô zen\nHoje eu tô\n\nHoje eu tô zen\nHoje eu tô zen, hoje\n\nHoje eu tô zen\nHoje eu tô zen, zen, zen, zen\n\nHoje eu tomei banho de sal grosso\nCopo de alumínio, álcool no pescoço\nHoje me afoguei, chá de camomila\nSem rosnar pro coach, sem socar parede\n\nHoje eu tô zen\nHoje eu tô zen, hoje\nHoje eu tô zen\nHoje eu tô\n\nHoje eu tô zen\nHoje eu tô zen, hoje\n\nHoje eu tô zen\nHoje eu tô zen, zen, zen, zen\n\nSerá que esse limbo vai acabar...comigo\nAntes d’eu comemorar\nTudo está bem\nNada está bem\nQuem está, quem está, quem está bem?\n\n--\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n \nProduzido por Supercombo e Victor de Souza (Jotta)\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\nCapa e visualizer: Vissotto\nFoto: Renato Peres\nGravadora: Deck\n\nVIDEO:\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/o7z6TNo8RZw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/o7z6TNo8RZw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/o7z6TNo8RZw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/o7z6TNo8RZw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/o7z6TNo8RZw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 82,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "o7z6TNo8RZw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "o7z6TNo8RZw",
+          "videoPublishedAt": "2025-08-15T21:03:23Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "8K3iFRsaeS3VWByFCFrx3R4Z5-U",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkc2ZmVSZ2RQYkdF",
+        "snippet": {
+          "publishedAt": "2025-08-15T21:03:08Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - A Transmissão (Visualizer)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/Caranguejo\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\nAlguém me ouve? \nTá dando interferência\nSerá que caiu a torre \nVarrendo as ondas no ar?\n\nRádio, parece que foi pro ca… rádio\nQuerem cortar o meu rádio\nO ruído branco tá no coração\n\nQuem vai sintonizar aqui?\nQuem vai sintonizar em mim?\nTocando numa frequência\n“Hipnóticadência” lenta\nAqui ninguém vai cortar a transmissão\n\nA transmissão\n\nLigar a tempestade, Samara, poço\nUns número doido, fantasma\nCaiu a torre e a gente vai continuar\n\nRádio, parece que foi pro ca… rádio\nQuerem cortar o meu rádio\nNosso canal de comunicação\n\nQuem vai sintonizar aqui?\nQuem vai sintonizar em mim?\nTocando numa frequência\n“Hipnóticadência” lenta\nAqui ninguém vai cortar\n\nSó mais uma vez, antes de acabar\nSeja AM ou FM ou rádio que o parta\nO importante é sentir\nConseguir captar e seguir\n(Hã)\n\n--\n\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\n \nProduzido por Supercombo e Victor de Souza (Jotta)\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\nCapa e visualizer: Vissotto\nFoto: Renato Peres\nGravadora: Deck\n\nVIDEO\nVissotto",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/G6feRgdPbGE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/G6feRgdPbGE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/G6feRgdPbGE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/G6feRgdPbGE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/G6feRgdPbGE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 83,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "G6feRgdPbGE"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "G6feRgdPbGE",
+          "videoPublishedAt": "2025-08-15T21:03:08Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "D7eEW5RTPlzj4Zqg0QNOVCaGK1g",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkowYkhWOFRRUjlj",
+        "snippet": {
+          "publishedAt": "2025-08-15T13:14:12Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Ouça agora o nosso novo disco CARANGUEJO (parte 1)  🦀",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/J0bHV8TQR9c/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/J0bHV8TQR9c/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/J0bHV8TQR9c/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/J0bHV8TQR9c/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/J0bHV8TQR9c/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 84,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "J0bHV8TQR9c"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "J0bHV8TQR9c",
+          "videoPublishedAt": "2025-08-15T13:14:12Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "9_VCt_GXv4o0xV04hdQ864AtPAY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmdDdWlNblQ1M2lr",
+        "snippet": {
+          "publishedAt": "2025-08-13T19:23:24Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Audição do novo álbum CARANGUEJO (parte1) - SUPERCOMBO",
+          "description": "Se liga como foi a audição do disco com a galera! CARANGUEJO (parte 1) chega nas plataformas sexta, 15 de agosto de 2025. https://supercombo.lnk.to/CaranguejoParte1\n\nVÍDEO: Marcela Sanches\nLOCAL: Lua Produtora - São Paulo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/gCuiMnT53ik/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/gCuiMnT53ik/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/gCuiMnT53ik/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/gCuiMnT53ik/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/gCuiMnT53ik/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 85,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "gCuiMnT53ik"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "gCuiMnT53ik",
+          "videoPublishedAt": "2025-08-13T19:23:24Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "giEwShar1O3-rItRKk_kFUNn-AA",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnZBbEdRMFRTLVMw",
+        "snippet": {
+          "publishedAt": "2025-08-07T21:28:07Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "15.08 - CARANGUEJO (parte 1)  🦀 Chega ali no link na descrição e faz teu pre-save!",
+          "description": "https://supercombo.lnk.to/CaranguejoParte1",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/vAlGQ0TS-S0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/vAlGQ0TS-S0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/vAlGQ0TS-S0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/vAlGQ0TS-S0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/vAlGQ0TS-S0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 86,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "vAlGQ0TS-S0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "vAlGQ0TS-S0",
+          "videoPublishedAt": "2025-08-07T21:28:07Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "UoBGe2YB2JE6yy7LsdY852tKlbs",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLng3X1NhM2NmM0Z3",
+        "snippet": {
+          "publishedAt": "2025-07-31T14:01:24Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "A lógica é simples: se tem turnê de disco novo, tem disco novo... a qualquer momento.",
+          "description": "Ingressos em https://bnds.us/vomo0o\n📽️ Marcela Sanches",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/x7_Sa3cf3Fw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/x7_Sa3cf3Fw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/x7_Sa3cf3Fw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/x7_Sa3cf3Fw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/x7_Sa3cf3Fw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 87,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "x7_Sa3cf3Fw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "x7_Sa3cf3Fw",
+          "videoPublishedAt": "2025-07-31T14:01:24Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "yszfTbt2b4bd7HLufx4ruSnWNqU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmdjWS14LWVPWHJZ",
+        "snippet": {
+          "publishedAt": "2025-07-23T11:15:10Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "AVISA QUE O DIA É DELE! 🗣️🎂 Parabéns, Pindé!",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/gcY-x-eOXrY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/gcY-x-eOXrY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/gcY-x-eOXrY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/gcY-x-eOXrY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/gcY-x-eOXrY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 88,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "gcY-x-eOXrY"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "gcY-x-eOXrY",
+          "videoPublishedAt": "2025-07-23T11:15:10Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "0-Cfn6nup_1zE2koQRHBkFZxb_I",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjAwOXRpcFFBalFr",
+        "snippet": {
+          "publishedAt": "2025-07-13T21:00:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Making of de Piseiro Black Sabbath completo aqui no canal! #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/009tipQAjQk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/009tipQAjQk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/009tipQAjQk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/009tipQAjQk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/009tipQAjQk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 89,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "009tipQAjQk"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "009tipQAjQk",
+          "videoPublishedAt": "2025-07-13T21:00:00Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "vzmGgUvsD6ccDShWNKEbO7x7lAQ",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjJ0SVRqV1dPODJr",
+        "snippet": {
+          "publishedAt": "2025-07-10T15:00:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - MAKING OF de Piseiro Black Sabbath",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/PiseiroBlackSabbath\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n--\n\nFICHA TÉCNICA\n\nMAKING OF: Marcela Sanches\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nCLIPE\nDiretor: Chris Tex\nAssist. Direção: Marcilia Brito\nProdução: Gabriela Santos\nAssist. Produção: Gabriela Yaui\nDOP/Operador de Camera: Francis Girard\nOperador de 2ª Camera: Pedro H. M. Marques\nAssist. Camera: Roberto Coppola\nMaking Of: Marcela Sanches\nDireção de Arte: Laura Miguel / Carol Navarro / André Dea\nAssist. de Arte: Gabriela Yagui\nContraregra: Laura Miguel\nMaquiagem: Natalia Stracieri\nFigurino: Supercombo\nAdereços Caranguejo: Christian Scherf\nCatering: Eliana Batista\nAtor: João Paulo Tourinho\n\nMontagem: Julius Bueno e Chris Tex\nColor Grading: Felipe Bustelli\nProdutora: Tex Films / Ritmo Visual Filmes\n\n#supercombo #piseiroblacksabbath #making of",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/2tITjWWO82k/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/2tITjWWO82k/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/2tITjWWO82k/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/2tITjWWO82k/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/2tITjWWO82k/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 90,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "2tITjWWO82k"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "2tITjWWO82k",
+          "videoPublishedAt": "2025-07-10T15:00:06Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Z2-i8FbIF1x1F1LzUcTxhUaqtcc",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnFtY2ttNy1jNDdr",
+        "snippet": {
+          "publishedAt": "2025-07-08T21:01:04Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "E ontem que a gente tocou de surpresa no metrô da Sé? 📽️ Jorge Daux #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/qmckm7-c47k/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/qmckm7-c47k/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/qmckm7-c47k/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/qmckm7-c47k/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/qmckm7-c47k/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 91,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "qmckm7-c47k"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "qmckm7-c47k",
+          "videoPublishedAt": "2025-07-08T21:01:04Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "yZNnQZUNpDrzIJxVoJkohCaJiMo",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmhjV0lQZl8wRTZz",
+        "snippet": {
+          "publishedAt": "2025-07-01T12:43:24Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "POV: prometi que ia viver e tô vivendo 🖤 #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/hcWIPf_0E6s/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/hcWIPf_0E6s/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/hcWIPf_0E6s/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/hcWIPf_0E6s/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/hcWIPf_0E6s/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 92,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "hcWIPf_0E6s"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "hcWIPf_0E6s",
+          "videoPublishedAt": "2025-07-01T12:43:24Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "WYSg3xs6PEaBhR3ln6QuREbR4qY",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmpBVGVqa3JFSVI0",
+        "snippet": {
+          "publishedAt": "2025-06-25T19:29:39Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Hoje eu não vou pra casa, hoje eu não volto mais 🖤 #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/jATejkrEIR4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/jATejkrEIR4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/jATejkrEIR4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/jATejkrEIR4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/jATejkrEIR4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 93,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "jATejkrEIR4"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "jATejkrEIR4",
+          "videoPublishedAt": "2025-06-25T19:29:39Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "B8c2jWTVQNIAxeoYwmuSrtLnSk0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLjN5aGlGRnNfZTJZ",
+        "snippet": {
+          "publishedAt": "2025-06-16T16:14:52Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "CHEGOU! Tá no ar o clipe de PISEIRO BLACK SABBATH, vem ver! 🖤 #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/3yhiFFs_e2Y/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/3yhiFFs_e2Y/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/3yhiFFs_e2Y/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/3yhiFFs_e2Y/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/3yhiFFs_e2Y/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 94,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "3yhiFFs_e2Y"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "3yhiFFs_e2Y",
+          "videoPublishedAt": "2025-06-16T16:14:52Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Fxw5PU5h54282ORfpmZF1CX3QbM",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmQxdndrTWY0bkww",
+        "snippet": {
+          "publishedAt": "2025-06-13T21:18:26Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Piseiro Black Sabbath (Clipe Oficial)",
+          "description": "Ouça nas plataformas: https://supercombo.lnk.to/PiseiroBlackSabbath\n\n⮕ Siga SUPERCOMBO:\nhttp://instagram.com/supercombooficial\nhttp://tiktok.com/@supercombooficial\nhttp://x.com/supercombo\nhttp://facebook.com/supercombooficial\nhttp://supercombo.com.br\n\n♫ LETRA\n\nUm envelope preto chegou\nUm convite escrito com sangue\nAcho que tinha até abadá\nConvocando os metaleiro de praia\n\nHoje a noite é nossa\nSom de cemitério\nSobretudo, coturno, corrente e prego\n\nO chão até levanta\nE a gente senta\n\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nTava tocando Black Sabbath\n\nUm calor de desidratar\nGeral balançando a cabeça\nAté os bodes vieram passear\nComo é bom ser metaleiro de praia\n\nHoje a noite é nossa\nSom de cemitério\nSobretudo, coturno, corrente e prego\nO chão até levanta\nE a gente senta\n\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nFui no piseiro\nTava tocando Black Sabbath\nTava tocando Black Sabbath\n\nHoje eu não volto pra casa\nHoje eu não volto mais\nHoje eu não vou pra casa\nHoje eu não volto mais\nHoje eu não volto pra casa\nHoje eu não volto mais\nHoje eu não vou pra casa\nHoje eu não volto mais\n\n--\n\n✎ FICHA TÉCNICA\n\nMÚSICA\nProduzido por Supercombo e Victor de Souza (Jotta)\nSupercombo:\nLeo Ramos: Voz e Guitarra\nCarol Navarro: Baixo e Voz\nPaulo Vaz: Teclados\nAndré Dea: Bateria\nGravado nos estúdios Lua Nova, em São Paulo\nEngenheiro de áudio: Leo Ramos\nEdição por Leo Ramos e Victor de Souza (Jotta)\nPós Produção: Victor de Souza (Jotta)\nMixado por Leo Ramos\nMasterizado por Fernando Delgado\n\nVÍDEO\nDiretor: Chris Tex\nAssist. Direção: Marcilia Brito\nProdução: Gabriela Santos\nAssist. Produção: Gabriela Yaui\nDOP/Operador de Camera: Francis Girard\nOperador de 2ª Camera: Pedro H. M. Marques\nAssist. Camera: Roberto Coppola\nMaking Of: Marcela Sanches\nDireção de Arte: Laura Miguel / Carol Navarro / André Dea\nAssist. de Arte: Gabriela Yagui\nContraregra: Laura Miguel\nMaquiagem: Natalia Stracieri\nFigurino: Supercombo\nAdereços Caranguejo: Christian Scherf\nCatering: Eliana Batista\nAtor: João Paulo Tourinho\n\nMontagem: Julius Bueno e Chris Tex\nColor Grading: Felipe Bustelli\nProdutora: Tex Films / Ritmo Visual Filmes\n\n#supercombo #piseiroblacksabbath",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/d1vwkMf4nL0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/d1vwkMf4nL0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/d1vwkMf4nL0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/d1vwkMf4nL0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/d1vwkMf4nL0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 95,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "d1vwkMf4nL0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "d1vwkMf4nL0",
+          "videoPublishedAt": "2025-06-13T21:18:26Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "PbZhGjHB64xjOaXFUjYW2POn3Nw",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLnVyOWdzWkJFeXYw",
+        "snippet": {
+          "publishedAt": "2025-06-07T14:01:28Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "PISEIRO BLACK SABBATAH 🦀🖤 novo single sexta-feira, 13 de junho #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ur9gsZBEyv0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ur9gsZBEyv0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ur9gsZBEyv0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ur9gsZBEyv0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ur9gsZBEyv0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 96,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "ur9gsZBEyv0"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "ur9gsZBEyv0",
+          "videoPublishedAt": "2025-06-07T14:01:28Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "uK8VNmCzZBFAFBHT7DtVK3SpsaU",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLkF3OUJXeE5NMUp3",
+        "snippet": {
+          "publishedAt": "2025-06-04T14:26:26Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Eu tô bem aqui no FIM DO MUNDO! ~ Vídeo: Gabriel Hand #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Aw9BWxNM1Jw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Aw9BWxNM1Jw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Aw9BWxNM1Jw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Aw9BWxNM1Jw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Aw9BWxNM1Jw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 97,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "Aw9BWxNM1Jw"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "Aw9BWxNM1Jw",
+          "videoPublishedAt": "2025-06-04T14:26:26Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "GKdUf5bg_w-Jp0IWclw0RqGirI0",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmZMZ21UTlJZYlpJ",
+        "snippet": {
+          "publishedAt": "2025-05-23T19:00:40Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Resumão do show nas Seletivas do Porão do Rock semana passada! Vídeo: Marcela Sanches #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/fLgmTNRYbZI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/fLgmTNRYbZI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/fLgmTNRYbZI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/fLgmTNRYbZI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/fLgmTNRYbZI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 98,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "fLgmTNRYbZI"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "fLgmTNRYbZI",
+          "videoPublishedAt": "2025-05-23T19:00:40Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "rFrwPCQcT1fL53pNRQy2TI6ygO4",
+        "id": "VVU1ZWVESFlqVFdGOXBQV1lES3BWTVlRLmN6R2V2UE9Ka2Zr",
+        "snippet": {
+          "publishedAt": "2025-05-17T21:00:38Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "CONTÉM SPOILERS ~ trecho do papo com Lu Robertti #shorts",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/czGevPOJkfk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/czGevPOJkfk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/czGevPOJkfk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/czGevPOJkfk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/czGevPOJkfk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "playlistId": "UU5eeDHYjTWF9pPWYDKpVMYQ",
+          "position": 99,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "czGevPOJkfk"
+          },
+          "videoOwnerChannelTitle": "Supercombo",
+          "videoOwnerChannelId": "UC5eeDHYjTWF9pPWYDKpVMYQ"
+        },
+        "contentDetails": {
+          "videoId": "czGevPOJkfk",
+          "videoPublishedAt": "2025-05-17T21:00:38Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      }
+    ],
+    "pageInfo": {
+      "totalResults": 587,
+      "resultsPerPage": 50
+    }
+  }
+}

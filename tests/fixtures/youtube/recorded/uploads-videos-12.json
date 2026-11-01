@@ -1,0 +1,2940 @@
+{
+  "request": {
+    "endpoint": "videos",
+    "params": {
+      "part": "snippet,contentDetails,status,liveStreamingDetails",
+      "id": "ybxV3oCkPCw,xGDUsKiyEoY,ygUIGILjB-M,_2ZwNSXNIRs,wFO26CxDBjA,IYG0fUEcJEs,-kGJ5Tpo_4k,wHJ8AM-0tC4,FlmmUIE4prI,EUa54xAOIhg,gKGHtSQHpa0,RfBGgj8wuko,yD5EHBJE-0k,UtchQHGvVnQ,OXLq4P0pwVE,psNqfWCdVxE,plCLctVIg0M,qJfJS_wrgaQ,46WanmGm7jI,RWtCtmZhZRY,7dcsUmpLeLA,W8pXkZ40KaM,EgWHjct3Y-E,5ZEvW5vxr4o,gAJ79fE82z0,zccCkSVuSLw,7zenuyOgpSo,RwGLtudatjY,PCNq4w8L9Ww,YasJvFULnc4,br0eKAm0ot8,ynM1pSwoWg4,PStPMX2rxJE,lqEsk7EKt0g,GdHWd824YTk,-hGOvB-fdgM,nvCMby8Fez8"
+    },
+    "if_none_match": null
+  },
+  "status": 200,
+  "etag": null,
+  "body": {
+    "kind": "youtube#videoListResponse",
+    "etag": "eSRzOceGmjvNclpO7HUAxox_-2w",
+    "items": [
+      {
+        "kind": "youtube#video",
+        "etag": "eGzAnWPJPV_wcsp-OFhJ32rUHBM",
+        "id": "ybxV3oCkPCw",
+        "snippet": {
+          "publishedAt": "2013-07-03T02:19:46Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Leo gravando vozes.",
+          "description": "Um dos dias de gravação de voz do disco novo.\n\nQue venha o AMIANTO! o/\n\n\nImagens e edição: Fabrizio Toniolo\n______________________________________________\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ybxV3oCkPCw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ybxV3oCkPCw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ybxV3oCkPCw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ybxV3oCkPCw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ybxV3oCkPCw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "voz",
+            "amianto",
+            "gravação",
+            "castor ramos",
+            "toledo ramos",
+            "leo",
+            "pedro",
+            "supercombo",
+            "piloto automático",
+            "disco novo"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Leo gravando vozes.",
+            "description": "Um dos dias de gravação de voz do disco novo.\n\nQue venha o AMIANTO! o/\n\n\nImagens e edição: Fabrizio Toniolo\n______________________________________________\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT1M21S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "5h8KAKVrGOHQ4_qD_RbNLqzyGMs",
+        "id": "xGDUsKiyEoY",
+        "snippet": {
+          "publishedAt": "2013-06-11T03:46:58Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Resumo das guitarras do TOLEDO!",
+          "description": "Um pouquinho do que rolou nas gravações de guitarra com o Pedro (Toledo).\n\nNa moral CLAUDIOOo!!!!\n\n________________________________________________________\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/xGDUsKiyEoY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/xGDUsKiyEoY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/xGDUsKiyEoY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/xGDUsKiyEoY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/xGDUsKiyEoY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "guitarra",
+            "toledo",
+            "amianto",
+            "supercombo",
+            "claudio",
+            "botão",
+            "foda-se",
+            "castor",
+            "leo",
+            "pedro ramos",
+            "gianinni",
+            "whammy",
+            "dl4",
+            "pop",
+            "disco",
+            "novo",
+            "pedal",
+            "line 6",
+            "minus the bear"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Resumo das guitarras do TOLEDO!",
+            "description": "Um pouquinho do que rolou nas gravações de guitarra com o Pedro (Toledo).\n\nNa moral CLAUDIOOo!!!!\n\n________________________________________________________\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT2M55S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "s4F8CDsmrvbkQ_XsxXCX-4_RIU4",
+        "id": "ygUIGILjB-M",
+        "snippet": {
+          "publishedAt": "2013-06-04T21:33:26Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Leo Ramos explica afinação de uma das músicas do AMIANTO.",
+          "description": "Que VENHA o AMIANTO!! o/\n\n__________________________________________________\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ygUIGILjB-M/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ygUIGILjB-M/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ygUIGILjB-M/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/ygUIGILjB-M/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/ygUIGILjB-M/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Leo ramos",
+            "afinação",
+            "amianto",
+            "supercombo",
+            "gravação",
+            "disco",
+            "novo",
+            "grave",
+            "gianinni"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Leo Ramos explica afinação de uma das músicas do AMIANTO.",
+            "description": "Que VENHA o AMIANTO!! o/\n\n__________________________________________________\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT1M51S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "WRPFd-av7iH6Gk3VJnEnrc1ONvI",
+        "id": "_2ZwNSXNIRs",
+        "snippet": {
+          "publishedAt": "2013-06-03T20:34:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO Agradece ao MUNDO!!",
+          "description": "MUITO OBRIGADO pra todo mundo que votou na gente lá!\n\nTem muita coisa legal acontecendo e a gente vai abastecendo o canal com mais novidades. \n\n:))\n\n\n__________________________________________________________\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/_2ZwNSXNIRs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/_2ZwNSXNIRs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/_2ZwNSXNIRs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/_2ZwNSXNIRs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/_2ZwNSXNIRs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "amianto",
+            "radio uol 89",
+            "temos vagas",
+            "cebolas",
+            "farol",
+            "sal grosso",
+            "calculista",
+            "deriva",
+            "ve se não morre",
+            "se eu quiser",
+            "carol navarro",
+            "toledo",
+            "leo ramos",
+            "raul de paula",
+            "paulo vaz",
+            "aqueles cara"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO Agradece ao MUNDO!!",
+            "description": "MUITO OBRIGADO pra todo mundo que votou na gente lá!\n\nTem muita coisa legal acontecendo e a gente vai abastecendo o canal com mais novidades. \n\n:))\n\n\n__________________________________________________________\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT2M33S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "i-jWp5Hc_Lgxz6CcTa8NFd_mhoA",
+        "id": "wFO26CxDBjA",
+        "snippet": {
+          "publishedAt": "2013-05-23T22:28:34Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "GUITARRASssss!!!",
+          "description": "Mais um video curtinho das gravações do AMIANTO!! :))\n\n\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/wFO26CxDBjA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/wFO26CxDBjA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/wFO26CxDBjA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/wFO26CxDBjA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/wFO26CxDBjA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "GUITARRASssss!!!",
+            "description": "Mais um video curtinho das gravações do AMIANTO!! :))\n\n\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT48S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "9giUEydzcIoTowGe861iUBelZmk",
+        "id": "IYG0fUEcJEs",
+        "snippet": {
+          "publishedAt": "2013-05-17T20:33:27Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Carolzinha gravando uns baixos MONSTROS pro AMIANTO!",
+          "description": "Tá ficando GROSSO!!!\n\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/IYG0fUEcJEs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/IYG0fUEcJEs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/IYG0fUEcJEs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/IYG0fUEcJEs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/IYG0fUEcJEs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Carolzinha gravando uns baixos MONSTROS pro AMIANTO!",
+            "description": "Tá ficando GROSSO!!!\n\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT1M17S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "4S1KV7D2sz6gRaC5IxSCvmeyfCQ",
+        "id": "-kGJ5Tpo_4k",
+        "snippet": {
+          "publishedAt": "2013-05-15T00:44:13Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Leo e Toledo passando umas guitarras do AMIANTO!!",
+          "description": ":))\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/-kGJ5Tpo_4k/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/-kGJ5Tpo_4k/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/-kGJ5Tpo_4k/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/-kGJ5Tpo_4k/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/-kGJ5Tpo_4k/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Leo e Toledo passando umas guitarras do AMIANTO!!",
+            "description": ":))\n\nTe inscreve no canal pra receber os videos novos que vão saindo!!\n\nwww.youtube.com/supercomborock\n\n\nCurte NÓIZ no FACEBOOK:\n\nwww.facebook.com/supercombooficial\n\n\nSegue NÓIZ no TWITTER:\n\nwww.twitter.com/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT1M4S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "ju5LHilBJuT3UsUtltL_mSxueJ4",
+        "id": "wHJ8AM-0tC4",
+        "snippet": {
+          "publishedAt": "2012-11-26T19:58:50Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Anestesia e Se eu Quiser - AO VIVO Inferno club - 24 11",
+          "description": "Banda supercombo arrepiando!",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/wHJ8AM-0tC4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/wHJ8AM-0tC4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/wHJ8AM-0tC4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/wHJ8AM-0tC4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/wHJ8AM-0tC4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "anestesia",
+            "se eu quiser",
+            "cebolas",
+            "carol navarro",
+            "topaz",
+            "lipstick",
+            "cu de ganso",
+            "o cauculista",
+            "bruce",
+            "porta dos fundos",
+            "ossos do orificio",
+            "ta bom já ne?",
+            "ja deu",
+            "tags malditas"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - Anestesia e Se eu Quiser - AO VIVO Inferno club - 24 11",
+            "description": "Banda supercombo arrepiando!"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT7M30S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "18dQ31FGvPrvHfl6bIfqiAFMga0",
+        "id": "FlmmUIE4prI",
+        "snippet": {
+          "publishedAt": "2012-11-09T01:24:01Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo ! Ensaio, ''Se Eu Quiser''",
+          "description": "Ensaio  Supercombo, ''Se Eu Quizer'' !!",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/FlmmUIE4prI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/FlmmUIE4prI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/FlmmUIE4prI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/FlmmUIE4prI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/FlmmUIE4prI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Supercombo ! Ensaio, ''Se Eu Quiser''",
+            "description": "Ensaio  Supercombo, ''Se Eu Quizer'' !!"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M10S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "bZmuOXlTihBqDKmB7Efzu4FQJpM",
+        "id": "EUa54xAOIhg",
+        "snippet": {
+          "publishedAt": "2012-10-29T16:33:31Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Farol - Ao Vivo no Beco SP 27/10",
+          "description": "Banda Supercombo tocando \"Farol\" na festa de lançamento do disco da banda \"Vowe\" no Beco sp\n\nhttp://www.supercomborock.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/EUa54xAOIhg/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/EUa54xAOIhg/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/EUa54xAOIhg/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/EUa54xAOIhg/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/EUa54xAOIhg/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "2ois",
+            "farol",
+            "cebolas",
+            "cauculista",
+            "lipstick",
+            "carol navarro",
+            "topaz",
+            "vowe",
+            "beco sao paulo",
+            "kassab",
+            "haddad",
+            "jose motoserra"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - Farol - Ao Vivo no Beco SP 27/10",
+            "description": "Banda Supercombo tocando \"Farol\" na festa de lançamento do disco da banda \"Vowe\" no Beco sp\n\nhttp://www.supercomborock.com.br"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT4M43S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "obPof7o8kJhztpq5jzN-i302BDs",
+        "id": "gKGHtSQHpa0",
+        "snippet": {
+          "publishedAt": "2012-10-23T14:37:20Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - COMO SAO AS COISAS - AO VIVO NOS 10 ANOS DE RANCORE 21/10/2012",
+          "description": "Banda Supercombo tocando \"Como são as coisas\" com a participação especial da nossa querida amiga Carolina Navarro!\n\nhttp://www.supercomborock.com.br\n\nVideos por Carina Amorim\n\nPEACE",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/gKGHtSQHpa0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/gKGHtSQHpa0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/gKGHtSQHpa0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/gKGHtSQHpa0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/gKGHtSQHpa0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "cebolas",
+            "como sao as coisas",
+            "cauculista",
+            "ao vivo",
+            "sal grosso",
+            "gangnam style",
+            "meu pau duro fluorescente",
+            "justin bieber",
+            "carol navarro",
+            "lipstick",
+            "rancore",
+            "10 anos de rancore",
+            "jeito livre",
+            "2ois",
+            "coco grosso flamejante"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - COMO SAO AS COISAS - AO VIVO NOS 10 ANOS DE RANCORE 21/10/2012",
+            "description": "Banda Supercombo tocando \"Como são as coisas\" com a participação especial da nossa querida amiga Carolina Navarro!\n\nhttp://www.supercomborock.com.br\n\nVideos por Carina Amorim\n\nPEACE"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M53S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "creativeCommon",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "P5hGoya2A1LNzXHKeuMp871IFSg",
+        "id": "RfBGgj8wuko",
+        "snippet": {
+          "publishedAt": "2012-10-22T14:48:25Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - CEBOLAS - AO VIVO NOS 10 ANOS DE RANCORE 21/10/2012",
+          "description": "Supercombo tocando \"Cebolas\" ao vivo na festa de 10 anos da banda Rancore no dia 21 de outubro no Inferno club!\n\nParticipação especialZISSIMA da nossa querida amiga Carol Navarro\n\nhttp://www.supercomborock.com.br\n\nobs: os erros de guitarra no inicio são do Jean e NÃO do Leo. ass. LEO ueiheuihe\n\nVideo por Carina amorim",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/RfBGgj8wuko/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/RfBGgj8wuko/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/RfBGgj8wuko/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/RfBGgj8wuko/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/RfBGgj8wuko/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "cebolas",
+            "sal grosso",
+            "a deriva",
+            "cauculista",
+            "2ois",
+            "se eu quiser",
+            "general sih",
+            "carol navarro",
+            "lipstick",
+            "meu pau",
+            "gangnam style",
+            "jeremias muito louco",
+            "batman e robin",
+            "colher de pedreiro",
+            "marreta de 5kg",
+            "justin bieber",
+            "coco grosso flamejante"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - CEBOLAS - AO VIVO NOS 10 ANOS DE RANCORE 21/10/2012",
+            "description": "Supercombo tocando \"Cebolas\" ao vivo na festa de 10 anos da banda Rancore no dia 21 de outubro no Inferno club!\n\nParticipação especialZISSIMA da nossa querida amiga Carol Navarro\n\nhttp://www.supercomborock.com.br\n\nobs: os erros de guitarra no inicio são do Jean e NÃO do Leo. ass. LEO ueiheuihe\n\nVideo por Carina amorim"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M29S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "49HVM7BdxTZeNdHP5ciq43bntF4",
+        "id": "yD5EHBJE-0k",
+        "snippet": {
+          "publishedAt": "2012-10-15T18:45:43Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Saco Cheio [Webclipe]",
+          "description": "Webclipe da música Saco Cheio feito com imagens ao vivo de diversos shows da Tour \"SAL GROSSO\".\n\nFicha Técnica:\nMúsica: Saco Cheio\nÁlbum: Sal Grosso\nArtista: Supercombo\nDireção: Supercombo\nImagens: Mariara Freitas e Carina Amorim\nEdição: Mariara Freitas\nProdução: Fábio Aguiar (Play Alternative)\nAno: 2012\n\n\nSite Oficial\nhttp://www.supercomborock.com.br/\n\nFacebook\nhttp://www.facebook.com/supercombooficial\n\nTwitter\nhttps://twitter.com/supercombo\n\nMúsicas\nhttp://tramavirtual.uol.com.br/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/yD5EHBJE-0k/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/yD5EHBJE-0k/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/yD5EHBJE-0k/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/yD5EHBJE-0k/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/yD5EHBJE-0k/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "music",
+            "supercombo",
+            "ao",
+            "vivo",
+            "live",
+            "saco",
+            "cheio",
+            "performance",
+            "banda",
+            "band",
+            "música",
+            "2ois",
+            "show",
+            "leo",
+            "jean",
+            "jackson",
+            "raul",
+            "paulinho",
+            "playalternative",
+            "Live",
+            "(band)"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - Saco Cheio [Webclipe]",
+            "description": "Webclipe da música Saco Cheio feito com imagens ao vivo de diversos shows da Tour \"SAL GROSSO\".\n\nFicha Técnica:\nMúsica: Saco Cheio\nÁlbum: Sal Grosso\nArtista: Supercombo\nDireção: Supercombo\nImagens: Mariara Freitas e Carina Amorim\nEdição: Mariara Freitas\nProdução: Fábio Aguiar (Play Alternative)\nAno: 2012\n\n\nSite Oficial\nhttp://www.supercomborock.com.br/\n\nFacebook\nhttp://www.facebook.com/supercombooficial\n\nTwitter\nhttps://twitter.com/supercombo\n\nMúsicas\nhttp://tramavirtual.uol.com.br/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M32S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "QhS7lUJ3XgUDIocSIg82zFDVZoY",
+        "id": "UtchQHGvVnQ",
+        "snippet": {
+          "publishedAt": "2012-09-18T02:55:21Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Vê Se Não Morre - Ao Vivo em Osasco.",
+          "description": "Ao Vivo - Osasco - 16/09/2012",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/UtchQHGvVnQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/UtchQHGvVnQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/UtchQHGvVnQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/UtchQHGvVnQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/UtchQHGvVnQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "musica",
+            "rock",
+            "ao vivo",
+            "2ois",
+            "live",
+            "music",
+            "fresno",
+            "osasco",
+            "POV"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Vê Se Não Morre - Ao Vivo em Osasco.",
+            "description": "Ao Vivo - Osasco - 16/09/2012"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M57S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "H-g18KxdQfkFeX6HMzPQvLrsYbg",
+        "id": "OXLq4P0pwVE",
+        "snippet": {
+          "publishedAt": "2012-08-14T19:18:45Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Farol - Ao Vimo no CEU de Guarapiranga 12/08/212",
+          "description": "Imagens por Carina Amorim\n\nwww.supercomborock.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/OXLq4P0pwVE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/OXLq4P0pwVE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/OXLq4P0pwVE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/OXLq4P0pwVE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/OXLq4P0pwVE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Supercombo",
+            "ve se nao morre",
+            "farol",
+            "saudade",
+            "sal grosso",
+            "calculista",
+            "cebolas",
+            "deriva",
+            "meu pau",
+            "2ois",
+            "topa",
+            "coco grosso flamejante"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Supercombo - Farol - Ao Vimo no CEU de Guarapiranga 12/08/212",
+            "description": "Imagens por Carina Amorim\n\nwww.supercomborock.com.br"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT4M46S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "creativeCommon",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "kcL83tKdKlhYWe-Wd4bfmOtZ4Bw",
+        "id": "psNqfWCdVxE",
+        "snippet": {
+          "publishedAt": "2012-08-13T19:28:42Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Saudade - Ao Vivo no CEU de Guarapiranga 12/08/2012",
+          "description": "www.supercomborock.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/psNqfWCdVxE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/psNqfWCdVxE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/psNqfWCdVxE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/psNqfWCdVxE/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/psNqfWCdVxE/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "saudade",
+            "sal grosso",
+            "cebolas",
+            "farol",
+            "eu poderia",
+            "2ois",
+            "topaz",
+            "pau no cu do caralho"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Supercombo - Saudade - Ao Vivo no CEU de Guarapiranga 12/08/2012",
+            "description": "www.supercomborock.com.br"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT6M5S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "l7T3MnX5WIj91S1pelKA3B-VKNw",
+        "id": "plCLctVIg0M",
+        "snippet": {
+          "publishedAt": "2012-05-22T23:59:53Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Vê Se Não Morre [Clipe Oficial]",
+          "description": "Clipe oficial da música \"Vê Se Não Morre\" © Elemess 2012\nSpotify: https://open.spotify.com/artist/73HkjgziMO6I83vFOS8mo1\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nFICHA TÉCNICA:\n\nDIREÇÃO: Supercombo\nIMAGENS: Murilo Yamanaka e William Vebinha\nEDIÇÃO/FINALIZAÇÃO: Leonardo Ramos\nPRODUÇÃO EXECUTIVA: Elemess Music N' Services\n\nVÊ SE NÃO MORRE\n(Supercombo)\n\nEram explosões, incêndios em praças\nE confusões, pessoas armadas\nVocê se foi\n(Cadê você?)\n\nEu me preocupo\n\nVê se não morre\nToma cuidado\nMande noticias\nSeja um sinal de fumaça\n\nFoi assim, nem deu tempo pra pensar\nQuando eu cai, os prédios em chamas\nEu vi você me olhando de longe\nO sol se pôs \nSeguiu você\n\nFicou pra mim um buquê \nNo altar ao sol, em busca\n\nEu me preocupo\n\nVê se não morre\nToma cuidado\nMande noticias\nSeja um sinal de fumaça\n\nVê se não morre\nToma cuidado\nMande noticias\nSeja um sinal de fumaça\n\nEstá tão distante\nEstá tão distante\n\nSumiu na multidão\nLevou meu coração\nEstá tão distante\n\nSumiu na multidão\nLevou meu coração\nEstá tão distante\n\nVê se não morre\nTome cuidado\nMande noticias\nSeja um sinal de fumaça",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/plCLctVIg0M/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/plCLctVIg0M/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/plCLctVIg0M/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/plCLctVIg0M/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/plCLctVIg0M/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "SUPERCOMBO",
+            "FESTA",
+            "ROGERIO",
+            "AMIANTO",
+            "SAL GROSSO",
+            "ROCK",
+            "POP ROCK",
+            "NXZERO",
+            "PITTY",
+            "LOS HERMANOS",
+            "STRIKE",
+            "PARAMORE",
+            "FALL OUT BOY",
+            "FRESNO",
+            "MINUS THE BEAR",
+            "BRASIL",
+            "SÃO PAULO",
+            "ELEMESS",
+            "89 A RADIO ROCK",
+            "PILOTO AUTOMATICO",
+            "FAR FROM ALASKA",
+            "EGO KILL TALENT",
+            "MEDULLA",
+            "SCALENE",
+            "SÉRGIO BRITTO",
+            "TITÃS",
+            "LUCAS SILVEIRA",
+            "OFICINA G3",
+            "EMMILY BARRETO",
+            "SOL DA MANHÃ",
+            "LENTES",
+            "NEGRA LI",
+            "LOLLAPALOOZA",
+            "LOLLAPALOOZA BRASIL",
+            "PLANETA ATLANTIDA",
+            "JOAO ROCK",
+            "PONTO CE",
+            "FEIRA NOISE",
+            "PORAO DO ROCK"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - Vê Se Não Morre [Clipe Oficial]",
+            "description": "Clipe oficial da música \"Vê Se Não Morre\" © Elemess 2012\nSpotify: https://open.spotify.com/artist/73HkjgziMO6I83vFOS8mo1\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nFICHA TÉCNICA:\n\nDIREÇÃO: Supercombo\nIMAGENS: Murilo Yamanaka e William Vebinha\nEDIÇÃO/FINALIZAÇÃO: Leonardo Ramos\nPRODUÇÃO EXECUTIVA: Elemess Music N' Services\n\nVÊ SE NÃO MORRE\n(Supercombo)\n\nEram explosões, incêndios em praças\nE confusões, pessoas armadas\nVocê se foi\n(Cadê você?)\n\nEu me preocupo\n\nVê se não morre\nToma cuidado\nMande noticias\nSeja um sinal de fumaça\n\nFoi assim, nem deu tempo pra pensar\nQuando eu cai, os prédios em chamas\nEu vi você me olhando de longe\nO sol se pôs \nSeguiu você\n\nFicou pra mim um buquê \nNo altar ao sol, em busca\n\nEu me preocupo\n\nVê se não morre\nToma cuidado\nMande noticias\nSeja um sinal de fumaça\n\nVê se não morre\nToma cuidado\nMande noticias\nSeja um sinal de fumaça\n\nEstá tão distante\nEstá tão distante\n\nSumiu na multidão\nLevou meu coração\nEstá tão distante\n\nSumiu na multidão\nLevou meu coração\nEstá tão distante\n\nVê se não morre\nTome cuidado\nMande noticias\nSeja um sinal de fumaça"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M59S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "true",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "Qs-5nu9CqdImIrnBEUVaGNg0jck",
+        "id": "qJfJS_wrgaQ",
+        "snippet": {
+          "publishedAt": "2012-04-24T18:38:50Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Leo Ramos ensaiando - Saco Cheio - ON THE DRUMS",
+          "description": "Mais um Video do Leo ensaiando nos estudios da Luanova\n\nhttp://www.supercomborock.com.br",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/qJfJS_wrgaQ/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/qJfJS_wrgaQ/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/qJfJS_wrgaQ/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/qJfJS_wrgaQ/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/qJfJS_wrgaQ/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Supercombo",
+            "leo ramos",
+            "luanova",
+            "a deriva",
+            "cebolas",
+            "se eu quiser",
+            "mal dito",
+            "o calculista",
+            "panicat careca do caralho",
+            "para a nossa alegria",
+            "topaz",
+            "fly viado",
+            "sal grosso"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - Leo Ramos ensaiando - Saco Cheio - ON THE DRUMS",
+            "description": "Mais um Video do Leo ensaiando nos estudios da Luanova\n\nhttp://www.supercomborock.com.br"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M47S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "yIj25Nxd_Qg06vmN5o_2e31PJ7I",
+        "id": "46WanmGm7jI",
+        "snippet": {
+          "publishedAt": "2012-04-23T19:57:26Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Leo Ramos ensaiando - Ve Se Nao Morre - ON THE DRUMS",
+          "description": "Leo ramos ensaiando nos estudios da luanova \n\nhttp://www.supercomborock.com.br\n\nFUCK YEAH!!",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/46WanmGm7jI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/46WanmGm7jI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/46WanmGm7jI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/46WanmGm7jI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/46WanmGm7jI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Supercombo",
+            "ve se nao morre",
+            "a deriva",
+            "o calculista",
+            "sal grosso",
+            "festa",
+            "mal dito",
+            "cebolas",
+            "se eu quiser"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - Leo Ramos ensaiando - Ve Se Nao Morre - ON THE DRUMS",
+            "description": "Leo ramos ensaiando nos estudios da luanova \n\nhttp://www.supercomborock.com.br\n\nFUCK YEAH!!"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M59S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "6z8r3pEPbBDmX5QY70eAFWDET3M",
+        "id": "RWtCtmZhZRY",
+        "snippet": {
+          "publishedAt": "2012-03-08T15:58:36Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - CAFE AMARGO - ENSAIO TV TRAMA",
+          "description": "Banda Supercombo ensaiando \"Café Amargo\" nos estudios da TV Trama\n\nPara mais informações acesse nosso site:\n\nhttp://www.supercomborock.com.br\n\nFUCK YEAH",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/RWtCtmZhZRY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/RWtCtmZhZRY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/RWtCtmZhZRY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/RWtCtmZhZRY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "deriva",
+            "cauculista",
+            "como sao as coisas",
+            "ve se não morre",
+            "chuva de granito",
+            "leo ramos",
+            "r.sigma",
+            "rancore",
+            "topaz",
+            "sal grosso",
+            "mal dito",
+            "cavaleiros do zodiaco",
+            "meteoro de pegasus",
+            "meteoro da paixao"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - CAFE AMARGO - ENSAIO TV TRAMA",
+            "description": "Banda Supercombo ensaiando \"Café Amargo\" nos estudios da TV Trama\n\nPara mais informações acesse nosso site:\n\nhttp://www.supercomborock.com.br\n\nFUCK YEAH"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT4M",
+          "dimension": "2d",
+          "definition": "sd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "Cu83yiR4GeG72lcybyD5S8iIZlU",
+        "id": "7dcsUmpLeLA",
+        "snippet": {
+          "publishedAt": "2012-02-28T18:24:24Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Como Sao as Coisas - TV TRAMA 14/02/2012",
+          "description": "Video da Supercombo ensaiando \"Como São as Coisas\" no tv trama do dia 14/02/2012.\nImagens: TV TRAMA\nGravação: Ronaldão e Paulão (Tramavirtual)\nMixagem: Leo Ramos\nBanda SUPERCOMBO: \nhttp://www.supercomborock.com.br\n\nAUUUUU FRANK AGUIAR!",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/7dcsUmpLeLA/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/7dcsUmpLeLA/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/7dcsUmpLeLA/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/7dcsUmpLeLA/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/7dcsUmpLeLA/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "tv trama",
+            "como sao as coisas",
+            "deriva",
+            "nao da certo",
+            "sal grosso",
+            "refroes",
+            "ve se nao morre",
+            "cebolas",
+            "topaz",
+            "rancore",
+            "r.sigma",
+            "coluna vertebral",
+            "semem de ganso",
+            "chuleta e bisteca",
+            "rodizio de sushi",
+            "a pipa do vovô nao sobre mais",
+            "dc comics",
+            "marvel comics",
+            "caixa d'água",
+            "justin bieber"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Supercombo - Como Sao as Coisas - TV TRAMA 14/02/2012",
+            "description": "Video da Supercombo ensaiando \"Como São as Coisas\" no tv trama do dia 14/02/2012.\nImagens: TV TRAMA\nGravação: Ronaldão e Paulão (Tramavirtual)\nMixagem: Leo Ramos\nBanda SUPERCOMBO: \nhttp://www.supercomborock.com.br\n\nAUUUUU FRANK AGUIAR!"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT4M4S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "R2CGQyqTlKYSq8iLGNeXEtKnG4w",
+        "id": "W8pXkZ40KaM",
+        "snippet": {
+          "publishedAt": "2012-02-16T14:09:00Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Chuva de Granito - TV TRAMA 14/02/2012",
+          "description": "Video da Supercombo ensaiando \"Chuva de granito\" no tv trama do dia 14/02/2012.\nImagens: Carina Amorim\nGravação: Ronaldão e Paulão (tramavirtual)\nMixagem: Leo Ramos\nBanda SUPERCOMBO: \nhttp://www.supercomborock.com.br\n\nAS MINA PIRA VEY",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/W8pXkZ40KaM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/W8pXkZ40KaM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/W8pXkZ40KaM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/W8pXkZ40KaM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/W8pXkZ40KaM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "super combo",
+            "chuva de granito",
+            "tv trama",
+            "tramavirtual",
+            "deriva",
+            "sorte e azar",
+            "calculista",
+            "mal dito",
+            "cebolas",
+            "saudade",
+            "gravidade",
+            "leo ramos",
+            "2ois",
+            "topaz",
+            "r sigma",
+            "camarão esturricado",
+            "complexo endoplasmatico RUGOSO",
+            "semem de ganso",
+            "tapeçeria LESBRÃO",
+            "mijo lesbico"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Supercombo - Chuva de Granito - TV TRAMA 14/02/2012",
+            "description": "Video da Supercombo ensaiando \"Chuva de granito\" no tv trama do dia 14/02/2012.\nImagens: Carina Amorim\nGravação: Ronaldão e Paulão (tramavirtual)\nMixagem: Leo Ramos\nBanda SUPERCOMBO: \nhttp://www.supercomborock.com.br\n\nAS MINA PIRA VEY"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M39S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "qlnDJaztlCcNoepX26vn-1pEob0",
+        "id": "EgWHjct3Y-E",
+        "snippet": {
+          "publishedAt": "2012-02-16T12:32:51Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo - Nao da certo - TV TRAMA 14/02/2012",
+          "description": "Video da Supercombo ensaiando \"não da certo\" no tv trama do dia 14/02/2012.\nImagens: Carina Amorim\nGravação: Ronaldão e Paulão (tramavirtual)\nMixagem: Leo Ramos\nBanda SUPERCOMBO: \nhttp://www.supercomborock.com.br\n\nPEACE BIIIIAAAAATCH!!!",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/EgWHjct3Y-E/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/EgWHjct3Y-E/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/EgWHjct3Y-E/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/EgWHjct3Y-E/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/EgWHjct3Y-E/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "sal grosso",
+            "nao da certo",
+            "deriva",
+            "mal dito",
+            "cauculista",
+            "cebolas",
+            "leo ramos",
+            "leonardo ramos",
+            "topaz",
+            "r sigma",
+            "semem",
+            "rock",
+            "pop rock",
+            "necrose",
+            "coco grosso flamejante",
+            "xoxota de ganso"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Supercombo - Nao da certo - TV TRAMA 14/02/2012",
+            "description": "Video da Supercombo ensaiando \"não da certo\" no tv trama do dia 14/02/2012.\nImagens: Carina Amorim\nGravação: Ronaldão e Paulão (tramavirtual)\nMixagem: Leo Ramos\nBanda SUPERCOMBO: \nhttp://www.supercomborock.com.br\n\nPEACE BIIIIAAAAATCH!!!"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M38S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "38DdJ9HQWuewNrM9Wc92WnsXIfQ",
+        "id": "5ZEvW5vxr4o",
+        "snippet": {
+          "publishedAt": "2011-08-15T04:44:24Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "#Teaser04 - Gravação do novo CD Supercombo [Gravação de Guitarra]",
+          "description": "Quarto  teaser com trechos das gravações dos instrumentos do novo CD da banda Supercombo\r\n\r\nImagens e edição - Vebinha",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/5ZEvW5vxr4o/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/5ZEvW5vxr4o/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/5ZEvW5vxr4o/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/5ZEvW5vxr4o/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/5ZEvW5vxr4o/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "teaser",
+            "04",
+            "Gugu",
+            "dada",
+            "vasco",
+            "campeão",
+            "hehe",
+            "Supercombo",
+            "Ted",
+            "Jensen",
+            "Léo",
+            "Jackson",
+            "Jean",
+            "PlayAlternarive",
+            "ui",
+            "live music",
+            "dance",
+            "haha",
+            "trailer",
+            "funny",
+            "rock music"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "#Teaser04 - Gravação do novo CD Supercombo [Gravação de Guitarra]",
+            "description": "Quarto  teaser com trechos das gravações dos instrumentos do novo CD da banda Supercombo\r\n\r\nImagens e edição - Vebinha"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT1M58S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "UXEtjFNoEywOQBjH88QOWUsJMRs",
+        "id": "gAJ79fE82z0",
+        "snippet": {
+          "publishedAt": "2011-08-08T07:01:44Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "#Teaser03 - Gravação do novo CD Supercombo [Gravação de Baixo]",
+          "description": "Terceiro teaser com trechos das gravações dos instrumentos do novo CD da banda Supercombo\r\n\r\nImagens e edição - Vebinha",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/gAJ79fE82z0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/gAJ79fE82z0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/gAJ79fE82z0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/gAJ79fE82z0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/gAJ79fE82z0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Teaser",
+            "03",
+            "Supercombo",
+            "Macaco",
+            "Pangaré",
+            "Léo",
+            "Jean",
+            "Xbox",
+            "Musica",
+            "deriva",
+            "muleque",
+            "doido"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "#Teaser03 - Gravação do novo CD Supercombo [Gravação de Baixo]",
+            "description": "Terceiro teaser com trechos das gravações dos instrumentos do novo CD da banda Supercombo\r\n\r\nImagens e edição - Vebinha"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT2M26S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "_LwjAU0WZN37V5Ll8leBIx4ecBk",
+        "id": "zccCkSVuSLw",
+        "snippet": {
+          "publishedAt": "2011-08-01T02:38:44Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "#Teaser02 - Gravação do novo CD Supercombo [Gravação de Batera]",
+          "description": "Segundo teaser com trechos das gravações dos instrumentos do novo CD da banda Supercombo\r\n\r\nImagens e edição - Vebinha",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/zccCkSVuSLw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/zccCkSVuSLw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/zccCkSVuSLw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/zccCkSVuSLw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/zccCkSVuSLw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Supercombo",
+            "cd",
+            "novo",
+            "instrumentos",
+            "leo",
+            "leonardo",
+            "ramos",
+            "jackson",
+            "jean",
+            "pinheiro",
+            "diaz",
+            "marcelo",
+            "braga",
+            "trechos",
+            "vebinha",
+            "coxinha",
+            "imagens",
+            "edição",
+            "cachorro",
+            "gato",
+            "papagaio",
+            "periquito",
+            "mulher",
+            "feia",
+            "anão",
+            "zebra",
+            "obama",
+            "só",
+            "tem",
+            "merda",
+            "fukushima"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "#Teaser02 - Gravação do novo CD Supercombo [Gravação de Batera]",
+            "description": "Segundo teaser com trechos das gravações dos instrumentos do novo CD da banda Supercombo\r\n\r\nImagens e edição - Vebinha"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M23S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "2AgnkhcOlx7o8LJTHVb7gs164HE",
+        "id": "7zenuyOgpSo",
+        "snippet": {
+          "publishedAt": "2011-07-31T19:24:37Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Saudade - Garagem Hermética - POA",
+          "description": "Video da musica saudades filmado em Porto Alegre em 24.07.2011",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/7zenuyOgpSo/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/7zenuyOgpSo/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/7zenuyOgpSo/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/7zenuyOgpSo/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/7zenuyOgpSo/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Saudade",
+            "Video",
+            "da",
+            "musica",
+            "saudade",
+            "filmado",
+            "em",
+            "Porto",
+            "Alegre",
+            "24.07.2011Supercombo",
+            "cd",
+            "novo",
+            "instrumentos",
+            "leo",
+            "leonardo",
+            "ramos",
+            "jackson",
+            "jean",
+            "pinheiro",
+            "diaz",
+            "marcelo",
+            "braga",
+            "trechos",
+            "vebinha",
+            "coxinha",
+            "imagens",
+            "edição",
+            "cachorro",
+            "gato",
+            "papagaio",
+            "periquito",
+            "mulher",
+            "feia",
+            "anão",
+            "zebra",
+            "obama",
+            "só",
+            "tem",
+            "merda",
+            "fukushima"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - Saudade - Garagem Hermética - POA",
+            "description": "Video da musica saudades filmado em Porto Alegre em 24.07.2011"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT4M34S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "raqcQJJDqXl0Cpg3zVKA1gzM_PM",
+        "id": "RwGLtudatjY",
+        "snippet": {
+          "publishedAt": "2011-07-22T22:21:44Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "#Teaser01 - Gravação do novo CD Supercombo",
+          "description": "Primeiro teaser com trechos do inicio das gravações dos instrumentos do novo CD da banda Supercombo\r\n\r\nImagens e edição - Vebinha",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/RwGLtudatjY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/RwGLtudatjY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/RwGLtudatjY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/RwGLtudatjY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/RwGLtudatjY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Supercombo",
+            "cd",
+            "novo",
+            "instrumentos",
+            "leo",
+            "leonardo",
+            "ramos",
+            "jackson",
+            "jean",
+            "pinheiro",
+            "diaz",
+            "marcelo",
+            "braga",
+            "trechos",
+            "vebinha",
+            "coxinha",
+            "imagens",
+            "edição",
+            "cachorro",
+            "gato",
+            "papagaio",
+            "periquito",
+            "mulher",
+            "feia",
+            "anão",
+            "zebra",
+            "obama",
+            "só",
+            "tem",
+            "merda",
+            "fukushima"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "#Teaser01 - Gravação do novo CD Supercombo",
+            "description": "Primeiro teaser com trechos do inicio das gravações dos instrumentos do novo CD da banda Supercombo\r\n\r\nImagens e edição - Vebinha"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT1M9S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": false,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "EWVaTxZAVB--L0fO85WoGVH3CvI",
+        "id": "PCNq4w8L9Ww",
+        "snippet": {
+          "publishedAt": "2011-06-28T07:42:06Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO TV - Gravação do novo CD [Ep 3]",
+          "description": "Saiba mais um pouco sobre o novo CD da banda Supercombo\r\n\r\nMais informações em:\r\n\r\n•http://www.myspace.com/supercomborock•\r\n\r\n•http://www.fotolog.com.br/supercombo•\r\n\r\n•http://twitter.com/Supercombo•\r\n\r\nImagens e edição: @Vebinha",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/PCNq4w8L9Ww/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/PCNq4w8L9Ww/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/PCNq4w8L9Ww/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/PCNq4w8L9Ww/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/PCNq4w8L9Ww/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "sucesso",
+            "vocal",
+            "instrumental",
+            "medley",
+            "cover",
+            "jason",
+            "acoustic",
+            "zero",
+            "guitar",
+            "vocal cover",
+            "singing",
+            "yours",
+            "karaoke",
+            "you cover"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO TV - Gravação do novo CD [Ep 3]",
+            "description": "Saiba mais um pouco sobre o novo CD da banda Supercombo\r\n\r\nMais informações em:\r\n\r\n•http://www.myspace.com/supercomborock•\r\n\r\n•http://www.fotolog.com.br/supercombo•\r\n\r\n•http://twitter.com/Supercombo•\r\n\r\nImagens e edição: @Vebinha"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT9M24S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "SnFS5suMjkOuC0iO4IUarMvg3A8",
+        "id": "YasJvFULnc4",
+        "snippet": {
+          "publishedAt": "2011-05-26T11:48:26Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO TV - Gravação do novo CD [Ep 2]",
+          "description": "Saiba mais um pouco sobre o novo CD da banda Supercombo\r\n\r\nMais informações em:\r\n\r\n•http://www.myspace.com/supercomborock•\r\n\r\n•http://www.fotolog.com.br/supercombo•\r\n\r\n•http://twitter.com/Supercombo•\r\n\r\nImagens e edição: @Vebinha",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/YasJvFULnc4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/YasJvFULnc4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/YasJvFULnc4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/YasJvFULnc4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/YasJvFULnc4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Supercombo",
+            "novo",
+            "cd",
+            "rock",
+            "castor",
+            "leonardo",
+            "ramos",
+            "jackson",
+            "pinheiro",
+            "marcelo",
+            "braga",
+            "play",
+            "alternative",
+            "vebinha",
+            "jean",
+            "diaz",
+            "cachorro",
+            "gato",
+            "papagaio",
+            "periquito",
+            "mulher",
+            "feia",
+            "anão",
+            "zebra",
+            "obama",
+            "só",
+            "tem",
+            "merda"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO TV - Gravação do novo CD [Ep 2]",
+            "description": "Saiba mais um pouco sobre o novo CD da banda Supercombo\r\n\r\nMais informações em:\r\n\r\n•http://www.myspace.com/supercomborock•\r\n\r\n•http://www.fotolog.com.br/supercombo•\r\n\r\n•http://twitter.com/Supercombo•\r\n\r\nImagens e edição: @Vebinha"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT6M19S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "vAHoEzUSsOyj61ZPZ4YrWW0Iytc",
+        "id": "br0eKAm0ot8",
+        "snippet": {
+          "publishedAt": "2011-01-20T18:18:41Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "#AQUELASTOUR Supercombo e 2ois",
+          "description": "Leve Supercombo e 2ois para sua cidade, saiba mais com a @playalternative - http://playalternative.com.br/\r\n\r\nFilmagem e Edição por @Vebinha",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/br0eKAm0ot8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/br0eKAm0ot8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/br0eKAm0ot8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/br0eKAm0ot8/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/br0eKAm0ot8/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Supercombo",
+            "2ois",
+            "#Aquelastour",
+            "Play",
+            "Alternative",
+            "Vebinha",
+            "Turne",
+            "Shows"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "#AQUELASTOUR Supercombo e 2ois",
+            "description": "Leve Supercombo e 2ois para sua cidade, saiba mais com a @playalternative - http://playalternative.com.br/\r\n\r\nFilmagem e Edição por @Vebinha"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT42S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "dlRFRir2i9-p4cavIoo-qNaJ4GQ",
+        "id": "ynM1pSwoWg4",
+        "snippet": {
+          "publishedAt": "2010-04-04T03:41:03Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - SORTE E AZAR (AO VIVO NO HANGAR 110)",
+          "description": "Banda Supercombo tocando \"Sorte e Azar\".\n\nhttp://www.myspace.com/supercomborock\nhttp://www.fotolog.com/supercombo\n\nenjoy \n=)",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/ynM1pSwoWg4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/ynM1pSwoWg4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/ynM1pSwoWg4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "supercombo",
+            "sorte",
+            "azar",
+            "2ois",
+            "dois",
+            "general",
+            "sih",
+            "deriva",
+            "na",
+            "estrada"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - SORTE E AZAR (AO VIVO NO HANGAR 110)",
+            "description": "Banda Supercombo tocando \"Sorte e Azar\".\n\nhttp://www.myspace.com/supercomborock\nhttp://www.fotolog.com/supercombo\n\nenjoy \n=)"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M39S",
+          "dimension": "2d",
+          "definition": "sd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "Z110-Wj0Vo8ptpc52N0lDJN28qk",
+        "id": "PStPMX2rxJE",
+        "snippet": {
+          "publishedAt": "2010-03-15T21:38:45Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Making Of -  Sessão de Fotos 2010",
+          "description": "SUPERCOMBO\r\n\r\nNova sessão de fotos EM BREVE!\r\n\r\nLéo Ramos - Voz/Guitarra\r\nJean Diaz - Guitarra\r\nJackson Pinheiro - Baixo\r\nMarcelo Braga - Bateria\r\n\r\nFotografia\r\nVictor Nomoto e Maurício Santana\r\n\r\nVídeo \r\nJuliana Ferraço\r\n\r\nEdição \r\nLele Souza\r\n\r\nwww.myspace.com/supercomborock\r\nwww.fotolog.com.br/supercombo \r\nwww.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/PStPMX2rxJE/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/PStPMX2rxJE/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/PStPMX2rxJE/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "SUPERCOMBO",
+            "cebolas",
+            "sessão de fotos",
+            "2ois",
+            "deriva"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - Making Of -  Sessão de Fotos 2010",
+            "description": "SUPERCOMBO\r\n\r\nNova sessão de fotos EM BREVE!\r\n\r\nLéo Ramos - Voz/Guitarra\r\nJean Diaz - Guitarra\r\nJackson Pinheiro - Baixo\r\nMarcelo Braga - Bateria\r\n\r\nFotografia\r\nVictor Nomoto e Maurício Santana\r\n\r\nVídeo \r\nJuliana Ferraço\r\n\r\nEdição \r\nLele Souza\r\n\r\nwww.myspace.com/supercomborock\r\nwww.fotolog.com.br/supercombo \r\nwww.twitter.com/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT1M18S",
+          "dimension": "2d",
+          "definition": "sd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "9YHZDrIzzLXSiH7inWoSxOmlnQY",
+        "id": "lqEsk7EKt0g",
+        "snippet": {
+          "publishedAt": "2010-02-15T20:45:19Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO - Cebolas [Clipe Oficial]",
+          "description": "Clipe da música \"Cebolas\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nFICHA TÉCNICA:\nRoteiro e Storyboard: Jean Diaz e Leonardo Ramos\nProdução: Olhos Coloridos e Supercombo\nEdição: Olhos Coloridos\nElenco: Leonardo Ramos, Jean Diaz, Marcel Klaczko, João Paulo Pimenta, Carlos Augusto (Sherman), Jackson Pinheiro e Marcelo Braga\nApoio: Olhos Coloridos (http://www.olhoscoloridos.com.br)\n\nCEBOLAS\n(Supercombo)\n\nQue sejam cebolas\nPra me fazer chorar, \nJá que sou uma pedra\nSei que te cobro\nBem mais que eu deveria estar fazendo de graça\nEu sei...\n\nNão é possível, não é possível\nRessuscitar meu coração\nNão é possível, não é possível\nViver somente de razão\n\nEscondo as cartas, \nEscondo de mim mesmo\nEntão não pergunte o que se passa\nQue venha o tédio \nPra reclamar Que eu sou monótono e chato\n\nNão é possível, não é possível\nRessucitar meu coração\nNão é possível não é possível\nViver somente de razão.\n\nTe devolvo tudo, \nPode ficar com o que eu te dei\nTe devolvo tudo...\nPode ficar...\n\nPode ser que no fim eu acorde pra esse mundo que eu nunca pude ver, mas por hora ele fica pra você...\n\nNão é possível\nNão é possível...",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/lqEsk7EKt0g/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/lqEsk7EKt0g/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/lqEsk7EKt0g/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/lqEsk7EKt0g/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "SUPERCOMBO",
+            "FESTA",
+            "ROGERIO",
+            "AMIANTO",
+            "SAL GROSSO",
+            "ROCK",
+            "POP ROCK",
+            "NXZERO",
+            "PITTY",
+            "LOS HERMANOS",
+            "STRIKE",
+            "PARAMORE",
+            "FALL OUT BOY",
+            "FRESNO",
+            "MINUS THE BEAR",
+            "BRASIL",
+            "SÃO PAULO",
+            "ELEMESS",
+            "89 A RADIO ROCK",
+            "PILOTO AUTOMATICO",
+            "FAR FROM ALASKA",
+            "EGO KILL TALENT",
+            "MEDULLA",
+            "SCALENE",
+            "SÉRGIO BRITTO",
+            "TITÃS",
+            "LUCAS SILVEIRA",
+            "OFICINA G3",
+            "EMMILY BARRETO",
+            "SOL DA MANHÃ",
+            "LENTES",
+            "NEGRA LI",
+            "LOLLAPALOOZA",
+            "LOLLAPALOOZA BRASIL",
+            "PLANETA ATLANTIDA",
+            "JOAO ROCK",
+            "PONTO CE",
+            "FEIRA NOISE",
+            "PORAO DO ROCK"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO - Cebolas [Clipe Oficial]",
+            "description": "Clipe da música \"Cebolas\" © Elemess 2014\n\nhttp://supercomborock.com.br\nhttp://facebook.com/supercombooficial\nhttp://instagram.com/supercombooficial\nhttp://twitter.com/Supercombo\n\nFICHA TÉCNICA:\nRoteiro e Storyboard: Jean Diaz e Leonardo Ramos\nProdução: Olhos Coloridos e Supercombo\nEdição: Olhos Coloridos\nElenco: Leonardo Ramos, Jean Diaz, Marcel Klaczko, João Paulo Pimenta, Carlos Augusto (Sherman), Jackson Pinheiro e Marcelo Braga\nApoio: Olhos Coloridos (http://www.olhoscoloridos.com.br)\n\nCEBOLAS\n(Supercombo)\n\nQue sejam cebolas\nPra me fazer chorar, \nJá que sou uma pedra\nSei que te cobro\nBem mais que eu deveria estar fazendo de graça\nEu sei...\n\nNão é possível, não é possível\nRessuscitar meu coração\nNão é possível, não é possível\nViver somente de razão\n\nEscondo as cartas, \nEscondo de mim mesmo\nEntão não pergunte o que se passa\nQue venha o tédio \nPra reclamar Que eu sou monótono e chato\n\nNão é possível, não é possível\nRessucitar meu coração\nNão é possível não é possível\nViver somente de razão.\n\nTe devolvo tudo, \nPode ficar com o que eu te dei\nTe devolvo tudo...\nPode ficar...\n\nPode ser que no fim eu acorde pra esse mundo que eu nunca pude ver, mas por hora ele fica pra você...\n\nNão é possível\nNão é possível..."
+          }
+        },
+        "contentDetails": {
+          "duration": "PT3M45S",
+          "dimension": "2d",
+          "definition": "sd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "TnUXzo296zRPrVodiPZUFxNbFHc",
+        "id": "GdHWd824YTk",
+        "snippet": {
+          "publishedAt": "2010-02-14T14:03:50Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO AO VIVO E SEM CORES INFERNO PARTE 2",
+          "description": "23.01.2010\r\nShow da banda Supercombo no Inferno Club, São Paulo.\r\n\r\nhttp://www.mysapce.com/supercomborock\r\nhttp://www.fotolog.com/supercombo\r\nhttp://www.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/GdHWd824YTk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/GdHWd824YTk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/GdHWd824YTk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Supercombo",
+            "Cebolas",
+            "Inferno",
+            "Xuxa",
+            "Beyonce",
+            "R.Sigma",
+            "Topaz",
+            "Vasco",
+            "Corinthians",
+            "Palmeiras",
+            "São",
+            "Paulo",
+            "Rock",
+            "Cine",
+            "Fresno",
+            "Nxzero",
+            "Forfun"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO AO VIVO E SEM CORES INFERNO PARTE 2",
+            "description": "23.01.2010\r\nShow da banda Supercombo no Inferno Club, São Paulo.\r\n\r\nhttp://www.mysapce.com/supercomborock\r\nhttp://www.fotolog.com/supercombo\r\nhttp://www.twitter.com/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT6M53S",
+          "dimension": "2d",
+          "definition": "sd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "creativeCommon",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "15EWRYfHmtjPrm7FWJo3yNo5HVs",
+        "id": "-hGOvB-fdgM",
+        "snippet": {
+          "publishedAt": "2010-02-14T13:30:23Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "SUPERCOMBO AO VIVO E SEM CORES INFERNO PARTE 1",
+          "description": "23.01.2010\r\nShow da banda Supercombo no Inferno Club, São Paulo.\r\n\r\nhttp://www.mysapce.com/supercomborock\r\nhttp://www.fotolog.com/supercombo\r\nhttp://www.twitter.com/supercombo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/-hGOvB-fdgM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/-hGOvB-fdgM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/-hGOvB-fdgM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Supercombo",
+            "Cebolas",
+            "Inferno",
+            "Xuxa",
+            "Beyonce",
+            "R.Sigma",
+            "Topaz",
+            "Vasco",
+            "Corinthians",
+            "Palmeiras",
+            "São",
+            "Paulo",
+            "Rock",
+            "Cine",
+            "Fresno",
+            "Nxzero",
+            "Forfun"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "SUPERCOMBO AO VIVO E SEM CORES INFERNO PARTE 1",
+            "description": "23.01.2010\r\nShow da banda Supercombo no Inferno Club, São Paulo.\r\n\r\nhttp://www.mysapce.com/supercomborock\r\nhttp://www.fotolog.com/supercombo\r\nhttp://www.twitter.com/supercombo"
+          }
+        },
+        "contentDetails": {
+          "duration": "PT8M13S",
+          "dimension": "2d",
+          "definition": "sd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "creativeCommon",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      },
+      {
+        "kind": "youtube#video",
+        "etag": "BP1vYXY8go-sbL6DKMh9zNALwK0",
+        "id": "nvCMby8Fez8",
+        "snippet": {
+          "publishedAt": "2010-02-11T15:53:32Z",
+          "channelId": "UC5eeDHYjTWF9pPWYDKpVMYQ",
+          "title": "Supercombo   Teaser   FEV 2010",
+          "description": "",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/nvCMby8Fez8/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/nvCMby8Fez8/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/nvCMby8Fez8/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            }
+          },
+          "channelTitle": "Supercombo",
+          "tags": [
+            "Supercombo",
+            "Teaser",
+            "FEV",
+            "2010"
+          ],
+          "categoryId": "10",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "pt-PT",
+          "localized": {
+            "title": "Supercombo   Teaser   FEV 2010",
+            "description": ""
+          }
+        },
+        "contentDetails": {
+          "duration": "PT1M40S",
+          "dimension": "2d",
+          "definition": "sd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        }
+      }
+    ],
+    "pageInfo": {
+      "totalResults": 37,
+      "resultsPerPage": 37
+    }
+  }
+}

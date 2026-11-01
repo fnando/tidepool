@@ -1,0 +1,563 @@
+{
+  "request": {
+    "endpoint": "playlistItems",
+    "params": {
+      "part": "snippet,contentDetails,status",
+      "maxResults": "50",
+      "playlistId": "PLfSl2rOZ6Zto"
+    },
+    "if_none_match": null
+  },
+  "status": 200,
+  "etag": null,
+  "body": {
+    "kind": "youtube#playlistItemListResponse",
+    "etag": "RQ-thIh9dOkuzMlGoB-ZsUw_rjk",
+    "items": [
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "CiAH_YMDHJroi0iXukCrVDlQ1k8",
+        "id": "UExmU2wyck9aNlp0by41NkI0NEY2RDEwNTU3Q0M2",
+        "snippet": {
+          "publishedAt": "2026-10-30T18:05:24Z",
+          "channelId": "UC8ZZtZOqA-QkJad9VwVuNjw",
+          "title": "SCATOLOVE - O TIRO (Lyric Video)",
+          "description": "Scatolove lança seu primeiro single \"O Tiro\" em formato de lyric video.\n\nScatolove é formado por Leo Ramos e Isa Salles.\n\nSiga nas redes sociais:\n\nInstagram: http://www.instagram.com/scatolove\nTwitter: http://www.twitter.com/scatolovemusic\nFacebook: http://www.facebook.com/scatolove\n\nOuça em outras plataformas:\nSpotify: https://goo.gl/DzUDLT\nDeezer: https://goo.gl/eJyDBy\nITunes: https://goo.gl/VASfc2",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/jCUWP3au1rw/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/jCUWP3au1rw/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/jCUWP3au1rw/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/jCUWP3au1rw/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/jCUWP3au1rw/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Nando Vieira",
+          "playlistId": "PLfSl2rOZ6Zto",
+          "position": 0,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "jCUWP3au1rw"
+          },
+          "videoOwnerChannelTitle": "Scatolove Music",
+          "videoOwnerChannelId": "UCzmp3AhRkYVyRAzyT-6UxHw"
+        },
+        "contentDetails": {
+          "videoId": "jCUWP3au1rw",
+          "videoPublishedAt": "2017-09-15T13:17:16Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "tkPQRtISXASfRl4SmG9WcYLkHUk",
+        "id": "UExmU2wyck9aNlp0by4yODlGNEE0NkRGMEEzMEQy",
+        "snippet": {
+          "publishedAt": "2026-10-30T18:05:29Z",
+          "channelId": "UC8ZZtZOqA-QkJad9VwVuNjw",
+          "title": "SCATOLOVE - PRINCESA (Torta de Maçã)",
+          "description": "Scatolove lança clipe do seu novo single, Princesa.\n\nScatolove é formado por Leo Ramos e Isa Salles.\n\nInstagram: http://www.instagram.com/scatolove\nTwitter: http://www.twitter.com/scatolovemusic\nFacebook: http://www.facebook.com/scatolove\n\nFicha Técnica\n\nDireção Geral: Marcel Klaczko\nAssistente de Direção Geral: Vitor Formagio\nDireção de Arte e Cenografia: Mariana de Paiva\nEdição e Finalização: Stéfano Loscalzo, Isa Salles e Renan Queiroz\nMaquiagem: Thamires Oliveira\nFigurinista: Vera Salles\nElenco: Marcelo Ciavaglia e Isa Salles como casal\nMúsicos: Leo Ramos, Eduardo Filgueira e Isa Salles\nProdução: Gritaria\n\nAgradecimentos Especiais: Marisa Salles, Felipe Ibelli, Nadir Pulcinelli, Guilherme Dutra, Cristiane Ciavaglia, Eduardo Gonçalves, Beatriz Gonçalves e todos os envolvidos.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/OzR8M5IG39A/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/OzR8M5IG39A/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/OzR8M5IG39A/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/OzR8M5IG39A/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/OzR8M5IG39A/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Nando Vieira",
+          "playlistId": "PLfSl2rOZ6Zto",
+          "position": 1,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "OzR8M5IG39A"
+          },
+          "videoOwnerChannelTitle": "Scatolove Music",
+          "videoOwnerChannelId": "UCzmp3AhRkYVyRAzyT-6UxHw"
+        },
+        "contentDetails": {
+          "videoId": "OzR8M5IG39A",
+          "videoPublishedAt": "2017-11-24T20:46:56Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "Re4a8B_D1DuurfEpHK1O_bb0N9s",
+        "id": "UExmU2wyck9aNlp0by4wMTcyMDhGQUE4NTIzM0Y5",
+        "snippet": {
+          "publishedAt": "2026-10-30T18:05:34Z",
+          "channelId": "UC8ZZtZOqA-QkJad9VwVuNjw",
+          "title": "SCATOLOVE - NADA DE BOM ACONTECE DE MADRUGADA (Clipe)",
+          "description": "Scatolove lança clipe do seu novo single, Nada de Bom Acontece de Madrugada.\n\nVocê já pode ouvir a música por outras plataformas:\nhttps://ditto.fm/nada-de-bom-acontece-de-madrugada\n\nScatolove é formado por Leo Ramos e Isa Salles.\n\nInstagram: http://www.instagram.com/scatolove\nTwitter: http://www.twitter.com/scatolovemusic\nFacebook: http://www.facebook.com/scatolove\n\nFicha Técnica\n\nVideo Clipe\nProdutora: Deu Tudo Errado Produções em parceria com a Voir Image\nDireção Geral: Isa Salles, Leo Ramos, Rafa Eleutério ( @rafaeleuterio) e Igor Dantas ( @igordantasfg )\nCo-produção: Voir Image ( @voirimage )\nAssistente de Camera: Leo Ramos e Isa Salles\nLocação: Fique em Casa!!!\nArte e Cenografia: Isa Salles, Rafa Eleutério, Igor Dantas e Leo Ramos\nEdição e Finalização: Isa Salles, Leo Ramos e Igor Dantas\nMaquiagem: Isa Salles\nFigurinista: Isa Salles e Vera Salles\nElenco: Leo Ramos e Isa Salles\n\nMusical\nCompositores: Leo Ramos e Isa Salles\nProdutores: Leo Ramos\nLetristas: Isa Salles e Leo Ramos\nEngenheiro de Gravação: BTG Studio ( @btgstudio ) , Zeca Leme ( @zecaleme ) , Leo Ramos e Luigi Sucena ( @luigisucena14 )\nEngenheiro de Mix: Leo Ramos\nEngenheiro de Master: Chris Hanzsek ( @chrishanzsek )\nIntérpretes: Leo Ramos e Isa Salles\nMúsicos: Leo Ramos e Edu Filgueira\n\n\nAgradecimentos Especiais: Bruna Dos Anjos ( @lboobies ), Prisma Lab ( @prismallab ), Edu Filgueira ( @edufilgueira ), Vera Salles ( @veragcsalles ), Paulo F Aguiar ( @paulofaguiar ), Luiza Gonck ( @luizagonck ),  Ygor Alexis ( @alexisygor ), Rapport ( @rapportproducoes ), Ditto ( @dittomusicbrasil )..\n\nMe deixa dormir\nSe esconde antes que a insônia vem te cumprimentar\nTe entregue um cartão, venda um peixão\nE depois te leve para jantar.\n\nMe espeta o dedo, me adormece\nPreu não lembrar o que acontece\nUm século antes de acordar\nN-A-D-A de bom acontece, de madrugada\n\nSe eu vejo sombra ja sabe\nEspelho ja sabe\nVento ja sabe\nJá já vou acordar\nEspírito ce sabe\nGas com wassabi\nSe porta se abre\nJá já vou acordar Ah\n\nSe a insônia chegar\nQuiser te assombrar\nNão desce pra sala de estar\nConta os carneiros\nAgarra o colchão\nTapa as venta até desmaiar\n\nFoge, corre, desce, sobe\nAnda logo, não demore\nEssse é o ultimo sinal.\nN-A-D-A de bom acontece, de madrugada\n\nSe eu vejo sombra ja sabe\nEspelho ja sabe\nVento ja sabe\nNão quero acordar\nEspírito ce sabe\nGas com wassabi\nSe porta se abre\nNão quero acordar Ah\n\nMe espeta do dedo e me adormece\nNão quero lembrar o que acontece\nMe espeta do dedo e me adormece\nPra me beijar masca um chiclete\n\nSe eu vejo sombra ja sabe\nEspelho ja sabe\nVulto ja sabe\nNão quero acordar\nEspírito ce sabe\nGas com wassabi\nSe porta se abre\nNão quero acordar\n\nSe eu vejo sombra ja sabe\nEspelho ja sabe\nVento ja sabe\nNão quero acordar\nNão quero acordar\nNão quero acordar",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/o9LxeJR9xCc/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/o9LxeJR9xCc/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/o9LxeJR9xCc/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/o9LxeJR9xCc/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/o9LxeJR9xCc/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Nando Vieira",
+          "playlistId": "PLfSl2rOZ6Zto",
+          "position": 2,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "o9LxeJR9xCc"
+          },
+          "videoOwnerChannelTitle": "Scatolove Music",
+          "videoOwnerChannelId": "UCzmp3AhRkYVyRAzyT-6UxHw"
+        },
+        "contentDetails": {
+          "videoId": "o9LxeJR9xCc",
+          "videoPublishedAt": "2020-05-28T23:00:11Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "sI0_5KqzHiKMGo94YIpKOAY5QJ0",
+        "id": "UExmU2wyck9aNlp0by41MjE1MkI0OTQ2QzJGNzNG",
+        "snippet": {
+          "publishedAt": "2026-10-30T18:05:39Z",
+          "channelId": "UC8ZZtZOqA-QkJad9VwVuNjw",
+          "title": "SCATOLOVE - ENTUPIR DE BRABULETAS (Clipe)",
+          "description": "Scatolove lança clipe do seu novo single, Entupir de Brabuletas.\n\nVocê já pode ouvir a música por outras plataformas:\nhttps://ditto.fm/entupirdebrabuletas\n\nScatolove é formado por Leo Ramos e Isa Salles.\n\nInstagram: http://www.instagram.com/scatolove\nTwitter: http://www.twitter.com/scatolovemusic\nFacebook: http://www.facebook.com/scatolove\n\nFicha Técnica\n\nVideo\nDireção Geral: Pedro Margherito ( @cinemargherito )\nDir. de Fotografia: Pedro Margherito ( @cinemargherito ) \nAssistente de Camera: Tiago Piolho ( @tiagopiolho )\nLocação: Studio Primavera ( @studio.primavera )\nArte e Cenografia: Pedro Margherito, Patricia Soransso ( @patriciasoransso ) , Isa Salles ( @isacsalles ) e Tiago Piolho.\nAnimação: Pedro Margherito ( @cinemargherito ) \nEdição e Finalização: Pedro Margherito ( @cinemargherito ) \nMaquiagem: Isa Salles e Patricia Soransso\nFigurinista: Gi Marcondes ( @gimarcondess ) e Isa Salles\nElenco: Leo Ramos ( @reolamos ) e Isa Salles\n\nAudio\nCompositores: Leo Ramos e Isa Salles\nProdutores: Leo Ramos\nLetristas: Isa Salles e Leo Ramos\nEngenheiro de Gravação: BTG Studio ( @btgstudio ) , Zeca Leme ( @zecaleme ) , Leo Ramos e Luigi Sucena ( @luigisucena14 )\nEngenheiro de Mix: Leo Ramos\nEngenheiro de Master: Chris Hanzsek ( @chrishanzsek )\nIntérpretes: Leo Ramos e Isa Salles\nMúsicos: Leo Ramos e Edu Filgueira\n\nAgradecimentos Especiais: Edu Filgueira ( @edufilgueira ), Vera Salles ( @veragcsalles ), Paulo F Aguiar ( @paulofaguiar ), Ygor Alexis ( @alexisygor ), Rapport ( @rapportproducoes ), Vó Nadir ( @nadirpulcineli ) e Vó Bia.\n\nObservações: Nenhum animal participou das gravações, pássaros e borboletas foram efeitos colocados na pós.\n\nLetra\nHey estrela cadente\nNão dá\nNão dá a devida atenção\nNoites virando no colchão\n\nE então você subiu de escada\nDesfez as malas\nComo se fossem nada\nE os pesadelos\nViraram conto de fadas e somos dublês\n\nSó você pra me entupir de borboletas\nBaixar arquivos no 3g\nFazer a gente acontecer devagar\nDo jeito que tem que ser\n\nSão 15H e eu acordando\nCadê seu lindo hálito de umbral  \n100 anos sem ver fio dental\n\nNão tem feitiço que conserte\nFada SOS\nEu fico inerte, pois tu me aquece\nEu quero alguma coisa, que diminua a distância entre eu e você\n\nSó você pra me entupir de borboletas\nBaixar arquivos no 3g\nFazer a gente acontecer devagar\nDo jeito que tem que ser",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/X_SytEAcpLM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/X_SytEAcpLM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/X_SytEAcpLM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/X_SytEAcpLM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/X_SytEAcpLM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Nando Vieira",
+          "playlistId": "PLfSl2rOZ6Zto",
+          "position": 3,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "X_SytEAcpLM"
+          },
+          "videoOwnerChannelTitle": "Scatolove Music",
+          "videoOwnerChannelId": "UCzmp3AhRkYVyRAzyT-6UxHw"
+        },
+        "contentDetails": {
+          "videoId": "X_SytEAcpLM",
+          "videoPublishedAt": "2020-04-03T00:00:10Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "NXRnte7GkZHUviS1i2m02da5zk4",
+        "id": "UExmU2wyck9aNlp0by4wOTA3OTZBNzVEMTUzOTMy",
+        "snippet": {
+          "publishedAt": "2026-10-30T18:05:48Z",
+          "channelId": "UC8ZZtZOqA-QkJad9VwVuNjw",
+          "title": "SCATOLOVE - INBOX (Lyric Video)",
+          "description": "Scatolove lança Lyric Video do seu novo single, INBOX.\n\nScatolove é formado por Leo Ramos e Isa Salles.\n\nAnimação feita por ele que é mais do que nunca, André Baptista.\nhttps://vimeo.com/andrerb\nInsta: @arbdrums\nE-mail: arbdrums@gmail.com\n\nInstagram: http://www.instagram.com/scatolove\nTwitter: http://www.twitter.com/scatolovemusic\nFacebook: http://www.facebook.com/scatolove\n\nLETRA\n\nMesmo não sabendo eu rezo\nMando inbox pra São Pedro e peço\nPra chover, molhar, encher e alagar\nTrovejar, causar muito e transbordar\nEu vou ter desculpas pra\n\nTe trancar em casa comigo\nCasa comigo?\nCom dilúvio varrendo os padrinhos \nTe trancar em casa comigo\nCasa comigo?\nBóia, véu, pé de pato e vestido\n\nSe ele souber dos meus planos\nVai me jogar na lava do Vesúvio\nPra te aquecer, esquentar e talvez queimar\nderreter inteira até deformar\nEu vou ter desculpas pra\n\nTe trancar em casa comigo\nCasa comigo?\nDeixa o mundo queimar de mansinho\nTe trancar em casa comigo\nCasa comigo?\nQueima tudo e sair de fininho\n\nTe trancar em casa comigo\nCasa comigo?\nBóia, véu, pé de pato e vestido\n\nTe trancar\nTe trancar em casa comigo\nCasa, casa, casa comigo?\nCasa, casa, casa comigo?\n\nTe trancar em casa comigo\nCasa comigo?\nPra comer Macajão no Domingo",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/bDTFQEl50B0/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/bDTFQEl50B0/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/bDTFQEl50B0/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/bDTFQEl50B0/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/bDTFQEl50B0/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Nando Vieira",
+          "playlistId": "PLfSl2rOZ6Zto",
+          "position": 4,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "bDTFQEl50B0"
+          },
+          "videoOwnerChannelTitle": "Scatolove Music",
+          "videoOwnerChannelId": "UCzmp3AhRkYVyRAzyT-6UxHw"
+        },
+        "contentDetails": {
+          "videoId": "bDTFQEl50B0",
+          "videoPublishedAt": "2018-02-23T12:00:02Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "hQMBxw6rq4Rr-P6bVgYe8dJ2xHk",
+        "id": "UExmU2wyck9aNlp0by4xMkVGQjNCMUM1N0RFNEUx",
+        "snippet": {
+          "publishedAt": "2026-10-30T18:05:56Z",
+          "channelId": "UC8ZZtZOqA-QkJad9VwVuNjw",
+          "title": "SCATOLOVE - MÚSICA DE BOTAR O PAPO NO LUGAR (Clipe)",
+          "description": "Scatolove lança clipe do seu novo single, Música de botar o papo no lugar.\n\nVocê já pode ouvir a música por outras plataformas:\nhttps://ditto.fm/musica-de-botar-o-papo-no-lugar\n\nScatolove é formado por Leo Ramos e Isa Salles.\n\nInstagram: http://www.instagram.com/scatolove\nTwitter: http://www.twitter.com/scatolovemusic\nFacebook: http://www.facebook.com/scatolove\n\nFicha Técnica\n\nVideo Clipe\nProdutora: Esto (@estoprodutora )\nAssistente: Leia Saraiva (@leiasaraivaphoto)\nDireção Geral: Renato Dias Peres ( @rdiasperes )\nArte, Figurino e Cenografia: Isa Salles ( @isacsalles )\nEdição e Finalização: Esto (@estoprodutora )\nElenco: Leo Ramos (@reolamos), Isa Salles (@isacsalles), Edu Filgueira (@edufilgueira), Lele Meyer ( @lelemeyer)\nMarcas parceiras: Boutique Vera Salles (@boutiqueverasalles )\nAuxiliar e Social Media: Jair Borges (@javoltinha )\n\nMusical\nCompositor: Leo Ramos\nProdutor: Leo Ramos\nLetristas: Isa Salles e Leo Ramos\nEngenheiro de Mix: Leo Ramos\nEngenheiro de Master: Filizzola ( @fili_filizzola )\nIntérpretes: Leo Ramos e Isa Salles\nMúsico: Leo Ramos\n\n\nAgradecimentos Especiais: Ditto\n\nLetra\nOh oh\nVem esquenta o coração de manhã\nE fica pro café\nTem tanta coisa pra contar\nQue eu nao sei\nSe vai dar tempo\nVem que eu já não vejo a hora\n\nQuando a saudade é imensa\nDá mais vontade de ficar\nHoras botando o papo no lugar\nE depois me diz quando tu volta\n\nOh Oh\nTe procurei no espelho embaixo do colchão\nNo sótão e no céu\nDe tanto olhar pra cima deu ensolaçåo\nCade vc pra me assombrar\nVem que eu ja nao vejo a hora\n\nQuando a saudade é imensa\nDá mais vontade de ficar\nHoras botando o papo no lugar\nE depois me diz quando tu volta\nMe diz quando tu volta\nVolta 2x\n\nQuando a saudade é imensa\nDiz depois quando é que cê volta",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/xENnYpCzfdk/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/xENnYpCzfdk/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/xENnYpCzfdk/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/xENnYpCzfdk/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/xENnYpCzfdk/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Nando Vieira",
+          "playlistId": "PLfSl2rOZ6Zto",
+          "position": 5,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "xENnYpCzfdk"
+          },
+          "videoOwnerChannelTitle": "Scatolove Music",
+          "videoOwnerChannelId": "UCzmp3AhRkYVyRAzyT-6UxHw"
+        },
+        "contentDetails": {
+          "videoId": "xENnYpCzfdk",
+          "videoPublishedAt": "2023-04-03T21:00:08Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "n8TEOKKS8ru3oViCQD-xjoVqMxE",
+        "id": "UExmU2wyck9aNlp0by41MzJCQjBCNDIyRkJDN0VD",
+        "snippet": {
+          "publishedAt": "2026-10-30T18:06:00Z",
+          "channelId": "UC8ZZtZOqA-QkJad9VwVuNjw",
+          "title": "Scatolove - Calabouço - (Clipe Oficial)",
+          "description": "Scatolove lança clipe oficial de seu segundo single \"Calabouço\"!\nNenhuma naninha foi danificada durante as gravações =)\n\nScatolove é formado por Leo Ramos e Isa Salles.\n\nSiga a gente nas redes sociais:\n\nInstagram: http://www.instagram.com/scatolove\nTwitter: http://www.twitter.com/scatolovemusic\nFacebook: http://www.facebook.com/scatolove",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/eDOn_xN-nSI/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/eDOn_xN-nSI/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/eDOn_xN-nSI/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/eDOn_xN-nSI/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/eDOn_xN-nSI/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Nando Vieira",
+          "playlistId": "PLfSl2rOZ6Zto",
+          "position": 6,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "eDOn_xN-nSI"
+          },
+          "videoOwnerChannelTitle": "Scatolove Music",
+          "videoOwnerChannelId": "UCzmp3AhRkYVyRAzyT-6UxHw"
+        },
+        "contentDetails": {
+          "videoId": "eDOn_xN-nSI",
+          "videoPublishedAt": "2017-09-29T18:15:07Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "xHEYxBTa86OqhTYoCqaTgKjnkcM",
+        "id": "UExmU2wyck9aNlp0by5DQUNERDQ2NkIzRUQxNTY1",
+        "snippet": {
+          "publishedAt": "2026-10-30T18:06:05Z",
+          "channelId": "UC8ZZtZOqA-QkJad9VwVuNjw",
+          "title": "SCATOLOVE - FERRO VELHO (Lyric Video)",
+          "description": "Scatolove lança lyric vídeo do single \"Ferro Velho\"!\nSua Mãe te proibia de brincar com a comida? E ela também fazia sopa de letrinhas para testar sua obediência? Colocamos um basta nisso!\n\n\nScatolove é formado por Leo Ramos e Isa Salles.\n\n\nSiga a gente nas redes sociais:\n\nInstagram: http://www.instagram.com/scatolove\nTwitter: http://www.twitter.com/scatolovemusic\nFacebook: http://www.facebook.com/scatolove\n\n\nLetra:\n\nReparo\nContrário\nMe repari\nMe sinto um catálogo do desmanche\n\nUm ferro velho, velho, velho...\n\nSou imã que não puxa ferro\nOrelha que só ouve\nOuve no berro\n\nInútil\nExílio\nReconstrui\nMe sinto um motor de uma árvore\n\nUm ferro velho, velho, velho...\n\nSou imã que não puxa ferro\nOrelha que só ouve\nOuve no berro\n\nA vida inteira recolhendo aço\nSoldando Corações\nQue foram reduzidos à sucata\nSeguro não pagou\nO Velhocímetro prevê desgraça\nOnde nunca enferrujou\nA cera faz brilhar o parachoque\nMas não cabe os arranhões\n\nSou imã que não puxa ferro\nOrelha que só ouve\nOuve no berro",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/dH15wxHGBoY/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/dH15wxHGBoY/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/dH15wxHGBoY/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/dH15wxHGBoY/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/dH15wxHGBoY/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Nando Vieira",
+          "playlistId": "PLfSl2rOZ6Zto",
+          "position": 7,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "dH15wxHGBoY"
+          },
+          "videoOwnerChannelTitle": "Scatolove Music",
+          "videoOwnerChannelId": "UCzmp3AhRkYVyRAzyT-6UxHw"
+        },
+        "contentDetails": {
+          "videoId": "dH15wxHGBoY",
+          "videoPublishedAt": "2017-10-27T15:54:17Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "C0nYiBGGWMFvZsh_K1wkclH6iIs",
+        "id": "UExmU2wyck9aNlp0by45NDk1REZENzhEMzU5MDQz",
+        "snippet": {
+          "publishedAt": "2026-10-30T18:06:09Z",
+          "channelId": "UC8ZZtZOqA-QkJad9VwVuNjw",
+          "title": "SCATOLOVE - VIZINHOS DE PORTA (lyric)",
+          "description": "Scatolove lança lyric video da faixa Vizinhos de Porta, do Cavalice no País das Maravilhas EP1.\n\nVocê já pode ouvir Cavalice No País das Maravilhas EP1 por outras plataformas:\nhttps://ditto.fm/cavalice-no-pais-das-maravilhas-parte-1\n\nScatolove é formado por Leo Ramos e Isa Salles.\nInstagram: http://www.instagram.com/scatolove\nTwitter: http://www.twitter.com/scatolovemusic\nFacebook: http://www.facebook.com/scatolove\n\n\nVideo Clipe\nProdutora: Urso Labs ( www.ursolabs.tech )\nDireção Geral: Diego Moreira ( @diego.ursomkt )\nAssistentes: Gabriel Moraes, Mari Euzébio ( @gabrielmoraescs @euzebio556 )\nAnimação: Diego Moreira ( @ursofilmesincriveis )\nEdição e Finalização: Diego Moreira\n\nMusical\nCompositores: Leo Ramos e Isa Salles\nProdutores: Leo Ramos\nLetristas: Isa Salles e Leo Ramos\nEngenheiro de Gravação: BTG Studio ( @btgstudio ) , Zeca Leme ( @zecaleme ) , Leo Ramos e Luigi Sucena ( @luigisucena14 )\nEngenheiro de Mix: Leo Ramos\nEngenheiro de Master: Chris Hanzsek ( @chrishanzsek )\nIntérpretes: Leo Ramos e Isa Salles\nMúsicos: Leo Ramos e Edu Filgueira\n\nVizinhos de Porta\nSopra a vontade\nJá concretei meus sonhos\nPra ninguém derrubar\n\nTroquei palhas por alvenaria\nEspero um dia, lobos e porcos\nVizinhos de porta\n\nEnquanto isso a gente tenta\nSe enverga, sem quebrar\n\nPor que a gente esquece a força?\nSe deixa boicotar,\nA mente as vezes tem umas ideias,\nSó vem pra atrapalhar\nA mesma mão que enxuga o rosto\nPode erguer um lar\nTijolo por tijolo\nPra lobo nenhum soprar\n\nTenta a vontade\nA vida é uma arquiteta, \nSabe o que faz\n\nTroquei palhas por alvenaria\nEspero um dia, lobos e porcos\nVizinhos de porta\n\nEnquanto isso a gente tenta\nSe enverga, sem quebrar\n\nPor que a gente esquece a força?\nSe deixa boicotar,\nA mente as vezes tem umas ideias,\nSó vem pra atrapalhar\nA mesma mão que enxuga o rosto (HEY)\nPode erguer um lar\nTijolo por tijolo\nPra lobo nenhum soprar\n\nEnquanto isso a gente tenta\nSe enverga ah ah (4x)\n(Sem quebrar)\n\nPor que a gente esquece a força?\nSe deixa boicotar,\nA mente as vezes tem umas ideias,\nSó vem pra atrapalhar\nA mesma mão que enxuga o rosto\nPode erguer um lar\nTijolo por tijolo\nPra lobo nenhum soprar\nTijolo por tijolo\nPra lobo nenhum so shhh",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/o3jRbL2ykF4/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/o3jRbL2ykF4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/o3jRbL2ykF4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/o3jRbL2ykF4/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/o3jRbL2ykF4/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Nando Vieira",
+          "playlistId": "PLfSl2rOZ6Zto",
+          "position": 8,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "o3jRbL2ykF4"
+          },
+          "videoOwnerChannelTitle": "Scatolove Music",
+          "videoOwnerChannelId": "UCzmp3AhRkYVyRAzyT-6UxHw"
+        },
+        "contentDetails": {
+          "videoId": "o3jRbL2ykF4",
+          "videoPublishedAt": "2020-06-12T23:00:08Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      },
+      {
+        "kind": "youtube#playlistItem",
+        "etag": "DoHznypLaSlayGThh_CYiLDozkI",
+        "id": "UExmU2wyck9aNlp0by5GNjNDRDREMDQxOThCMDQ2",
+        "snippet": {
+          "publishedAt": "2026-10-30T18:06:20Z",
+          "channelId": "UC8ZZtZOqA-QkJad9VwVuNjw",
+          "title": "SCATOLOVE - SONECA (Clipe)",
+          "description": "Clipe\nProdutora: Deu Tudo Errado Produções\nDireção Geral: Isa Salles ( @isacsalles )\nDir. de Fotografia: Isa Salles ( @isacsalles )\nAssistente de Camera: Leo Ramos ( @reolamos ) e Isa Salles ( @isacsalles )\nLocação: Quarto do Quem Sabe um Dia Talvez Futuro Bebê \nArte e Cenografia: Isa Salles ( @isacsalles ).\nEdição e Finalização: Leo Ramos ( @reolamos ) e Isa Salles ( @isacsalles )\nMaquiagem: Isa Salles ( @isacsalles )\nFigurinista: Isa Salles (@isacsalles )\nElenco: Leo Ramos ( @reolamos ) e Isa Salles ( @isacsalles )\n\nMusical\nCompositores: Leo Ramos e Isa Salles\nProdutores: Leo Ramos\nLetristas: Isa Salles e Leo Ramos\nEngenheiro de Gravação: BTG Studio ( @btgstudio ) , Zeca Leme ( @zecaleme ) , Leo Ramos e Luigi Sucena ( @luigisucena14 )\nEngenheiro de Mix: Leo Ramos\nEngenheiro de Master: Chris Hanzsek ( @chrishanzsek )\nIntérpretes: Leo Ramos e Isa Salles\nMúsicos: Leo Ramos e Edu Filgueira\n\nLetra\nBranca de neve eu preciso ir \nEsse corre corre e seis anões não é pra mim \nEu vivo pra poder cochilar \n \n Me convida pros roles que eu apareço de Skype\nLevanto a bandeira da preguiça e Lanço o hype \n \nA festa ta boa mas é que eu esqueci\nDe dar comida pro meu travesseiro ai tadin\nEle que me ajuda a sonhar \n \nMe convida pros roles que eu apareço de skype\nLevanto a bandeira da preguiça e Lanço o hype\nMe convida pros roles Que eu apareço de skype \n \nNinguém entende, o nível de preguiça da gente (2x)\n \nMe convida pros roles que eu apareço de skype \nLevanto a bandeira da preguiça e lanço o hype\nOh Oh Oh\nEu só quero dormir (3x)\nJuntin",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/8Jk_qZjPauM/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/8Jk_qZjPauM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/8Jk_qZjPauM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/8Jk_qZjPauM/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/8Jk_qZjPauM/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Nando Vieira",
+          "playlistId": "PLfSl2rOZ6Zto",
+          "position": 9,
+          "resourceId": {
+            "kind": "youtube#video",
+            "videoId": "8Jk_qZjPauM"
+          },
+          "videoOwnerChannelTitle": "Scatolove Music",
+          "videoOwnerChannelId": "UCzmp3AhRkYVyRAzyT-6UxHw"
+        },
+        "contentDetails": {
+          "videoId": "8Jk_qZjPauM",
+          "videoPublishedAt": "2020-05-04T22:00:10Z"
+        },
+        "status": {
+          "privacyStatus": "public"
+        }
+      }
+    ],
+    "pageInfo": {
+      "totalResults": 10,
+      "resultsPerPage": 50
+    }
+  }
+}

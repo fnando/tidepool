@@ -1,6 +1,9 @@
 //! Indexing: what a source contains right now. Every indexer produces the
 //! same [`RemoteList`], so everything downstream is source-agnostic.
 
+pub mod api;
+#[cfg(test)]
+pub mod youtube_fake;
 pub mod ytdlp;
 
 use jiff::Timestamp;
