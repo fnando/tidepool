@@ -564,7 +564,8 @@ jq '(.tags.title | capture("^(?<artist>.+?) - (?<title>.+)$")) as $m
 ```
 
 Besides `tags`, an `embed` hook can change the `cover`, `chapters` and
-`subtitles` that go into the file; setting one to `null` leaves it out. Your
+`subtitles` that go into the file; setting one to `null` leaves it out. A tag
+that ends up empty (`""`) is left out too. Your
 `embed` settings still decide what's written: changed tags only go into the
 file with `metadata = true`.
 

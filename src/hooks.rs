@@ -456,8 +456,8 @@ impl EmbedData {
     }
 
     /// Apply an `embed` hook's output. Missing keys keep their value; `null`
-    /// removes it (a tag, the cover, all chapters or subtitles). `context`
-    /// is ignored.
+    /// removes it (a tag, the cover, all chapters or subtitles), and so does
+    /// an empty tag. `context` is ignored.
     pub fn apply(&mut self, name: &str, output: &[u8]) -> Result<(), String> {
         let Some(value) = parse_output(name, output)? else {
             return Ok(());
@@ -469,6 +469,9 @@ impl EmbedData {
                     for (key, value) in map {
                         match value {
                             Value::Null => {
+                                self.tags.remove(key);
+                            }
+                            Value::String(s) if s.trim().is_empty() => {
                                 self.tags.remove(key);
                             }
                             Value::String(s) => {
@@ -726,6 +729,12 @@ mod tests {
         assert_eq!(d.tags["track"], "3");
         assert!(!d.tags.contains_key("genre"), "null removes a tag");
         assert_eq!(d.cover, before.cover, "missing keys keep their value");
+        d.apply("h", br#"{"tags": {"artist": "", "track": "  "}}"#)
+            .unwrap();
+        assert!(
+            !d.tags.contains_key("artist") && !d.tags.contains_key("track"),
+            "so does an empty one"
+        );
         assert_eq!(d.chapters, before.chapters);
 
         d.apply("h", br#"{"cover": null, "chapters": null}"#)

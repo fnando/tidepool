@@ -332,7 +332,7 @@ impl Stage<'_> {
 
     /// The tags `embed.metadata` writes.
     /// tidepool's own, then `embed.tags` on top: rendered with `values`; an
-    /// empty value removes the tag (names match in any case).
+    /// empty (or blank) value removes the tag (names match in any case).
     pub fn tags(&self, info: &VideoInfo, values: &Values) -> BTreeMap<String, String> {
         let url = info
             .webpage_url
@@ -356,6 +356,7 @@ impl Stage<'_> {
         ]
         .into_iter()
         .filter_map(|(key, value)| value.map(|v| (key.to_string(), v)))
+        .filter(|(_, value)| !value.trim().is_empty())
         .collect::<BTreeMap<_, _>>();
         for (key, template) in &self.source.embed.tags {
             // Validated with the config; a template that isn't is used as is.
@@ -366,7 +367,7 @@ impl Stage<'_> {
                 Err(_) => template.clone(),
             };
             tags.retain(|k, _| !k.eq_ignore_ascii_case(key));
-            if !value.is_empty() {
+            if !value.trim().is_empty() {
                 tags.insert(key.clone(), value);
             }
         }
