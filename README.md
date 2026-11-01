@@ -492,7 +492,9 @@ hooks = ["notify"]
 (`{title}`, `{channel}`, `{output_file}` for the video file, …), and the same
 values are available to scripts as environment variables (`TIDEPOOL_TITLE`,
 `TIDEPOOL_OUTPUT_FILE`, …). Hooks run in the order you list them. What a hook
-prints as errors is kept in `~/.local/share/tidepool/logs/hooks/<video id>.log`.
+prints as errors is kept in `~/.local/share/tidepool/logs/hooks/<video id>.log`
+(started over past 1 MiB, keeping the previous one as `.log.1`), and shown as it
+happens with `-v`.
 
 A hook's `type` says when it runs:
 

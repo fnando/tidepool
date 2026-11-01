@@ -881,13 +881,14 @@ async fn failing_finished_hooks_keep_the_video_and_run_again() {
         "hooks = [\"notify\"]",
         &format!("[hooks.notify]\ncommand = [\"{}\"]\n", notify.display()),
     );
-    env.cmd(&["run", "--config", &config])
+    env.cmd(&["run", "-v", "--config", &config])
         .assert()
         .code(3)
         .stdout(contains("2 hooks failed"))
-        .stderr(contains(
-            "hook notify failed: exited with exit status: 1: server down",
-        ));
+        .stderr(
+            contains("hook notify failed: exited with exit status: 1: server down")
+                .and(contains("hook notify: server down")),
+        );
     assert_eq!(
         env.statuses("dl")[0].1,
         "done",

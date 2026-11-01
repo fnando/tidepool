@@ -28,6 +28,9 @@ use crate::download::info::Chapter;
 const MAX_OUTPUT: u64 = 16 * 1024 * 1024;
 /// How long a hook gets between SIGTERM and SIGKILL.
 const KILL_GRACE: Duration = Duration::from_secs(10);
+/// A video's hook log is started over (keeping one older file, `.log.1`)
+/// once it's this big.
+const MAX_LOG: u64 = 1024 * 1024;
 
 /// Everything one hook run needs.
 pub struct Run<'a> {
@@ -153,7 +156,7 @@ async fn run_once(run: &Run<'_>) -> (Result<Vec<u8>, String>, Option<i32>) {
         .envs(&run.hook.env)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::from(log));
+        .stderr(Stdio::piped());
     crate::process::isolate(&mut command);
     let mut child = match command.spawn() {
         Ok(child) => child,
@@ -172,19 +175,40 @@ async fn run_once(run: &Run<'_>) -> (Result<Vec<u8>, String>, Option<i32>) {
         let mut limited = stdout.take(MAX_OUTPUT + 1);
         limited.read_to_end(&mut buf).await.map(|_| buf)
     });
+    // stderr goes to the log, and to the terminal at -v.
+    let stderr = child.stderr.take().expect("piped stderr");
+    let name = run.name.to_string();
+    let logger = tokio::spawn(async move {
+        use tokio::io::AsyncBufReadExt;
+        let mut log = log;
+        let mut lines = tokio::io::BufReader::new(stderr).split(b'\n');
+        while let Ok(Some(line)) = lines.next_segment().await {
+            let _ = log.write_all(&line);
+            let _ = log.write_all(b"\n");
+            tracing::debug!("hook {name}: {}", String::from_utf8_lossy(&line).trim_end());
+        }
+    });
+    // Once the hook has exited, what's left of its stderr (a process it
+    // started may still hold it open) is given a moment, not waited for.
+    let drain = |logger: tokio::task::JoinHandle<()>| async move {
+        let _ = tokio::time::timeout(Duration::from_secs(1), logger).await;
+    };
 
     let timeout = run.hook.timeout.0;
     let status = tokio::select! {
         status = child.wait() => status,
         _ = tokio::time::sleep(timeout) => {
             crate::process::stop(&mut child, KILL_GRACE, run.shutdown).await;
+            drain(logger).await;
             return (Err(format!("timed out after {}", crate::config::types::format_duration(timeout))), None);
         }
         _ = run.shutdown.stopping() => {
             crate::process::stop(&mut child, KILL_GRACE, run.shutdown).await;
+            drain(logger).await;
             return (Err("stopped".into()), None);
         }
     };
+    drain(logger).await;
     let _ = writer.await;
     let output = reader.await.ok().and_then(Result::ok).unwrap_or_default();
     let status = match status {
@@ -206,6 +230,11 @@ async fn run_once(run: &Run<'_>) -> (Result<Vec<u8>, String>, Option<i32>) {
 fn open_log(path: &Path, name: &str, kind: HookType) -> std::io::Result<std::fs::File> {
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir)?;
+    }
+    if std::fs::metadata(path).is_ok_and(|m| m.len() >= MAX_LOG) {
+        let mut old = path.as_os_str().to_owned();
+        old.push(".1");
+        std::fs::rename(path, old)?;
     }
     let mut file = std::fs::OpenOptions::new()
         .create(true)
@@ -597,6 +626,20 @@ mod tests {
         assert_eq!(out, format!("{}\ndQw4w9WgXcQ\ninput", cwd.display()));
         let log = std::fs::read_to_string(dir.path().join("logs/x.log")).unwrap();
         assert!(log.contains("hook h (embed) ==\nto-log\n"), "{log}");
+    }
+
+    #[tokio::test]
+    async fn starts_a_new_log_past_one_mib() {
+        let dir = tempfile::tempdir().unwrap();
+        let logs = dir.path().join("logs");
+        std::fs::create_dir_all(&logs).unwrap();
+        std::fs::write(logs.join("x.log"), vec![b'.'; MAX_LOG as usize]).unwrap();
+        let h = hook(&["sh", "-c", "echo fresh >&2"], HookType::Finished);
+        assert!(go(&h, "", dir.path()).await.ok());
+        let log = std::fs::read_to_string(logs.join("x.log")).unwrap();
+        assert!(log.starts_with("== ") && log.ends_with("fresh\n"), "{log}");
+        let old = std::fs::metadata(logs.join("x.log.1")).unwrap();
+        assert_eq!(old.len(), MAX_LOG, "one older log is kept");
     }
 
     #[tokio::test]
