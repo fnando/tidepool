@@ -103,13 +103,52 @@ pub async fn embed(
     let mut embedded = Embedded::default();
     let before = probe(ffprobe, request.media).await?;
 
+    // What this pass replaces: a file embedded before (or reprocessed) keeps
+    // one cover, one set of subtitles and chapters, and exactly the given
+    // tags, instead of piling them up.
+    let new_cover = request.cover.is_some()
+        && matches!(
+            container,
+            Container::Mp4 | Container::M4a | Container::Audio | Container::Matroska
+        );
+    let new_subtitles = request.subtitles.iter().any(|(path, _)| {
+        let sub_ext = path
+            .extension()
+            .map(|e| e.to_string_lossy().to_ascii_lowercase())
+            .unwrap_or_default();
+        container.takes_subtitle(&sub_ext)
+    });
+    let new_chapters = !request.chapters.is_empty();
+    let mut kept = before.real_video + before.audio + before.attachment;
     let mut inputs: Vec<Vec<String>> = vec![vec!["-i".into(), path_arg(request.media)]];
-    let mut args: Vec<String> = vec![
-        "-map".into(),
-        "0".into(),
-        "-map_metadata".into(),
-        "0".into(),
-    ];
+    let mut args: Vec<String> = Vec::new();
+    let mut map = |spec: &str| args.extend(["-map".into(), format!("0:{spec}?")]);
+    if new_cover {
+        map("V"); // video without attached pictures
+    } else {
+        map("v");
+        kept += before.pictures;
+    }
+    map("a");
+    if !new_subtitles {
+        map("s");
+        kept += before.subtitle;
+    }
+    // mp4 stores chapters as a data track; new chapters bring their own.
+    if !(new_chapters && matches!(container, Container::Mp4 | Container::M4a)) {
+        map("d");
+        kept += before.data;
+    }
+    map("t");
+    if !request.tags.is_empty() {
+        // Exactly the given tags: drop the file's global ones (stream and
+        // chapter metadata stay).
+        args.extend(["-map_metadata:g".into(), "-1".into()]);
+        if container == Container::Other {
+            // ogg/opus keep tags as Vorbis comments on the audio stream.
+            args.extend(["-map_metadata:s:a".into(), "-1".into()]);
+        }
+    }
     let mut added = 0;
 
     // Cover.
@@ -131,7 +170,7 @@ pub async fn embed(
                 inputs.push(vec!["-i".into(), path_arg(&cover)]);
                 args.extend(["-map".into(), index.to_string()]);
                 args.extend([
-                    format!("-disposition:v:{}", before.video),
+                    format!("-disposition:v:{}", before.real_video),
                     "attached_pic".into(),
                 ]);
                 added += 1;
@@ -161,7 +200,7 @@ pub async fn embed(
     }
 
     // Subtitles.
-    let mut subtitle_index = before.subtitle;
+    let mut subtitle_index = 0;
     for (path, lang) in &request.subtitles {
         let sub_ext = path
             .extension()
@@ -247,12 +286,12 @@ pub async fn embed(
         let _ = std::fs::remove_file(&output);
     })?;
     // mp4 stores chapters as an extra text track, so more is fine.
-    if after.total < before.total + added {
+    if after.total < kept + added {
         let _ = std::fs::remove_file(&output);
         return Err(format!(
             "the embedded file has {} streams instead of {}",
             after.total,
-            before.total + added
+            kept + added
         ));
     }
     Ok(Some(Output {
@@ -266,8 +305,14 @@ pub async fn embed(
 #[derive(Debug, Default)]
 struct Streams {
     total: usize,
-    video: usize,
+    /// Video that isn't an attached picture.
+    real_video: usize,
+    /// Attached pictures (covers), in any container.
+    pictures: usize,
+    audio: usize,
     subtitle: usize,
+    data: usize,
+    attachment: usize,
 }
 
 async fn probe(ffprobe: &Path, file: &Path) -> Result<Streams, String> {
@@ -276,7 +321,7 @@ async fn probe(ffprobe: &Path, file: &Path) -> Result<Streams, String> {
             "-v",
             "error",
             "-show_entries",
-            "stream=codec_type",
+            "stream=codec_type:stream_disposition=attached_pic",
             "-of",
             "csv=p=0",
         ])
@@ -294,14 +339,20 @@ async fn probe(ffprobe: &Path, file: &Path) -> Result<Streams, String> {
     }
     let mut streams = Streams::default();
     for line in String::from_utf8_lossy(&result.stdout).lines() {
-        let kind = line.trim().trim_end_matches(',');
+        let mut fields = line.trim().split(',');
+        let kind = fields.next().unwrap_or_default();
         if kind.is_empty() {
             continue;
         }
+        let picture = fields.next() == Some("1");
         streams.total += 1;
         match kind {
-            "video" => streams.video += 1,
+            "video" if picture => streams.pictures += 1,
+            "video" => streams.real_video += 1,
+            "audio" => streams.audio += 1,
             "subtitle" => streams.subtitle += 1,
+            "data" => streams.data += 1,
+            "attachment" => streams.attachment += 1,
             _ => {}
         }
     }
@@ -580,6 +631,74 @@ mod tests {
             subtitles: vec![],
         };
         assert!(embed(&ffmpeg, &ffprobe, &request).await.unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn embedding_again_replaces_instead_of_stacking() {
+        let (Some(ffmpeg), Some(ffprobe)) = (tool("ffmpeg"), tool("ffprobe")) else {
+            eprintln!("skipped: ffmpeg not installed");
+            return;
+        };
+        let dir = tempfile::tempdir().unwrap();
+        let jpg = cover(dir.path(), "jpg", image::ImageFormat::Jpeg);
+        let sub = dir.path().join("media.en.vtt");
+        std::fs::write(&sub, "WEBVTT\n\n00:00.000 --> 00:00.900\nHello\n").unwrap();
+        let chapters = chapters();
+        for (name, video) in [
+            ("media.mp4", true),
+            ("media.mkv", true),
+            ("media.opus", false),
+        ] {
+            let media = sample(dir.path(), name, video);
+            let mut counts = Vec::new();
+            for title in ["First", "Second"] {
+                let mut tags = tags();
+                tags.insert("title".into(), title.into());
+                if title == "Second" {
+                    tags.remove("genre");
+                }
+                let request = Request {
+                    media: &media,
+                    tags,
+                    cover: Some((&jpg, CoverFormat::Jpg)),
+                    chapters: &chapters,
+                    subtitles: vec![(sub.clone(), "en".into())],
+                };
+                let out = embed(&ffmpeg, &ffprobe, &request).await.unwrap().unwrap();
+                std::fs::rename(&out.path, &media).unwrap();
+                let json = probe_json(&media);
+                let streams = json["streams"].as_array().unwrap();
+                counts.push((
+                    streams.len(),
+                    streams
+                        .iter()
+                        .filter(|s| s["disposition"]["attached_pic"] == 1)
+                        .count(),
+                    streams
+                        .iter()
+                        .filter(|s| s["codec_type"] == "subtitle")
+                        .count(),
+                    json["chapters"].as_array().unwrap().len(),
+                ));
+                let tags = if video {
+                    &json["format"]["tags"]
+                } else {
+                    &streams[0]["tags"]
+                };
+                let get = |k: &str| tags.get(k).or_else(|| tags.get(k.to_uppercase()));
+                assert_eq!(get("title").unwrap(), title, "{name}");
+                if title == "Second" {
+                    assert!(
+                        get("genre").is_none(),
+                        "{name}: a dropped tag is gone: {tags}"
+                    );
+                }
+            }
+            assert_eq!(
+                counts[0], counts[1],
+                "{name}: the same streams after embedding twice"
+            );
+        }
     }
 
     #[tokio::test]
