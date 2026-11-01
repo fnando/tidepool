@@ -1,0 +1,11 @@
+{% if let Some(errors) = errors %}
+<article class="flash error"><strong>It has mistakes; nothing was saved.</strong><pre>{{ errors }}</pre></article>
+{% else if changes.is_empty() %}
+<p class="flash">No changes from revision {{ rev }}.</p>
+{% else %}
+<article>
+  <strong>{% if saved %}Saved. {% endif %}Changes from revision {{ rev }}:</strong>
+  <pre>{{ changes.join("\n") }}</pre>
+  <details><summary>Text diff</summary><pre>{{ diff }}</pre></details>
+</article>
+{% endif %}

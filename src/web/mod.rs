@@ -45,6 +45,8 @@ pub struct Web {
     processor: Arc<Notify>,
     /// Where hook logs are (`<video_id>.log`).
     hook_logs: PathBuf,
+    /// `server.read_only_config`: no editing the config.
+    read_only: bool,
 }
 
 /// The daemon's signals the web UI uses.
@@ -81,6 +83,7 @@ impl Web {
             cleanup_now: wake.cleanup_now,
             processor: wake.processor,
             hook_logs,
+            read_only: server.read_only_config,
         }
     }
 
@@ -138,6 +141,11 @@ pub fn router(web: Arc<Web>) -> Router {
         .route("/sources/{name}/videos/{id}", get(video_page))
         .route("/sources/{name}/videos/{id}/jobs", get(jobs_fragment))
         .route("/sources/{name}/videos/{id}/{action}", post(video_action))
+        .route("/config", get(config_page))
+        .route("/config/check", post(config_check))
+        .route("/config/save", post(config_save))
+        .route("/config/revisions/{rev}", get(revision_page))
+        .route("/config/rollback/{rev}", post(config_rollback))
         .route("/login", get(login_page).post(login))
         .route("/assets/{file}", get(asset))
         .route("/api/v1/status", get(api_status))
@@ -562,6 +570,304 @@ async fn video_action(
     jobs_response(&web, source, id, Some(message)).await
 }
 
+struct RevisionRow {
+    rev: i64,
+    created_at: String,
+    from: String,
+}
+
+/// Where a revision came from, in words.
+fn origin(revision: &crate::config::store::Revision) -> String {
+    use crate::config::store::Source;
+    match (revision.source, &revision.source_path) {
+        (Source::Import, Some(path)) => format!("imported from {path}"),
+        (Source::Ui, _) => "edited in the web UI".into(),
+        (Source::Rollback, Some(from)) => {
+            format!("rolled back to {}", from.trim_start_matches("rev:"))
+        }
+        (source, _) => source.as_str().to_string(),
+    }
+}
+
+#[derive(Template)]
+#[template(path = "config.html")]
+struct ConfigPage {
+    csrf: String,
+    rev: i64,
+    file: Option<String>,
+    text: String,
+    read_only: bool,
+    history: Vec<RevisionRow>,
+    message: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "config_result.html")]
+struct ConfigResult {
+    errors: Option<String>,
+    changes: Vec<String>,
+    diff: String,
+    rev: i64,
+    saved: bool,
+}
+
+#[derive(Template)]
+#[template(path = "revision.html")]
+struct RevisionPage {
+    csrf: String,
+    rev: i64,
+    current: i64,
+    created_at: String,
+    from: String,
+    text: String,
+    changes: Vec<String>,
+    read_only: bool,
+}
+
+#[derive(Deserialize)]
+struct ConfigForm {
+    text: String,
+    base: i64,
+}
+
+#[derive(Deserialize, Default)]
+struct ConfigQuery {
+    saved: Option<i64>,
+}
+
+/// The file the config was last imported from: saves are written there too.
+fn config_file(store: &ConfigStore<'_>) -> anyhow::Result<Option<PathBuf>> {
+    Ok(store
+        .last_import()?
+        .and_then(|r| r.source_path)
+        .map(PathBuf::from))
+}
+
+async fn config_page(
+    State(web): State<Arc<Web>>,
+    axum::extract::Query(query): axum::extract::Query<ConfigQuery>,
+) -> Result<Html<String>, WebError> {
+    let (csrf, read_only) = (web.csrf.clone(), web.read_only);
+    let page = web
+        .db(move |conn| {
+            let store = ConfigStore::new(conn);
+            let current = store.current()?;
+            let file = config_file(&store)?;
+            let history = store
+                .history()?
+                .iter()
+                .rev()
+                .map(|r| RevisionRow {
+                    rev: r.rev,
+                    created_at: r.created_at.clone(),
+                    from: origin(r),
+                })
+                .collect();
+            let message = query.saved.map(|rev| match &file {
+                Some(file) => format!("Saved as revision {rev} and written to {}.", file.display()),
+                None => format!("Saved as revision {rev}."),
+            });
+            Ok(ConfigPage {
+                csrf,
+                rev: current.as_ref().map(|c| c.rev).unwrap_or(0),
+                text: current
+                    .as_ref()
+                    .map(|c| crate::config::diff::mask_toml(&c.toml))
+                    .unwrap_or_default(),
+                file: file.map(|f| f.display().to_string()),
+                read_only,
+                history,
+                message,
+            })
+        })
+        .await?;
+    render(page)
+}
+
+/// Check edited text against the current revision: its mistakes, or what
+/// it changes. Also returns the text with its secrets restored.
+fn compare(
+    conn: &rusqlite::Connection,
+    edited: &str,
+) -> anyhow::Result<(ConfigResult, Option<(String, crate::config::Loaded)>)> {
+    let current = ConfigStore::new(conn).current()?;
+    let (rev, toml, json) = match &current {
+        Some(c) => (c.rev, c.toml.clone(), c.json.clone()),
+        None => (0, String::new(), "{}".to_string()),
+    };
+    let text = crate::config::diff::unmask_toml(edited, &toml);
+    match crate::config::load_str("config", &text) {
+        Err(err) => Ok((
+            ConfigResult {
+                errors: Some(err.to_string()),
+                changes: Vec::new(),
+                diff: String::new(),
+                rev,
+                saved: false,
+            },
+            None,
+        )),
+        Ok(loaded) => {
+            let changes = crate::app::config_changes(&json, loaded.json.clone())?;
+            let diff = crate::config::diff::text_diff(
+                &crate::config::diff::mask_toml(&toml),
+                &crate::config::diff::mask_toml(&text),
+                &format!("revision {rev}"),
+                "edited",
+            );
+            Ok((
+                ConfigResult {
+                    errors: None,
+                    changes,
+                    diff,
+                    rev,
+                    saved: false,
+                },
+                Some((text, loaded)),
+            ))
+        }
+    }
+}
+
+async fn config_check(
+    State(web): State<Arc<Web>>,
+    Form(form): Form<ConfigForm>,
+) -> Result<Html<String>, WebError> {
+    let result = web.db(move |conn| Ok(compare(conn, &form.text)?.0)).await?;
+    render(result)
+}
+
+fn read_only() -> Response {
+    (
+        StatusCode::FORBIDDEN,
+        "editing the config is off (server.read_only_config)",
+    )
+        .into_response()
+}
+
+/// Back to the config page, saying what was saved.
+fn saved(rev: i64, headers: &HeaderMap) -> Response {
+    let to = format!("/config?saved={rev}");
+    if headers.contains_key("hx-request") {
+        ([("hx-redirect", to)], StatusCode::OK).into_response()
+    } else {
+        Redirect::to(&to).into_response()
+    }
+}
+
+/// Save a new revision and write it to the config file; `Err` text says
+/// what went wrong with the file (the revision is saved anyway).
+fn store_and_write(
+    conn: &rusqlite::Connection,
+    save: impl FnOnce(&ConfigStore<'_>) -> anyhow::Result<i64>,
+) -> anyhow::Result<(i64, Result<(), String>)> {
+    let store = ConfigStore::new(conn);
+    let rev = save(&store)?;
+    let text = store.get(rev)?.toml;
+    let written = match config_file(&store)? {
+        Some(path) => crate::config::store::write_file(&path, &text)
+            .map(drop)
+            .map_err(|e| format!("writing {} failed: {e}", path.display())),
+        None => Ok(()),
+    };
+    tracing::info!("config revision {rev} saved in the web UI");
+    Ok((rev, written))
+}
+
+async fn config_save(
+    State(web): State<Arc<Web>>,
+    headers: HeaderMap,
+    Form(form): Form<ConfigForm>,
+) -> Result<Response, WebError> {
+    if web.read_only {
+        return Ok(read_only());
+    }
+    enum Outcome {
+        Result(ConfigResult),
+        Saved(i64, Result<(), String>),
+    }
+    let outcome = web
+        .db(move |conn| {
+            let (mut result, checked) = compare(conn, &form.text)?;
+            if result.rev != form.base {
+                result.errors = Some(format!(
+                    "The config changed since you opened this page (it's revision {} now). \
+                     Reload to see it; saving would have replaced it.",
+                    result.rev
+                ));
+                return Ok(Outcome::Result(result));
+            }
+            let Some((text, loaded)) = checked.filter(|_| !result.changes.is_empty()) else {
+                return Ok(Outcome::Result(result));
+            };
+            let (rev, written) =
+                store_and_write(conn, |store| Ok(store.save_edit(&text, &loaded)?))?;
+            Ok(Outcome::Saved(rev, written))
+        })
+        .await?;
+    Ok(match outcome {
+        Outcome::Result(result) => render(result)?.into_response(),
+        Outcome::Saved(rev, Ok(())) => saved(rev, &headers),
+        Outcome::Saved(rev, Err(problem)) => render(ConfigResult {
+            errors: Some(format!("Saved as revision {rev}, but {problem}.")),
+            changes: Vec::new(),
+            diff: String::new(),
+            rev,
+            saved: true,
+        })?
+        .into_response(),
+    })
+}
+
+async fn revision_page(
+    State(web): State<Arc<Web>>,
+    Path(rev): Path<i64>,
+) -> Result<Response, WebError> {
+    let (csrf, read_only) = (web.csrf.clone(), web.read_only);
+    let page = web
+        .db(move |conn| {
+            let store = ConfigStore::new(conn);
+            let Ok(revision) = store.get(rev) else {
+                return Ok(None);
+            };
+            let current = store.current()?.expect("a revision exists");
+            let changes =
+                crate::app::config_changes(&current.json, serde_json::from_str(&revision.json)?)?;
+            Ok(Some(RevisionPage {
+                csrf,
+                rev,
+                current: current.rev,
+                created_at: revision.created_at.clone(),
+                from: origin(&revision),
+                text: crate::config::diff::mask_toml(&revision.toml),
+                changes,
+                read_only,
+            }))
+        })
+        .await?;
+    match page {
+        Some(page) => Ok(render(page)?.into_response()),
+        None => Ok(not_found("such revision")),
+    }
+}
+
+async fn config_rollback(
+    State(web): State<Arc<Web>>,
+    headers: HeaderMap,
+    Path(rev): Path<i64>,
+) -> Result<Response, WebError> {
+    if web.read_only {
+        return Ok(read_only());
+    }
+    let (new, written) = web
+        .db(move |conn| store_and_write(conn, |store| Ok(store.rollback(rev)?)))
+        .await?;
+    if let Err(problem) = written {
+        tracing::warn!("config revision {new}: {problem}");
+    }
+    Ok(saved(new, &headers))
+}
+
 async fn login_page(State(web): State<Arc<Web>>) -> Result<Html<String>, WebError> {
     render(LoginPage {
         csrf: web.csrf.clone(),
@@ -719,8 +1025,11 @@ mod tests {
     use axum::body::Body;
     use tower::ServiceExt;
 
+    const CONFIG: &str = "# my config\n[server]\ntoken = \"my-long-secret-token\"\n\n\
+                          [sources.lofi]\nurls = ['https://www.youtube.com/playlist?list=PLaaaaaaaa']\n";
+
     struct Setup {
-        _dir: tempfile::TempDir,
+        dir: tempfile::TempDir,
         web: Arc<Web>,
         db: PathBuf,
     }
@@ -729,10 +1038,12 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let db = dir.path().join("state.db");
         let state = Db::open(&db).unwrap();
-        let text = "[sources.lofi]\nurls = ['https://www.youtube.com/playlist?list=PLaaaaaaaa']\n";
-        let loaded = crate::config::load_str("c.toml", text).unwrap();
+        let file = dir.path().join("config.toml");
+        std::fs::write(&file, CONFIG).unwrap();
+        let name = file.display().to_string();
+        let loaded = crate::config::load_str(&name, CONFIG).unwrap();
         ConfigStore::new(&state.conn)
-            .import(Some("c.toml"), text, &loaded)
+            .import(Some(&name), CONFIG, &loaded)
             .unwrap();
         let server = ServerConfig {
             token: token.into(),
@@ -749,7 +1060,7 @@ mod tests {
                 processor: Arc::new(Notify::new()),
             },
         ));
-        Setup { _dir: dir, web, db }
+        Setup { dir, web, db }
     }
 
     async fn send(
@@ -805,10 +1116,10 @@ mod tests {
         let files = serde_json::json!({"dir": "/m/lofi/a", "media": "/m/lofi/a/a.mkv", "metadata": "/m/lofi/a/metadata.json"});
         let dropped = crate::filter::Decision::Excluded { rule: 0 }.to_json();
         let add = |id: String,
-                       title: &str,
-                       position: i64,
-                       status: &str,
-                       extra: (&str, Option<String>)| {
+                   title: &str,
+                   position: i64,
+                   status: &str,
+                   extra: (&str, Option<String>)| {
             conn.execute(
                 "INSERT INTO videos (id, title, published_at) VALUES (?1, ?2, '2026-09-01T00:00:00Z')",
                 rusqlite::params![id, title],
@@ -933,6 +1244,147 @@ mod tests {
         assert_eq!(status, StatusCode::NOT_FOUND);
         let (status, _, _) = send(&s.web, get("/sources/lofi/videos/zzzzzzzzzzz")).await;
         assert_eq!(status, StatusCode::NOT_FOUND);
+    }
+
+    fn form(uri: &str, csrf: &str, body: String) -> Request<Body> {
+        Request::builder()
+            .method(Method::POST)
+            .uri(uri)
+            .header(header::HOST, "127.0.0.1:8787")
+            .header("x-csrf-token", csrf)
+            .header("hx-request", "true")
+            .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .body(Body::from(body))
+            .unwrap()
+    }
+
+    fn form_body(text: &str, base: i64) -> String {
+        format!("base={base}&text={}", encode(text))
+    }
+
+    async fn call(web: &Arc<Web>, request: Request<Body>) -> (StatusCode, HeaderMap, String) {
+        let response = router(web.clone()).oneshot(request).await.unwrap();
+        let (parts, body) = response.into_parts();
+        let bytes = axum::body::to_bytes(body, usize::MAX).await.unwrap();
+        (
+            parts.status,
+            parts.headers,
+            String::from_utf8_lossy(&bytes).into_owned(),
+        )
+    }
+
+    #[tokio::test]
+    async fn the_config_editor_checks_saves_and_keeps_secrets() {
+        let s = setup("");
+        let (status, _, page) = send(&s.web, get("/config")).await;
+        assert_eq!(status, StatusCode::OK, "{page}");
+        assert!(
+            page.contains("my-l…oken") && !page.contains("my-long-secret-token"),
+            "{page}"
+        );
+        assert!(page.contains("Revision 1") && page.contains("imported from"));
+        let shown = crate::config::diff::mask_toml(CONFIG);
+
+        // Mistakes are shown, nothing is saved.
+        let broken = shown.replace("urls =", "urlz =");
+        let (_, _, body) = call(
+            &s.web,
+            form("/config/check", &s.web.csrf, form_body(&broken, 1)),
+        )
+        .await;
+        assert!(
+            body.contains("It has mistakes") && body.contains("urlz"),
+            "{body}"
+        );
+
+        // A change: listed, then saved with the real token, and written to
+        // the file (the old one kept as .bak).
+        let edited = shown.replace("PLaaaaaaaa", "PLbbbbbbbb");
+        let (_, _, body) = call(
+            &s.web,
+            form("/config/check", &s.web.csrf, form_body(&edited, 1)),
+        )
+        .await;
+        assert!(body.contains("sources.lofi.urls"), "{body}");
+        let (status, headers, _) = call(
+            &s.web,
+            form("/config/save", &s.web.csrf, form_body(&edited, 1)),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(headers["hx-redirect"], "/config?saved=2");
+        let state = Db::open(&s.db).unwrap();
+        let current = ConfigStore::new(&state.conn).current().unwrap().unwrap();
+        assert_eq!(current.rev, 2);
+        assert!(
+            current.toml.contains("my-long-secret-token") && current.toml.contains("PLbbbbbbbb")
+        );
+        let file = s.dir.path().join("config.toml");
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), current.toml);
+        assert_eq!(
+            std::fs::read_to_string(s.dir.path().join("config.toml.bak")).unwrap(),
+            CONFIG
+        );
+        let (_, _, page) = send(&s.web, get("/config?saved=2")).await;
+        assert!(
+            page.contains("Saved as revision 2 and written to"),
+            "{page}"
+        );
+
+        // Saving from a page opened before that would replace it: refused.
+        let (_, _, body) = call(
+            &s.web,
+            form("/config/save", &s.web.csrf, form_body(&shown, 1)),
+        )
+        .await;
+        assert!(
+            body.contains("changed since you opened this page"),
+            "{body}"
+        );
+
+        // Roll back to 1: a new revision 3, in the file too.
+        let (_, _, page) = send(&s.web, get("/config/revisions/1")).await;
+        assert!(
+            page.contains("Roll back to revision 1") && page.contains("PLaaaaaaaa"),
+            "{page}"
+        );
+        let (status, headers, _) = call(
+            &s.web,
+            form("/config/rollback/1", &s.web.csrf, String::new()),
+        )
+        .await;
+        assert_eq!(
+            (status, &headers["hx-redirect"]),
+            (StatusCode::OK, &HeaderValue::from_static("/config?saved=3"))
+        );
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), CONFIG);
+    }
+
+    #[tokio::test]
+    async fn a_read_only_config_cant_be_saved() {
+        let s = setup("");
+        let web = Arc::new(Web {
+            read_only: true,
+            ..Web::new(
+                s.db.clone(),
+                s.dir.path().join("logs"),
+                &ServerConfig::default(),
+                "127.0.0.1:8787".parse().unwrap(),
+                Wake {
+                    sync_now: Arc::new(Notify::new()),
+                    cleanup_now: Arc::new(Notify::new()),
+                    processor: Arc::new(Notify::new()),
+                },
+            )
+        });
+        let (_, _, page) = send(&web, get("/config")).await;
+        assert!(page.contains("Editing is off") && page.contains("readonly"));
+        let shown = crate::config::diff::mask_toml(CONFIG).replace("PLaaaaaaaa", "PLbbbbbbbb");
+        let (status, _, _) =
+            call(&web, form("/config/save", &web.csrf, form_body(&shown, 1))).await;
+        assert_eq!(status, StatusCode::FORBIDDEN);
+        let (status, _, _) = call(&web, form("/config/rollback/1", &web.csrf, String::new())).await;
+        assert_eq!(status, StatusCode::FORBIDDEN);
     }
 
     #[tokio::test]

@@ -9,8 +9,7 @@ notifications along the way.
 
 > **Early days.** tidepool can keep your sources downloaded, run your own
 > scripts, clean up, and keep doing all of that in the background, with a web
-> page to keep an eye on it. Editing your config in the browser isn't
-> available yet.
+> page to keep an eye on it and edit your config.
 
 Works on Linux and macOS.
 
@@ -989,6 +988,17 @@ test`), its files, its hooks and their log, and buttons to run its hooks
 again, embed again, download it again (optionally deleting its files first),
 or restore it from the trash. That work happens in the background; the page
 shows how it went.
+
+**Editing your config.** The Config page shows your config as you wrote it,
+comments and all, with your API keys and token masked (leave them masked to
+keep them). Check shows mistakes, with the same messages as `tidepool config
+check`, or what your edits change; Save stores the edits as a new revision,
+the running daemon uses it right away, and the file you last imported is
+updated too (the previous one is kept as `.bak`), so it keeps matching. If the
+config changed since you opened the page, saving is refused rather than
+overwriting it. History lists every revision; open one to see what rolling
+back to it would change, and roll back. Set `read_only_config = true` under
+`[server]` to turn editing off.
 
 With the web interface on, `schedule.interval` can be empty: tidepool then
 only syncs when you ask (the button, or `tidepool daemon sync`). Set

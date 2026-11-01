@@ -230,6 +230,11 @@ impl<'a> ConfigStore<'a> {
         self.import(Some(path), text, &loaded)
     }
 
+    /// Store text edited in the web UI as a new revision.
+    pub fn save_edit(&self, text: &str, loaded: &Loaded) -> Result<i64, StoreError> {
+        self.insert(Source::Ui, None, text, loaded)
+    }
+
     /// Make `rev` current again, as a new revision.
     pub fn rollback(&self, rev: i64) -> Result<i64, StoreError> {
         let old = self.get(rev)?;
@@ -241,6 +246,34 @@ impl<'a> ConfigStore<'a> {
             &loaded,
         )
     }
+}
+
+/// Write a config to `path`, keeping what was there as `<path>.bak` (with
+/// its permissions: it may hold an API key). Returns the backup's path.
+pub fn write_file(
+    path: &std::path::Path,
+    text: &str,
+) -> std::io::Result<Option<std::path::PathBuf>> {
+    let with = |suffix: &str| {
+        let mut name = path.as_os_str().to_owned();
+        name.push(suffix);
+        std::path::PathBuf::from(name)
+    };
+    let permissions = std::fs::metadata(path).map(|m| m.permissions()).ok();
+    let backup = if path.exists() {
+        let backup = with(".bak");
+        std::fs::copy(path, &backup)?;
+        Some(backup)
+    } else {
+        None
+    };
+    let staged = with(".tidepool-partial");
+    std::fs::write(&staged, text)?;
+    if let Some(permissions) = permissions {
+        std::fs::set_permissions(&staged, permissions)?;
+    }
+    std::fs::rename(&staged, path)?;
+    Ok(backup)
 }
 
 #[cfg(test)]

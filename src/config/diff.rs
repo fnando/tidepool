@@ -58,6 +58,64 @@ pub fn mask_toml(text: &str) -> String {
     doc.to_string()
 }
 
+/// Undo [`mask_toml`] on edited text: a secret still showing the mask of
+/// the one in `original` (same place) gets its real value back. Text that
+/// doesn't parse is returned unchanged (validation reports it).
+pub fn unmask_toml(edited: &str, original: &str) -> String {
+    fn secrets(
+        table: &dyn toml_edit::TableLike,
+        path: &mut Vec<String>,
+        out: &mut Vec<(Vec<String>, String)>,
+    ) {
+        for (key, item) in table.iter() {
+            path.push(key.to_string());
+            let keys: Vec<&str> = path.iter().map(String::as_str).collect();
+            if is_secret(&keys)
+                && let Some(secret) = item.as_value().and_then(|v| v.as_str())
+            {
+                out.push((path.clone(), secret.to_string()));
+            } else if let Some(inner) = item.as_table_like() {
+                secrets(inner, path, out);
+            }
+            path.pop();
+        }
+    }
+    fn restore(
+        table: &mut dyn toml_edit::TableLike,
+        path: &mut Vec<String>,
+        real: &[(Vec<String>, String)],
+    ) {
+        for (key, item) in table.iter_mut() {
+            path.push(key.get().to_string());
+            let keys: Vec<&str> = path.iter().map(String::as_str).collect();
+            if is_secret(&keys)
+                && let Some(value) = item.as_value_mut()
+                && let Some(shown) = value.as_str()
+                && let Some((_, secret)) = real.iter().find(|(p, _)| p == path)
+                && !secret.is_empty()
+                && shown == mask_secret(secret)
+            {
+                let decor = value.decor().clone();
+                *value = secret.clone().into();
+                *value.decor_mut() = decor;
+            } else if let Some(inner) = item.as_table_like_mut() {
+                restore(inner, path, real);
+            }
+            path.pop();
+        }
+    }
+    let (Ok(mut doc), Ok(before)) = (
+        edited.parse::<DocumentMut>(),
+        original.parse::<DocumentMut>(),
+    ) else {
+        return edited.to_string();
+    };
+    let mut real = Vec::new();
+    secrets(before.as_table(), &mut Vec::new(), &mut real);
+    restore(doc.as_table_mut(), &mut Vec::new(), &real);
+    doc.to_string()
+}
+
 /// Mask secrets in a JSON config.
 pub fn mask_json(value: &mut Value) {
     fn walk(value: &mut Value, path: &mut Vec<String>) {
@@ -172,6 +230,22 @@ pub fn text_diff(old: &str, new: &str, old_label: &str, new_label: &str) -> Stri
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn masked_secrets_get_their_real_value_back() {
+        let original = "[server]\ntoken = \"my-long-secret-token\"\n\n\
+                        [sources.lofi]\nurls = [\"u\"]\nyoutube.api_key = \"AIzaSyLOFI00000000yyyy\"\n";
+        let edited = mask_toml(original).replace("urls = [\"u\"]", "urls = [\"v\"] # changed");
+        assert_eq!(
+            unmask_toml(&edited, original),
+            original.replace("urls = [\"u\"]", "urls = [\"v\"] # changed")
+        );
+        // A secret typed in full, or one moved elsewhere, stays as written.
+        let typed = mask_toml(original).replace("my-l…oken", "brand-new-token");
+        assert!(unmask_toml(&typed, original).contains("brand-new-token"));
+        let moved = "[sources.other]\nyoutube.api_key = \"AIza…yyyy\"\n";
+        assert_eq!(unmask_toml(moved, original), moved);
+    }
 
     #[test]
     fn masks_keys() {

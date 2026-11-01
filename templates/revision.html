@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}Revision {{ rev }} · tidepool{% endblock %}
+{% block content %}
+<p><a href="/config">← Config</a></p>
+<hgroup>
+  <h2>Revision {{ rev }}</h2>
+  <p class="muted">{{ created_at }} · {{ from }}</p>
+</hgroup>
+{% if rev != current %}
+  {% if !changes.is_empty() %}
+  <article><strong>Rolling back would change, from revision {{ current }}:</strong><pre>{{ changes.join("\n") }}</pre></article>
+  {% endif %}
+  {% if !read_only %}
+  <form hx-post="/config/rollback/{{ rev }}"
+        hx-confirm="Make revision {{ rev }} current again (as a new revision)?">
+    <button type="submit">Roll back to revision {{ rev }}</button>
+  </form>
+  {% endif %}
+{% else %}
+<p class="muted">This is the current revision.</p>
+{% endif %}
+<pre>{{ text }}</pre>
+{% endblock %}

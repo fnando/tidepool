@@ -26,3 +26,4 @@ pre { white-space: pre-wrap; font-size: .85rem; }
 .st-done, .st-ok { background: #2e7d32; color: #fff; }
 .st-retrying, .st-pending, .st-fetched, .st-processing, .st-downloading { background: #546e7a; color: #fff; }
 .st-unavailable, .st-cleaned_up, .st-filtered { background: var(--pico-secondary-background); }
+textarea.editor { font-family: var(--pico-font-family-monospace); font-size: .85rem; line-height: 1.4; }

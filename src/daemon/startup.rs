@@ -98,25 +98,16 @@ fn import(store: &ConfigStore<'_>, name: &str, text: &str) -> anyhow::Result<()>
     Ok(())
 }
 
-/// Write the stored config to the file, keeping the old one as `<file>.bak`
-/// (and its permissions: it may hold an API key).
+/// Write the stored config to the file, keeping the old one as `<file>.bak`.
 fn export(path: &Path, name: &str, toml: &str, rev: i64) -> anyhow::Result<()> {
-    let mut backup = path.as_os_str().to_owned();
-    backup.push(".bak");
-    let backup = PathBuf::from(backup);
-    let permissions = std::fs::metadata(path).map(|m| m.permissions()).ok();
-    std::fs::copy(path, &backup).map_err(|e| anyhow::anyhow!("cannot back up {name}: {e}"))?;
-    let mut staged = path.as_os_str().to_owned();
-    staged.push(".tidepool-partial");
-    let staged = PathBuf::from(staged);
-    std::fs::write(&staged, toml).map_err(|e| anyhow::anyhow!("cannot write {name}: {e}"))?;
-    if let Some(permissions) = permissions {
-        std::fs::set_permissions(&staged, permissions)?;
+    let backup = crate::config::store::write_file(path, toml)
+        .map_err(|e| anyhow::anyhow!("cannot write {name}: {e}"))?;
+    match backup {
+        Some(backup) => tracing::info!(
+            "wrote config revision {rev} to {name} (the old file is {})",
+            App::display_path(&backup)
+        ),
+        None => tracing::info!("wrote config revision {rev} to {name}"),
     }
-    std::fs::rename(&staged, path).map_err(|e| anyhow::anyhow!("cannot write {name}: {e}"))?;
-    tracing::info!(
-        "wrote config revision {rev} to {name} (the old file is {})",
-        App::display_path(&backup)
-    );
     Ok(())
 }

@@ -710,3 +710,75 @@ async fn work_asked_on_a_video_page_is_done_by_the_processor() {
     let (code, log) = daemon.stop();
     assert_eq!(code, Some(0), "{log}");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_config_saved_in_the_web_ui_applies_and_the_next_start_agrees() {
+    let env = Env::new().await;
+    let config = env.config("1h", "");
+    let daemon = env.daemon(&config, &[]);
+    daemon.wait_for_log("web UI at http://127.0.0.1:");
+    let url = daemon
+        .log()
+        .lines()
+        .find_map(|l| {
+            l.split("web UI at ")
+                .nth(1)
+                .map(str::trim)
+                .map(str::to_string)
+        })
+        .unwrap();
+    let http = reqwest::Client::new();
+    let page = http
+        .get(format!("{url}/config"))
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+    let csrf = page
+        .split("\"X-CSRF-Token\": \"")
+        .nth(1)
+        .and_then(|rest| rest.split('"').next())
+        .unwrap()
+        .to_string();
+    let edited = fs::read_to_string(&config)
+        .unwrap()
+        .replace("interval = \"1h\"", "interval = \"3h\"");
+    let answer = http
+        .post(format!("{url}/config/save"))
+        .header("x-csrf-token", &csrf)
+        .header("hx-request", "true")
+        .header("content-type", "application/x-www-form-urlencoded")
+        .body(format!("base=1&text={}", encode(&edited)))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(answer.headers()["hx-redirect"], "/config?saved=2");
+    daemon.wait_for_log("applying config revision 2");
+    assert_eq!(
+        fs::read_to_string(&config).unwrap(),
+        edited,
+        "written to the file"
+    );
+    let (code, _) = daemon.stop();
+    assert_eq!(code, Some(0));
+
+    // The file and the stored config match: the next start is fine.
+    let daemon = env.daemon_without_import(&config, &[]);
+    daemon.wait_for_log("syncing every 3h");
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0), "{log}");
+}
+
+/// Percent-encode a form value.
+fn encode(text: &str) -> String {
+    text.bytes()
+        .map(|b| match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                (b as char).to_string()
+            }
+            _ => format!("%{b:02X}"),
+        })
+        .collect()
+}

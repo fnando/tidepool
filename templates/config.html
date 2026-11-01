@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block title %}Config · tidepool{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>Config</h2>
+  <p class="muted">Revision {{ rev }}{% if let Some(file) = file %} · saved to <code>{{ file }}</code> too{% endif %}</p>
+</hgroup>
+{% if let Some(message) = message %}<p class="flash" role="status">{{ message }}</p>{% endif %}
+{% if read_only %}
+<p class="flash">Editing is off (<code>server.read_only_config = true</code>).</p>
+{% endif %}
+<form hx-post="/config/check" hx-target="#result" hx-swap="innerHTML">
+  <input type="hidden" name="base" value="{{ rev }}">
+  <textarea name="text" class="editor" spellcheck="false" rows="30"{% if read_only %} readonly{% endif %}>{{ text }}</textarea>
+  <small class="muted">API keys and the token are shown masked; leave them as they are to keep them.</small>
+  {% if !read_only %}
+  <div class="actions">
+    <button type="submit" class="secondary">Check</button>
+    <button type="submit" hx-post="/config/save" hx-target="#result">Save</button>
+  </div>
+  {% endif %}
+</form>
+<div id="result"></div>
+
+<section>
+  <h3>History</h3>
+  <table class="compact">
+    <thead><tr><th>Revision</th><th>When</th><th>From</th><th></th></tr></thead>
+    <tbody>
+    {% for revision in history %}
+      <tr>
+        <td>{{ revision.rev }}{% if revision.rev == rev %} <small class="muted">(current)</small>{% endif %}</td>
+        <td><small>{{ revision.created_at }}</small></td>
+        <td><small>{{ revision.from }}</small></td>
+        <td class="end"><a href="/config/revisions/{{ revision.rev }}">View</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
