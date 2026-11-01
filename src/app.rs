@@ -560,6 +560,9 @@ impl App<'_> {
             if self.shutdown.is_stopping() {
                 break;
             }
+            crate::events::emit(crate::events::Event::Checking {
+                source: source.key.clone(),
+            });
             match crate::pipeline::index_source(
                 state,
                 config,

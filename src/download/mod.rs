@@ -349,6 +349,15 @@ async fn fetch(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
     let mut details = None;
     let label = format!("{}: “{}”", source.key, item.title);
     tracing::debug!("{}: downloading “{}” [{video_id}]", source.key, item.title);
+    crate::events::emit(crate::events::Event::Downloading {
+        source: source.key.clone(),
+        video_id: video_id.clone(),
+        title: item.title.clone(),
+        percent: None,
+        size: None,
+        speed: None,
+        eta: None,
+    });
     if job.queued.status == status::PENDING_CHECK {
         tracing::debug!("{label}: checking its details before deciding");
     }
@@ -451,10 +460,16 @@ async fn fetch_files(
         _ => {
             let args =
                 ytdlp::download_args(source, video_id, fetched, job.paths.cookies.as_deref());
+            let live = ytdlp::Live {
+                source: source.key.clone(),
+                video_id: video_id.clone(),
+                title: job.queued.item.title.clone(),
+            };
             let media = ytdlp::download(
                 &ctx.ytdlp,
                 &args,
                 label,
+                Some(&live),
                 &ctx.shutdown,
                 ctx.shutdown_timeout,
             )
@@ -615,6 +630,16 @@ async fn assemble(
         ffprobe: &ctx.ffprobe,
     };
 
+    let step = |what: &str| {
+        crate::events::emit(crate::events::Event::Finishing {
+            source: source.key.clone(),
+            video_id: video_id.clone(),
+            title: job.queued.item.title.clone(),
+            step: what.to_string(),
+        })
+    };
+    step("preparing");
+
     // `prepare` hooks: the details and paths everything below uses. The
     // details recorded for the video (`details`) stay YouTube's.
     let original = prepare::Details::of(&info);
@@ -643,6 +668,7 @@ async fn assemble(
     let (cover_dest, cover_format) = layout.cover_file().map_err(fail)?;
     let metadata_dest = layout.metadata_file().map_err(fail)?;
 
+    step("getting the cover");
     // Cover: reuse the other source's when it's already in the wanted
     // format, or fetch the biggest.
     let cover_tmp = tmp.join(format!("cover.{}", cover_format.extension()));
@@ -679,6 +705,9 @@ async fn assemble(
         }
     }
 
+    if stage.has(HookType::Downloaded) {
+        step("running hooks");
+    }
     // `downloaded` hooks: on the raw files; they may replace them.
     let context = stage.context(&info);
     let mut raw = hooks::Files {
@@ -732,6 +761,9 @@ async fn assemble(
         files.raw_info = Some(dest.display().to_string());
     }
 
+    if stages::embedding_on(source) {
+        step("embedding");
+    }
     // What gets embedded: processed by `embed` hooks, then embedded.
     let mut data = hooks::EmbedData {
         tags: stage.tags(&info, &values),
@@ -785,6 +817,7 @@ async fn assemble(
     if ctx.shutdown.is_stopping() {
         return Err(fail("stopped"));
     }
+    step("saving");
     place_all(&moves)?;
     let _ = std::fs::remove_dir_all(tmp);
     if embedding.relink
@@ -1142,6 +1175,11 @@ fn record(
     match &f.outcome {
         Outcome::Fetched { bytes } => {
             items::mark_fetched(&state.conn, &f.source_key, &f.video_id, now)?;
+            crate::events::emit(crate::events::Event::Fetched {
+                source: f.source_key.clone(),
+                video_id: f.video_id.clone(),
+                title: f.title.clone(),
+            });
             summary.fetched += 1;
             tracker.download_succeeded();
             tracing::debug!(
@@ -1179,6 +1217,11 @@ fn record(
             summary.downloaded += 1;
             tracker.download_succeeded();
             summary.bytes += media_bytes;
+            crate::events::emit(crate::events::Event::Saved {
+                source: f.source_key.clone(),
+                video_id: f.video_id.clone(),
+                title: f.title.clone(),
+            });
             let how = if *linked {
                 "linked from another source"
             } else {
@@ -1194,6 +1237,10 @@ fn record(
         }
         Outcome::Skipped(decision) => {
             items::record_decision(&state.conn, &f.source_key, &f.video_id, decision)?;
+            crate::events::emit(crate::events::Event::Stopped {
+                source: f.source_key.clone(),
+                video_id: f.video_id.clone(),
+            });
             summary.skipped += 1;
             let _ = writeln!(out, "{}: skipped “{}”: {decision}", f.source_key, f.title);
         }
@@ -1208,6 +1255,12 @@ fn record(
             )?;
             summary.failed += 1;
             tracker.download_failed(&f.source_key, &failure.message, f.previous_attempts);
+            crate::events::emit(crate::events::Event::Failed {
+                source: f.source_key.clone(),
+                video_id: f.video_id.clone(),
+                title: f.title.clone(),
+                error: failure.message.clone(),
+            });
             if failure.permanent {
                 tracing::warn!(
                     "{}: “{}” is unavailable: {}",
@@ -1225,6 +1278,10 @@ fn record(
             }
         }
         Outcome::Stopped => {
+            crate::events::emit(crate::events::Event::Stopped {
+                source: f.source_key.clone(),
+                video_id: f.video_id.clone(),
+            });
             let back = match f.phase {
                 Phase::Fetch => status::PENDING,
                 Phase::Process => status::FETCHED,

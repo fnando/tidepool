@@ -216,6 +216,7 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
                 if let Err(e) = app.cleanup(&scope, &mut out).await {
                     tracing::error!("cleanup failed: {e:#}");
                 }
+                crate::events::emit(crate::events::Event::Changed);
                 out.flush()?;
                 continue;
             }
@@ -233,6 +234,7 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
         store::set_time(&state.conn, store::LAST_SYNC_STARTED_AT, started)?;
         let activity = format!("syncing since {}", local(started));
         store::set_status(&state.conn, name, "running", Some(&activity), started)?;
+        crate::events::emit(crate::events::Event::SyncStarted);
         let result = app.sync_once(&mut out).await;
         out.flush()?;
         if app.shutdown.is_stopping() {
@@ -249,12 +251,18 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
         let when = next
             .map(|t| format!("; next sync at {}", local(t)))
             .unwrap_or_default();
-        match result {
-            Ok(Some(summary)) => tracing::info!("{summary}{when}"),
-            Ok(None) => tracing::info!("sync skipped{when}"),
+        let summary = match result {
+            Ok(Some(summary)) => format!("{summary}{when}"),
+            Ok(None) => format!("sync skipped{when}"),
             // One sync failing doesn't stop the schedule.
-            Err(e) => tracing::error!("sync failed: {e:#}{when}"),
+            Err(e) => format!("sync failed: {e:#}{when}"),
+        };
+        if summary.starts_with("sync failed") {
+            tracing::error!("{summary}");
+        } else {
+            tracing::info!("{summary}");
         }
+        crate::events::emit(crate::events::Event::SyncFinished { summary });
     }
 }
 
@@ -383,6 +391,7 @@ async fn run_jobs(app: &App<'_>, state: &crate::state::State) -> anyhow::Result<
             );
         }
         store::finish_job(&state.conn, job.id, ok, &text, jiff::Timestamp::now())?;
+        crate::events::emit(crate::events::Event::Changed);
     }
     Ok(())
 }
@@ -404,6 +413,7 @@ async fn server(app: &App<'_>, signals: Signals) -> anyhow::Result<()> {
             sync_now: signals.sync_now.clone(),
             cleanup_now: signals.cleanup_now.clone(),
             processor: signals.fetched.clone(),
+            shutdown: app.shutdown.clone(),
         },
     ));
     let url = format!("http://{addr}");

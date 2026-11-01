@@ -6,6 +6,7 @@ pub mod cli;
 pub mod config;
 pub mod daemon;
 pub mod download;
+pub mod events;
 pub mod filter;
 pub mod hooks;
 pub mod index;

@@ -977,7 +977,11 @@ While `tidepool run --daemon` runs, it also serves a web page at
 `http://127.0.0.1:8787` with what it's doing: each part's status, the next and
 last sync, and per source how many videos are downloaded, waiting, skipped,
 failed and cleaned up, and how much disk they use. Buttons sync or clean up
-right away, and pause or resume each part. The page keeps itself up to date.
+right away, and pause or resume each part. An "In progress" panel shows what's
+happening as it happens: the source being checked, each download with how far
+along it is, its speed and time left, each video being finished (hooks,
+embedding, saving), and what was just saved or failed. The page updates
+itself the moment something changes.
 
 Click a source to see its videos, 50 at a time: filter by status
 (downloaded, waiting, skipped, failed, unavailable, cleaned up), search titles
@@ -1024,6 +1028,14 @@ the buttons. Send `Content-Type: application/json`, or the token as
 
 ```sh
 curl -X POST -H 'Content-Type: application/json' http://127.0.0.1:8787/api/v1/sync
+```
+
+`/api/v1/events` streams what happens as it happens (server-sent events, one
+JSON object each, with a `type`: `sync_started`, `checking`, `downloading`,
+`fetched`, `finishing`, `saved`, `failed`, `sync_finished`, …):
+
+```sh
+curl -N http://127.0.0.1:8787/api/v1/events
 ```
 
 ## Seeing more (or less)

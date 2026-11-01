@@ -3942,6 +3942,7 @@ dependencies = [
  "deunicode",
  "etcetera",
  "fancy-regex 0.20.0",
+ "futures-util",
  "image",
  "insta",
  "jiff",

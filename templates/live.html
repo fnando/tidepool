@@ -1,0 +1,40 @@
+<section id="live">
+  <div class="row">
+    <h2>In progress</h2>
+    <small class="muted">{% if live.syncing %}Syncing{% if let Some(source) = live.checking %}: checking {{ source }}{% endif %}…{% else %}Not syncing{% endif %}</small>
+  </div>
+  {% if live.active.is_empty() %}
+  <p class="muted">Nothing downloading or being finished.</p>
+  {% else %}
+  <table class="compact">
+    <tbody>
+    {% for video in live.active %}
+      <tr>
+        <td><a href="/sources/{{ video.source }}/videos/{{ video.video_id }}">{{ video.title }}</a><br><small class="muted">{{ video.source }}</small></td>
+        <td class="progress-cell">
+          {% if video.state == "downloading" %}
+            {% if let Some(percent) = video.percent %}<progress value="{{ percent }}" max="100"></progress>{% else %}<progress></progress>{% endif %}
+            <small>downloading{% if let Some(percent) = video.percent %} {{ percent }}%{% endif %}{% if let Some(detail) = video.detail %} · {{ detail }}{% endif %}</small>
+          {% else if video.state == "finishing" %}
+            <small><span class="pill st-running">finishing</span> {{ video.detail.as_deref().unwrap_or_default() }}</small>
+          {% else %}
+            <small><span class="pill st-idle">downloaded</span> waiting to be finished</small>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  {% if !live.recent.is_empty() %}
+  <details{% if live.active.is_empty() %} open{% endif %}><summary>Just now</summary>
+    <ul class="recent">
+    {% for done in live.recent %}
+      <li><small class="muted">{{ done.at }}</small>
+        <a href="/sources/{{ done.source }}/videos/{{ done.video_id }}">{{ done.title }}</a>
+        {% if let Some(error) = done.error %}<span class="pill st-failed">failed</span> <small>{{ error }}</small>{% else %}<span class="pill st-done">saved</span>{% endif %}</li>
+    {% endfor %}
+    </ul>
+  </details>
+  {% endif %}
+</section>

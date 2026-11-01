@@ -782,3 +782,72 @@ fn encode(text: &str) -> String {
         })
         .collect()
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn live_events_follow_a_sync() {
+    use futures_util::StreamExt;
+    let env = Env::new().await;
+    let config = env.config("", "");
+    let daemon = env.daemon(&config, &[]);
+    daemon.wait_for_log("web UI at http://127.0.0.1:");
+    let url = daemon
+        .log()
+        .lines()
+        .find_map(|l| {
+            l.split("web UI at ")
+                .nth(1)
+                .map(str::trim)
+                .map(str::to_string)
+        })
+        .unwrap();
+    let http = reqwest::Client::new();
+    let response = http
+        .get(format!("{url}/api/v1/events"))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.headers()["content-type"], "text/event-stream");
+    let mut stream = response.bytes_stream();
+    http.post(format!("{url}/api/v1/sync"))
+        .header("content-type", "application/json")
+        .send()
+        .await
+        .unwrap();
+
+    let mut seen = String::new();
+    let deadline = Instant::now() + Duration::from_secs(20);
+    while !(seen.contains(r#""type":"sync_finished""#)
+        && seen.matches(r#""type":"saved""#).count() == 2)
+    {
+        assert!(Instant::now() < deadline, "events so far:\n{seen}");
+        let chunk = tokio::time::timeout(Duration::from_secs(20), stream.next())
+            .await
+            .expect("an event")
+            .unwrap()
+            .unwrap();
+        seen.push_str(&String::from_utf8_lossy(&chunk));
+    }
+    for kind in [
+        "sync_started",
+        "checking",
+        "downloading",
+        "fetched",
+        "finishing",
+        "failed",
+    ] {
+        assert!(
+            seen.contains(&format!(r#""type":"{kind}""#)),
+            "{kind}:\n{seen}"
+        );
+    }
+    assert!(seen.contains(r#""step":"saving""#), "{seen}");
+
+    // The stream ends with the daemon, which stops right away.
+    let started = Instant::now();
+    let (code, _) = daemon.stop();
+    assert_eq!(code, Some(0));
+    assert!(
+        started.elapsed() < Duration::from_secs(5),
+        "not held up by the stream"
+    );
+}

@@ -1,4 +1,4 @@
-<div id="status" hx-get="/fragments/status" hx-trigger="every 5s" hx-swap="outerHTML">
+<div id="status">
   {% if let Some(message) = message %}<p class="flash" role="status">{{ message }}</p>{% endif %}
 
   <section>

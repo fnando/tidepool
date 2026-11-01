@@ -68,6 +68,7 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
         ),
         Err(e) => return Err(e.into()),
     };
+    crate::events::enable();
     let state = app.open_state()?;
     let mismatch = match &app.cli.command {
         crate::cli::Command::Run(args) => args.on_config_mismatch,
@@ -154,6 +155,7 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
         {
             revision = rev;
             tracing::info!("applying config revision {rev}");
+            crate::events::emit(crate::events::Event::Changed);
             config_tx.send_replace(rev);
             // A new address, token or switch: the web UI starts over.
             let now_server = app.current_config(&state)?.config.server;
@@ -195,6 +197,7 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
                         let status = if slot.enabled { "paused" } else { "off" };
                         store::set_status(&state.conn, name, status, None, now)?;
                         tracing::info!("{name} is {status}");
+                        crate::events::emit(crate::events::Event::Changed);
                         continue;
                     }
                     Some(Stopping::Restart) => {
@@ -217,6 +220,7 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
                             crate::config::types::format_duration(delay)
                         );
                         failed(&state, slot.service, &why, now)?;
+                        crate::events::emit(crate::events::Event::Changed);
                         slot.restart_at = Some(Instant::now() + delay);
                     }
                 }
@@ -237,6 +241,7 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
                     signals.clone(),
                 )?;
                 slot.handle = Some(handle);
+                crate::events::emit(crate::events::Event::Changed);
             }
             // Running well again for a while.
             if slot.failures > 0

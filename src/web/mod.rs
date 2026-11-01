@@ -47,6 +47,8 @@ pub struct Web {
     hook_logs: PathBuf,
     /// `server.read_only_config`: no editing the config.
     read_only: bool,
+    /// Ends the live event streams when the server stops.
+    shutdown: crate::shutdown::Shutdown,
 }
 
 /// The daemon's signals the web UI uses.
@@ -54,6 +56,8 @@ pub struct Wake {
     pub sync_now: Arc<Notify>,
     pub cleanup_now: Arc<Notify>,
     pub processor: Arc<Notify>,
+    /// The server's: stopping it ends the live event streams.
+    pub shutdown: crate::shutdown::Shutdown,
 }
 
 impl Web {
@@ -84,6 +88,7 @@ impl Web {
             processor: wake.processor,
             hook_logs,
             read_only: server.read_only_config,
+            shutdown: wake.shutdown,
         }
     }
 
@@ -134,6 +139,8 @@ pub fn router(web: Arc<Web>) -> Router {
     Router::new()
         .route("/", get(dashboard))
         .route("/fragments/status", get(status_fragment))
+        .route("/fragments/live", get(live_fragment))
+        .route("/api/v1/events", get(api_events))
         .route("/actions/sync", post(action_sync))
         .route("/actions/cleanup", post(action_cleanup))
         .route("/actions/services/{name}/{action}", post(action_service))
@@ -184,6 +191,52 @@ struct DashboardPage {
     csrf: String,
     status: data::Status,
     message: Option<String>,
+    live: crate::events::Live,
+}
+
+#[derive(Template)]
+#[template(path = "live.html")]
+struct LiveFragment {
+    live: crate::events::Live,
+}
+
+async fn live_fragment() -> Result<Html<String>, WebError> {
+    render(LiveFragment {
+        live: crate::events::live(),
+    })
+}
+
+/// What happens as it happens, as server-sent events (JSON data, one
+/// `Event` each). Ends when the server stops.
+async fn api_events(State(web): State<Arc<Web>>) -> Response {
+    use axum::response::sse::{Event as SseEvent, KeepAlive, Sse};
+    use tokio::sync::broadcast::error::RecvError;
+
+    let Some(receiver) = crate::events::subscribe() else {
+        return (StatusCode::SERVICE_UNAVAILABLE, "no live events here").into_response();
+    };
+    let shutdown = web.shutdown.clone();
+    let stream = futures_util::stream::unfold(
+        (receiver, shutdown),
+        |(mut receiver, shutdown)| async move {
+            let data = tokio::select! {
+                _ = shutdown.stopping() => return None,
+                got = receiver.recv() => match got {
+                    Ok(event) => serde_json::to_string(&event).expect("events serialize"),
+                    // Too far behind: say something changed, the page reloads.
+                    Err(RecvError::Lagged(_)) => r#"{"type":"changed"}"#.to_string(),
+                    Err(RecvError::Closed) => return None,
+                },
+            };
+            Some((
+                Ok::<_, std::convert::Infallible>(SseEvent::default().data(data)),
+                (receiver, shutdown),
+            ))
+        },
+    );
+    Sse::new(stream)
+        .keep_alive(KeepAlive::default())
+        .into_response()
 }
 
 #[derive(Template)]
@@ -206,6 +259,7 @@ async fn dashboard(State(web): State<Arc<Web>>) -> Result<Html<String>, WebError
         csrf: web.csrf.clone(),
         status,
         message: None,
+        live: crate::events::live(),
     })
 }
 
@@ -914,6 +968,7 @@ async fn asset(Path(file): Path<String>) -> Response {
             "text/javascript",
         ),
         "app.css" => (include_str!("../../assets/app.css"), "text/css"),
+        "live.js" => (include_str!("../../assets/live.js"), "text/javascript"),
         _ => return StatusCode::NOT_FOUND.into_response(),
     };
     (
@@ -1058,6 +1113,7 @@ mod tests {
                 sync_now: Arc::new(Notify::new()),
                 cleanup_now: Arc::new(Notify::new()),
                 processor: Arc::new(Notify::new()),
+                shutdown: crate::shutdown::Shutdown::default(),
             },
         ));
         Setup { dir, web, db }
@@ -1374,6 +1430,7 @@ mod tests {
                     sync_now: Arc::new(Notify::new()),
                     cleanup_now: Arc::new(Notify::new()),
                     processor: Arc::new(Notify::new()),
+                    shutdown: crate::shutdown::Shutdown::default(),
                 },
             )
         });
@@ -1385,6 +1442,69 @@ mod tests {
         assert_eq!(status, StatusCode::FORBIDDEN);
         let (status, _, _) = call(&web, form("/config/rollback/1", &web.csrf, String::new())).await;
         assert_eq!(status, StatusCode::FORBIDDEN);
+    }
+
+    #[tokio::test]
+    async fn the_live_panel_and_events_follow_the_work() {
+        use futures_util::StreamExt;
+        crate::events::enable();
+        let s = setup("");
+        crate::events::emit(crate::events::Event::Downloading {
+            source: "lofi".into(),
+            video_id: "livetest001".into(),
+            title: "Live test".into(),
+            percent: Some(42),
+            size: Some("10 MB".into()),
+            speed: None,
+            eta: None,
+        });
+        let (_, _, body) = send(&s.web, get("/fragments/live")).await;
+        assert!(
+            body.contains("Live test") && body.contains("downloading 42%"),
+            "{body}"
+        );
+        let (_, _, page) = send(&s.web, get("/")).await;
+        assert!(page.contains("In progress") && page.contains("/assets/live.js"));
+        assert!(!page.contains("every 5s"), "events replace polling");
+
+        let request = get("/api/v1/events")
+            .header(header::HOST, "127.0.0.1:8787")
+            .body(Body::empty())
+            .unwrap();
+        let response = router(s.web.clone()).oneshot(request).await.unwrap();
+        assert_eq!(
+            response.headers()[header::CONTENT_TYPE],
+            "text/event-stream"
+        );
+        let mut stream = response.into_body().into_data_stream();
+        crate::events::emit(crate::events::Event::Saved {
+            source: "lofi".into(),
+            video_id: "livetest001".into(),
+            title: "Live test".into(),
+        });
+        let mut seen = String::new();
+        while !seen.contains("livetest001") {
+            let chunk = tokio::time::timeout(std::time::Duration::from_secs(2), stream.next())
+                .await
+                .expect("an event")
+                .unwrap()
+                .unwrap();
+            seen.push_str(&String::from_utf8_lossy(&chunk));
+        }
+        assert!(seen.contains(r#""type":"saved""#), "{seen}");
+        let (_, _, body) = send(&s.web, get("/fragments/live")).await;
+        assert!(
+            body.contains("Just now") && body.contains("saved"),
+            "{body}"
+        );
+
+        // Stopping the server ends the stream.
+        s.web.shutdown.stop(143);
+        let end = tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            while stream.next().await.is_some() {}
+        })
+        .await;
+        assert!(end.is_ok(), "the stream ended");
     }
 
     #[tokio::test]

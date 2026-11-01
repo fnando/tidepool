@@ -27,3 +27,7 @@ pre { white-space: pre-wrap; font-size: .85rem; }
 .st-retrying, .st-pending, .st-fetched, .st-processing, .st-downloading { background: #546e7a; color: #fff; }
 .st-unavailable, .st-cleaned_up, .st-filtered { background: var(--pico-secondary-background); }
 textarea.editor { font-family: var(--pico-font-family-monospace); font-size: .85rem; line-height: 1.4; }
+.progress-cell { min-width: 16rem; }
+.progress-cell progress { margin: 0 0 .2rem; }
+ul.recent { list-style: none; padding: 0; }
+ul.recent li { margin: .2rem 0; }

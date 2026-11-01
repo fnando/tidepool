@@ -99,10 +99,19 @@ pub fn classify(stderr: &str) -> Failure {
 struct Progress {
     file: Option<String>,
     step: Option<u64>,
+    throttle: crate::events::Throttle,
+}
+
+/// Which video a download is, for the live panel.
+#[derive(Debug, Clone)]
+pub struct Live {
+    pub source: String,
+    pub video_id: String,
+    pub title: String,
 }
 
 impl Progress {
-    fn update(&mut self, line: &str, label: &str) {
+    fn update(&mut self, line: &str, label: &str, live: Option<&Live>) {
         let Ok(p) = serde_json::from_str::<serde_json::Value>(line) else {
             return;
         };
@@ -120,6 +129,21 @@ impl Progress {
             self.step = None;
         }
         let percent = ((downloaded / total) * 100.0).clamp(0.0, 100.0) as u64;
+        if let Some(live) = live
+            && (self.throttle.ready() || percent == 100)
+        {
+            let speed = p["speed"].as_f64().filter(|s| *s > 0.0);
+            let eta = p["eta"].as_u64().filter(|_| percent < 100);
+            crate::events::emit(crate::events::Event::Downloading {
+                source: live.source.clone(),
+                video_id: live.video_id.clone(),
+                title: live.title.clone(),
+                percent: Some(percent as u8),
+                size: Some(super::human_bytes(total as u64)),
+                speed: speed.map(|s| super::human_bytes(s as u64)),
+                eta: eta.map(|e| format!("{}:{:02}", e / 60, e % 60)),
+            });
+        }
         let step = percent / 10;
         if self.step.is_some_and(|s| step <= s) {
             return;
@@ -154,6 +178,7 @@ pub async fn download(
     ytdlp: &crate::tools::Ytdlp,
     args: &[String],
     label: &str,
+    live: Option<&Live>,
     shutdown: &Shutdown,
     grace: Duration,
 ) -> Result<PathBuf, Failure> {
@@ -196,7 +221,7 @@ pub async fn download(
         let line = line.trim();
         if line.starts_with('{') {
             tracing::trace!("yt-dlp progress: {line}");
-            progress.update(line, label);
+            progress.update(line, label, live);
         } else if !line.is_empty() {
             final_path = Some(PathBuf::from(line));
         }
