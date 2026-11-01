@@ -227,6 +227,8 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
             }
             if slot.handle.is_none() && slot.restart_at.is_some_and(|at| at <= Instant::now()) {
                 slot.restart_at = None;
+                // Before the thread starts: what it says it's doing wins.
+                store::started(&state.conn, name, now)?;
                 let handle = service::spawn(
                     slot.service,
                     cli.clone(),
@@ -234,7 +236,6 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
                     app.shutdown.child(),
                     signals.clone(),
                 )?;
-                store::started(&state.conn, name, now)?;
                 slot.handle = Some(handle);
             }
             // Running well again for a while.
