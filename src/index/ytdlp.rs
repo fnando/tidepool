@@ -123,6 +123,53 @@ pub fn list_args(url: &str, cookies_file: Option<&Path>) -> Vec<String> {
     args
 }
 
+/// A channel's id and name: yt-dlp reads the channel page without listing
+/// any videos (`--playlist-items 0`).
+pub async fn channel(
+    ytdlp: &crate::tools::Ytdlp,
+    url: &str,
+    cookies_file: Option<&Path>,
+    shutdown: &crate::shutdown::Shutdown,
+    grace: std::time::Duration,
+) -> Result<(String, Option<String>), IndexError> {
+    let mut args = vec![
+        "--flat-playlist".to_string(),
+        "-J".into(),
+        "--no-update".into(),
+        "--no-warnings".into(),
+        "--playlist-items".into(),
+        "0".into(),
+    ];
+    if let Some(cookies) = cookies_file {
+        args.extend(["--cookies".into(), cookies.display().to_string()]);
+    }
+    args.extend(["--".into(), url.to_string()]);
+    let output = crate::process::output(ytdlp.command().args(&args), grace, shutdown)
+        .await
+        .map_err(|e| match e {
+            crate::process::Error::Stopped => IndexError::Stopped,
+            e => IndexError::Ytdlp(format!("cannot run {}: {e}", ytdlp.display())),
+        })?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let message = stderr
+            .lines()
+            .rev()
+            .find(|l| l.starts_with("ERROR:"))
+            .unwrap_or("no error message")
+            .trim()
+            .to_string();
+        return Err(IndexError::Ytdlp(message));
+    }
+    let json: serde_json::Value =
+        serde_json::from_slice(&output.stdout).map_err(|e| IndexError::Parse(e.to_string()))?;
+    let id = json["channel_id"]
+        .as_str()
+        .filter(|id| id.starts_with("UC"))
+        .ok_or_else(|| IndexError::Parse(format!("no channel id for {url}")))?;
+    Ok((id.to_string(), json["channel"].as_str().map(String::from)))
+}
+
 /// List a source with yt-dlp.
 pub async fn list(
     ytdlp: &crate::tools::Ytdlp,

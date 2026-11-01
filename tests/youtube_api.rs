@@ -178,3 +178,85 @@ async fn a_rejected_key_becomes_a_problem() {
         .unwrap();
     assert!(!problems.contains(KEY), "only the masked key is kept");
 }
+
+/// A config with a channel source.
+fn channel_config(env: &Env, url: &str, with_key: bool) -> String {
+    let key = if with_key {
+        format!("[category.default.youtube]\napi_key = \"{KEY}\"\nrequests_per_second = 1000\n\n")
+    } else {
+        String::new()
+    };
+    let text = format!(
+        "[category.default]\nmedia_dir = \"{}\"\n\n{key}\
+         [tools.deno]\nmanaged = false\n\n[tools.yt-dlp]\nmanaged = false\npath = \"{}\"\n\n\
+         [sources.supercombo]\nurl = \"{url}\"\n",
+        env.path("media").display(),
+        test_bin().join("yt-dlp").display(),
+    );
+    let path = env.path("config.toml");
+    fs::write(&path, text).unwrap();
+    path.display().to_string()
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_channel_through_the_api() {
+    let env = Env::new(youtube_fake::start().await).await;
+    let config = channel_config(&env, "https://www.youtube.com/@supercombooficial", true);
+    env.cmd(&["index", "-v", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains("supercombo: 587 videos (587 new)"))
+        .stderr(
+            contains("channel @supercombooficial is UC5eeDHYjTWF9pPWYDKpVMYQ; listing its uploads (UU5eeDHYjTWF9pPWYDKpVMYQ)")
+                .and(contains("(YouTube API)")),
+        );
+    assert_eq!(
+        env.units_today(),
+        25,
+        "1 lookup + 12 pages + 12 detail batches"
+    );
+    let title: String = env
+        .db()
+        .query_row(
+            "SELECT title FROM sources WHERE key = 'supercombo'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(
+        title, "Supercombo",
+        "the channel's name, for {{source_title}}"
+    );
+
+    // The lookup is remembered and known videos cost nothing more; the 2
+    // scheduled streams are looked at again (1 batch) until they've aired.
+    env.cmd(&["index"]).assert().success();
+    assert_eq!(env.units_today(), 25 + 12 + 1);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_channel_without_a_key() {
+    let env = Env::new(MockServer::start().await).await;
+    for url in [
+        "https://www.youtube.com/@supercombooficial/videos",
+        "https://www.youtube.com/channel/UC5eeDHYjTWF9pPWYDKpVMYQ",
+    ] {
+        let config = channel_config(&env, url, false);
+        env.cmd(&["index", "-v", "--config", &config])
+            .assert()
+            .success()
+            .stdout(contains("supercombo: 20 videos"))
+            .stderr(
+                contains("listing its uploads (UU5eeDHYjTWF9pPWYDKpVMYQ)")
+                    .and(contains("(yt-dlp)")),
+            );
+    }
+    // A channel that doesn't exist.
+    let config = channel_config(&env, "https://www.youtube.com/@nobody-here", false);
+    env.cmd(&["index", "--config", &config])
+        .assert()
+        .code(3)
+        .stderr(contains(
+            "supercombo: yt-dlp failed: ERROR: [youtube:tab] @nobody-here",
+        ));
+}

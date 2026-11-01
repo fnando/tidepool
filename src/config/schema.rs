@@ -104,9 +104,19 @@ fn regex_error_detail(error: &fancy_regex::Error) -> String {
     error.to_string()
 }
 
-/// The playlist id in a source `url`: the `list=` parameter of a YouTube URL.
-/// Only URLs are accepted, so channel URLs can be told apart later.
-pub fn source_id_from_url(source: &str) -> Result<String, String> {
+/// What a source URL points to.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SourceUrl {
+    /// A playlist id (`PL…`, `UU…`, …).
+    Playlist(String),
+    /// A channel: `@handle`, `UC…` (its id), `c/name` or `user/name`.
+    Channel(String),
+}
+
+/// Parse a source URL: a playlist (any URL with `list=`) or a channel
+/// (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`, with or without a
+/// tab like `/videos`: a channel source is all its uploads).
+pub fn parse_source_url(source: &str) -> Result<SourceUrl, String> {
     const HOSTS: [&str; 5] = [
         "youtube.com",
         "www.youtube.com",
@@ -114,22 +124,106 @@ pub fn source_id_from_url(source: &str) -> Result<String, String> {
         "music.youtube.com",
         "youtu.be",
     ];
-    let example = "e.g. \"https://www.youtube.com/playlist?list=PLxxxxxxxx\"";
+    let example = "e.g. \"https://www.youtube.com/playlist?list=PLxxxxxxxx\" or \"https://www.youtube.com/@channel\"";
     let Some(rest) = source
         .strip_prefix("https://")
         .or_else(|| source.strip_prefix("http://"))
     else {
         return Err(format!(
-            "{source:?} is not a URL; use the playlist's URL ({example})"
+            "{source:?} is not a URL; use the playlist's or channel's URL ({example})"
         ));
     };
     let host = rest.split(['/', '?', '#']).next().unwrap_or_default();
     if !HOSTS.contains(&host.to_ascii_lowercase().as_str()) {
         return Err(format!("{source:?} is not a YouTube URL ({example})"));
     }
-    crate::cli::playlist_id_from_url(source).ok_or_else(|| {
-        format!("{source:?} is not a playlist URL: it must contain list=<playlist id>")
+    if let Some(id) = crate::cli::playlist_id_from_url(source) {
+        return Ok(SourceUrl::Playlist(id));
+    }
+    let path = rest[host.len()..]
+        .split(['?', '#'])
+        .next()
+        .unwrap_or_default();
+    let segments: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+    let valid = |name: &str| {
+        !name.is_empty()
+            && name
+                .chars()
+                .all(|c| c.is_alphanumeric() || matches!(c, '-' | '_' | '.' | '%'))
+    };
+    let channel = match segments.as_slice() {
+        [handle, ..] if handle.starts_with('@') && valid(&handle[1..]) => Some(handle.to_string()),
+        ["channel", id, ..] if id.len() == 24 && id.starts_with("UC") && valid(id) => {
+            Some(id.to_string())
+        }
+        [kind @ ("c" | "user"), name, ..] if valid(name) => Some(format!("{kind}/{name}")),
+        _ => None,
+    };
+    channel.map(SourceUrl::Channel).ok_or_else(|| {
+        format!(
+            "{source:?} is not a playlist or channel URL: use a playlist (with list=<playlist id>) or a channel (/@handle, /channel/UC…, /c/name, /user/name)"
+        )
     })
+}
+
+/// The YouTube id a source URL names: the playlist id, or the channel as
+/// written (`@handle`, `UC…`, `c/name`, `user/name`).
+pub fn source_id_from_url(source: &str) -> Result<String, String> {
+    parse_source_url(source).map(|url| match url {
+        SourceUrl::Playlist(id) | SourceUrl::Channel(id) => id,
+    })
+}
+
+#[cfg(test)]
+mod source_url_tests {
+    use super::*;
+
+    #[test]
+    fn parses_playlists_and_channels() {
+        let p = |id: &str| Ok(SourceUrl::Playlist(id.into()));
+        let c = |id: &str| Ok(SourceUrl::Channel(id.into()));
+        assert_eq!(
+            parse_source_url("https://www.youtube.com/playlist?list=PLx"),
+            p("PLx")
+        );
+        assert_eq!(
+            parse_source_url("https://youtube.com/watch?v=abc&list=PLy"),
+            p("PLy")
+        );
+        assert_eq!(
+            parse_source_url("https://www.youtube.com/@supercombooficial"),
+            c("@supercombooficial")
+        );
+        assert_eq!(
+            parse_source_url("https://www.youtube.com/@supercombooficial/videos"),
+            c("@supercombooficial")
+        );
+        assert_eq!(
+            parse_source_url("https://www.youtube.com/channel/UC5eeDHYjTWF9pPWYDKpVMYQ"),
+            c("UC5eeDHYjTWF9pPWYDKpVMYQ")
+        );
+        assert_eq!(
+            parse_source_url("https://www.youtube.com/c/YouTube"),
+            c("c/YouTube")
+        );
+        assert_eq!(
+            parse_source_url("https://www.youtube.com/user/YouTube/featured"),
+            c("user/YouTube")
+        );
+        for bad in [
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "https://www.youtube.com/channel/nope",
+            "https://www.youtube.com/@",
+            "https://www.youtube.com/",
+        ] {
+            assert!(
+                parse_source_url(bad)
+                    .unwrap_err()
+                    .contains("not a playlist or channel URL"),
+                "{bad}"
+            );
+        }
+    }
 }
 
 /// Generate the config schema.

@@ -50,6 +50,13 @@ CREATE TABLE config_revisions (
   json TEXT NOT NULL               -- validated, normalized
 );
 
+CREATE TABLE channels (           -- channel sources, looked up once
+  ref TEXT PRIMARY KEY,            -- as in the URL: @handle, UC…, c/name, user/name
+  channel_id TEXT NOT NULL,        -- UC…; its uploads playlist is UU…
+  title TEXT,
+  resolved_at TEXT
+);
+
 CREATE TABLE quota_usage (
   day TEXT NOT NULL,               -- Pacific-time date, matching Google's reset
   key_id TEXT NOT NULL,            -- which API key: the start of its SHA-256, never the key

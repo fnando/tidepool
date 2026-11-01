@@ -86,104 +86,195 @@ pub fn key_id(key: &str) -> String {
 
 /// List a source through the API, if it has a key that still works. `None`
 /// means "use yt-dlp".
+#[allow(clippy::too_many_arguments)]
 async fn list_with_api(
     state: &State,
     source: &EffectiveSource,
+    playlist_id: &str,
     rules: &RuleSet,
     pool: &mut ApiPool,
     tracker: &mut crate::problems::Tracker,
     shutdown: &crate::shutdown::Shutdown,
     now: Timestamp,
 ) -> Result<Option<RemoteList>, IndexFailure> {
-    let youtube = &source.youtube;
-    let Some(key) = youtube.api_key.as_deref() else {
+    let Some((id, api)) = pool.client(state, source, now)? else {
         return Ok(None);
     };
-    let id = key_id(key);
-    let masked = crate::config::diff::mask_secret(key);
-    let fallback = |e: &ApiError| {
-        if youtube.fallback_to_ytdlp {
-            Ok(None)
-        } else {
-            Err(IndexFailure::NoFallback(format!(
-                "{e}; not using yt-dlp instead (fallback_to_ytdlp = false)"
-            )))
-        }
-    };
-    if let Some(e) = pool.disabled.get(&id) {
-        tracing::debug!(
-            "{}: API key {masked} unavailable this run ({e}); using yt-dlp",
-            source.key
-        );
-        return fallback(e);
-    }
-    let day = items::quota_day(now);
-    let db = |e: rusqlite::Error| IndexFailure::Failed(format!("state database: {e}"));
-    if !pool.clients.contains_key(&id) {
-        let used = items::quota_used(&state.conn, &id, &day).map_err(db)?;
-        let budget = youtube.daily_quota.saturating_sub(used);
-        pool.spent_before.insert(id.clone(), used);
-        pool.clients.insert(
-            id.clone(),
-            Arc::new(Api::new(key, budget, youtube.requests_per_second)),
-        );
-    }
-    let api = pool.clients[&id].clone();
     let before = api.spent();
     let cutoff = rules.cutoff;
     let result = api::list(
         &api,
-        &source.id,
+        playlist_id,
         |ids| items::known_details(&state.conn, ids).unwrap_or_default(),
         |entry| cutoff.zip(entry.published_at).is_some_and(|(c, p)| p < c),
         shutdown,
     )
     .await;
-    let spent = api.spent() - before;
-    items::add_quota(&state.conn, &id, &day, &source.key, spent).map_err(db)?;
-    let total = pool.spent_before[&id] + api.spent();
-    tracing::debug!(
-        "{}: {spent} API units (key {masked}: {total} of {} today)",
-        source.key,
-        youtube.daily_quota
-    );
-    if f64::from(total) >= youtube.quota_warn_at * f64::from(youtube.daily_quota)
-        && pool.warned.insert(id.clone())
-    {
-        tracing::warn!(
-            "YouTube API key {masked} has used {total} of its {} units today",
-            youtube.daily_quota
-        );
-    }
+    pool.spent(state, source, &id, api.spent() - before, now)?;
     match result {
         Ok(list) => {
             tracker.api_succeeded();
             Ok(Some(list))
         }
-        Err(ApiError::Stopped) => Err(IndexFailure::Stopped),
-        Err(e) => {
-            if e.disables_key() {
-                tracing::warn!("{}: {e}; using yt-dlp for the rest of this run", source.key);
-                match &e {
-                    ApiError::Quota => tracker.api_failed(
-                        crate::problems::Kind::ApiQuota,
-                        &source.key,
-                        &format!("key {masked}: {e}"),
-                    ),
-                    ApiError::KeyRejected(_) => tracker.api_failed(
-                        crate::problems::Kind::ApiKeyRejected,
-                        &source.key,
-                        &format!("key {masked}: {e}"),
-                    ),
-                    _ => {}
-                }
-                pool.disabled.insert(id, e.clone());
-            } else {
-                tracing::info!("{}: {e}; trying yt-dlp", source.key);
+        Err(e) => pool.failed(source, id, e, tracker).map(|()| None),
+    }
+}
+
+impl ApiPool {
+    /// The client for a source's key; `None` without a key, or when the key
+    /// stopped working earlier in this run and yt-dlp may be used instead.
+    fn client(
+        &mut self,
+        state: &State,
+        source: &EffectiveSource,
+        now: Timestamp,
+    ) -> Result<Option<(String, Arc<Api>)>, IndexFailure> {
+        let youtube = &source.youtube;
+        let Some(key) = youtube.api_key.as_deref() else {
+            return Ok(None);
+        };
+        let id = key_id(key);
+        if let Some(e) = self.disabled.get(&id) {
+            let masked = crate::config::diff::mask_secret(key);
+            tracing::debug!(
+                "{}: API key {masked} unavailable this run ({e}); using yt-dlp",
+                source.key
+            );
+            return fallback(source, e).map(|()| None);
+        }
+        if !self.clients.contains_key(&id) {
+            let used = items::quota_used(&state.conn, &id, &items::quota_day(now))
+                .map_err(|e| IndexFailure::Failed(format!("state database: {e}")))?;
+            let budget = youtube.daily_quota.saturating_sub(used);
+            self.spent_before.insert(id.clone(), used);
+            self.clients.insert(
+                id.clone(),
+                Arc::new(Api::new(key, budget, youtube.requests_per_second)),
+            );
+        }
+        Ok(Some((id.clone(), self.clients[&id].clone())))
+    }
+
+    /// Record units a source spent; warn once a key nears its quota.
+    fn spent(
+        &mut self,
+        state: &State,
+        source: &EffectiveSource,
+        id: &str,
+        units: u32,
+        now: Timestamp,
+    ) -> Result<(), IndexFailure> {
+        let youtube = &source.youtube;
+        let masked = crate::config::diff::mask_secret(youtube.api_key.as_deref().unwrap_or(""));
+        items::add_quota(&state.conn, id, &items::quota_day(now), &source.key, units)
+            .map_err(|e| IndexFailure::Failed(format!("state database: {e}")))?;
+        let total = self.spent_before[id] + self.clients[id].spent();
+        tracing::debug!(
+            "{}: {units} API units (key {masked}: {total} of {} today)",
+            source.key,
+            youtube.daily_quota
+        );
+        if f64::from(total) >= youtube.quota_warn_at * f64::from(youtube.daily_quota)
+            && self.warned.insert(id.to_string())
+        {
+            tracing::warn!(
+                "YouTube API key {masked} has used {total} of its {} units today",
+                youtube.daily_quota
+            );
+        }
+        Ok(())
+    }
+
+    /// The API failed for a source: stop using a key that's out of quota,
+    /// rejected or unavailable, and say whether yt-dlp may take over.
+    fn failed(
+        &mut self,
+        source: &EffectiveSource,
+        id: String,
+        e: ApiError,
+        tracker: &mut crate::problems::Tracker,
+    ) -> Result<(), IndexFailure> {
+        if e == ApiError::Stopped {
+            return Err(IndexFailure::Stopped);
+        }
+        let masked =
+            crate::config::diff::mask_secret(source.youtube.api_key.as_deref().unwrap_or(""));
+        if e.disables_key() {
+            tracing::warn!("{}: {e}; using yt-dlp for the rest of this run", source.key);
+            let kind = match &e {
+                ApiError::Quota => Some(crate::problems::Kind::ApiQuota),
+                ApiError::KeyRejected(_) => Some(crate::problems::Kind::ApiKeyRejected),
+                _ => None,
+            };
+            if let Some(kind) = kind {
+                tracker.api_failed(kind, &source.key, &format!("key {masked}: {e}"));
             }
-            fallback(&e)
+            self.disabled.insert(id, e.clone());
+        } else {
+            tracing::info!("{}: {e}; trying yt-dlp", source.key);
+        }
+        fallback(source, &e)
+    }
+}
+
+/// Whether yt-dlp may stand in for the API.
+fn fallback(source: &EffectiveSource, e: &ApiError) -> Result<(), IndexFailure> {
+    if source.youtube.fallback_to_ytdlp {
+        Ok(())
+    } else {
+        Err(IndexFailure::NoFallback(format!(
+            "{e}; not using yt-dlp instead (fallback_to_ytdlp = false)"
+        )))
+    }
+}
+
+/// A channel source's id and name: remembered from an earlier lookup, or
+/// looked up through the API (handles and ids) or yt-dlp.
+#[allow(clippy::too_many_arguments)]
+async fn resolve_channel(
+    state: &State,
+    source: &EffectiveSource,
+    ytdlp: &crate::tools::Ytdlp,
+    cookies: Option<&std::path::Path>,
+    pool: &mut ApiPool,
+    tracker: &mut crate::problems::Tracker,
+    shutdown: &crate::shutdown::Shutdown,
+    grace: std::time::Duration,
+    now: Timestamp,
+) -> Result<(String, Option<String>), IndexFailure> {
+    let db = |e: rusqlite::Error| IndexFailure::Failed(format!("state database: {e}"));
+    let reference = source.id.as_str();
+    if let Some(found) = items::cached_channel(&state.conn, reference).map_err(db)? {
+        return Ok(found);
+    }
+    let by_api = reference.starts_with('@') || reference.starts_with("UC");
+    if by_api && let Some((id, api)) = pool.client(state, source, now)? {
+        let before = api.spent();
+        let result = api.channel(reference, shutdown).await;
+        pool.spent(state, source, &id, api.spent() - before, now)?;
+        match result {
+            Ok(Some((channel_id, title))) => {
+                tracker.api_succeeded();
+                items::save_channel(&state.conn, reference, &channel_id, Some(&title), now)
+                    .map_err(db)?;
+                return Ok((channel_id, Some(title)));
+            }
+            Ok(None) => {
+                return Err(IndexFailure::Failed(format!(
+                    "YouTube has no channel {reference}"
+                )));
+            }
+            Err(e) => pool.failed(source, id, e, tracker)?,
         }
     }
+    let (channel_id, title) = ytdlp::channel(ytdlp, &source.url, cookies, shutdown, grace)
+        .await
+        .map_err(|e| match e {
+            crate::index::IndexError::Stopped => IndexFailure::Stopped,
+            e => IndexFailure::Failed(e.to_string()),
+        })?;
+    items::save_channel(&state.conn, reference, &channel_id, title.as_deref(), now).map_err(db)?;
+    Ok((channel_id, title))
 }
 
 /// List one source (through the API when it has a key, else with yt-dlp),
@@ -203,16 +294,50 @@ pub async fn index_source(
     let failed = IndexFailure::Failed;
     let limit = usize::try_from(config.general.regex_backtrack_limit).unwrap_or(usize::MAX);
     let rules = RuleSet::compile(source, limit, now).map_err(failed)?;
-    tracing::debug!("{}: listing {}", source.key, source.url);
+    let cookies = cookies_file(source, dirs).map_err(failed)?;
+    let grace = config.general.shutdown_timeout.0;
+    // A channel is listed through its uploads playlist (UC… → UU…).
+    let (playlist_id, url, channel_title) = if source.channel {
+        let (channel_id, title) = resolve_channel(
+            state,
+            source,
+            ytdlp_path,
+            cookies.as_deref(),
+            apis,
+            tracker,
+            shutdown,
+            grace,
+            now,
+        )
+        .await?;
+        let uploads = format!("UU{}", &channel_id[2..]);
+        tracing::debug!(
+            "{}: channel {} is {channel_id}; listing its uploads ({uploads})",
+            source.key,
+            source.id
+        );
+        let url = format!("https://www.youtube.com/playlist?list={uploads}");
+        (uploads, url, title)
+    } else {
+        (source.id.clone(), source.url.clone(), None)
+    };
+    tracing::debug!("{}: listing {url}", source.key);
     let started = std::time::Instant::now();
-    let (list, how) = match list_with_api(state, source, &rules, apis, tracker, shutdown, now)
-        .await?
-    {
+    let api_list = list_with_api(
+        state,
+        source,
+        &playlist_id,
+        &rules,
+        apis,
+        tracker,
+        shutdown,
+        now,
+    )
+    .await?;
+    let (mut list, how) = match api_list {
         Some(list) => (list, "api"),
         None => {
-            let cookies = cookies_file(source, dirs).map_err(failed)?;
-            let grace = config.general.shutdown_timeout.0;
-            let list = ytdlp::list(ytdlp_path, &source.url, cookies.as_deref(), shutdown, grace)
+            let list = ytdlp::list(ytdlp_path, &url, cookies.as_deref(), shutdown, grace)
                 .await
                 .map_err(|e| match e {
                     crate::index::IndexError::Stopped => IndexFailure::Stopped,
@@ -221,6 +346,9 @@ pub async fn index_source(
             (list, "ytdlp")
         }
     };
+    if channel_title.is_some() {
+        list.title = channel_title;
+    }
     tracing::debug!(
         "{}: listed {} in {:.1}s ({})",
         source.key,

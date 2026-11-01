@@ -36,9 +36,13 @@ pub mod builtin {
 pub struct EffectiveSource {
     #[serde(skip)]
     pub key: String,
-    /// YouTube playlist id, from the `list=` parameter of `url`.
+    /// YouTube id from `url`: the playlist id, or the channel as written
+    /// (`@handle`, `UC…`, `c/name`, `user/name`).
     #[serde(skip)]
     pub id: String,
+    /// `url` is a channel: its uploads are listed.
+    #[serde(skip)]
+    pub channel: bool,
     pub url: String,
     pub category: String,
     pub enabled: bool,
@@ -176,6 +180,10 @@ fn resolve(
     EffectiveSource {
         key: key.to_string(),
         id: source_id_from_url(&source.url).unwrap_or_default(),
+        channel: matches!(
+            super::schema::parse_source_url(&source.url),
+            Ok(super::schema::SourceUrl::Channel(_))
+        ),
         url: source.url.clone(),
         category,
         enabled: source.enabled.unwrap_or(true),

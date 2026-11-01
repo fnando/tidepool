@@ -3,6 +3,7 @@
 #   --version                        prints a version
 #   --flat-playlist -J ... <url>     prints playlists/<list id>.json
 #   -J ... <watch url>               prints videos/<id>.info.json (or a generated one)
+#   channel lookup (--playlist-items 0): fixtures/ytdlp/channels/<@handle or channel_UC…>.json.
 #   subtitles only (--skip-download): writes media.<lang>.vtt into the -o directory.
 #   download (--print after_move:filepath): writes media.mkv and ytdlp.info.json
 #     into the -o directory, plus media.en.vtt with --write-subs.
@@ -43,6 +44,17 @@ fail_if_error() {
 
 case " $* " in
   *" --version "*) echo 2026.10.01; exit 0 ;;
+  *" --playlist-items 0 "*)
+    # A channel lookup: /@handle, /channel/UC…, /c/name, /user/name.
+    path="${last#*youtube.com/}"; path="${path%%\?*}"
+    case "$path" in
+      @*) name="${path%%/*}" ;;
+      channel/*|c/*|user/*) name="$(echo "$path" | cut -d/ -f1-2 | tr / _)" ;;
+      *) name="$path" ;;
+    esac
+    if [ -f "$fixtures/channels/$name.json" ]; then cat "$fixtures/channels/$name.json"; exit 0; fi
+    echo "ERROR: [youtube:tab] $name: Unable to download API page: HTTP Error 404: Not Found" >&2
+    exit 1 ;;
   *" --flat-playlist "*)
     [ -n "${TIDEPOOL_FAKE_INDEX_SLEEP:-}" ] && nap "$TIDEPOOL_FAKE_INDEX_SLEEP"
     id="${last##*list=}"; id="${id%%&*}"

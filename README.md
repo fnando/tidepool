@@ -113,17 +113,27 @@ any text editor. Its sections:
 | `[hooks.<name>]` | Your own commands, run at each stage of a download |
 | `[sources.<name>]` | What to keep in sync |
 
-A *source* is something to keep in sync: for now, a YouTube playlist. A
-minimal one looks like this:
+A *source* is something to keep in sync: a YouTube playlist or a whole
+channel. A minimal one looks like this:
 
 ```toml
 [sources.lofi]
 url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+
+[sources.supercombo]
+url = "https://www.youtube.com/@supercombooficial"
 ```
 
-`url` is the playlist's address, as you'd copy it from your browser. A link to
-a video inside a playlist works too, as long as it contains `list=`. The name
-(`lofi` here) is up to you: lowercase letters, digits, `-` and `_`. By
+`url` is the address as you'd copy it from your browser:
+
+- **A playlist:** its page, or a link to a video inside it (as long as it
+  contains `list=`).
+- **A channel:** `youtube.com/@name`, `youtube.com/channel/UC…`, or the older
+  `youtube.com/c/name` and `youtube.com/user/name`. A channel source has
+  everything the channel uploads: videos, Shorts and past live streams. Use
+  your rules to keep only what you want.
+
+The name (`lofi` here) is up to you: lowercase letters, digits, `-` and `_`. By
 default it's also the name of the source's folder (see `output_dir` below).
 
 See [`examples/config.toml`](examples/config.toml) for a complete example.

@@ -131,11 +131,11 @@ cover_file = "{output_dir}/cover.jpg"
 # env = {}                          # extra environment variables
 # work_dir = "~"                    # working directory, a full path; defaults to the video's directory
 
-# Sources to keep in sync (YouTube playlists). A source can set any category
+# Sources to keep in sync: YouTube playlists or channels. A source can set any category
 # setting for itself.
 
 [sources.sample]                    # one short video, to see tidepool work; replace it with your own
-url = "@SAMPLE_SOURCE_URL@"   # the playlist's URL
+url = "@SAMPLE_SOURCE_URL@"   # a playlist's URL, or a channel's (https://www.youtube.com/@name)
 # category = "default"              # which category's settings to use, e.g. "music"
 # enabled = true                    # disabled sources are skipped
 # hooks = ["notify"]                # hook names; each runs at its type's stage, in this order

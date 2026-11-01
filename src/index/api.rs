@@ -207,6 +207,33 @@ impl Api {
         }
     }
 
+    /// A channel's id and name, by `@handle` or `UC…` id; `None` if YouTube
+    /// has no such channel.
+    pub async fn channel(
+        &self,
+        reference: &str,
+        shutdown: &Shutdown,
+    ) -> Result<Option<(String, String)>, ApiError> {
+        let by = if reference.starts_with('@') {
+            "forHandle"
+        } else {
+            "id"
+        };
+        let body = self
+            .get(
+                "channels",
+                &[("part", "snippet,contentDetails"), (by, reference)],
+                shutdown,
+            )
+            .await?;
+        Ok(body["items"][0]["id"].as_str().map(|id| {
+            let title = body["items"][0]["snippet"]["title"]
+                .as_str()
+                .unwrap_or_default();
+            (id.to_string(), title.to_string())
+        }))
+    }
+
     /// Details for videos, 50 per request. Videos YouTube doesn't return
     /// (private, deleted) are left out.
     pub async fn videos(

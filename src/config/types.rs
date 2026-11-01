@@ -505,7 +505,8 @@ options_struct! {
 options_struct! {
     /// One source to keep in sync.
     pub struct SourceConfig {
-        /// Where videos come from: a YouTube playlist URL (with `list=`).
+        /// Where videos come from: a YouTube playlist URL (with `list=`) or a channel
+        /// URL (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`: all its uploads).
         #[schemars(extend("format" = "source-url"))]
         pub url: String,
         /// The category whose settings this source uses. Defaults to "default".

@@ -934,6 +934,36 @@ pub fn known_details(
     Ok(out)
 }
 
+/// A channel looked up earlier: its id and name.
+pub fn cached_channel(
+    conn: &Connection,
+    reference: &str,
+) -> rusqlite::Result<Option<(String, Option<String>)>> {
+    conn.query_row(
+        "SELECT channel_id, title FROM channels WHERE ref = ?1",
+        [reference],
+        |r| Ok((r.get(0)?, r.get(1)?)),
+    )
+    .optional()
+}
+
+/// Remember what a channel reference points to.
+pub fn save_channel(
+    conn: &Connection,
+    reference: &str,
+    channel_id: &str,
+    title: Option<&str>,
+    now: Timestamp,
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "INSERT INTO channels (ref, channel_id, title, resolved_at) VALUES (?1, ?2, ?3, ?4)
+         ON CONFLICT(ref) DO UPDATE SET channel_id = excluded.channel_id, title = excluded.title,
+           resolved_at = excluded.resolved_at",
+        params![reference, channel_id, title, now.to_string()],
+    )?;
+    Ok(())
+}
+
 /// The Pacific-time date YouTube's quota day runs on.
 pub fn quota_day(now: Timestamp) -> String {
     now.in_tz("America/Los_Angeles")
