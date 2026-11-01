@@ -106,8 +106,8 @@ impl Metadata<'_> {
             "chapters": chapters,
             "source": {
                 "name": self.source.key,
-                "url": self.source.url,
-                "id": self.source.id,
+                "urls": self.source.urls,
+                "ids": self.source.ids(),
                 "title": self.source_title,
                 "position": self.position,
             },
@@ -140,9 +140,10 @@ mod tests {
 
     #[test]
     fn writes_the_documented_shape() {
-        let config: Config =
-            toml::from_str("[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLabc'")
-                .unwrap();
+        let config: Config = toml::from_str(
+            "[sources.lofi]\nurls = ['https://www.youtube.com/playlist?list=PLabc']",
+        )
+        .unwrap();
         let source = effective_sources(&config).remove(0);
         let info = VideoInfo::parse(
             &std::fs::read_to_string(format!(
@@ -200,7 +201,7 @@ mod tests {
         );
         assert_eq!(
             json["source"],
-            json!({ "name": "lofi", "url": "https://www.youtube.com/playlist?list=PLabc", "id": "PLabc", "title": "Mix", "position": 3 })
+            json!({ "name": "lofi", "urls": ["https://www.youtube.com/playlist?list=PLabc"], "ids": ["PLabc"], "title": "Mix", "position": 3 })
         );
         assert_eq!(
             json["files"],

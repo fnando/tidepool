@@ -13,7 +13,7 @@ command = ["ntfy", "{nope}"]
 timeout = "soon"
 
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]
 exclude = [{ field = "channel", pattern = '[z-a]' }]
 
 [sources.lofi.cleanup]

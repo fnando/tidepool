@@ -461,7 +461,7 @@ mod tests {
 
     fn rules(toml: &str) -> RuleSet {
         let config: crate::config::Config = toml::from_str(&format!(
-            "[sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\n{toml}"
+            "[sources.x]\nurls = ['https://www.youtube.com/playlist?list=PLx']\n{toml}"
         ))
         .unwrap();
         RuleSet::compile(&effective_sources(&config)[0], 1_000_000, now()).unwrap()
@@ -601,7 +601,7 @@ include = [{ field = "channel", pattern = '^Lofi Girl$' }, 'chill']"#,
     #[test]
     fn backtrack_limit_is_a_filter_error() {
         let config: crate::config::Config =
-            toml::from_str("[sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\ninclude = ['(a|a)*\\1b']").unwrap();
+            toml::from_str("[sources.x]\nurls = ['https://www.youtube.com/playlist?list=PLx']\ninclude = ['(a|a)*\\1b']").unwrap();
         let set = RuleSet::compile(&effective_sources(&config)[0], 100, now()).unwrap();
         let decision = set.decide(&title(&"a".repeat(40)));
         assert!(

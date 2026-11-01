@@ -1,8 +1,8 @@
 [sources.by_url]
-url = "https://www.youtube.com/playlist?list=PLaaaaaaaa"
+urls = ["https://www.youtube.com/playlist?list=PLaaaaaaaa"]
 
 [sources.by_watch_url]
-url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLbbbbbbbb&index=2"
+urls = ["https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLbbbbbbbb&index=2"]
 
 [sources.short_host]
-url = "https://youtu.be/dQw4w9WgXcQ?list=PLcccccccc"
+urls = ["https://youtu.be/dQw4w9WgXcQ?list=PLcccccccc"]

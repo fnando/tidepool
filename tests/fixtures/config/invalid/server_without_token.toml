@@ -2,4 +2,4 @@
 listen = "0.0.0.0:8787"
 
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]

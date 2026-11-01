@@ -1,7 +1,7 @@
 //! Recording what indexing found: sources, videos and each video's status in
 //! a source.
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use jiff::Timestamp;
 use rusqlite::{Connection, OptionalExtension, params};
@@ -54,6 +54,9 @@ pub struct IndexSummary {
     pub filtered: BTreeMap<String, usize>,
     /// Every decision made in this index, for verbose output.
     pub decisions: Vec<DecisionChange>,
+    /// Lists of the source that couldn't be read (`<url>: <why>`), and
+    /// whether that was because yt-dlp may not stand in for the API.
+    pub errors: Vec<(String, bool)>,
 }
 
 /// One video's decision in an index.
@@ -80,6 +83,13 @@ pub struct SourceRecord<'a> {
     pub key: &'a str,
     pub rules_hash: &'a str,
     pub index_source: &'a str,
+    /// The ids of the source's lists (its `urls`), in order.
+    pub lists: &'a [String],
+    /// Which of those lists each listed video was found in.
+    pub found_in: &'a HashMap<String, Vec<String>>,
+    /// Lists that couldn't be read this time: what's only known from them
+    /// is left as it was.
+    pub failed: &'a [String],
 }
 
 /// Record an index of `source` in one transaction. `decide` is applied to new
@@ -94,13 +104,35 @@ pub fn record_index(
     let now = now.to_string();
     let tx = conn.transaction()?;
     tx.execute(
-        "INSERT INTO sources (key, youtube_id, title, rules_hash, last_indexed_at, last_index_source)
+        "INSERT INTO sources (key, lists, title, rules_hash, last_indexed_at, last_index_source)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-         ON CONFLICT(key) DO UPDATE SET youtube_id = excluded.youtube_id,
+         ON CONFLICT(key) DO UPDATE SET lists = excluded.lists,
            title = COALESCE(excluded.title, sources.title), rules_hash = excluded.rules_hash,
            last_indexed_at = excluded.last_indexed_at, last_index_source = excluded.last_index_source",
-        params![source.key, list.id, list.title, source.rules_hash, now, source.index_source],
+        params![
+            source.key,
+            serde_json::to_string(source.lists).unwrap_or_default(),
+            list.title,
+            source.rules_hash,
+            now,
+            source.index_source
+        ],
     )?;
+    // Where an item was seen before, for lists that failed this time.
+    let previous_lists =
+        |tx: &rusqlite::Transaction<'_>, video_id: &str| -> rusqlite::Result<Vec<String>> {
+            let text: Option<String> = tx
+                .query_row(
+                    "SELECT lists FROM items WHERE source_key = ?1 AND video_id = ?2",
+                    params![source.key, video_id],
+                    |r| r.get(0),
+                )
+                .optional()?
+                .flatten();
+            Ok(text
+                .and_then(|t| serde_json::from_str(&t).ok())
+                .unwrap_or_default())
+        };
 
     let mut summary = IndexSummary {
         total: list.items.len(),
@@ -112,6 +144,19 @@ pub fn record_index(
             continue; // the same video twice in one playlist: first position wins
         }
         upsert_video(&tx, item, &now)?;
+        let mut lists = source
+            .found_in
+            .get(&item.video_id)
+            .cloned()
+            .unwrap_or_default();
+        if !source.failed.is_empty() {
+            for id in previous_lists(&tx, &item.video_id)? {
+                if source.failed.contains(&id) && !lists.contains(&id) {
+                    lists.push(id);
+                }
+            }
+        }
+        let lists = serde_json::to_string(&lists).unwrap_or_default();
 
         let existing: Option<(String, Option<String>)> = tx
             .query_row(
@@ -139,16 +184,18 @@ pub fn record_index(
                 decision: decision.to_string(),
             });
             tx.execute(
-                "INSERT INTO items (source_key, video_id, position, in_remote, status, decision)
-                 VALUES (?1, ?2, ?3, 1, ?4, ?5)
+                "INSERT INTO items (source_key, video_id, position, in_remote, status, decision, lists)
+                 VALUES (?1, ?2, ?3, 1, ?4, ?5, ?6)
                  ON CONFLICT(source_key, video_id) DO UPDATE SET position = excluded.position,
-                   in_remote = 1, status = excluded.status, decision = excluded.decision",
+                   in_remote = 1, status = excluded.status, decision = excluded.decision,
+                   lists = excluded.lists",
                 params![
                     source.key,
                     item.video_id,
                     item.position,
                     status_for(&decision),
-                    decision.to_json()
+                    decision.to_json(),
+                    lists
                 ],
             )?;
             if status_for(&decision) == status::FILTERED {
@@ -159,14 +206,16 @@ pub fn record_index(
             }
         } else {
             tx.execute(
-                "UPDATE items SET position = ?3, in_remote = 1 WHERE source_key = ?1 AND video_id = ?2",
-                params![source.key, item.video_id, item.position],
+                "UPDATE items SET position = ?3, in_remote = 1, lists = ?4
+                 WHERE source_key = ?1 AND video_id = ?2",
+                params![source.key, item.video_id, item.position, lists],
             )?;
         }
     }
     summary.total = seen.len();
 
-    // Whatever wasn't seen has left the source.
+    // Whatever wasn't seen has left the source, unless it may still be in a
+    // list that couldn't be read.
     let mut stmt =
         tx.prepare("SELECT video_id FROM items WHERE source_key = ?1 AND in_remote = 1")?;
     let previously: Vec<String> = stmt
@@ -174,6 +223,13 @@ pub fn record_index(
         .collect::<Result<_, _>>()?;
     drop(stmt);
     for video_id in previously.iter().filter(|id| !seen.contains(id.as_str())) {
+        if !source.failed.is_empty()
+            && previous_lists(&tx, video_id)?
+                .iter()
+                .any(|id| source.failed.contains(id))
+        {
+            continue;
+        }
         tx.execute(
             "UPDATE items SET in_remote = 0 WHERE source_key = ?1 AND video_id = ?2",
             params![source.key, video_id],
@@ -234,10 +290,24 @@ mod tests {
         items: Vec<RemoteItem>,
         decide: impl Fn(&RemoteItem) -> Decision,
     ) -> IndexSummary {
+        record_lists(state, items, &HashMap::new(), &[], decide)
+    }
+
+    /// Record a source of two lists, PLa and PLb.
+    fn record_lists(
+        state: &mut State,
+        items: Vec<RemoteItem>,
+        found_in: &HashMap<String, Vec<String>>,
+        failed: &[String],
+        decide: impl Fn(&RemoteItem) -> Decision,
+    ) -> IndexSummary {
         let source = SourceRecord {
             key: "lofi",
             rules_hash: "h1",
             index_source: "ytdlp",
+            lists: &["PLa".into(), "PLb".into()],
+            found_in,
+            failed,
         };
         record_index(
             &mut state.conn,
@@ -286,17 +356,17 @@ mod tests {
                 ("b".into(), "filtered".into(), 1)
             ]
         );
-        let (title, youtube_id, hash): (String, String, String) = state
+        let (title, lists, hash): (String, String, String) = state
             .conn
             .query_row(
-                "SELECT title, youtube_id, rules_hash FROM sources WHERE key = 'lofi'",
+                "SELECT title, lists, rules_hash FROM sources WHERE key = 'lofi'",
                 [],
                 |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
             )
             .unwrap();
         assert_eq!(
-            (title.as_str(), youtube_id.as_str(), hash.as_str()),
-            ("Mix", "PLx", "h1")
+            (title.as_str(), lists.as_str(), hash.as_str()),
+            ("Mix", r#"["PLa","PLb"]"#, "h1")
         );
         let decision: String = state
             .conn
@@ -305,6 +375,60 @@ mod tests {
             })
             .unwrap();
         assert_eq!(decision, r#"{"decision":"excluded","rule":0}"#);
+    }
+
+    #[test]
+    fn a_failed_list_leaves_its_videos_alone() {
+        let mut state = State::open_in_memory().unwrap();
+        let keep = |_: &RemoteItem| Decision::Keep { include: None };
+        let found = |pairs: &[(&str, &[&str])]| -> HashMap<String, Vec<String>> {
+            pairs
+                .iter()
+                .map(|(v, l)| (v.to_string(), l.iter().map(|s| s.to_string()).collect()))
+                .collect()
+        };
+        // a only in PLa, b in both, c only in PLb.
+        record_lists(
+            &mut state,
+            vec![item("a", 1, "A"), item("b", 2, "B"), item("c", 3, "C")],
+            &found(&[("a", &["PLa"]), ("b", &["PLa", "PLb"]), ("c", &["PLb"])]),
+            &[],
+            keep,
+        );
+        // PLb fails; PLa no longer has a. c is untouched, b keeps PLb.
+        let summary = record_lists(
+            &mut state,
+            vec![item("b", 1, "B")],
+            &found(&[("b", &["PLa"])]),
+            &["PLb".into()],
+            keep,
+        );
+        assert_eq!(summary.removed, 1, "only a is gone");
+        assert_eq!(
+            statuses(&state),
+            vec![
+                ("a".into(), "pending".into(), 0),
+                ("b".into(), "pending".into(), 1),
+                ("c".into(), "pending".into(), 1)
+            ]
+        );
+        let lists: String = state
+            .conn
+            .query_row("SELECT lists FROM items WHERE video_id = 'b'", [], |r| {
+                r.get(0)
+            })
+            .unwrap();
+        assert_eq!(lists, r#"["PLa","PLb"]"#);
+
+        // Both read again: c left PLb.
+        let summary = record_lists(
+            &mut state,
+            vec![item("b", 1, "B")],
+            &found(&[("b", &["PLa", "PLb"])]),
+            &[],
+            keep,
+        );
+        assert_eq!(summary.removed, 1, "c is gone now");
     }
 
     #[test]
@@ -1096,6 +1220,9 @@ mod download_tests {
             key,
             rules_hash: "h",
             index_source: "ytdlp",
+            lists: &["PLx".into()],
+            found_in: &HashMap::new(),
+            failed: &[],
         };
         record_index(
             &mut state.conn,

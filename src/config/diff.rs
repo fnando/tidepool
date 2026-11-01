@@ -179,13 +179,13 @@ mod tests {
         assert_eq!(mask_key("short"), "…");
         let text = "[category.default.youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\" # key\n\n\
                     [category.music]\nyoutube = { api_key = \"AIzaSyMUSIC0000000zzzz\" }\n\n\
-                    [sources.lofi]\nurl = \"u\"\nyoutube.api_key = \"AIzaSyLOFI00000000yyyy\"\n\n\
+                    [sources.lofi]\nurls = [\"u\"]\nyoutube.api_key = \"AIzaSyLOFI00000000yyyy\"\n\n\
                     [server]\ntoken = \"my-long-secret-token\"\n";
         assert_eq!(
             mask_toml(text),
             "[category.default.youtube]\napi_key = \"AIza…x1Qw\" # key\n\n\
              [category.music]\nyoutube = { api_key = \"AIza…zzzz\" }\n\n\
-             [sources.lofi]\nurl = \"u\"\nyoutube.api_key = \"AIza…yyyy\"\n\n\
+             [sources.lofi]\nurls = [\"u\"]\nyoutube.api_key = \"AIza…yyyy\"\n\n\
              [server]\ntoken = \"my-l…oken\"\n"
         );
         assert_eq!(

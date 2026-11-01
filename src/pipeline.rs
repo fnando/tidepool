@@ -6,7 +6,7 @@ use jiff::Timestamp;
 use sha2::{Digest, Sha256};
 
 use crate::config::Config;
-use crate::config::merge::EffectiveSource;
+use crate::config::merge::{EffectiveSource, SourceList};
 use crate::filter::{Fields, RuleSet};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -228,12 +228,13 @@ fn fallback(source: &EffectiveSource, e: &ApiError) -> Result<(), IndexFailure> 
     }
 }
 
-/// A channel source's id and name: remembered from an earlier lookup, or
-/// looked up through the API (handles and ids) or yt-dlp.
+/// A channel's id and name: remembered from an earlier lookup, or looked up
+/// through the API (handles and ids) or yt-dlp.
 #[allow(clippy::too_many_arguments)]
 async fn resolve_channel(
     state: &State,
     source: &EffectiveSource,
+    list: &SourceList,
     ytdlp: &crate::tools::Ytdlp,
     cookies: Option<&std::path::Path>,
     pool: &mut ApiPool,
@@ -243,7 +244,7 @@ async fn resolve_channel(
     now: Timestamp,
 ) -> Result<(String, Option<String>), IndexFailure> {
     let db = |e: rusqlite::Error| IndexFailure::Failed(format!("state database: {e}"));
-    let reference = source.id.as_str();
+    let reference = list.id.as_str();
     if let Some(found) = items::cached_channel(&state.conn, reference).map_err(db)? {
         return Ok(found);
     }
@@ -267,7 +268,7 @@ async fn resolve_channel(
             Err(e) => pool.failed(source, id, e, tracker)?,
         }
     }
-    let (channel_id, title) = ytdlp::channel(ytdlp, &source.url, cookies, shutdown, grace)
+    let (channel_id, title) = ytdlp::channel(ytdlp, &list.url, cookies, shutdown, grace)
         .await
         .map_err(|e| match e {
             crate::index::IndexError::Stopped => IndexFailure::Stopped,
@@ -277,8 +278,77 @@ async fn resolve_channel(
     Ok((channel_id, title))
 }
 
-/// List one source (through the API when it has a key, else with yt-dlp),
-/// apply its filters and record the result.
+/// Everything a source's lists are read with.
+struct Lister<'a> {
+    state: &'a State,
+    source: &'a EffectiveSource,
+    rules: &'a RuleSet,
+    ytdlp: &'a crate::tools::Ytdlp,
+    cookies: Option<&'a std::path::Path>,
+    shutdown: &'a crate::shutdown::Shutdown,
+    grace: std::time::Duration,
+    now: Timestamp,
+}
+
+/// Read one of a source's lists (through the API when it has a key, else
+/// with yt-dlp); says which way it went.
+async fn list_one(
+    l: &Lister<'_>,
+    list: &SourceList,
+    apis: &mut ApiPool,
+    tracker: &mut crate::problems::Tracker,
+) -> Result<(RemoteList, &'static str), IndexFailure> {
+    let source = l.source;
+    // A channel is listed through its uploads playlist (UC… → UU…).
+    let (playlist_id, url, channel_title) = if list.channel {
+        let (channel_id, title) = resolve_channel(
+            l.state, source, list, l.ytdlp, l.cookies, apis, tracker, l.shutdown, l.grace, l.now,
+        )
+        .await?;
+        let uploads = format!("UU{}", &channel_id[2..]);
+        tracing::debug!(
+            "{}: channel {} is {channel_id}; listing its uploads ({uploads})",
+            source.key,
+            list.id
+        );
+        let url = format!("https://www.youtube.com/playlist?list={uploads}");
+        (uploads, url, title)
+    } else {
+        (list.id.clone(), list.url.clone(), None)
+    };
+    tracing::debug!("{}: listing {url}", source.key);
+    let api_list = list_with_api(
+        l.state,
+        source,
+        &playlist_id,
+        l.rules,
+        apis,
+        tracker,
+        l.shutdown,
+        l.now,
+    )
+    .await?;
+    let (mut listed, how) = match api_list {
+        Some(listed) => (listed, "api"),
+        None => {
+            let listed = ytdlp::list(l.ytdlp, &url, l.cookies, l.shutdown, l.grace)
+                .await
+                .map_err(|e| match e {
+                    crate::index::IndexError::Stopped => IndexFailure::Stopped,
+                    e => IndexFailure::Failed(e.to_string()),
+                })?;
+            (listed, "ytdlp")
+        }
+    };
+    if channel_title.is_some() {
+        listed.title = channel_title;
+    }
+    Ok((listed, how))
+}
+
+/// List a source's `urls`, apply its filters and record the result. A list
+/// that can't be read doesn't stop the others (see `IndexSummary::errors`);
+/// only when none can be read is the whole source a failure.
 #[allow(clippy::too_many_arguments)]
 pub async fn index_source(
     state: &mut State,
@@ -295,71 +365,79 @@ pub async fn index_source(
     let limit = usize::try_from(config.general.regex_backtrack_limit).unwrap_or(usize::MAX);
     let rules = RuleSet::compile(source, limit, now).map_err(failed)?;
     let cookies = cookies_file(source, dirs).map_err(failed)?;
-    let grace = config.general.shutdown_timeout.0;
-    // A channel is listed through its uploads playlist (UC… → UU…).
-    let (playlist_id, url, channel_title) = if source.channel {
-        let (channel_id, title) = resolve_channel(
-            state,
-            source,
-            ytdlp_path,
-            cookies.as_deref(),
-            apis,
-            tracker,
-            shutdown,
-            grace,
-            now,
-        )
-        .await?;
-        let uploads = format!("UU{}", &channel_id[2..]);
-        tracing::debug!(
-            "{}: channel {} is {channel_id}; listing its uploads ({uploads})",
-            source.key,
-            source.id
-        );
-        let url = format!("https://www.youtube.com/playlist?list={uploads}");
-        (uploads, url, title)
-    } else {
-        (source.id.clone(), source.url.clone(), None)
-    };
-    tracing::debug!("{}: listing {url}", source.key);
-    let started = std::time::Instant::now();
-    let api_list = list_with_api(
+    let lister = Lister {
         state,
         source,
-        &playlist_id,
-        &rules,
-        apis,
-        tracker,
+        rules: &rules,
+        ytdlp: ytdlp_path,
+        cookies: cookies.as_deref(),
         shutdown,
+        grace: config.general.shutdown_timeout.0,
         now,
-    )
-    .await?;
-    let (mut list, how) = match api_list {
-        Some(list) => (list, "api"),
-        None => {
-            let list = ytdlp::list(ytdlp_path, &url, cookies.as_deref(), shutdown, grace)
-                .await
-                .map_err(|e| match e {
-                    crate::index::IndexError::Stopped => IndexFailure::Stopped,
-                    e => IndexFailure::Failed(e.to_string()),
-                })?;
-            (list, "ytdlp")
-        }
     };
-    if channel_title.is_some() {
-        list.title = channel_title;
+    let lists = source.lists();
+    let several = lists.len() > 1;
+    let started = std::time::Instant::now();
+
+    // Every list in order: a video belongs where it's first found, and
+    // positions run on from one list to the next.
+    let mut merged = RemoteList {
+        id: String::new(),
+        title: None,
+        items: Vec::new(),
+    };
+    let mut found_in: HashMap<String, Vec<String>> = HashMap::new();
+    let mut placed: HashSet<String> = HashSet::new();
+    let mut errors: Vec<(String, IndexFailure)> = Vec::new();
+    let mut hows: Vec<&str> = Vec::new();
+    for (n, list) in lists.iter().enumerate() {
+        match list_one(&lister, list, apis, tracker).await {
+            Ok((listed, how)) => {
+                if !hows.contains(&how) {
+                    hows.push(how);
+                }
+                if n == 0 {
+                    merged.title = listed.title;
+                }
+                for mut item in listed.items {
+                    let lists_of = found_in.entry(item.video_id.clone()).or_default();
+                    if !lists_of.contains(&list.id) {
+                        lists_of.push(list.id.clone());
+                    }
+                    if placed.insert(item.video_id.clone()) {
+                        item.position = u32::try_from(merged.items.len() + 1).unwrap_or(u32::MAX);
+                        merged.items.push(item);
+                    }
+                }
+            }
+            Err(IndexFailure::Stopped) => return Err(IndexFailure::Stopped),
+            Err(e) => errors.push((list.url.clone(), e)),
+        }
     }
+    if hows.is_empty() {
+        // Nothing could be read: the source failed.
+        let no_fallback = errors
+            .iter()
+            .any(|(_, e)| matches!(e, IndexFailure::NoFallback(_)));
+        let message = describe_errors(&errors, several);
+        return Err(if no_fallback {
+            IndexFailure::NoFallback(message)
+        } else {
+            IndexFailure::Failed(message)
+        });
+    }
+
     // Rules on `kind`: settle what can be settled now. The API marks live
     // streams, so through it "not a Short" means a regular video; through
     // yt-dlp a past stream may not be marked, so that waits for the check
     // before download.
     if rules.uses_kind() {
-        let ids: Vec<String> = list.items.iter().map(|i| i.video_id.clone()).collect();
+        let ids: Vec<String> = merged.items.iter().map(|i| i.video_id.clone()).collect();
         let known = items::known_kinds(&state.conn, &ids).unwrap_or_default();
-        for item in list.items.iter_mut().filter(|i| i.kind.is_none()) {
+        for item in merged.items.iter_mut().filter(|i| i.kind.is_none()) {
             item.kind = known.get(&item.video_id).copied();
         }
-        for item in list.items.iter_mut().filter(|i| i.kind.is_none()) {
+        for item in merged.items.iter_mut().filter(|i| i.kind.is_none()) {
             if matches!(
                 item.availability,
                 crate::index::Availability::Live | crate::index::Availability::Upcoming
@@ -368,30 +446,39 @@ pub async fn index_source(
             }
         }
         crate::index::shorts::ShortsCheck::default()
-            .classify(&mut list.items, how == "api", shutdown)
+            .classify(&mut merged.items, hows == ["api"], shutdown)
             .await;
     }
+    let how = hows.join("+");
     tracing::debug!(
         "{}: listed {} in {:.1}s ({})",
         source.key,
-        plural(list.items.len(), "video", "videos"),
+        plural(merged.items.len(), "video", "videos"),
         started.elapsed().as_secs_f64(),
-        if how == "api" {
-            "YouTube API"
-        } else {
-            "yt-dlp"
-        }
+        hows.iter()
+            .map(|h| if *h == "api" { "YouTube API" } else { "yt-dlp" })
+            .collect::<Vec<_>>()
+            .join(" and ")
     );
     let hash = rules_hash(source);
+    let ids = source.ids();
+    let failed_ids: Vec<String> = lists
+        .iter()
+        .filter(|l| errors.iter().any(|(url, _)| *url == l.url))
+        .map(|l| l.id.clone())
+        .collect();
     let record = SourceRecord {
         key: &source.key,
         rules_hash: &hash,
-        index_source: how,
+        index_source: &how,
+        lists: &ids,
+        found_in: &found_in,
+        failed: &failed_ids,
     };
-    let summary = record_index(
+    let mut summary = record_index(
         &mut state.conn,
         &record,
-        &list,
+        &merged,
         |item| rules.decide(&Fields::from_item(item)),
         now,
     )
@@ -406,7 +493,30 @@ pub async fn index_source(
             tracing::trace!("{}: {line}", source.key);
         }
     }
+    summary.errors = errors
+        .into_iter()
+        .map(|(url, e)| {
+            let no_fallback = matches!(e, IndexFailure::NoFallback(_));
+            (format!("{url}: {e}"), no_fallback)
+        })
+        .collect();
     Ok(summary)
+}
+
+/// What went wrong with a source's lists; each URL is named when there are
+/// several.
+fn describe_errors(errors: &[(String, IndexFailure)], several: bool) -> String {
+    errors
+        .iter()
+        .map(|(url, e)| {
+            if several {
+                format!("{url}: {e}")
+            } else {
+                e.to_string()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("; ")
 }
 
 fn plural(n: usize, one: &str, many: &str) -> String {
@@ -467,7 +577,7 @@ mod tests {
 
     fn source(extra: &str) -> EffectiveSource {
         let config: Config = toml::from_str(&format!(
-            "[sources.x]\nurl = 'https://www.youtube.com/playlist?list=PLx'\n{extra}"
+            "[sources.x]\nurls = ['https://www.youtube.com/playlist?list=PLx']\n{extra}"
         ))
         .unwrap();
         effective_sources(&config).remove(0)

@@ -111,7 +111,7 @@ timeout = "30s"
 on_failure = "warn"
 
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"   # the playlist's URL
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]   # playlists and channels, saved together
 enabled = true
 include = ['(?i)\blive\b', { field = "channel", pattern = '^Lofi Girl$' }]
 exclude = ['(?i)\b(trailer|teaser)\b']
@@ -123,5 +123,8 @@ max_age = "30d"
 removed_from_source = "remove"
 
 [sources.talks]
-url = "https://www.youtube.com/playlist?list=PLyyyyyyyy"
+urls = [
+  "https://www.youtube.com/playlist?list=PLyyyyyyyy",
+  "https://www.youtube.com/@somechannel",
+]
 category = "audio"                  # [category.default], then [category.audio], then what's set here

@@ -297,7 +297,7 @@ mod tests {
     fn resolves_media_dirs() {
         let config: Config = toml::from_str(
             "[category.default]\nmedia_dir = '~/Videos'\n[category.music]\nmedia_dir = '/nas/music'\ntmp_dir = '{media_dir}/.work'\n[category.misc]\n\
-             [sources.a]\nurl = 'https://www.youtube.com/playlist?list=PLa'\ncategory = 'music'",
+             [sources.a]\nurls = ['https://www.youtube.com/playlist?list=PLa']\ncategory = 'music'",
         )
         .unwrap();
         let source = effective_sources(&config).remove(0);
@@ -313,7 +313,7 @@ mod tests {
             vec![Ok("/d/tidepool/media".into())]
         );
         let config: Config =
-            toml::from_str("[sources.a]\nurl = 'https://www.youtube.com/playlist?list=PLa'")
+            toml::from_str("[sources.a]\nurls = ['https://www.youtube.com/playlist?list=PLa']")
                 .unwrap();
         let source = effective_sources(&config).remove(0);
         assert_eq!(tmp_dir(&source, &dirs()), Ok("/d/tidepool/tmp".into()));
@@ -323,7 +323,7 @@ mod tests {
     fn effective_config_masks_keys_and_fills_defaults() {
         let config: Config = toml::from_str(
             "[category.default.youtube]\napi_key = 'AIzaSyD-1234567890x1Qw'\n[server]\ntoken = 'my-long-secret-token'\n\
-             [sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLx'",
+             [sources.lofi]\nurls = ['https://www.youtube.com/playlist?list=PLx']",
         )
         .unwrap();
         let text = EffectiveConfig::new(&config, &dirs(), false).to_toml();

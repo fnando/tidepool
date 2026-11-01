@@ -47,7 +47,6 @@ impl Values {
         put("duration", info.duration_seconds().map(|d| d.to_string()));
         put("position", Some(position.to_string()));
         put("source", Some(source.key.clone()));
-        put("source_id", Some(source.id.clone()));
         put("source_title", source_title.map(str::to_string));
         put(
             "url",
@@ -183,7 +182,7 @@ mod tests {
 
     fn source(extra: &str) -> EffectiveSource {
         let config: Config = toml::from_str(&format!(
-            "[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLabc'\n{extra}"
+            "[sources.lofi]\nurls = ['https://www.youtube.com/playlist?list=PLabc']\n{extra}"
         ))
         .unwrap();
         effective_sources(&config).remove(0)

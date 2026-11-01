@@ -231,7 +231,7 @@ impl App<'_> {
             tracing::debug!(
                 "{}: {} (category {}), format {}, output_dir {}",
                 source.key,
-                source.url,
+                source.urls.join(", "),
                 source.category,
                 source.format,
                 source.output_dir
@@ -499,7 +499,22 @@ impl App<'_> {
             {
                 Err(crate::pipeline::IndexFailure::Stopped) => break,
                 Ok(summary) => {
-                    tracker.index_succeeded(&source.key);
+                    // Some lists couldn't be read: the rest was recorded,
+                    // but the source still failed.
+                    for (error, no_fallback) in &summary.errors {
+                        tracing::error!("{}: {error}", source.key);
+                        if *no_fallback {
+                            self.no_fallback.set(true);
+                        }
+                    }
+                    if summary.errors.is_empty() {
+                        tracker.index_succeeded(&source.key);
+                    } else {
+                        failed += 1;
+                        let errors: Vec<&str> =
+                            summary.errors.iter().map(|(e, _)| e.as_str()).collect();
+                        tracker.index_failed(&source.key, &errors.join("; "));
+                    }
                     tracker.regex_limit(
                         &source.key,
                         summary.count(crate::state::items::status::FILTER_ERROR),
@@ -1806,7 +1821,7 @@ impl App<'_> {
             ..Fields::default()
         };
 
-        writeln!(out, "source {} ({})", source.key, source.id)?;
+        writeln!(out, "source {} ({})", source.key, source.ids().join(", "))?;
         if rules.include.is_empty() && rules.exclude.is_empty() {
             writeln!(out, "  no include/exclude rules")?;
         }
@@ -1847,7 +1862,9 @@ pub fn resolve_source<'a>(
 ) -> anyhow::Result<&'a EffectiveSource> {
     let found = match r {
         SourceRef::Key(key) => sources.iter().find(|p| &p.key == key),
-        SourceRef::Id(id) | SourceRef::Url { id, .. } => sources.iter().find(|p| &p.id == id),
+        SourceRef::Id(id) | SourceRef::Url { id, .. } => {
+            sources.iter().find(|p| p.ids().contains(id))
+        }
     };
     found.ok_or_else(|| {
         let known: Vec<&str> = sources.iter().map(|p| p.key.as_str()).collect();

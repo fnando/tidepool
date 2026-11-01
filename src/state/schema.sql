@@ -2,7 +2,7 @@
 
 CREATE TABLE sources (
   key TEXT PRIMARY KEY,            -- config key
-  youtube_id TEXT NOT NULL,       -- unique among configured sources (config validation)
+  lists TEXT NOT NULL,             -- JSON: the ids of its urls (playlist ids, channels as written)
   title TEXT, etag TEXT, rules_hash TEXT,
   last_indexed_at TEXT, last_index_source TEXT
 );
@@ -20,6 +20,7 @@ CREATE TABLE items (               -- a video's membership in a source
   video_id TEXT NOT NULL REFERENCES videos(id),
   position INTEGER, added_at TEXT, in_remote INTEGER NOT NULL,
   status TEXT NOT NULL, decision TEXT,
+  lists TEXT,                       -- JSON: ids of the source's lists it was last seen in
   dir TEXT, format TEXT,            -- output_dir (absolute); format string it was downloaded with
   files TEXT,                       -- JSON: every file placed for it, absolute paths (VideoFiles)
   metadata TEXT,                    -- a copy of its metadata.json, to restore it

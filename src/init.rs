@@ -135,7 +135,7 @@ cover_file = "{output_dir}/cover.jpg"
 # setting for itself.
 
 [sources.sample]                    # one short video, to see tidepool work; replace it with your own
-url = "@SAMPLE_SOURCE_URL@"   # a playlist's URL, or a channel's (https://www.youtube.com/@name)
+urls = ["@SAMPLE_SOURCE_URL@"]   # playlist or channel URLs (https://www.youtube.com/@name), saved together
 # category = "default"              # which category's settings to use, e.g. "music"
 # enabled = true                    # disabled sources are skipped
 # hooks = ["notify"]                # hook names; each runs at its type's stage, in this order
@@ -167,7 +167,7 @@ mod tests {
         );
         let keys: Vec<&String> = config.sources.keys().collect();
         assert_eq!(keys, ["sample"]);
-        assert_eq!(config.sources["sample"].url, SAMPLE_SOURCE_URL);
+        assert_eq!(config.sources["sample"].urls, [SAMPLE_SOURCE_URL]);
         assert!(
             text.lines().all(|l| l == l.trim_end()),
             "trailing whitespace"
@@ -205,7 +205,7 @@ mod tests {
         assert_eq!(config.tools, ToolsConfig::default());
         assert_eq!(config.server, ServerConfig::default());
         let plain = SourceConfig {
-            url: "https://www.youtube.com/playlist?list=PLx".into(),
+            urls: vec!["https://www.youtube.com/playlist?list=PLx".into()],
             ..SourceConfig::default()
         };
         let mut documented = effective_source(&config, "x", &plain);

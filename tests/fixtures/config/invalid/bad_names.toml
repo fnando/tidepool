@@ -2,4 +2,4 @@
 command = ["true"]
 
 [sources.Lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]

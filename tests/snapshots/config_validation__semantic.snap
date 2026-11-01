@@ -5,6 +5,7 @@ expression: err
 semantic.toml:2:10 category.default.hooks[0]: unknown hook "notify" (defined hooks: transcode)
 semantic.toml:3:16 category.default.min_duration: min_duration must not be greater than max_duration
 semantic.toml:11:23 sources.one.hooks[1]: unknown hook "upload" (defined hooks: transcode)
-semantic.toml:14:7 sources.two.url: playlist PLsamesame is already used by sources.one
+semantic.toml:14:9 sources.two.urls[0]: playlist PLsamesame is already used by sources.one
 semantic.toml:19:16 sources.three.min_duration: min_duration must not be greater than max_duration
 semantic.toml:30:12 sources.five.category: unknown category "podcasts" (categories: default, music)
+semantic.toml:33:58 sources.twice.urls[1]: playlist PLtwice is already in this source's urls

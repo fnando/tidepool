@@ -270,7 +270,7 @@ mod tests {
 
     fn source(extra: &str) -> EffectiveSource {
         let config: Config = toml::from_str(&format!(
-            "[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLabc'\n{extra}"
+            "[sources.lofi]\nurls = ['https://www.youtube.com/playlist?list=PLabc']\n{extra}"
         ))
         .unwrap();
         effective_sources(&config).remove(0)

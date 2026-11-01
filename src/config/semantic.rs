@@ -117,14 +117,19 @@ fn check_unique_ids(config: &Config, out: &mut Vec<Diagnostic>) {
     let mut ids: BTreeMap<String, &str> = BTreeMap::new();
     for (key, source) in &config.sources {
         let effective = effective_source(config, key, source);
-        if let Some(other) = ids.insert(effective.id.clone(), key) {
-            out.push(Diagnostic::error(
-                format!("/sources/{key}/url"),
-                format!(
-                    "playlist {} is already used by sources.{other}",
-                    effective.id
-                ),
-            ));
+        for (i, list) in effective.lists().iter().enumerate() {
+            let used = if list.channel { "channel" } else { "playlist" };
+            match ids.insert(list.id.clone(), key) {
+                Some(other) if other == key => out.push(Diagnostic::error(
+                    format!("/sources/{key}/urls/{i}"),
+                    format!("{used} {} is already in this source's urls", list.id),
+                )),
+                Some(other) => out.push(Diagnostic::error(
+                    format!("/sources/{key}/urls/{i}"),
+                    format!("{used} {} is already used by sources.{other}", list.id),
+                )),
+                None => {}
+            }
         }
     }
 }

@@ -2,4 +2,4 @@
 fallback_to_ytdlp = false
 
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]

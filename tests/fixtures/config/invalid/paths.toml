@@ -11,4 +11,4 @@ metadata_file = "metadata.json"                         # not a full path
 tmp_dir = "{data_dir}/{source}"     # only {media_dir} and {data_dir}
 
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]

@@ -3,5 +3,5 @@ exclude = [{ field = "kind", pattern = "short|live" }]
 match_fields = ["title", "kind"]
 
 [sources.supercombo]
-url = "https://www.youtube.com/@supercombooficial"
+urls = ["https://www.youtube.com/@supercombooficial"]
 include = [{ field = "kind", value = "shorts" }]

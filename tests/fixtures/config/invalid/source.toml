@@ -2,14 +2,23 @@
 enabled = true
 
 [sources.no_list]
-url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+urls = ["https://www.youtube.com/watch?v=dQw4w9WgXcQ"]
 
 [sources.bare_id]
-url = "PLcccccccc"
+urls = ["PLcccccccc"]
 
 [sources.not_youtube]
-url = "https://example.com/playlist?list=PLdddddddd"
+urls = ["https://example.com/playlist?list=PLdddddddd"]
 
 [sources.bad_category]
-url = "https://www.youtube.com/playlist?list=PLaaaaaaaa"
+urls = ["https://www.youtube.com/playlist?list=PLaaaaaaaa"]
 category = "Music!"
+
+[sources.empty]
+urls = []
+
+[sources.not_a_list]
+urls = "https://www.youtube.com/playlist?list=PLeeeeeeee"
+
+[sources.repeated]
+urls = ["https://www.youtube.com/playlist?list=PLffffffff", "https://www.youtube.com/playlist?list=PLffffffff"]

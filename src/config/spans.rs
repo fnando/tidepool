@@ -171,7 +171,7 @@ mod tests {
 concurrency = 2
 
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLx"
+urls = ["https://www.youtube.com/playlist?list=PLx"]
 include = ['a', { field = "channel", pattern = 'b' }]
 
 [sources.lofi.cleanup]
@@ -189,7 +189,7 @@ max_size = "20 gigs"
             json!({
                 "library": { "concurrency": 2 },
                 "sources": { "lofi": {
-                    "url": "https://www.youtube.com/playlist?list=PLx",
+                    "urls": ["https://www.youtube.com/playlist?list=PLx"],
                     "include": ["a", { "field": "channel", "pattern": "b" }],
                     "cleanup": { "max_size": "20 gigs" }
                 }}

@@ -86,8 +86,8 @@ impl Stage<'_> {
             },
             "source": {
                 "name": self.source.key,
-                "url": self.source.url,
-                "id": self.source.id,
+                "urls": self.source.urls,
+                "ids": self.source.ids(),
                 "title": self.source_title,
                 "position": self.position,
                 "category": self.source.category,

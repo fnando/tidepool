@@ -505,10 +505,13 @@ options_struct! {
 options_struct! {
     /// One source to keep in sync.
     pub struct SourceConfig {
-        /// Where videos come from: a YouTube playlist URL (with `list=`) or a channel
-        /// URL (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`: all its uploads).
-        #[schemars(extend("format" = "source-url"))]
-        pub url: String,
+        /// Where videos come from: YouTube playlist URLs (with `list=`) and channel
+        /// URLs (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`: all its uploads).
+        #[schemars(
+            length(min = 1),
+            extend("uniqueItems" = true, "items" = { "type": "string", "format": "source-url" })
+        )]
+        pub urls: Vec<String>,
         /// The category whose settings this source uses. Defaults to "default".
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(regex(pattern = r"^[a-z0-9][a-z0-9_-]*$"))]

@@ -22,8 +22,8 @@ exclude = ['(?i)\blive\b']
 api_key = "AIzaSyD-0000000000z9Zz"
 
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]
 category = "music"
 
 [sources.talks]
-url = "https://www.youtube.com/playlist?list=PLyyyyyyyy"
+urls = ["https://www.youtube.com/playlist?list=PLyyyyyyyy"]

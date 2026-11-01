@@ -23,5 +23,5 @@ on_failure = "explode"
 timeout = "1m"
 
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]
 enabled = "yes"

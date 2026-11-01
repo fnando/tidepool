@@ -42,7 +42,7 @@ impl Env {
         let text = format!(
             "[category.default]\nmedia_dir = \"{}\"\n\n[category.default.youtube]\napi_key = \"{KEY}\"\n{youtube}\n\n\
              [tools.deno]\nmanaged = false\n\n[tools.yt-dlp]\nmanaged = false\npath = \"{}\"\n\n\
-             [sources.scatolove]\nurl = \"https://www.youtube.com/playlist?list={}\"\n",
+             [sources.scatolove]\nurls = [\"https://www.youtube.com/playlist?list={}\"]\n",
             self.path("media").display(),
             test_bin().join("yt-dlp").display(),
             youtube_fake::PLAYLIST,
@@ -189,7 +189,7 @@ fn channel_config(env: &Env, url: &str, with_key: bool) -> String {
     let text = format!(
         "[category.default]\nmedia_dir = \"{}\"\n\n{key}\
          [tools.deno]\nmanaged = false\n\n[tools.yt-dlp]\nmanaged = false\npath = \"{}\"\n\n\
-         [sources.supercombo]\nurl = \"{url}\"\n",
+         [sources.supercombo]\nurls = [\"{url}\"]\n",
         env.path("media").display(),
         test_bin().join("yt-dlp").display(),
     );
@@ -298,4 +298,69 @@ async fn kind_rules_skip_shorts_and_live_streams() {
         .assert()
         .success();
     assert_eq!(shorts.received_requests().await.unwrap().len(), 179);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn several_lists_in_one_source() {
+    let env = Env::new(youtube_fake::start().await).await;
+    let config = channel_config(&env, "https://www.youtube.com/@supercombooficial", true);
+    // The playlist first: its title is the source's, its videos come first.
+    let text = fs::read_to_string(&config).unwrap().replace(
+        "urls = [\"https://www.youtube.com/@supercombooficial\"]",
+        &format!(
+            "urls = [\"https://www.youtube.com/playlist?list={}\", \"https://www.youtube.com/@supercombooficial\"]",
+            youtube_fake::PLAYLIST
+        ),
+    );
+    fs::write(&config, text).unwrap();
+    env.cmd(&["index", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains("supercombo: 597 videos (597 new)"));
+    let db = env.db();
+    let title: Option<String> = db
+        .query_row(
+            "SELECT title FROM sources WHERE key = 'supercombo'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    // The first list's title: the API doesn't name playlists.
+    assert_eq!(title, None, "not the channel's name");
+    let (first, last): (String, i64) = db
+        .query_row(
+            "SELECT v.title, (SELECT MAX(position) FROM items) FROM items i JOIN videos v ON v.id = i.video_id WHERE i.position = 1",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    assert!(first.contains("SCATOLOVE"), "{first}");
+    assert_eq!(last, 597, "positions run on through the lists");
+    let lists: String = db
+        .query_row("SELECT lists FROM items WHERE position = 597", [], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    assert_eq!(lists, "[\"@supercombooficial\"]");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_list_that_fails_doesnt_stop_the_others() {
+    let env = Env::new(MockServer::start().await).await;
+    let config = channel_config(&env, "https://www.youtube.com/@supercombooficial", false);
+    let text = fs::read_to_string(&config).unwrap().replace(
+        "urls = [\"https://www.youtube.com/@supercombooficial\"]",
+        "urls = [\"https://www.youtube.com/@nobody-here\", \"https://www.youtube.com/@supercombooficial\"]",
+    );
+    fs::write(&config, text).unwrap();
+    env.cmd(&["index", "--config", &config])
+        .assert()
+        .code(3)
+        .stdout(contains("supercombo: 20 videos (20 new)"))
+        .stderr(contains(
+            "supercombo: https://www.youtube.com/@nobody-here: yt-dlp failed: ERROR: [youtube:tab] @nobody-here",
+        ));
+    env.cmd(&["problems"])
+        .assert()
+        .stdout(contains("@nobody-here"));
 }

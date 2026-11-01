@@ -50,7 +50,7 @@ impl Env {
         let text = format!(
             "# my config\n[category.default]\nmedia_dir = \"{}\"\n\n[tools.deno]\nmanaged = false\n\n[tools.yt-dlp]\nmanaged = false\npath = \"{}\"\n\n\
              [category.default.youtube]\napi_key = \"AIzaSyD-1234567890x1Qw\"\n\n\
-             [sources.lofi]\nurl = \"https://www.youtube.com/playlist?list=PLaaaaaaaaaaaa\"\ninclude = ['(?i)\\blive\\b']\nexclude = ['(?i)trailer']\n{extra}",
+             [sources.lofi]\nurls = [\"https://www.youtube.com/playlist?list=PLaaaaaaaaaaaa\"]\ninclude = ['(?i)\\blive\\b']\nexclude = ['(?i)trailer']\n{extra}",
             self.path("media").display(),
             ytdlp.display()
         );
@@ -166,7 +166,7 @@ fn invalid_configs_report_file_line_col_and_are_not_stored() {
     let file = env.path("bad.toml");
     fs::write(
         &file,
-        "[general]\nconcurency = 2\n\n[sources.lofi]\nurl = 'https://www.youtube.com/playlist?list=PLx'\nmin_duration = 'soon'\n",
+        "[general]\nconcurency = 2\n\n[sources.lofi]\nurls = ['https://www.youtube.com/playlist?list=PLx']\nmin_duration = 'soon'\n",
     )
     .unwrap();
     let file = file.display().to_string();
@@ -445,7 +445,7 @@ fn init_creates_config_and_state() {
     assert!(text.starts_with("#:schema https://raw.githubusercontent.com/fnando/tidepool/v"));
     assert!(text.contains(
         "[sources.sample]                    # one short video, to see tidepool work; replace it with your own\n\
-         url = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"   # a playlist's URL, or a channel's (https://www.youtube.com/@name)\n\
+         urls = [\"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"]   # playlist or channel URLs (https://www.youtube.com/@name), saved together\n\
          # category = \"default\""
     ));
 
@@ -713,10 +713,10 @@ fn write_index_config(env: &Env, extra_mixed: &str) -> String {
     let ytdlp = test_bin().join("yt-dlp");
     let text = format!(
         "[category.default]\nmedia_dir = \"{root}\"\n\n[tools.deno]\nmanaged = false\n\n[tools.yt-dlp]\nmanaged = false\npath = \"{ytdlp}\"\n\n\
-         [sources.sample]\nurl = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"\n\n\
-         [sources.mixed]\nurl = \"https://www.youtube.com/playlist?list=PLmixedmixedmixed\"\n\
+         [sources.sample]\nurls = [\"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"]\n\n\
+         [sources.mixed]\nurls = [\"https://www.youtube.com/playlist?list=PLmixedmixedmixed\"]\n\
          min_duration = \"60s\"\nmax_duration = \"4h\"\ncutoff = \"2026-01-01\"\n{extra_mixed}\n\
-         [sources.broken]\nurl = \"https://www.youtube.com/playlist?list=PLdoesnotexist\"\n",
+         [sources.broken]\nurls = [\"https://www.youtube.com/playlist?list=PLdoesnotexist\"]\n",
         root = env.path("media").display(),
         ytdlp = ytdlp.display()
     );
@@ -786,7 +786,7 @@ fn index_needs_a_working_ytdlp() {
     let file = env.path("c.toml");
     fs::write(
         &file,
-        "[tools.deno]\nmanaged = false\n\n[tools.yt-dlp]\nmanaged = false\npath = \"/nonexistent/yt-dlp\"\n[sources.sample]\nurl = \"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"\n",
+        "[tools.deno]\nmanaged = false\n\n[tools.yt-dlp]\nmanaged = false\npath = \"/nonexistent/yt-dlp\"\n[sources.sample]\nurls = [\"https://www.youtube.com/playlist?list=PLXLpuA-bwY4s\"]\n",
     )
     .unwrap();
     env.cmd(&["index", "--config", &file.display().to_string()])

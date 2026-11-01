@@ -7,14 +7,14 @@ max_duration = "5m"
 command = ["to-h265.sh", "{output_file}"]
 
 [sources.one]
-url = "https://www.youtube.com/playlist?list=PLsamesame"
+urls = ["https://www.youtube.com/playlist?list=PLsamesame"]
 hooks = ["transcode", "upload"]
 
 [sources.two]
-url = "https://www.youtube.com/playlist?list=PLsamesame"
+urls = ["https://www.youtube.com/playlist?list=PLsamesame"]
 
 [sources.three]
-url = "https://www.youtube.com/playlist?list=PLthree"
+urls = ["https://www.youtube.com/playlist?list=PLthree"]
 max_duration = "1m"
 min_duration = "2m"
 
@@ -22,9 +22,12 @@ min_duration = "2m"
 media_dir = "/nas/music"
 
 [sources.four]
-url = "https://www.youtube.com/playlist?list=PLfour"
+urls = ["https://www.youtube.com/playlist?list=PLfour"]
 category = "music"
 
 [sources.five]
-url = "https://www.youtube.com/playlist?list=PLfive"
+urls = ["https://www.youtube.com/playlist?list=PLfive"]
 category = "podcasts"
+
+[sources.twice]
+urls = ["https://www.youtube.com/playlist?list=PLtwice", "https://youtu.be/x?list=PLtwice"]

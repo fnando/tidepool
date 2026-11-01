@@ -113,18 +113,19 @@ any text editor. Its sections:
 | `[hooks.<name>]` | Your own commands, run at each stage of a download |
 | `[sources.<name>]` | What to keep in sync |
 
-A *source* is something to keep in sync: a YouTube playlist or a whole
-channel. A minimal one looks like this:
+A *source* is something to keep in sync: one or more YouTube playlists or
+whole channels, saved together. A minimal one looks like this:
 
 ```toml
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]
 
 [sources.supercombo]
-url = "https://www.youtube.com/@supercombooficial"
+urls = ["https://www.youtube.com/@supercombooficial"]
 ```
 
-`url` is the address as you'd copy it from your browser:
+`urls` lists the addresses as you'd copy them from your browser. It's always
+a list, even with a single address:
 
 - **A playlist:** its page, or a link to a video inside it (as long as it
   contains `list=`).
@@ -132,6 +133,23 @@ url = "https://www.youtube.com/@supercombooficial"
   `youtube.com/c/name` and `youtube.com/user/name`. A channel source has
   everything the channel uploads: videos, Shorts and past live streams. Use
   your rules to keep only what you want.
+
+With several addresses, the source keeps everything they have together: the
+same folder, the same rules, and a video found in more than one is downloaded
+once. The source takes its title from the first address. If one address can't
+be read (a deleted playlist, a network error), the others are still checked,
+and the videos only known from that address are left as they are until it
+works again:
+
+```toml
+[sources.supercombo]
+urls = [
+  "https://www.youtube.com/@supercombooficial",
+  "https://www.youtube.com/playlist?list=PLzzzzzzzz",   # a fan's playlist of live shows
+]
+```
+
+An address can only be in one source.
 
 The name (`lofi` here) is up to you: lowercase letters, digits, `-` and `_`. By
 default it's also the name of the source's folder (see `output_dir` below).
@@ -158,7 +176,7 @@ format = "ba/b"                          # audio only
 ytdlp_args = ["-x", "--audio-format", "opus"]
 
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]
 category = "music"
 ```
 
@@ -169,7 +187,7 @@ change any setting:
 
 ```toml
 [sources.talks]
-url = "https://www.youtube.com/playlist?list=PLyyyyyyyy"
+urls = ["https://www.youtube.com/playlist?list=PLyyyyyyyy"]
 cutoff = "none"                          # keep the whole back catalogue
 ```
 
@@ -581,7 +599,7 @@ expressions, tested against the video title by default:
 
 ```toml
 [sources.lofi]
-url = "https://www.youtube.com/playlist?list=PLxxxxxxxx"
+urls = ["https://www.youtube.com/playlist?list=PLxxxxxxxx"]
 include = ['(?i)\blive\b']                 # only videos with "live" in the title
 exclude = ['(?i)\b(trailer|teaser)\b']     # but never trailers or teasers
 ```

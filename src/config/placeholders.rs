@@ -129,7 +129,6 @@ pub const PLACEHOLDERS: &[Placeholder] = &[
     ph!("duration", true, ALL, Some("TIDEPOOL_DURATION")),
     ph!("position", true, ALL, Some("TIDEPOOL_POSITION")),
     ph!("source", false, ALL, Some("TIDEPOOL_SOURCE")),
-    ph!("source_id", false, ALL, Some("TIDEPOOL_SOURCE_ID")),
     ph!("source_title", false, ALL, Some("TIDEPOOL_SOURCE_TITLE")),
     ph!("url", false, TAG | HOOK, Some("TIDEPOOL_URL")),
     ph!("category", false, ALL, Some("TIDEPOOL_CATEGORY")),

@@ -13,7 +13,6 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 
 use super::duration::Cutoff;
-use super::schema::source_id_from_url;
 use super::types::*;
 
 /// The category every source builds on, and the one sources use by default.
@@ -31,19 +30,39 @@ pub mod builtin {
     pub const TMP_DIR: &str = "{data_dir}/tmp";
 }
 
+/// One YouTube list a source reads: a playlist, or a channel's uploads.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SourceList {
+    pub url: String,
+    /// The playlist id, or the channel as written (`@handle`, `UC…`,
+    /// `c/name`, `user/name`).
+    pub id: String,
+    /// A channel: its uploads are listed.
+    pub channel: bool,
+}
+
+impl SourceList {
+    /// `None` for a URL that isn't a playlist or channel (config validation
+    /// rejects those).
+    pub fn parse(url: &str) -> Option<Self> {
+        let (id, channel) = match super::schema::parse_source_url(url).ok()? {
+            super::schema::SourceUrl::Playlist(id) => (id, false),
+            super::schema::SourceUrl::Channel(id) => (id, true),
+        };
+        Some(Self {
+            url: url.to_string(),
+            id,
+            channel,
+        })
+    }
+}
+
 /// One source with every option resolved.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct EffectiveSource {
     #[serde(skip)]
     pub key: String,
-    /// YouTube id from `url`: the playlist id, or the channel as written
-    /// (`@handle`, `UC…`, `c/name`, `user/name`).
-    #[serde(skip)]
-    pub id: String,
-    /// `url` is a channel: its uploads are listed.
-    #[serde(skip)]
-    pub channel: bool,
-    pub url: String,
+    pub urls: Vec<String>,
     pub category: String,
     pub enabled: bool,
     /// Unset means the default media folder.
@@ -71,6 +90,21 @@ pub struct EffectiveSource {
     pub embed: Embed,
     pub cleanup: Cleanup,
     pub youtube: YoutubeConfig,
+}
+
+impl EffectiveSource {
+    /// The lists `urls` names, in order.
+    pub fn lists(&self) -> Vec<SourceList> {
+        self.urls
+            .iter()
+            .filter_map(|u| SourceList::parse(u))
+            .collect()
+    }
+
+    /// Each list's id (playlist id or channel), in order.
+    pub fn ids(&self) -> Vec<String> {
+        self.lists().into_iter().map(|l| l.id).collect()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -179,12 +213,7 @@ fn resolve(
 
     EffectiveSource {
         key: key.to_string(),
-        id: source_id_from_url(&source.url).unwrap_or_default(),
-        channel: matches!(
-            super::schema::parse_source_url(&source.url),
-            Ok(super::schema::SourceUrl::Channel(_))
-        ),
-        url: source.url.clone(),
+        urls: source.urls.clone(),
         category,
         enabled: source.enabled.unwrap_or(true),
         media_dir: layers.iter().rev().find_map(|l| l.media_dir.clone()),
@@ -256,7 +285,7 @@ fn resolve(
 /// checks about categories rather than sources.
 pub fn category_settings(config: &Config, category: &str) -> EffectiveSource {
     let source = SourceConfig {
-        url: String::new(),
+        urls: Vec::new(),
         ..SourceConfig::default()
     };
     resolve(
@@ -277,7 +306,7 @@ mod tests {
     use super::*;
     use std::time::Duration;
 
-    const URL: &str = "url = 'https://www.youtube.com/playlist?list=PLx'";
+    const URL: &str = "urls = ['https://www.youtube.com/playlist?list=PLx']";
 
     fn config(toml: &str) -> Config {
         toml::from_str(toml).unwrap()
@@ -296,8 +325,8 @@ mod tests {
     #[test]
     fn falls_back_to_builtin_defaults() {
         let p = only(&format!("[sources.lofi]\n{URL}"));
-        assert_eq!(p.id, "PLx");
-        assert_eq!(p.url, "https://www.youtube.com/playlist?list=PLx");
+        assert_eq!(p.ids(), ["PLx"]);
+        assert_eq!(p.urls, ["https://www.youtube.com/playlist?list=PLx"]);
         assert_eq!(
             (p.category.as_str(), p.media_dir.as_deref()),
             ("default", None)
@@ -323,8 +352,8 @@ mod tests {
 
     #[test]
     fn extracts_id_from_url() {
-        let p = only("[sources.a]\nurl = 'https://www.youtube.com/watch?v=x&list=PLabc'");
-        assert_eq!(p.id, "PLabc");
+        let p = only("[sources.a]\nurls = ['https://www.youtube.com/watch?v=x&list=PLabc']");
+        assert_eq!(p.ids(), ["PLabc"]);
     }
 
     #[test]
@@ -333,7 +362,7 @@ mod tests {
             "[category.default]\nmedia_dir = '~/Videos'\nformat = 'a'\ncutoff = '30d'\ncover_file = '{{output_dir}}/cover.webp'\n\
              [category.music]\nmedia_dir = '/nas/music'\nformat = 'ba/b'\n\
              [sources.lofi]\n{URL}\ncategory = 'music'\ncutoff = 'none'\n\
-             [sources.talks]\nurl = 'https://www.youtube.com/playlist?list=PLy'"
+             [sources.talks]\nurls = ['https://www.youtube.com/playlist?list=PLy']"
         ));
         let all = effective_sources(&c);
         let (lofi, talks) = (&all[0], &all[1]);

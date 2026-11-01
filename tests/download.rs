@@ -72,7 +72,7 @@ impl Env {
     fn config(&self, extra: &str) -> String {
         let text = format!(
             "[category.default]\nmedia_dir = \"{}\"\n{extra}\n\n[tools.deno]\nmanaged = false\n\n[tools.yt-dlp]\nmanaged = false\npath = \"{}\"\n\n\
-             [sources.dl]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads\"\nytdlp_args = [\"--write-subs\"]\n",
+             [sources.dl]\nurls = [\"https://www.youtube.com/playlist?list=PLdownloads\"]\nytdlp_args = [\"--write-subs\"]\n",
             self.media().display(),
             test_bin().join("yt-dlp").display()
         );
@@ -176,7 +176,7 @@ async fn duplicates_are_linked_and_reset_downloads_again() {
     let env = Env::new().await;
     let config = env.config("");
     let config_text = fs::read_to_string(&config).unwrap()
-        + "\n[sources.dl2]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\nytdlp_args = [\"--write-subs\"]\n";
+        + "\n[sources.dl2]\nurls = [\"https://www.youtube.com/playlist?list=PLdownloads2\"]\nytdlp_args = [\"--write-subs\"]\n";
     fs::write(&config, config_text).unwrap();
 
     env.cmd(&["run", "-s", "dl", "--config", &config])
@@ -286,7 +286,7 @@ async fn recurring_failures_become_problems_until_work_succeeds_again() {
     let env = Env::new().await;
     let config = env.config("");
     let text = fs::read_to_string(&config).unwrap()
-        + "\n[sources.dl2]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\n";
+        + "\n[sources.dl2]\nurls = [\"https://www.youtube.com/playlist?list=PLdownloads2\"]\n";
     fs::write(&config, text).unwrap();
 
     // Every download fails the same way: a systemic yt-dlp problem.
@@ -347,7 +347,7 @@ async fn recurring_failures_become_problems_until_work_succeeds_again() {
 
     // A source that can't be read is a problem right away.
     let text = fs::read_to_string(&config).unwrap()
-        + "\n[sources.broken]\nurl = \"https://www.youtube.com/playlist?list=PLdoesnotexist\"\n";
+        + "\n[sources.broken]\nurls = [\"https://www.youtube.com/playlist?list=PLdoesnotexist\"]\n";
     fs::write(&config, text).unwrap();
     env.cmd(&["index", "-s", "broken", "--config", &config])
         .assert()
@@ -420,8 +420,9 @@ async fn verbose_shows_config_and_progress() {
         "{stderr}"
     );
     assert!(
-        stderr
-            .contains("[sources.dl]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads\""),
+        stderr.contains(
+            "[sources.dl]\nurls = [\"https://www.youtube.com/playlist?list=PLdownloads\"]"
+        ),
         "{stderr}"
     );
     assert!(stderr.contains("api_key = \"AIza…x1Qw\""), "{stderr}");
@@ -451,7 +452,7 @@ async fn categories_send_sources_to_their_own_folders() {
     let text = fs::read_to_string(&config).unwrap()
         + &format!(
             "\n[category.music]\nmedia_dir = \"{}\"\noutput_dir = \"{{media_dir}}/{{category}}/{{title}} [{{id}}]\"\n\
-             \n[sources.tunes]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\ncategory = \"music\"\n",
+             \n[sources.tunes]\nurls = [\"https://www.youtube.com/playlist?list=PLdownloads2\"]\ncategory = \"music\"\n",
             music.display()
         );
     fs::write(&config, text).unwrap();
@@ -603,7 +604,7 @@ async fn embeds_tags_cover_chapters_and_subtitles() {
         "[category.default.embed]\nmetadata = true\ncover = true\nchapters = true\nsubtitles = true",
     );
     let config_text = fs::read_to_string(&config).unwrap()
-        + "\n[sources.dl2]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\nytdlp_args = [\"--write-subs\"]\n";
+        + "\n[sources.dl2]\nurls = [\"https://www.youtube.com/playlist?list=PLdownloads2\"]\nytdlp_args = [\"--write-subs\"]\n";
     fs::write(&config, config_text).unwrap();
     let path = format!("{}:/usr/bin:/bin", bin.display());
     let run = |args: &[&str]| {
@@ -939,7 +940,7 @@ async fn hooks_run_again_on_downloaded_videos() {
     let path = format!("{}:/usr/bin:/bin", bin.display());
     let config = env.config("[category.default.embed]\nmetadata = true");
     let text = fs::read_to_string(&config).unwrap()
-        + "\n[sources.dl2]\nurl = \"https://www.youtube.com/playlist?list=PLdownloads2\"\n";
+        + "\n[sources.dl2]\nurls = [\"https://www.youtube.com/playlist?list=PLdownloads2\"]\n";
     fs::write(&config, &text).unwrap();
     let cmd = |args: &[&str]| {
         let mut cmd = env.cmd(args);

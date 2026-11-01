@@ -659,10 +659,15 @@
           "format": "tmp-dir-template",
           "type": "string"
         },
-        "url": {
-          "description": "Where videos come from: a YouTube playlist URL (with `list=`) or a channel\nURL (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`: all its uploads).",
-          "format": "source-url",
-          "type": "string"
+        "urls": {
+          "description": "Where videos come from: YouTube playlist URLs (with `list=`) and channel\nURLs (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`: all its uploads).",
+          "items": {
+            "format": "source-url",
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
         },
         "youtube": {
           "$ref": "#/$defs/YoutubeOptions",
@@ -677,7 +682,7 @@
         }
       },
       "required": [
-        "url"
+        "urls"
       ],
       "type": "object"
     },
