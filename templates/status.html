@@ -14,7 +14,7 @@
         <div class="row-main">
           <div>Downloads are <strong>{% if status.download %}on{% else %}off{% endif %}</strong> by default</div>
           <div class="meta">
-            <span>{% if let Some(next) = status.next_sync %}Next sync at {{ next }}{% else %}No schedule: syncs only when asked{% endif %}</span>
+            <span>{% if let Some(next) = status.next_sync %}Next sync {{ next }}{% else %}No schedule: syncs only when asked{% endif %}</span>
             {% if let Some(last) = status.last_sync %}<span>Last sync ended at {{ last }}</span>{% endif %}
             {% if status.waiting_downloads > 0 %}<span>{{ status.waiting_downloads }} downloads to finish</span>{% endif %}
             {% if status.waiting_hooks > 0 %}<span>{{ status.waiting_hooks }} hooks to run</span>{% endif %}
@@ -77,6 +77,7 @@
             <span class="pill st-{% if source.download %}on{% else %}off{% endif %}">Downloads {% if source.download %}on{% else %}off{% endif %}</span>
             <span>{{ source.disk }}{% if let Some(max) = source.max_size %} / {{ max }}{% endif %}</span>
             <span>Checked {{ source.last_indexed.as_deref().unwrap_or("never") }}</span>
+            {% if let Some(next) = source.next_sync %}<span>Next sync {{ next }}</span>{% endif %}
             {% if !read_only %}<button class="small" hx-post="/actions/sources/{{ source.name }}/downloads/{% if source.download %}off{% else %}on{% endif %}" hx-target="#status" hx-swap="outerHTML">{% if source.download %}Turn off{% else %}Turn on{% endif %}</button>{% endif %}
           </div>
         </div>

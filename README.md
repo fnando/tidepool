@@ -1006,8 +1006,10 @@ another JavaScript runtime instead of Deno (Node, for example), set
 ### Keeping it running
 
 `tidepool run --daemon` keeps tidepool running: it syncs every source right
-away, then again every `schedule.interval` (counted from when the last sync
-ended), and cleans up after each sync. Downloads are finished (hooks,
+away, then each source again every `schedule.interval` (counted from when
+that source's last sync ended), and cleans up after each sync. It looks for
+sources due every minute, so a source you add (or enable) is synced within a
+minute, without waiting for the others. Downloads are finished (hooks,
 embedding, saving) as soon as they arrive, and hooks that failed are tried
 again when they're due, without waiting for the next sync.
 
@@ -1023,7 +1025,8 @@ tidepool run --daemon
 
 - **Changing settings.** Import a changed config with `tidepool config
   import` and the running daemon uses it from the next video or sync on; a
-  new `interval` takes effect right away. No restart needed.
+  new `interval` takes effect right away, counted from each source's last
+  sync. No restart needed.
 - **Your config file and tidepool's copy must match.** When the daemon starts,
   it compares your config file (`--config`, or the one you last imported) with
   the config tidepool has stored. If they differ (other than comments or
@@ -1036,8 +1039,8 @@ tidepool run --daemon
   a sync was due, it syncs once as soon as it's back, not once per missed sync.
 - **Alongside cron or a terminal.** Only one daemon runs at a time, but you
   can still run `tidepool run` or other commands while it's going; whoever
-  starts second waits its turn (the daemon skips a sync that comes due while
-  another tidepool is working, and tries again on the next one).
+  starts second waits its turn (when a sync comes due while another tidepool
+  is working, the daemon tries again a minute later).
 - **Stopping.** Ctrl-C or `kill` stops it cleanly, the same way as other
   commands, and it exits with 0.
 - **If something goes wrong.** The daemon is made of parts that work
@@ -1086,7 +1089,7 @@ Restart=on-failure
 
 While `tidepool run --daemon` runs, it also serves a web page at
 `http://127.0.0.1:8787` with what it's doing: each part's status, the next and
-last sync, and per source how many videos are downloaded, waiting, skipped,
+last sync, and per source when it syncs next and how many videos are downloaded, waiting, skipped,
 failed and cleaned up, and how much disk they use. Buttons sync or clean up
 right away, and pause or resume each part. An "In progress" panel shows what's
 happening as it happens: the source being checked, each download with how far
@@ -1100,8 +1103,9 @@ Click a source to see its videos, 50 at a time: filter by status
 (downloaded, waiting, skipped, failed, unavailable, cleaned up), search titles
 or ids, and see why each one is where it is (the rule that skipped it, the
 error that failed it, why cleanup removed it). Its Sync now button checks
-just that source for new videos and downloads them right away (its menu has
-Index now, to only look for new videos); the schedule stays as it was.
+just that source for new videos and downloads them right away, and its next
+sync is counted from then (its menu has Index now, to only look for new
+videos; that keeps the schedule as it was).
 Disable turns the source off (`enabled = false`, saved as a new config
 revision) until you enable it again. Click a video for everything
 about it: what each of your rules says about it (like `tidepool filter

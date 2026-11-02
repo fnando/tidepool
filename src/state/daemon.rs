@@ -4,9 +4,88 @@
 use jiff::Timestamp;
 use rusqlite::{Connection, OptionalExtension, params};
 
-pub const NEXT_SYNC_AT: &str = "next_sync_at";
 pub const LAST_SYNC_STARTED_AT: &str = "last_sync_started_at";
 pub const LAST_SYNC_FINISHED_AT: &str = "last_sync_finished_at";
+/// The `schedule.interval` the sources' next syncs were worked out with.
+pub const SCHEDULE_INTERVAL: &str = "schedule_interval";
+
+/// When each source that has one is synced next (`None`: as soon as there's
+/// a schedule; it never synced, or there was no schedule then).
+///
+/// # Errors
+///
+/// If the DB read fails.
+pub fn next_syncs(
+    conn: &Connection,
+) -> rusqlite::Result<std::collections::HashMap<String, Option<Timestamp>>> {
+    let mut stmt = conn.prepare("SELECT key, next_sync_at FROM sources")?;
+    let rows = stmt.query_map([], |r| {
+        let next: Option<String> = r.get(1)?;
+        Ok((r.get(0)?, next.and_then(|t| t.parse().ok())))
+    })?;
+    rows.collect()
+}
+
+/// A source was synced at `at`; it's synced again at `next`.
+///
+/// # Errors
+///
+/// If the DB write fails.
+pub fn set_synced(
+    conn: &Connection,
+    key: &str,
+    at: Timestamp,
+    next: Option<Timestamp>,
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "INSERT INTO sources (key, lists, last_synced_at, next_sync_at) VALUES (?1, '[]', ?2, ?3)
+         ON CONFLICT (key) DO UPDATE SET last_synced_at = excluded.last_synced_at,
+           next_sync_at = excluded.next_sync_at",
+        params![key, at.to_string(), next.map(|t| t.to_string())],
+    )?;
+    Ok(())
+}
+
+/// Sync a source at `next`, its last sync unchanged (e.g. try again soon
+/// after a sync that couldn't run).
+///
+/// # Errors
+///
+/// If the DB write fails.
+pub fn set_next_sync(conn: &Connection, key: &str, next: Timestamp) -> rusqlite::Result<()> {
+    conn.execute(
+        "INSERT INTO sources (key, lists, next_sync_at) VALUES (?1, '[]', ?2)
+         ON CONFLICT (key) DO UPDATE SET next_sync_at = excluded.next_sync_at",
+        params![key, next.to_string()],
+    )?;
+    Ok(())
+}
+
+/// A new schedule: each source that synced before is synced next `next(its
+/// last sync)`; with no schedule (`next` gives `None`), only when asked.
+///
+/// # Errors
+///
+/// If the DB read or write fails.
+pub fn reschedule(
+    conn: &Connection,
+    next: impl Fn(Timestamp) -> Option<Timestamp>,
+) -> rusqlite::Result<()> {
+    let synced: Vec<(String, String)> = {
+        let mut stmt = conn
+            .prepare("SELECT key, last_synced_at FROM sources WHERE last_synced_at IS NOT NULL")?;
+        stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?
+            .collect::<rusqlite::Result<_>>()?
+    };
+    for (key, last) in synced {
+        let next = last.parse().ok().and_then(&next).map(|t| t.to_string());
+        conn.execute(
+            "UPDATE sources SET next_sync_at = ?2 WHERE key = ?1",
+            params![key, next],
+        )?;
+    }
+    Ok(())
+}
 
 /// A daemon state value, if it's set.
 ///
@@ -376,13 +455,45 @@ mod tests {
     use crate::state::State;
 
     #[test]
+    fn each_source_has_its_own_schedule() {
+        let state = State::open_in_memory().unwrap();
+        let conn = &state.conn;
+        let t = |s: &str| -> Timestamp { s.parse().unwrap() };
+        assert!(next_syncs(conn).unwrap().is_empty(), "never synced");
+
+        set_synced(
+            conn,
+            "lofi",
+            t("2026-11-01T10:00:00Z"),
+            Some(t("2026-11-01T16:00:00Z")),
+        )
+        .unwrap();
+        set_next_sync(conn, "jazz", t("2026-11-01T10:01:00Z")).unwrap();
+        let nexts = next_syncs(conn).unwrap();
+        assert_eq!(nexts["lofi"], Some(t("2026-11-01T16:00:00Z")));
+        assert_eq!(nexts["jazz"], Some(t("2026-11-01T10:01:00Z")));
+
+        // A new interval counts from each source's last sync; a source that
+        // never synced is left as it is.
+        reschedule(conn, |last| {
+            last.checked_add(jiff::SignedDuration::from_hours(1)).ok()
+        })
+        .unwrap();
+        let nexts = next_syncs(conn).unwrap();
+        assert_eq!(nexts["lofi"], Some(t("2026-11-01T11:00:00Z")));
+        assert_eq!(nexts["jazz"], Some(t("2026-11-01T10:01:00Z")));
+        reschedule(conn, |_| None).unwrap();
+        assert_eq!(next_syncs(conn).unwrap()["lofi"], None, "no schedule");
+    }
+
+    #[test]
     fn keeps_the_schedule_and_each_service() {
         let state = State::open_in_memory().unwrap();
         let conn = &state.conn;
         let at: Timestamp = "2026-11-01T16:00:00Z".parse().unwrap();
-        assert_eq!(get_time(conn, NEXT_SYNC_AT).unwrap(), None);
-        set_time(conn, NEXT_SYNC_AT, at).unwrap();
-        assert_eq!(get_time(conn, NEXT_SYNC_AT).unwrap(), Some(at));
+        assert_eq!(get_time(conn, LAST_SYNC_FINISHED_AT).unwrap(), None);
+        set_time(conn, LAST_SYNC_FINISHED_AT, at).unwrap();
+        assert_eq!(get_time(conn, LAST_SYNC_FINISHED_AT).unwrap(), Some(at));
 
         assert!(!service(conn, "syncer").unwrap().paused);
         set_paused(conn, "syncer", true).unwrap();

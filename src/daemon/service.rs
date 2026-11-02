@@ -258,11 +258,12 @@ pub fn local(t: jiff::Timestamp) -> String {
         .to_string()
 }
 
-/// Sync on the schedule (or when asked), until stopped.
+/// Sync each source when it's due (or when asked), until stopped. Every
+/// minute at least, it looks for sources due: new ones, and those whose next
+/// sync has passed.
 async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
     let name = Service::Syncer.name();
     let mut out = LogWriter::default();
-    let mut interval = None;
     loop {
         if app.shutdown.is_stopping() {
             return Ok(());
@@ -270,92 +271,179 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
         let state = app.open_state()?;
         let config = app.current_config(&state)?.config;
         let now = jiff::Timestamp::now();
-        let changed = interval != config.schedule.interval.0;
-        interval = config.schedule.interval.0;
-        // A new interval counts from the last sync's end.
-        if changed
-            && let (Some(every), Some(last)) = (
-                interval,
-                store::get_time(&state.conn, store::LAST_SYNC_FINISHED_AT)?,
-            )
-        {
-            let next = schedule::next_sync(last, every, schedule::jitter());
-            store::set_time(&state.conn, store::NEXT_SYNC_AT, next)?;
+        let every = config.schedule.interval.0;
+        // A new interval (even one set while the daemon was stopped) counts
+        // from each source's last sync.
+        let interval =
+            every.map_or_else(|| "none".to_string(), crate::config::types::format_duration);
+        let before = store::get(&state.conn, store::SCHEDULE_INTERVAL)?;
+        if before.as_deref() != Some(&interval) {
+            if before.is_some() {
+                store::reschedule(&state.conn, |last| {
+                    every.map(|every| schedule::next_sync(last, every, schedule::jitter()))
+                })?;
+            }
+            store::set(&state.conn, store::SCHEDULE_INTERVAL, Some(&interval))?;
         }
-        let next = store::get_time(&state.conn, store::NEXT_SYNC_AT)?.unwrap_or(now);
-        let wait = if interval.is_some() {
-            let activity = format!("next sync at {}", local(next));
-            store::set_status(&state.conn, name, "idle", Some(&activity), now)?;
-            schedule::wait_until(next, now)
+        let enabled: Vec<String> = crate::config::merge::effective_sources(&config)
+            .into_iter()
+            .filter(|s| s.enabled)
+            .map(|s| s.key)
+            .collect();
+        let nexts = store::next_syncs(&state.conn)?;
+        let due = if every.is_some() {
+            schedule::due(&enabled, &nexts, now)
         } else {
-            store::set_status(&state.conn, name, "idle", Some("no schedule"), now)?;
-            Duration::MAX
+            Vec::new()
         };
+        let mut wait = schedule::CHECK_EVERY;
+        if due.is_empty() {
+            let activity = match (every, schedule::soonest(&enabled, &nexts, now)) {
+                (None, _) => "no schedule".to_string(),
+                (Some(_), None) => "no enabled sources".to_string(),
+                (Some(_), Some(next)) => {
+                    wait = wait.min(schedule::wait_until(next, now));
+                    format!("next sync at {}", local(next))
+                }
+            };
+            store::set_status(&state.conn, name, "idle", Some(&activity), now)?;
+        }
         drop(state);
-        // The schedule syncs everything; a request may name sources.
-        let asked = tokio::select! {
-            () = tokio::time::sleep(wait.min(Duration::from_hours(8760))) => Asked {
-                everything: true,
+        let asked = if due.is_empty() {
+            tokio::select! {
+                // Look again: something may be due now.
+                () = tokio::time::sleep(wait) => continue,
+                () = signals.sync_now.notified() => signals.sync_now.take(),
+                () = signals.cleanup_now.notified() => {
+                    let now = jiff::Timestamp::now();
+                    let state = app.open_state()?;
+                    store::set_status(&state.conn, name, "running", Some("cleaning up"), now)?;
+                    let scope = crate::cli::ScopeArgs { sources: Vec::new() };
+                    if let Err(e) = app.cleanup(&scope, &mut out).await {
+                        tracing::error!("cleanup failed: {e:#}");
+                    }
+                    crate::events::emit(crate::events::Event::Changed);
+                    out.flush()?;
+                    continue;
+                }
+                // New sources, or a new interval: look again.
+                changed = signals.config.changed() => {
+                    if changed.is_err() {
+                        return Ok(());
+                    }
+                    continue;
+                }
+                () = app.shutdown.stopping() => return Ok(()),
+            }
+        } else {
+            Asked {
+                sources: due.into_iter().map(|key| (key, SyncMode::Sync)).collect(),
                 ..Asked::default()
-            },
-            () = signals.sync_now.notified() => signals.sync_now.take(),
-            () = signals.cleanup_now.notified() => {
-                let now = jiff::Timestamp::now();
-                let state = app.open_state()?;
-                store::set_status(&state.conn, name, "running", Some("cleaning up"), now)?;
-                let scope = crate::cli::ScopeArgs { sources: Vec::new() };
-                if let Err(e) = app.cleanup(&scope, &mut out).await {
-                    tracing::error!("cleanup failed: {e:#}");
-                }
-                crate::events::emit(crate::events::Event::Changed);
-                out.flush()?;
-                continue;
             }
-            changed = signals.config.changed() => {
-                if changed.is_err() {
-                    return Ok(());
-                }
-                continue;
-            }
-            () = app.shutdown.stopping() => return Ok(()),
         };
-        if asked.is_empty() {
-            // Already done by a sync that took the request.
+        let batch = Batch {
+            every,
+            out: &mut out,
+        };
+        if asked.everything {
+            // Sources asked for by name are synced along with the rest.
+            batch.run(app, &enabled, None, SyncMode::Sync).await?;
             continue;
         }
-        if !asked.everything {
-            for mode in [SyncMode::Sync, SyncMode::Index] {
-                sync_sources(app, &asked.keys(mode), mode, &mut out).await?;
-            }
-            continue;
-        }
-        // Sources asked for by name are synced along with the rest.
-        signals.sync_now.take();
+        let synced = asked.keys(SyncMode::Sync);
+        let batch = batch
+            .run(app, &synced, Some(&synced), SyncMode::Sync)
+            .await?;
+        let indexed = asked.keys(SyncMode::Index);
+        batch
+            .run(app, &indexed, Some(&indexed), SyncMode::Index)
+            .await?;
+    }
+}
 
+/// Syncs the syncer runs, and what they need.
+struct Batch<'o> {
+    /// `schedule.interval`.
+    every: Option<Duration>,
+    out: &'o mut LogWriter,
+}
+
+impl Batch<'_> {
+    /// Sync or index `keys`: `only` those (else every enabled source, which
+    /// `keys` lists). A sync schedules each source's next one; a sync that
+    /// couldn't run (another tidepool has the library) is tried again in a
+    /// minute. Indexing keeps the schedule.
+    async fn run(
+        self,
+        app: &App<'_>,
+        keys: &[String],
+        only: Option<&[String]>,
+        mode: SyncMode,
+    ) -> anyhow::Result<Self> {
+        if keys.is_empty() || app.shutdown.is_stopping() {
+            return Ok(self);
+        }
         let state = app.open_state()?;
         let started = jiff::Timestamp::now();
-        store::set_time(&state.conn, store::LAST_SYNC_STARTED_AT, started)?;
-        let activity = format!("syncing since {}", local(started));
-        store::set_status(&state.conn, name, "running", Some(&activity), started)?;
+        let doing = match mode {
+            SyncMode::Sync => "syncing",
+            SyncMode::Index => "indexing",
+        };
+        let what = only
+            .map(|keys| format!("{} ", keys.join(", ")))
+            .unwrap_or_default();
+        let activity = format!("{doing} {what}since {}", local(started));
+        store::set_status(
+            &state.conn,
+            Service::Syncer.name(),
+            "running",
+            Some(&activity),
+            started,
+        )?;
+        if mode == SyncMode::Sync {
+            store::set_time(&state.conn, store::LAST_SYNC_STARTED_AT, started)?;
+        }
         crate::events::emit(crate::events::Event::SyncStarted);
-        let result = app.sync_once(&[], false, &mut out).await;
-        out.flush()?;
+        let result = app
+            .sync_once(only.unwrap_or_default(), mode == SyncMode::Index, self.out)
+            .await;
+        self.out.flush()?;
         if app.shutdown.is_stopping() {
-            return Ok(());
+            return Ok(self);
         }
         let finished = jiff::Timestamp::now();
-        store::set_time(&state.conn, store::LAST_SYNC_FINISHED_AT, finished)?;
-        let next = interval.map(|every| schedule::next_sync(finished, every, schedule::jitter()));
-        store::set(
-            &state.conn,
-            store::NEXT_SYNC_AT,
-            next.map(|t| t.to_string()).as_deref(),
-        )?;
-        let when = next
-            .map(|t| format!("; next sync at {}", local(t)))
-            .unwrap_or_default();
-        // One sync failing doesn't stop the schedule.
-        report(result, "", &when);
+        let mut suffix = String::new();
+        if mode == SyncMode::Sync {
+            if matches!(result, Ok(None)) {
+                let retry = finished
+                    .checked_add(schedule::CHECK_EVERY)
+                    .unwrap_or(finished);
+                for key in keys {
+                    store::set_next_sync(&state.conn, key, retry)?;
+                }
+                suffix = format!("; trying again at {}", local(retry));
+            } else {
+                // One sync failing doesn't stop the schedule.
+                store::set_time(&state.conn, store::LAST_SYNC_FINISHED_AT, finished)?;
+                let mut soonest: Option<jiff::Timestamp> = None;
+                for key in keys {
+                    let next = self
+                        .every
+                        .map(|every| schedule::next_sync(finished, every, schedule::jitter()));
+                    store::set_synced(&state.conn, key, finished, next)?;
+                    soonest = match (soonest, next) {
+                        (Some(a), Some(b)) => Some(a.min(b)),
+                        (a, b) => a.or(b),
+                    };
+                }
+                if let Some(next) = soonest {
+                    suffix = format!("; next sync at {}", local(next));
+                }
+            }
+        }
+        let prefix = only.map(|keys| format!("{}: ", keys.join(", ")));
+        report(result, prefix.as_deref().unwrap_or_default(), &suffix);
+        Ok(self)
     }
 }
 
@@ -373,41 +461,6 @@ fn report(result: anyhow::Result<Option<String>>, prefix: &str, suffix: &str) {
         tracing::info!("{prefix}{summary}");
     }
     crate::events::emit(crate::events::Event::SyncFinished { summary });
-}
-
-/// Sync or index just these sources, when asked; the schedule stays as it
-/// was.
-async fn sync_sources(
-    app: &App<'_>,
-    keys: &[String],
-    mode: SyncMode,
-    out: &mut LogWriter,
-) -> anyhow::Result<()> {
-    if keys.is_empty() || app.shutdown.is_stopping() {
-        return Ok(());
-    }
-    let state = app.open_state()?;
-    let started = jiff::Timestamp::now();
-    let doing = match mode {
-        SyncMode::Sync => "syncing",
-        SyncMode::Index => "indexing",
-    };
-    let activity = format!("{doing} {} since {}", keys.join(", "), local(started));
-    store::set_status(
-        &state.conn,
-        Service::Syncer.name(),
-        "running",
-        Some(&activity),
-        started,
-    )?;
-    crate::events::emit(crate::events::Event::SyncStarted);
-    let result = app.sync_once(keys, mode == SyncMode::Index, out).await;
-    out.flush()?;
-    if app.shutdown.is_stopping() {
-        return Ok(());
-    }
-    report(result, &format!("{}: ", keys.join(", ")), "");
-    Ok(())
 }
 
 /// Finish downloads as they come in, and run queued hooks when they're

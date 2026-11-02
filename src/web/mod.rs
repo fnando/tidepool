@@ -2008,6 +2008,30 @@ mod tests {
         assert!(body.contains("lofi"), "{body}");
         assert!(body.contains("Sync now") && body.contains("processor"));
         assert!(body.contains(&s.web.csrf), "htmx sends the CSRF token");
+        assert!(
+            body.contains("No schedule: syncs only when asked"),
+            "{body}"
+        );
+        s.web
+            .db(|conn| {
+                edit_config(conn, |doc| {
+                    doc["schedule"] = toml_edit::table();
+                    doc["schedule"]["interval"] = toml_edit::value("6h");
+                    Some(())
+                })
+            })
+            .await
+            .unwrap();
+        let (_, _, body) = send(&s.web, get("/")).await;
+        assert!(body.contains("Next sync soon"), "never synced: {body}");
+        let later: jiff::Timestamp = "2099-01-01T12:00:00Z".parse().unwrap();
+        s.web
+            .db(move |conn| Ok(store::set_synced(conn, "lofi", later, Some(later))?))
+            .await
+            .unwrap();
+        let (_, _, body) = send(&s.web, get("/")).await;
+        let at = format!("Next sync at {}", crate::daemon::service::local(later));
+        assert!(body.contains(&at), "{body}");
         let (status, _, body) = send(&s.web, get("/assets/htmx.min.js")).await;
         assert_eq!(status, StatusCode::OK);
         assert!(body.starts_with("var htmx"));

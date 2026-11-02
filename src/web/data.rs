@@ -31,6 +31,43 @@ pub struct Status {
     pub youtube_api: YoutubeApi,
 }
 
+/// When the next sync is, and each enabled source's next sync, in words
+/// ("at …", or "soon" when it's due: the syncer looks every minute). Nothing
+/// without a schedule.
+fn next_syncs(
+    conn: &Connection,
+    config: &Config,
+) -> rusqlite::Result<(Option<String>, std::collections::HashMap<String, String>)> {
+    use crate::daemon::schedule::soonest;
+
+    if config.schedule.interval.0.is_none() {
+        return Ok((None, std::collections::HashMap::new()));
+    }
+    let nexts = store::next_syncs(conn)?;
+    let now = jiff::Timestamp::now();
+    let words = |next: Option<jiff::Timestamp>| match next {
+        Some(next) if next > now => format!("at {}", local(next)),
+        _ => "soon".to_string(),
+    };
+    let enabled: Vec<String> = effective_sources(config)
+        .into_iter()
+        .filter(|s| s.enabled)
+        .map(|s| s.key)
+        .collect();
+    let next = match soonest(&enabled, &nexts, now) {
+        None => "when a source is enabled".to_string(),
+        next => words(next),
+    };
+    let each = enabled
+        .into_iter()
+        .map(|key| {
+            let next = words(nexts.get(&key).copied().flatten());
+            (key, next)
+        })
+        .collect();
+    Ok((Some(next), each))
+}
+
 /// What the sources' YouTube API keys spent today.
 fn youtube_api(conn: &Connection, config: &Config) -> rusqlite::Result<YoutubeApi> {
     let mut api = YoutubeApi::default();
@@ -106,6 +143,8 @@ pub struct SourceInfo {
     /// Its videos are downloaded (else it's only checked).
     pub download: bool,
     pub last_indexed: Option<String>,
+    /// When it syncs next ("at …", "soon"); `None`: not on the schedule.
+    pub next_sync: Option<String>,
     /// Videos per group: downloaded, waiting, skipped, failed, unavailable,
     /// `cleaned_up`.
     pub counts: BTreeMap<String, i64>,
@@ -168,12 +207,7 @@ pub fn status(conn: &Connection, config: &Config) -> rusqlite::Result<Status> {
             })
         })
         .collect::<rusqlite::Result<Vec<_>>>()?;
-    let next_sync = config
-        .schedule
-        .interval
-        .0
-        .and_then(|_| store::get_time(conn, store::NEXT_SYNC_AT).ok().flatten())
-        .map(local);
+    let (next_sync, mut next_of) = next_syncs(conn, config)?;
     let last_sync = store::get_time(conn, store::LAST_SYNC_FINISHED_AT)?.map(local);
 
     let mut counts: BTreeMap<String, BTreeMap<String, i64>> = BTreeMap::new();
@@ -219,6 +253,7 @@ pub fn status(conn: &Connection, config: &Config) -> rusqlite::Result<Status> {
             enabled: source.enabled,
             download: source.download,
             last_indexed: last_indexed.and_then(|t| t.parse().ok()).map(local),
+            next_sync: next_of.remove(&source.key),
             counts: counts.remove(&source.key).unwrap_or_default(),
             disk_bytes: bytes,
             disk: human_bytes(bytes),

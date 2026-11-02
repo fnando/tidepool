@@ -24,6 +24,38 @@ pub fn wait_until(next: Timestamp, now: Timestamp) -> Duration {
     Duration::try_from(next.duration_since(now)).unwrap_or(Duration::ZERO)
 }
 
+/// How often the syncer looks for sources due, at least: new sources are
+/// picked up within this, and a sync that couldn't run is tried again.
+pub const CHECK_EVERY: Duration = Duration::from_secs(60);
+
+/// Of `sources` (keys), those due at `now`: never synced (no entry, or no
+/// time), or their next sync has passed.
+#[must_use]
+pub fn due<S: std::hash::BuildHasher>(
+    sources: &[String],
+    next: &std::collections::HashMap<String, Option<Timestamp>, S>,
+    now: Timestamp,
+) -> Vec<String> {
+    sources
+        .iter()
+        .filter(|key| next.get(*key).copied().flatten().is_none_or(|t| t <= now))
+        .cloned()
+        .collect()
+}
+
+/// The soonest of `sources`' next syncs (`now` for one never synced).
+#[must_use]
+pub fn soonest<S: std::hash::BuildHasher>(
+    sources: &[String],
+    next: &std::collections::HashMap<String, Option<Timestamp>, S>,
+    now: Timestamp,
+) -> Option<Timestamp> {
+    sources
+        .iter()
+        .map(|key| next.get(key).copied().flatten().unwrap_or(now))
+        .min()
+}
+
 /// How long to wait before restarting a service that stopped unexpectedly
 /// for the `failures`-th time in a row: 1 s, doubling, at most 5 minutes.
 #[must_use]
@@ -67,6 +99,30 @@ mod tests {
         assert_eq!(next_sync(end, six_hours, 1.0), at("2026-11-01T16:18:00Z"));
         let any = next_sync(end, six_hours, jitter());
         assert!(any >= at("2026-11-01T16:00:00Z") && any <= at("2026-11-01T16:18:00Z"));
+    }
+
+    #[test]
+    fn sources_are_due_when_new_or_their_time_has_passed() {
+        let now = at("2026-11-01T12:00:00Z");
+        let keys: Vec<String> = ["new", "unset", "past", "now", "later"]
+            .map(String::from)
+            .to_vec();
+        let next = std::collections::HashMap::from([
+            ("unset".to_string(), None),
+            ("past".to_string(), Some(at("2026-11-01T11:00:00Z"))),
+            ("now".to_string(), Some(now)),
+            ("later".to_string(), Some(at("2026-11-01T13:00:00Z"))),
+            ("gone".to_string(), Some(at("2026-11-01T09:00:00Z"))),
+        ]);
+        assert_eq!(due(&keys, &next, now), ["new", "unset", "past", "now"]);
+        let later = vec!["later".to_string()];
+        assert_eq!(due(&later, &next, now), Vec::<String>::new());
+        assert_eq!(
+            soonest(&later, &next, now),
+            Some(at("2026-11-01T13:00:00Z"))
+        );
+        assert_eq!(soonest(&keys, &next, now), Some(at("2026-11-01T11:00:00Z")));
+        assert_eq!(soonest(&[], &next, now), None);
     }
 
     #[test]

@@ -51,6 +51,14 @@ const MIGRATION_LIST: &[M<'static>] = &[
            ok INTEGER, result TEXT
          );",
     ),
+    // Each source's own schedule: the daemon syncs a source once its
+    // `next_sync_at` has passed (or it never synced). The schedule used to be
+    // one time for every source.
+    M::up(
+        "ALTER TABLE sources ADD COLUMN last_synced_at TEXT;
+         ALTER TABLE sources ADD COLUMN next_sync_at TEXT;
+         DELETE FROM daemon_state WHERE key = 'next_sync_at';",
+    ),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_LIST);
 

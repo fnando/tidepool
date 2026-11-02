@@ -78,6 +78,29 @@ impl Env {
         rusqlite::Connection::open(self.path("data/tidepool/state.db")).unwrap()
     }
 
+    /// Sync source `key` next at `at`, as if it had synced before.
+    fn schedule(&self, key: &str, at: jiff::Timestamp) {
+        self.db()
+            .execute(
+                "INSERT INTO sources (key, lists, last_synced_at, next_sync_at)
+                 VALUES (?1, '[]', ?2, ?2)",
+                [key, &at.to_string()],
+            )
+            .unwrap();
+    }
+
+    /// When source `key` syncs next.
+    fn next_sync(&self, key: &str) -> Option<jiff::Timestamp> {
+        self.db()
+            .query_row(
+                "SELECT next_sync_at FROM sources WHERE key = ?1",
+                [key],
+                |r| r.get::<_, Option<String>>(0),
+            )
+            .unwrap()
+            .map(|t| t.parse().unwrap())
+    }
+
     /// Import `config`, then start `tidepool run --daemon` with it, its log
     /// in `daemon.log`.
     fn daemon(&self, config: &str, extra_env: &[(&str, &str)]) -> Daemon {
@@ -171,15 +194,7 @@ async fn syncs_right_away_then_on_schedule_and_stops_cleanly() {
     });
     daemon.wait_for_log("next sync at");
 
-    let next: String = env
-        .db()
-        .query_row(
-            "SELECT value FROM daemon_state WHERE key = 'next_sync_at'",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap();
-    let next: jiff::Timestamp = next.parse().unwrap();
+    let next = env.next_sync("dl").expect("scheduled");
     let wait = next.duration_since(jiff::Timestamp::now()).as_secs();
     assert!(
         (3500..=3800).contains(&wait),
@@ -323,12 +338,7 @@ async fn a_sync_is_skipped_while_another_tidepool_runs() {
     let soon = jiff::Timestamp::now()
         .checked_add(jiff::SignedDuration::from_secs(4))
         .unwrap();
-    env.db()
-        .execute(
-            "INSERT INTO daemon_state (key, value) VALUES ('next_sync_at', ?1)",
-            [soon.to_string()],
-        )
-        .unwrap();
+    env.schedule("dl", soon);
     let daemon = env.daemon(&config, &[]);
     daemon.wait_for_log("tidepool daemon started");
     // Another tidepool (here, a stand-in) holds the library meanwhile.
@@ -349,12 +359,75 @@ async fn a_sync_is_skipped_while_another_tidepool_runs() {
     .unwrap();
     assert_eq!(line.trim(), "locked");
     daemon.wait_for_log("skipped: another tidepool is running");
-    daemon.wait_for_log("sync skipped; next sync at");
+    daemon.wait_for_log("dl: sync skipped; trying again at");
+    let retry = env.next_sync("dl").unwrap();
+    let wait = retry.duration_since(jiff::Timestamp::now()).as_secs();
+    assert!((30..=60).contains(&wait), "in a minute: {wait}s");
     assert!(!env.path("media").join(RICK_DIR).exists());
     let _ = holder.kill();
     let _ = holder.wait();
     let (code, _) = daemon.stop();
     assert_eq!(code, Some(0));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_source_enabled_while_running_syncs_right_away() {
+    let env = Env::new().await;
+    let config = env.config("6h", "");
+    let disabled = fs::read_to_string(&config)
+        .unwrap()
+        .replace("[sources.dl]\n", "[sources.dl]\nenabled = false\n");
+    fs::write(&config, &disabled).unwrap();
+    let daemon = env.daemon(&config, &[]);
+    daemon.wait_for("the syncer idle", || {
+        let out = env.cmd(&["daemon", "status"]).output().unwrap();
+        String::from_utf8_lossy(&out.stdout).contains("syncer: idle, no enabled sources")
+    });
+    let rick = env.path("media").join(RICK_DIR);
+    assert!(!rick.exists());
+
+    fs::write(&config, disabled.replace("enabled = false\n", "")).unwrap();
+    env.cmd(&["config", "import", &config]).assert().success();
+    daemon.wait_for("Rick's video saved", || {
+        rick.join("metadata.json").is_file()
+    });
+    daemon.wait_for_log("dl: synced 1 source");
+    let next = env.next_sync("dl").expect("scheduled");
+    let wait = next.duration_since(jiff::Timestamp::now()).as_secs();
+    assert!((21_000..=23_000).contains(&wait), "6h from now: {wait}s");
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0), "{log}");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_new_interval_counts_from_each_sources_last_sync() {
+    let env = Env::new().await;
+    let config = env.config("6h", "");
+    env.cmd(&["config", "import", &config]).assert().success();
+    // Synced a moment ago on an hourly schedule.
+    let now = jiff::Timestamp::now();
+    let hour = now
+        .checked_add(jiff::SignedDuration::from_hours(1))
+        .unwrap();
+    env.db()
+        .execute_batch(&format!(
+            "INSERT INTO sources (key, lists, last_synced_at, next_sync_at)
+             VALUES ('dl', '[]', '{now}', '{hour}');
+             INSERT INTO daemon_state (key, value) VALUES ('schedule_interval', '1h');"
+        ))
+        .unwrap();
+    let daemon = env.daemon(&config, &[]);
+    daemon.wait_for("the new schedule", || {
+        env.next_sync("dl").is_some_and(|next| next > hour)
+    });
+    let wait = env.next_sync("dl").unwrap().duration_since(now).as_secs();
+    assert!(
+        (21_600..=22_700).contains(&wait),
+        "6h after it synced: {wait}s"
+    );
+    assert!(!env.path("media").join(RICK_DIR).exists(), "not due yet");
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0), "{log}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -443,12 +516,7 @@ async fn sync_now_and_restart_on_request() {
     let later = jiff::Timestamp::now()
         .checked_add(jiff::SignedDuration::from_hours(1))
         .unwrap();
-    env.db()
-        .execute(
-            "INSERT INTO daemon_state (key, value) VALUES ('next_sync_at', ?1)",
-            [later.to_string()],
-        )
-        .unwrap();
+    env.schedule("dl", later);
     let daemon = env.daemon(&config, &[]);
     daemon.wait_for_log("tidepool daemon started");
     let rick = env.path("media").join(RICK_DIR);
@@ -496,20 +564,14 @@ async fn sync_now_and_restart_on_request() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn a_source_indexed_or_synced_from_its_page_leaves_the_schedule_alone() {
+async fn a_source_indexed_or_synced_from_its_page() {
     let env = Env::new().await;
     let config = env.config("1h", "");
     env.cmd(&["config", "import", &config]).assert().success();
     let later = jiff::Timestamp::now()
         .checked_add(jiff::SignedDuration::from_hours(1))
-        .unwrap()
-        .to_string();
-    env.db()
-        .execute(
-            "INSERT INTO daemon_state (key, value) VALUES ('next_sync_at', ?1)",
-            [&later],
-        )
         .unwrap();
+    env.schedule("dl", later);
     let daemon = env.daemon(&config, &[]);
     daemon.wait_for_log("web UI at http://127.0.0.1:");
     let url = daemon
@@ -565,6 +627,11 @@ async fn a_source_indexed_or_synced_from_its_page_leaves_the_schedule_alone() {
         .unwrap();
     assert!(pending > 0, "found, not downloaded");
     assert!(!rick.exists(), "indexing doesn't download");
+    assert_eq!(
+        env.next_sync("dl"),
+        Some(later),
+        "indexing keeps the schedule"
+    );
 
     let answer = ask("sync").await.unwrap();
     assert!(answer.status().is_success());
@@ -573,15 +640,8 @@ async fn a_source_indexed_or_synced_from_its_page_leaves_the_schedule_alone() {
         rick.join("metadata.json").is_file()
     });
     daemon.wait_for_log("dl: synced 1 source");
-    let next: String = env
-        .db()
-        .query_row(
-            "SELECT value FROM daemon_state WHERE key = 'next_sync_at'",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap();
-    assert_eq!(next, later, "the schedule is as it was");
+    let next = env.next_sync("dl").unwrap();
+    assert!(next > later, "an hour from the sync: {next} vs {later}");
     let (code, log) = daemon.stop();
     assert_eq!(code, Some(0), "{log}");
 }
