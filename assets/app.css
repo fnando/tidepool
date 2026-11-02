@@ -660,3 +660,19 @@ ul.plain li + li { border-top: 1px solid var(--border); }
 /* ---------- dashboard: versions, API use ---------- */
 .totals .version em { font-style: normal; color: var(--faint); }
 .meta .api.used { color: var(--ok); }
+
+/* a sync under way: its buttons wait */
+.menu > summary.disabled { opacity: .5; pointer-events: none; }
+.hint.busy::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  vertical-align: -1px;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

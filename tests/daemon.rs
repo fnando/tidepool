@@ -564,9 +564,10 @@ async fn sync_now_and_restart_on_request() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn a_source_indexed_or_synced_from_its_page() {
+async fn a_source_indexed_or_synced_from_its_page_even_with_downloads_off() {
     let env = Env::new().await;
-    let config = env.config("1h", "");
+    // Downloads are off, but the source's own Sync now downloads anyway.
+    let config = env.config("1h", "[general]\ndownload = false\n");
     env.cmd(&["config", "import", &config]).assert().success();
     let later = jiff::Timestamp::now()
         .checked_add(jiff::SignedDuration::from_hours(1))

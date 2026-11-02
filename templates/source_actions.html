@@ -1,15 +1,15 @@
-<div class="actions" id="source-actions">
-  {% if let Some(message) = actions.message %}<span class="hint" role="status">{{ message }}</span>{% endif %}
+<div class="actions" id="source-actions"{% if actions.busy.is_some() %} hx-get="/sources/{{ actions.name }}/actions" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+  {% if let Some(message) = actions.message %}<span class="hint" role="status">{{ message }}</span>{% else if let Some(busy) = actions.busy %}<span class="hint busy" role="status">{{ busy }}</span>{% endif %}
   {% if !actions.enabled %}<span class="pill st-off" title="Syncs skip it">Disabled</span>{% endif %}
   {% if !actions.read_only %}
   <button class="small" hx-post="/sources/{{ actions.name }}/{% if actions.enabled %}disable{% else %}enable{% endif %}" hx-target="#source-actions" hx-swap="outerHTML" title="{% if actions.enabled %}Syncs skip it until you enable it again{% else %}Syncs include it again{% endif %}">{% if actions.enabled %}Disable{% else %}Enable{% endif %}</button>
   {% endif %}
   <div class="split">
-    <button class="small primary" hx-post="/sources/{{ actions.name }}/sync" hx-target="#source-actions" hx-swap="outerHTML" title="Look for new videos and download them now, without waiting for the schedule">Sync now</button>
+    <button class="small primary" hx-post="/sources/{{ actions.name }}/sync" hx-target="#source-actions" hx-swap="outerHTML" title="Look for new videos and download them now, even if this source's downloads are off"{% if actions.busy.is_some() %} disabled{% endif %}>Sync now</button>
     <details class="menu">
-      <summary class="small primary" aria-label="More ways to sync"></summary>
+      <summary class="small primary{% if actions.busy.is_some() %} disabled{% endif %}" aria-label="More ways to sync"></summary>
       <div class="menu-items">
-        <button hx-post="/sources/{{ actions.name }}/index" hx-target="#source-actions" hx-swap="outerHTML">
+        <button hx-post="/sources/{{ actions.name }}/index" hx-target="#source-actions" hx-swap="outerHTML"{% if actions.busy.is_some() %} disabled{% endif %}>
           Index now
           <span class="hint">Look for new videos without downloading them</span>
         </button>

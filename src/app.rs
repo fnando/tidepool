@@ -681,7 +681,7 @@ impl App<'_> {
             recover: self.role == Role::OneShot,
             now: jiff::Timestamp::now(),
         };
-        if self.role == Role::OneShot {
+        if options.fetch {
             for source in sources.iter().filter(|s| !s.download) {
                 writeln!(
                     out,
@@ -869,17 +869,27 @@ impl App<'_> {
     /// what's new (the processor finishes it), clean up. `None` when another
     /// tidepool holds the library.
     /// One sync: index, download and clean up `only` these sources (keys),
-    /// or every enabled one. `index_only`: look for new videos, nothing more.
+    /// or every enabled one. `mode`: `Index` looks for new videos, nothing
+    /// more; `Download` downloads even sources whose downloads are off.
     pub(crate) async fn sync_once(
         &self,
         only: &[String],
-        index_only: bool,
+        mode: crate::daemon::service::SyncMode,
         out: &mut dyn Write,
     ) -> anyhow::Result<Option<String>> {
+        use crate::daemon::service::SyncMode;
+
         let mut state = self.open_state()?;
         let config = self.current_config(&state)?.config;
         let refs: Vec<SourceRef> = only.iter().cloned().map(SourceRef::Key).collect();
-        let sources = Self::scoped_sources(&config, &refs)?;
+        let mut sources = Self::scoped_sources(&config, &refs)?;
+        let index_only = mode == SyncMode::Index;
+        if mode == SyncMode::Download {
+            // Asked for by name: downloaded whatever `download` says.
+            for source in &mut sources {
+                source.download = true;
+            }
+        }
         if sources.is_empty() {
             return Ok(Some(
                 "no enabled sources; add one under [sources.<name>] in your config".into(),

@@ -175,6 +175,7 @@ pub fn router(web: Arc<Web>) -> Router {
             post(action_source_downloads),
         )
         .route("/sources/{name}", get(source_page))
+        .route("/sources/{name}/actions", get(source_actions_fragment))
         .route("/sources/{name}/{action}", post(source_action))
         .route("/sources/{name}/videos/{id}", get(video_page))
         .route("/sources/{name}/videos/{id}/jobs", get(jobs_fragment))
@@ -372,7 +373,8 @@ async fn source_action(
     use crate::daemon::service::SyncMode;
 
     let mode = match action.as_str() {
-        "sync" => Some(SyncMode::Sync),
+        // Downloads even when the source's downloads are off: you asked.
+        "sync" => Some(SyncMode::Download),
         "index" => Some(SyncMode::Index),
         "enable" | "disable" => None,
         _ => return Ok(not_found("such action")),
@@ -397,8 +399,8 @@ async fn source_action(
             Some(false) => {
                 web.sync_now.source(&name, mode);
                 let doing = match mode {
-                    SyncMode::Sync => "Syncing",
                     SyncMode::Index => "Looking for new videos in",
+                    SyncMode::Sync | SyncMode::Download => "Syncing",
                 };
                 format!("{doing} {name} now; the dashboard shows the progress.")
             }
@@ -450,6 +452,29 @@ struct SourceActions {
     enabled: bool,
     read_only: bool,
     message: Option<String>,
+    /// What the syncer is doing with it, if anything: the sync buttons are
+    /// off meanwhile, and the buttons refresh until it's done.
+    busy: Option<&'static str>,
+}
+
+/// What the syncer is doing with source `name`, in words.
+fn busy_label(web: &Web, name: &str) -> Option<&'static str> {
+    use crate::daemon::service::Busy;
+    web.sync_now.busy(name).map(|busy| match busy {
+        Busy::Waiting => "Waiting for the syncer…",
+        Busy::Running => "Syncing…",
+    })
+}
+
+/// The buttons again (they refresh themselves while the syncer is busy).
+async fn source_actions_fragment(
+    State(web): State<Arc<Web>>,
+    Path(name): Path<String>,
+) -> Result<Response, WebError> {
+    let Some(actions) = source_actions(&web, &name, None).await? else {
+        return Ok(not_found("such source"));
+    };
+    Ok(render(SourceActionsFragment { actions })?.into_response())
 }
 
 #[derive(Template)]
@@ -465,11 +490,13 @@ async fn source_actions(
     message: Option<String>,
 ) -> Result<Option<SourceActions>, WebError> {
     let read_only = web.read_only;
+    let busy = busy_label(web, name);
     Ok(source_named(web, name).await?.map(|source| SourceActions {
         name: source.key,
         enabled: source.enabled,
         read_only,
         message,
+        busy,
     }))
 }
 
@@ -744,6 +771,7 @@ async fn source_page(
     let page = query.page.unwrap_or(1).max(1);
     let csrf = web.csrf.clone();
     let read_only = web.read_only;
+    let busy = busy_label(&web, &name);
     let found = web
         .db(move |conn| {
             let (_, loaded) = ConfigStore::new(conn).load_current()?;
@@ -802,6 +830,7 @@ async fn source_page(
                     enabled,
                     read_only,
                     message: None,
+                    busy,
                 },
                 name,
             }))
@@ -2147,9 +2176,20 @@ mod tests {
             .expect("the syncer was told");
         let (_, _, body) = send(&s.web, act("lofi", "sync")).await;
         assert!(body.contains("Syncing lofi now"), "{body}");
+        // Waiting for the syncer: the sync buttons are off, and the buttons
+        // refresh themselves until it's done.
+        assert!(body.contains(r#"hx-trigger="every 2s""#), "{body}");
+        assert!(body.contains("disabled>Sync now<"), "{body}");
+        let (_, _, page) = send(&s.web, get("/sources/lofi")).await;
+        assert!(page.contains("Waiting for the syncer…"), "{page}");
+        let (status, _, body) = send(&s.web, get("/sources/lofi/actions")).await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(body.contains("disabled>Sync now<"), "{body}");
         let asked = s.web.sync_now.take();
         assert!(!asked.everything);
-        assert_eq!(asked.sources.get("lofi"), Some(&SyncMode::Sync));
+        assert_eq!(asked.sources.get("lofi"), Some(&SyncMode::Download));
+        let (status, _, _) = send(&s.web, get("/sources/nope/actions")).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
 
         s.web
             .db(|conn| Ok(store::set_paused(conn, Service::Syncer.name(), true)?))

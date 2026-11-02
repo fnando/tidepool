@@ -1103,7 +1103,8 @@ Click a source to see its videos, 50 at a time: filter by status
 (downloaded, waiting, skipped, failed, unavailable, cleaned up), search titles
 or ids, and see why each one is where it is (the rule that skipped it, the
 error that failed it, why cleanup removed it). Its Sync now button checks
-just that source for new videos and downloads them right away, and its next
+just that source for new videos and downloads them right away (even if its
+downloads are off), and its next
 sync is counted from then (its menu has Index now, to only look for new
 videos; that keeps the schedule as it was).
 Disable turns the source off (`enabled = false`, saved as a new config

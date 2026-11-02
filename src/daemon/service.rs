@@ -68,13 +68,16 @@ pub struct Signals {
     pub config: watch::Receiver<i64>,
 }
 
-/// What to do with a source asked for by name.
+/// What a sync does.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SyncMode {
     /// Look for new videos only.
     Index,
-    /// Look for new videos, download them, clean up.
+    /// Look for new videos, download them (where `download` is on), clean up.
     Sync,
+    /// Like `Sync`, downloading even where `download` is off: a source's own
+    /// Sync now button.
+    Download,
 }
 
 /// What's been asked of the syncer since it last looked.
@@ -82,7 +85,8 @@ pub enum SyncMode {
 pub struct Asked {
     /// Sync every source (as the schedule does).
     pub everything: bool,
-    /// Sources asked for by name; syncing wins over indexing.
+    /// Sources asked for by name; downloading wins over syncing, syncing
+    /// over indexing.
     pub sources: std::collections::BTreeMap<String, SyncMode>,
 }
 
@@ -103,27 +107,43 @@ impl Asked {
     }
 }
 
-/// Requests to sync before the schedule says so: everything, or just some
-/// sources.
+/// Where a source is in the syncer's work, for the web UI.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Busy {
+    /// Asked for; the syncer gets to it next.
+    Waiting,
+    /// Being synced or indexed.
+    Running,
+}
+
+/// Requests to sync before the schedule says so (everything, or just some
+/// sources), and which sources the syncer is working on.
 #[derive(Default)]
 pub struct SyncNow {
     notify: Notify,
-    asked: std::sync::Mutex<Asked>,
+    inner: std::sync::Mutex<Inner>,
+}
+
+#[derive(Default)]
+struct Inner {
+    asked: Asked,
+    /// Sources taken from `asked` or being synced.
+    active: std::collections::BTreeMap<String, Busy>,
 }
 
 impl SyncNow {
     /// Sync every source now.
     pub fn all(&self) {
-        self.lock().everything = true;
+        self.lock().asked.everything = true;
         self.notify.notify_one();
     }
 
-    /// Sync or index this source now.
+    /// Sync, download or index this source now.
     pub fn source(&self, key: &str, mode: SyncMode) {
-        let mut asked = self.lock();
-        let entry = asked.sources.entry(key.to_string()).or_insert(mode);
+        let mut inner = self.lock();
+        let entry = inner.asked.sources.entry(key.to_string()).or_insert(mode);
         *entry = (*entry).max(mode);
-        drop(asked);
+        drop(inner);
         self.notify.notify_one();
     }
 
@@ -132,15 +152,59 @@ impl SyncNow {
         self.notify.notified().await;
     }
 
-    /// What's been asked, clearing it.
+    /// What's been asked, clearing it; the sources named wait their turn.
     pub fn take(&self) -> Asked {
-        std::mem::take(&mut *self.lock())
+        let mut inner = self.lock();
+        let asked = std::mem::take(&mut inner.asked);
+        // Nothing runs between syncs: anything left over is stale.
+        inner.active.clear();
+        for key in asked.sources.keys() {
+            inner.active.insert(key.clone(), Busy::Waiting);
+        }
+        asked
     }
 
-    fn lock(&self) -> std::sync::MutexGuard<'_, Asked> {
-        self.asked
+    /// Whether the syncer is on `key` or about to be.
+    pub fn busy(&self, key: &str) -> Option<Busy> {
+        let inner = self.lock();
+        inner.active.get(key).copied().or_else(|| {
+            (inner.asked.everything || inner.asked.sources.contains_key(key))
+                .then_some(Busy::Waiting)
+        })
+    }
+
+    /// The syncer works on `keys` until the guard is dropped.
+    fn working(&self, keys: &[String]) -> Working<'_> {
+        let mut inner = self.lock();
+        for key in keys {
+            inner.active.insert(key.clone(), Busy::Running);
+        }
+        Working {
+            sync_now: self,
+            keys: keys.to_vec(),
+        }
+    }
+
+    fn lock(&self) -> std::sync::MutexGuard<'_, Inner> {
+        self.inner
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+}
+
+/// Sources the syncer is on; done with them when dropped, however the sync
+/// ended.
+struct Working<'a> {
+    sync_now: &'a SyncNow,
+    keys: Vec<String>,
+}
+
+impl Drop for Working<'_> {
+    fn drop(&mut self) {
+        let mut inner = self.sync_now.lock();
+        for key in &self.keys {
+            inner.active.remove(key);
+        }
     }
 }
 
@@ -344,16 +408,18 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
         let batch = Batch {
             every,
             out: &mut out,
+            sync_now: &signals.sync_now,
         };
         if asked.everything {
             // Sources asked for by name are synced along with the rest.
             batch.run(app, &enabled, None, SyncMode::Sync).await?;
             continue;
         }
-        let synced = asked.keys(SyncMode::Sync);
-        let batch = batch
-            .run(app, &synced, Some(&synced), SyncMode::Sync)
-            .await?;
+        let mut batch = batch;
+        for mode in [SyncMode::Download, SyncMode::Sync] {
+            let synced = asked.keys(mode);
+            batch = batch.run(app, &synced, Some(&synced), mode).await?;
+        }
         let indexed = asked.keys(SyncMode::Index);
         batch
             .run(app, &indexed, Some(&indexed), SyncMode::Index)
@@ -366,6 +432,8 @@ struct Batch<'o> {
     /// `schedule.interval`.
     every: Option<Duration>,
     out: &'o mut LogWriter,
+    /// Told which sources are being synced.
+    sync_now: &'o SyncNow,
 }
 
 impl Batch<'_> {
@@ -383,10 +451,12 @@ impl Batch<'_> {
         if keys.is_empty() || app.shutdown.is_stopping() {
             return Ok(self);
         }
+        let sync_now = self.sync_now;
+        let _working = sync_now.working(keys);
         let state = app.open_state()?;
         let started = jiff::Timestamp::now();
         let doing = match mode {
-            SyncMode::Sync => "syncing",
+            SyncMode::Sync | SyncMode::Download => "syncing",
             SyncMode::Index => "indexing",
         };
         let what = only
@@ -400,12 +470,13 @@ impl Batch<'_> {
             Some(&activity),
             started,
         )?;
-        if mode == SyncMode::Sync {
+        let syncs = mode != SyncMode::Index;
+        if syncs {
             store::set_time(&state.conn, store::LAST_SYNC_STARTED_AT, started)?;
         }
         crate::events::emit(crate::events::Event::SyncStarted);
         let result = app
-            .sync_once(only.unwrap_or_default(), mode == SyncMode::Index, self.out)
+            .sync_once(only.unwrap_or_default(), mode, self.out)
             .await;
         self.out.flush()?;
         if app.shutdown.is_stopping() {
@@ -413,7 +484,7 @@ impl Batch<'_> {
         }
         let finished = jiff::Timestamp::now();
         let mut suffix = String::new();
-        if mode == SyncMode::Sync {
+        if syncs {
             if matches!(result, Ok(None)) {
                 let retry = finished
                     .checked_add(schedule::CHECK_EVERY)
@@ -664,8 +735,29 @@ mod tests {
     use super::SyncNow;
 
     #[test]
+    fn says_which_sources_are_being_synced() {
+        use super::{Busy, SyncMode};
+
+        let sync_now = SyncNow::default();
+        assert_eq!(sync_now.busy("lofi"), None);
+        sync_now.source("lofi", SyncMode::Download);
+        assert_eq!(sync_now.busy("lofi"), Some(Busy::Waiting));
+        assert_eq!(sync_now.busy("jazz"), None);
+        let asked = sync_now.take();
+        assert_eq!(sync_now.busy("lofi"), Some(Busy::Waiting), "its turn comes");
+        {
+            let _working = sync_now.working(&asked.keys(SyncMode::Download));
+            assert_eq!(sync_now.busy("lofi"), Some(Busy::Running));
+        }
+        assert_eq!(sync_now.busy("lofi"), None, "done");
+
+        sync_now.all();
+        assert_eq!(sync_now.busy("jazz"), Some(Busy::Waiting));
+    }
+
+    #[test]
     fn sync_requests_add_up() {
-        use super::SyncMode::{Index, Sync};
+        use super::SyncMode::{Download, Index, Sync};
 
         let asked = SyncNow::default();
         assert!(asked.take().is_empty());
@@ -679,6 +771,12 @@ mod tests {
         assert_eq!(taken.keys(Sync), ["jazz", "lofi"], "syncing wins");
         assert_eq!(taken.keys(Index), ["rock"]);
         assert!(asked.take().is_empty(), "taking clears it");
+
+        // The source page's button downloads, whatever else was asked.
+        asked.source("lofi", Download);
+        asked.source("lofi", Sync);
+        asked.source("lofi", Index);
+        assert_eq!(asked.take().keys(Download), ["lofi"]);
 
         asked.source("lofi", Index);
         asked.all();
