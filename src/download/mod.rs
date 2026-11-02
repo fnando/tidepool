@@ -628,6 +628,7 @@ async fn assemble(
         grace: ctx.shutdown_timeout,
         ffmpeg: &ctx.ffmpeg,
         ffprobe: &ctx.ffprobe,
+        data_dir: &ctx.dirs.data_dir,
     };
 
     let step = |what: &str| {
@@ -771,6 +772,7 @@ async fn assemble(
         chapters: info.chapters.clone().unwrap_or_default(),
         subtitles: raw.subtitles.clone(),
     };
+    let musicbrainz = stage.musicbrainz(&mut data.tags, &info, None).await;
     stage
         .embed_hooks(&mut data, &values, &context, tmp, &raw, hook_runs)
         .await?;
@@ -799,6 +801,7 @@ async fn assemble(
         embedded_tags: embedding.embedded.metadata.then_some(&data.tags),
         embed_error: embedding.error.as_deref(),
         original: originals.as_ref(),
+        musicbrainz: musicbrainz.as_ref(),
         downloaded_at: job.now,
         ytdlp_version: ctx.ytdlp_version.as_deref(),
     };

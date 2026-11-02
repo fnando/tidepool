@@ -12,6 +12,7 @@ pub mod hooks;
 pub mod index;
 pub mod init;
 pub mod lock;
+pub mod musicbrainz;
 pub mod paths;
 pub mod pipeline;
 pub mod problems;

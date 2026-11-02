@@ -36,6 +36,8 @@ pub struct Stage<'a> {
     pub grace: std::time::Duration,
     pub ffmpeg: &'a Path,
     pub ffprobe: &'a Path,
+    /// tidepool's data folder (caches live there).
+    pub data_dir: &'a Path,
 }
 
 impl Stage<'_> {
@@ -412,6 +414,73 @@ impl Stage<'_> {
             hook_runs.push(report);
         }
         (!keep.is_empty()).then(|| keep.join("; "))
+    }
+
+    /// `embed.musicbrainz`: album and track ids for `tags` that name the
+    /// artist (`MUSICBRAINZ_ARTISTID`). `known` is what metadata.json
+    /// recorded before: a match there is used again, not looked up. Tags set
+    /// in `embed.tags` are left alone. Returns what metadata.json records.
+    pub async fn musicbrainz(
+        &self,
+        tags: &mut BTreeMap<String, String>,
+        info: &VideoInfo,
+        known: Option<&serde_json::Value>,
+    ) -> Option<serde_json::Value> {
+        use crate::musicbrainz::{Found, lookup};
+        let (Some(server), true) = (&self.source.embed.musicbrainz, self.source.embed.metadata)
+        else {
+            return known.cloned();
+        };
+        let artist = tags
+            .iter()
+            .find(|(k, v)| k.eq_ignore_ascii_case("MUSICBRAINZ_ARTISTID") && !v.trim().is_empty())
+            .map(|(_, v)| v.trim().to_string())?;
+        let mut add = |found: Vec<(&'static str, String)>| {
+            for (key, value) in found {
+                if !tags.keys().any(|k| k.eq_ignore_ascii_case(key)) {
+                    tags.insert(key.to_string(), value);
+                }
+            }
+        };
+        if let Some(known) = known
+            && known.get("artist_id").and_then(|a| a.as_str()) == Some(artist.as_str())
+            && let Some(found) = Found::tags_from_record(known)
+        {
+            add(found);
+            return Some(known.clone());
+        }
+        let published = info
+            .upload_date_iso()
+            .and_then(|d| d.parse::<jiff::civil::Date>().ok());
+        match lookup(
+            server,
+            self.data_dir,
+            &artist,
+            &info.title,
+            info.channel.as_deref(),
+            published,
+        )
+        .await
+        {
+            Ok(found) => {
+                match &found {
+                    Found::Match { release, track } => tracing::debug!(
+                        "{}: MusicBrainz: “{}” on {} ({})",
+                        self.label,
+                        track.title,
+                        release.title,
+                        release.date.as_deref().unwrap_or("no date")
+                    ),
+                    Found::None(why) => tracing::info!("{}: MusicBrainz: {why}", self.label),
+                }
+                add(found.tags());
+                Some(found.record(&artist))
+            }
+            Err(e) => {
+                tracing::warn!("{}: no MusicBrainz ids this time: {e}", self.label);
+                known.cloned()
+            }
+        }
     }
 
     /// The tags `embed.metadata` writes.

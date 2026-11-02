@@ -98,6 +98,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # chapters = false                  # chapter markers
 # subtitles = false                 # subtitles from --write-subs; the subtitle files are kept too
 # tags = {}                         # tags to add or replace (with metadata = true), e.g. { genre = "Music", album_artist = "{channel}" }; "" removes one
+# musicbrainz = { server = "https://musicbrainz.org", enabled = true } # add album/track ids to videos tagged MUSICBRAINZ_ARTISTID (mkv); off unless set
 
 [category.default.cleanup]          # what `tidepool cleanup` removes; nothing unless set
 # max_items = 0                     # keep at most this many videos (and download only the first ones); 0 = unlimited
@@ -220,6 +221,7 @@ mod tests {
         );
         documented.media_dir = None;
         documented.youtube.api_key = None;
+        documented.embed.musicbrainz = None;
         assert_eq!(
             documented, builtin,
             "[category.default] in the template must show the built-in defaults"
@@ -251,6 +253,10 @@ mod tests {
             ("YoutubeOptions", &["/category/default/youtube"]),
             ("EmbedOptions", &["/category/default/embed"]),
             ("CleanupOptions", &["/category/default/cleanup"]),
+            (
+                "MusicBrainzOptions",
+                &["/category/default/embed/musicbrainz"],
+            ),
             ("HookConfig", &["/hooks/notify"]),
             ("SourceConfig", &["/sources/sample"]),
         ];

@@ -118,6 +118,8 @@ pub struct Embed {
     pub chapters: bool,
     pub subtitles: bool,
     pub tags: BTreeMap<String, String>,
+    /// The MusicBrainz server to look up album and track ids on, when on.
+    pub musicbrainz: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -187,6 +189,24 @@ fn resolve(
                 .unwrap_or_else(|| $default)
         };
     }
+    /// On when any layer sets `embed.musicbrainz` and the last `enabled`
+    /// set isn't false; the last `server` set wins.
+    fn musicbrainz(layers: &[Options]) -> Option<String> {
+        let tables: Vec<&crate::config::MusicBrainzOptions> = layers
+            .iter()
+            .filter_map(|l| l.embed.as_ref().and_then(|e| e.musicbrainz.as_ref()))
+            .collect();
+        if tables.is_empty() || tables.iter().rev().find_map(|t| t.enabled) == Some(false) {
+            return None;
+        }
+        Some(
+            tables
+                .iter()
+                .rev()
+                .find_map(|t| t.server.clone())
+                .unwrap_or_else(|| crate::musicbrainz::DEFAULT_SERVER.to_string()),
+        )
+    }
     macro_rules! table {
         ($table:ident, $field:ident, $default:expr) => {
             layers
@@ -254,6 +274,7 @@ fn resolve(
             chapters: table!(embed, chapters, false),
             subtitles: table!(embed, subtitles, false),
             tags: merged_tags(layers),
+            musicbrainz: musicbrainz(layers),
         },
         cleanup: Cleanup {
             max_items: table!(cleanup, max_items, 0),

@@ -610,6 +610,24 @@ pub struct EmbedOptions {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(schema_with = "tags_schema")]
     pub tags: Option<BTreeMap<String, String>>,
+    /// Look up MusicBrainz album and track ids for videos whose tags have
+    /// `MUSICBRAINZ_ARTISTID`, e.g. `{ server = "http://mirror:5000" }`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub musicbrainz: Option<MusicBrainzOptions>,
+}
+
+/// `embed.musicbrainz`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct MusicBrainzOptions {
+    /// Turn it off for a source or category (on when the table is set).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<bool>,
+    /// The MusicBrainz server (a mirror works); default https://musicbrainz.org,
+    /// asked at most once a second.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(regex(pattern = r"^https?://"))]
+    pub server: Option<String>,
 }
 
 /// `cleanup`: limits that keep a mirror bounded.

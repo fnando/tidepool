@@ -938,6 +938,99 @@ case "$input" in *'"artist":"Rick Astley"'*) printf '{"tags": {"album_artist": "
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn musicbrainz_ids_are_looked_up_from_the_artist() {
+    let env = Env::new().await;
+    let Some(bin) = real_ffmpeg_bin(&env) else {
+        eprintln!("skipped: ffmpeg not installed");
+        return;
+    };
+    let sample = env.path("sample.mkv");
+    assert!(
+        std::process::Command::new(bin.join("ffmpeg"))
+            .args(["-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i"])
+            .arg("testsrc=size=64x36:rate=10:duration=1")
+            .arg(&sample)
+            .status()
+            .unwrap()
+            .success()
+    );
+    // Rick's releases: the 1987 album, and a 2009 compilation.
+    let musicbrainz = MockServer::start().await;
+    let release = |id: &str, title: &str, date: &str, secondary: &[&str]| {
+        serde_json::json!({
+            "id": id, "title": title, "date": date,
+            "release-group": {"id": format!("{id}-group"), "primary-type": "Album", "secondary-types": secondary},
+            "media": [{"tracks": [
+                {"id": format!("{id}-track"), "title": "Never Gonna Give You Up", "recording": {"id": "the-recording"}},
+            ]}]
+        })
+    };
+    Mock::given(path_regex("/ws/2/release"))
+        .and(wiremock::matchers::query_param("artist", "rick-artist"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+            "release-count": 2,
+            "releases": [
+                release("whenever", "Whenever You Need Somebody", "1987-11-16", &[]),
+                release("greatest", "Greatest Hits", "2009", &["Compilation"]),
+            ]
+        })))
+        .expect(1)
+        .mount(&musicbrainz)
+        .await;
+    let config = hooks_config(
+        &env,
+        &format!(
+            "[category.default.embed]\nmetadata = true\ntags = {{ MUSICBRAINZ_ARTISTID = \"rick-artist\" }}\n\
+             musicbrainz = {{ server = \"{}\" }}",
+            musicbrainz.uri()
+        ),
+        "",
+    );
+    let cmd = |args: &[&str]| {
+        let mut cmd = env.cmd(args);
+        cmd.env("PATH", format!("{}:/usr/bin:/bin", bin.display()))
+            .env("TIDEPOOL_FAKE_MEDIA", &sample);
+        cmd
+    };
+    cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+
+    let rick = env.media().join(RICK_DIR);
+    let media =
+        rick.join("Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mkv");
+    let tags = &ffprobe_json(&media)["format"]["tags"];
+    assert_eq!(
+        tags["MUSICBRAINZ_ALBUMID"], "whenever",
+        "not the compilation: {tags}"
+    );
+    assert_eq!(tags["MUSICBRAINZ_RELEASEGROUPID"], "whenever-group");
+    assert_eq!(tags["MUSICBRAINZ_TRACKID"], "the-recording");
+    assert_eq!(tags["MUSICBRAINZ_RELEASETRACKID"], "whenever-track");
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(rick.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(meta["musicbrainz"]["release"], "Whenever You Need Somebody");
+    let other = env
+        .media()
+        .join("dl/2026-09-01 - Video okvideo01 [okvideo01]");
+    let other: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(other.join("metadata.json")).unwrap()).unwrap();
+    assert!(
+        other["musicbrainz"]["no_match"]
+            .as_str()
+            .unwrap()
+            .contains("no track called “Video okvideo01”"),
+        "{other}"
+    );
+
+    // Embedding again keeps the ids, without asking again (one request in
+    // all: the mock expects it).
+    cmd(&["embed", "dQw4w9WgXcQ"]).assert().success();
+    let tags = &ffprobe_json(&media)["format"]["tags"];
+    assert_eq!(tags["MUSICBRAINZ_TRACKID"], "the-recording");
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn downloaded_hooks_can_replace_the_media() {
     let env = Env::new().await;
     let remux = script(

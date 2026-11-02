@@ -299,6 +299,10 @@
           "description": "Title, channel, date, description, URL, album/track.",
           "type": "boolean"
         },
+        "musicbrainz": {
+          "$ref": "#/$defs/MusicBrainzOptions",
+          "description": "Look up MusicBrainz album and track ids for videos whose tags have\n`MUSICBRAINZ_ARTISTID`, e.g. `{ server = \"http://mirror:5000\" }`."
+        },
         "subtitles": {
           "description": "Languages from --sub-langs.",
           "type": "boolean"
@@ -460,6 +464,22 @@
           "type": "string"
         }
       ]
+    },
+    "MusicBrainzOptions": {
+      "additionalProperties": false,
+      "description": "`embed.musicbrainz`.",
+      "properties": {
+        "enabled": {
+          "description": "Turn it off for a source or category (on when the table is set).",
+          "type": "boolean"
+        },
+        "server": {
+          "description": "The MusicBrainz server (a mirror works); default https://musicbrainz.org,\nasked at most once a second.",
+          "pattern": "^https?://",
+          "type": "string"
+        }
+      },
+      "type": "object"
     },
     "OnFailure": {
       "oneOf": [

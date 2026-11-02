@@ -101,6 +101,7 @@ pub async fn rerun(shared: &Shared<'_>, video: &Video<'_>) -> Rerun {
         grace: shared.grace,
         ffmpeg: shared.ffmpeg,
         ffprobe: shared.ffprobe,
+        data_dir: &shared.dirs.data_dir,
     };
     let mut hook_runs = Vec::new();
     let mut result = Rerun {
@@ -252,6 +253,9 @@ async fn reprocess(
         chapters: info.chapters.clone().unwrap_or_default(),
         subtitles: raw.subtitles.clone(),
     };
+    let musicbrainz = stage
+        .musicbrainz(&mut data.tags, info, meta.get("musicbrainz"))
+        .await;
     stage
         .embed_hooks(&mut data, values, &context, tmp, &raw, hook_runs)
         .await
@@ -332,6 +336,9 @@ async fn reprocess(
         serde_json::Value::Null
     };
     meta["embed_error"] = embedding.error.clone().into();
+    if let Some(musicbrainz) = musicbrainz {
+        meta["musicbrainz"] = musicbrainz;
+    }
     let meta_tmp = tmp.join("metadata.json");
     std::fs::write(
         &meta_tmp,

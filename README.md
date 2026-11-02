@@ -466,6 +466,37 @@ If embedding fails, you keep the file as downloaded, with a warning.
 When the same video is in two sources and shares one file (see `duplicates`),
 the file carries the album and track of the source that downloaded it last.
 
+**MusicBrainz album and track ids.** For music videos tagged with their
+artist's `MUSICBRAINZ_ARTISTID`, tidepool can find the song on one of the
+artist's MusicBrainz releases and add the release's and the track's ids too
+(`MUSICBRAINZ_ALBUMID`, `MUSICBRAINZ_RELEASEGROUPID`, `MUSICBRAINZ_TRACKID` and
+`MUSICBRAINZ_RELEASETRACKID`, the names Picard uses):
+
+```toml
+[category.music.embed]
+metadata = true
+musicbrainz = {}                                          # asks musicbrainz.org
+# musicbrainz = { server = "http://my-mirror.local:5000" } # or your own mirror
+```
+
+The video's title is matched against the artist's tracks, leaving out what's
+only about the video: the artist's name in front ("Artist - Song") and things in
+brackets like "(Official Video)", "(Clipe Oficial)" or "[4K]". Letter case,
+accents and punctuation don't matter. When several releases have the song,
+tidepool picks the latest one released on or before the video came out
+(compilations and live albums only if nothing else has it). If no track matches,
+only the artist id stays; if the title needs more tidying than that, a
+`prepare` hook can do it. What was matched (or why nothing was) is in the
+video's metadata file, under `musicbrainz`.
+
+musicbrainz.org is asked at most once a second, as it requires; your own mirror
+is asked as fast as it answers. Each artist's releases are remembered for 30
+days, so an artist's other videos need no more requests. If the server can't be
+reached, the video is saved without the extra ids, with a warning.
+`tidepool embed` adds the ids to videos you already have; videos that already
+have them keep them without asking again. Like the artist id, these tags need
+mkv files.
+
 #### Embedding into videos you already have
 
 Changing `embed` only affects new downloads. To bring videos you already have

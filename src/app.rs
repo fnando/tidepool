@@ -1712,6 +1712,7 @@ impl App<'_> {
             grace: config.general.shutdown_timeout.0,
             ffmpeg: Path::new("ffmpeg"),
             ffprobe: Path::new("ffprobe"),
+            data_dir: &self.dirs.data_dir,
         };
         let context = stage.context(&info);
         let mut reports = Vec::new();

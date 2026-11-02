@@ -22,6 +22,8 @@ pub struct Metadata<'a> {
     pub embed_error: Option<&'a str>,
     /// YouTube's value of each detail a `prepare` hook changed.
     pub original: Option<&'a Value>,
+    /// What `embed.musicbrainz` matched (or why nothing).
+    pub musicbrainz: Option<&'a Value>,
     pub downloaded_at: Timestamp,
     pub ytdlp_version: Option<&'a str>,
 }
@@ -113,6 +115,9 @@ impl Metadata<'_> {
         if let Some(original) = self.original {
             meta["original"] = original.clone();
         }
+        if let Some(musicbrainz) = self.musicbrainz {
+            meta["musicbrainz"] = musicbrainz.clone();
+        }
         meta
     }
 }
@@ -172,6 +177,7 @@ mod tests {
             embedded_tags: None,
             embed_error: None,
             original: None,
+            musicbrainz: None,
             downloaded_at: "2026-10-31T12:00:00Z".parse().unwrap(),
             ytdlp_version: Some("2026.10.29"),
         }
