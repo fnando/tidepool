@@ -88,6 +88,8 @@ pub enum Command {
     },
     /// (Re)apply metadata/cover embedding
     Embed(EmbedArgs),
+    /// Clean up titles of videos you already have (`clean_title`), renaming their files
+    CleanTitles(VideoSelection),
     /// Forget an item so it is downloaded again
     Reset(ResetArgs),
     /// List open problems, or acknowledge one
@@ -118,7 +120,7 @@ impl Command {
             Command::Problems { .. } => None,
             Command::Tools { .. } => None,
             Command::Hooks { .. } => None,
-            Command::Embed(_) => None,
+            Command::Embed(_) | Command::CleanTitles(_) => None,
             Command::Cleanup(_) | Command::Trash { .. } => None,
             Command::Daemon { .. } => None,
             Command::List(_) => Some("M6"),

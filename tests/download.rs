@@ -1088,6 +1088,99 @@ async fn music_video_titles_are_cleaned_up_before_anything_else() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn titles_of_videos_already_downloaded_are_cleaned_up_on_request() {
+    let env = Env::new().await;
+    let config = env.config("");
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    let old = env.media().join(RICK_DIR);
+    assert!(old.is_dir());
+
+    let musicbrainz = fake_musicbrainz(200).await;
+    let config = hooks_config(
+        &env,
+        &format!(
+            "clean_title = \"music_video\"\n[category.default.embed]\n\
+             tags = {{ MUSICBRAINZ_ARTISTID = \"rick-artist\" }}\n\
+             musicbrainz = {{ server = \"{}\" }}",
+            musicbrainz.uri()
+        ),
+        "",
+    );
+    env.cmd(&["config", "import", &config]).assert().success();
+    env.cmd(&["clean-titles", "--all", "--dry-run"])
+        .assert()
+        .success()
+        .stdout(
+            contains("“Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)” → “Never Gonna Give You Up” (dry run)")
+                .and(contains("would rename 1 video; 1 already clean")),
+        );
+    assert!(old.is_dir(), "a dry run moves nothing");
+
+    env.cmd(&["clean-titles", "--all"])
+        .assert()
+        .success()
+        .stdout(contains("renamed 1 video; 1 already clean"));
+    let new = env
+        .media()
+        .join("dl/2009-10-25 - Never Gonna Give You Up [dQw4w9WgXcQ]");
+    assert!(new.join("Never Gonna Give You Up.mkv").is_file());
+    assert!(new.join("Never Gonna Give You Up-poster.jpg").is_file());
+    assert!(new.join("Never Gonna Give You Up.en.vtt").is_file());
+    assert!(!old.exists(), "the old folder is gone");
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(new.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(meta["title"], "Never Gonna Give You Up");
+    assert_eq!(
+        meta["original"]["title"],
+        "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)"
+    );
+    assert_eq!(meta["files"]["media"], "Never Gonna Give You Up.mkv");
+    // The stored paths follow: nothing counts as missing.
+    env.cmd(&["download"])
+        .assert()
+        .success()
+        .stdout(contains("missing").not());
+    env.cmd(&["clean-titles", "--all"])
+        .assert()
+        .success()
+        .stdout(contains("renamed 0 videos; 2 already clean"));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn cleaning_up_a_title_never_overwrites_another_file() {
+    let env = Env::new().await;
+    let config = env.config("");
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    let musicbrainz = fake_musicbrainz(200).await;
+    let config = hooks_config(
+        &env,
+        &format!(
+            "clean_title = \"music_video\"\n[category.default.embed]\n\
+             tags = {{ MUSICBRAINZ_ARTISTID = \"rick-artist\" }}\n\
+             musicbrainz = {{ server = \"{}\" }}",
+            musicbrainz.uri()
+        ),
+        "",
+    );
+    env.cmd(&["config", "import", &config]).assert().success();
+    let taken = env
+        .media()
+        .join("dl/2009-10-25 - Never Gonna Give You Up [dQw4w9WgXcQ]/Never Gonna Give You Up.mkv");
+    fs::create_dir_all(taken.parent().unwrap()).unwrap();
+    fs::write(&taken, "someone else's").unwrap();
+    env.cmd(&["clean-titles", "dQw4w9WgXcQ"])
+        .assert()
+        .code(3)
+        .stdout(contains("skipped:").and(contains("already exists")));
+    assert_eq!(fs::read_to_string(&taken).unwrap(), "someone else's");
+    assert!(env.media().join(RICK_DIR).is_dir(), "left where it was");
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn titles_without_an_artist_id_stay_as_they_are() {
     let env = Env::new().await;
     let config = hooks_config(&env, "clean_title = \"music_video\"", "");

@@ -104,6 +104,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         | Command::Download(_)
         | Command::Hooks { .. }
         | Command::Embed(_)
+        | Command::CleanTitles(_)
         | Command::Cleanup(_) => crate::shutdown::Shutdown::listen(),
         _ => crate::shutdown::Shutdown::default(),
     };
@@ -145,6 +146,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Problems { cmd } => app.problems(cmd, out),
         Command::Hooks { cmd } => app.hooks(cmd, out).await,
         Command::Embed(args) => app.embed(args, out).await,
+        Command::CleanTitles(select) => app.clean_titles(select, out).await,
         Command::Cleanup(scope) => app.cleanup(scope, out).await,
         Command::Trash { cmd } => app.trash(cmd, out),
         Command::Daemon { cmd } => crate::daemon::control::command(&app, cmd, out).await,
@@ -179,6 +181,7 @@ fn checks_config_drift(command: &Command) -> bool {
         | Command::Filter { .. }
         | Command::Hooks { .. }
         | Command::Embed(_)
+        | Command::CleanTitles(_)
         | Command::Cleanup(_) => true,
         _ => false,
     }
@@ -203,6 +206,7 @@ fn uses_stored_config(command: &Command) -> bool {
         | Command::Reset(_)
         | Command::Hooks { .. }
         | Command::Embed(_)
+        | Command::CleanTitles(_)
         | Command::Cleanup(_) => true,
         // The daemon compares the file instead (`daemon::startup_check`).
         Command::Run(args) => !args.daemon,
@@ -1261,6 +1265,256 @@ impl App<'_> {
             sources.join(", ")
         )?;
         Ok(exit::OK)
+    }
+
+    /// `tidepool clean-titles`: clean up the titles of downloaded videos
+    /// (`clean_title`) from YouTube's original, renaming their files to match
+    /// and embedding the new title.
+    async fn clean_titles(
+        &self,
+        select: &crate::cli::VideoSelection,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<i32> {
+        use crate::download::layout::{Layout, Values};
+        use crate::download::stages::artist_id;
+
+        let dry_run = self.cli.dry_run;
+        let state = self.open_state()?;
+        let config = self.current_config(&state)?.config;
+        let selected = self.select_downloaded(&state, &config, select, out)?;
+        let _lock = if dry_run { None } else { Some(self.lock()?) };
+        let (mut renamed, mut unchanged, mut failed) = (Vec::new(), 0usize, 0usize);
+        let mut skipped_sources = std::collections::BTreeSet::new();
+        for item in &selected.videos {
+            if self.shutdown.is_stopping() {
+                break;
+            }
+            let source = selected.source(&item.source_key);
+            if source.clean_title != crate::config::CleanTitle::MusicVideo {
+                skipped_sources.insert(source.key.clone());
+                continue;
+            }
+            let (meta, info) =
+                match crate::download::rerun::load_metadata(&item.files, &item.video_id) {
+                    Ok(found) => found,
+                    Err(e) => {
+                        writeln!(out, "{}: {}: skipped: {e}", item.source_key, item.video_id)?;
+                        failed += 1;
+                        continue;
+                    }
+                };
+            let label = format!("{}: “{}”", item.source_key, info.title);
+            let youtube = meta["original"]["title"]
+                .as_str()
+                .unwrap_or(&info.title)
+                .to_string();
+            let source_title = meta["source"]["title"].as_str().map(str::to_string);
+            let position = meta["source"]["position"].as_u64().unwrap_or(0) as u32;
+            let values = Values::new(&info, source, source_title.as_deref(), position);
+            let Some(artist) = artist_id(source, &values) else {
+                writeln!(out, "{label}: skipped: no MUSICBRAINZ_ARTISTID")?;
+                continue;
+            };
+            let name = match crate::musicbrainz::artist_name(
+                &source.embed.musicbrainz_server,
+                &self.dirs.data_dir,
+                &artist,
+            )
+            .await
+            {
+                Ok(name) => name,
+                Err(e) => {
+                    writeln!(out, "{label}: failed: {e}")?;
+                    failed += 1;
+                    continue;
+                }
+            };
+            let cleaned = crate::titles::music_video(&youtube, &name);
+            if cleaned == info.title {
+                unchanged += 1;
+                continue;
+            }
+            if dry_run {
+                writeln!(out, "{label} → “{cleaned}” (dry run)")?;
+                renamed.push(item.video_id.clone());
+                continue;
+            }
+
+            // Where its files go with the new title.
+            let mut new_info = info.clone();
+            new_info.title = cleaned.clone();
+            let new_values = Values::new(&new_info, source, source_title.as_deref(), position);
+            let media_root = media_dir(source, &self.dirs).map_err(anyhow::Error::msg)?;
+            let layout = Layout::new(source, &new_values, &media_root, &self.dirs)
+                .map_err(anyhow::Error::msg)?;
+            let ext = |path: &str| {
+                Path::new(path)
+                    .extension()
+                    .map(|e| e.to_string_lossy().into_owned())
+                    .unwrap_or_default()
+            };
+            let files = &item.files;
+            let mut new = files.clone();
+            new.dir = layout.output_dir().display().to_string();
+            new.media = layout
+                .output_file(&ext(&files.media))
+                .map_err(anyhow::Error::msg)?
+                .display()
+                .to_string();
+            if files.cover.is_some() {
+                new.cover = Some(
+                    layout
+                        .cover_file()
+                        .map_err(anyhow::Error::msg)?
+                        .0
+                        .display()
+                        .to_string(),
+                );
+            }
+            for sub in &mut new.subtitles {
+                sub.path = layout
+                    .subtitle_file(&sub.lang, &ext(&sub.path))
+                    .map_err(anyhow::Error::msg)?
+                    .display()
+                    .to_string();
+            }
+            let metadata_dest = layout.metadata_file().map_err(anyhow::Error::msg)?;
+            new.metadata = metadata_dest.display().to_string();
+            if files.raw_info.is_some() {
+                let mut name = metadata_dest.file_stem().unwrap_or_default().to_owned();
+                name.push(".ytdlp.json");
+                new.raw_info = Some(metadata_dest.with_file_name(name).display().to_string());
+            }
+
+            // Media, cover, subtitles and raw info move; the metadata file is
+            // written last, at its new place.
+            let mut moves: Vec<(PathBuf, PathBuf)> = Vec::new();
+            let mut pairs: Vec<(Option<&String>, Option<&String>)> = vec![
+                (Some(&files.media), Some(&new.media)),
+                (files.cover.as_ref(), new.cover.as_ref()),
+                (files.raw_info.as_ref(), new.raw_info.as_ref()),
+            ];
+            for (old, now) in files.subtitles.iter().zip(&new.subtitles) {
+                pairs.push((Some(&old.path), Some(&now.path)));
+            }
+            for (old, now) in pairs {
+                if let (Some(old), Some(now)) = (old, now)
+                    && old != now
+                    && Path::new(old).exists()
+                {
+                    moves.push((PathBuf::from(old), PathBuf::from(now)));
+                }
+            }
+            if let Some((_, taken)) = moves.iter().find(|(_, to)| to.exists()) {
+                writeln!(out, "{label}: skipped: {} already exists", taken.display())?;
+                failed += 1;
+                continue;
+            }
+            if files.metadata != new.metadata && metadata_dest.exists() {
+                writeln!(
+                    out,
+                    "{label}: skipped: {} already exists",
+                    metadata_dest.display()
+                )?;
+                failed += 1;
+                continue;
+            }
+            let mut done: Vec<(PathBuf, PathBuf)> = Vec::new();
+            let mut problem = None;
+            for (from, to) in &moves {
+                match crate::download::place(from, to) {
+                    Ok(()) => done.push((from.clone(), to.clone())),
+                    Err(e) => {
+                        problem = Some(format!("cannot move {}: {e}", from.display()));
+                        break;
+                    }
+                }
+            }
+            let mut meta = meta.clone();
+            meta["title"] = cleaned.clone().into();
+            if meta["original"]["title"].is_null() {
+                if !meta["original"].is_object() {
+                    meta["original"] = serde_json::json!({});
+                }
+                meta["original"]["title"] = youtube.clone().into();
+            }
+            meta["files"] = crate::download::metadata::files_json(&new);
+            if problem.is_none() {
+                let text = serde_json::to_string_pretty(&meta).expect("JSON") + "\n";
+                if let Err(e) =
+                    std::fs::create_dir_all(metadata_dest.parent().unwrap_or(Path::new("/")))
+                        .and_then(|_| std::fs::write(&metadata_dest, text))
+                {
+                    problem = Some(format!("cannot write {}: {e}", metadata_dest.display()));
+                }
+            }
+            if let Some(problem) = problem {
+                // Put back what moved.
+                for (from, to) in done.iter().rev() {
+                    let _ = crate::download::place(to, from);
+                }
+                writeln!(out, "{label}: failed: {problem}")?;
+                failed += 1;
+                continue;
+            }
+            if files.metadata != new.metadata {
+                let _ = std::fs::remove_file(&files.metadata);
+            }
+            if files.dir != new.dir {
+                let _ = std::fs::remove_dir(&files.dir);
+            }
+            let bytes = std::fs::metadata(&new.media).map(|m| m.len()).unwrap_or(0);
+            crate::state::items::update_files(
+                &state.conn,
+                &item.source_key,
+                &item.video_id,
+                &new,
+                bytes,
+            )?;
+            writeln!(out, "{label} → “{cleaned}”")?;
+            renamed.push(item.video_id.clone());
+        }
+        for key in &skipped_sources {
+            writeln!(out, "{key}: skipped: clean_title isn't set for it")?;
+        }
+
+        // The new titles go into the files too.
+        let mut code = exit::OK;
+        if !dry_run && !renamed.is_empty() {
+            drop(_lock);
+            let embed_sources: Vec<SourceRef> = selected
+                .sources
+                .iter()
+                .filter(|s| s.embed.metadata && s.clean_title != crate::config::CleanTitle::None)
+                .map(|s| SourceRef::Key(s.key.clone()))
+                .collect();
+            if !embed_sources.is_empty() {
+                let args = crate::cli::EmbedArgs {
+                    select: crate::cli::VideoSelection {
+                        video_ids: renamed.clone(),
+                        all: false,
+                        sources: embed_sources,
+                        categories: Vec::new(),
+                    },
+                    remove_disabled: false,
+                };
+                code = self.embed(&args, out).await?;
+            }
+        }
+        let videos = |n: usize| if n == 1 { "video" } else { "videos" };
+        let verb = if dry_run { "would rename" } else { "renamed" };
+        writeln!(
+            out,
+            "{verb} {} {}; {unchanged} already clean{}",
+            renamed.len(),
+            videos(renamed.len()),
+            if failed > 0 {
+                format!("; {failed} failed")
+            } else {
+                String::new()
+            }
+        )?;
+        Ok(if failed > 0 { exit::PARTIAL } else { code })
     }
 
     /// `tidepool hooks run`: run hooks again on videos already downloaded.

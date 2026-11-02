@@ -494,6 +494,25 @@ video waits and is tried again later, so it's never saved under the raw title
 `embed.musicbrainz` is used for this even when looking up album and track ids
 is turned off there.
 
+Videos you downloaded before turning it on keep their names until you run
+`tidepool clean-titles`, which picks videos like `tidepool embed` does
+(`--all`, `--source`, `--category` or video ids). It cleans each one up from
+YouTube's original title, moves its files to match (the video, poster,
+subtitles and metadata file, and the folder when its name has the title), and
+writes the new title into the file when `embed.metadata` is on. `--dry-run`
+shows what would change. A file already sitting at the new name is never
+overwritten: that video is skipped and left where it was.
+
+```text
+$ tidepool clean-titles --category music --dry-run
+dead-fish: “Dead Fish - Sonho Médio (Clipe Oficial)” → “Sonho Médio” (dry run)
+would rename 1 video; 12 already clean
+```
+
+Files are moved to where your path settings put them now, so if a `prepare`
+hook chose a video's paths when it was downloaded, check with `--dry-run`
+first.
+
 **MusicBrainz album and track ids.** For music videos tagged with their
 artist's `MUSICBRAINZ_ARTISTID`, tidepool can find the song on one of the
 artist's MusicBrainz releases and add the release's and the track's ids too
