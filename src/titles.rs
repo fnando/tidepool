@@ -63,6 +63,8 @@ static VIDEO_GROUP: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 static GROUP: LazyLock<Regex> = LazyLock::new(|| re(r"[(\[{][^)\]}]*[)\]}]"));
+/// A quality tag left at the very end ("… HD", "… 4K").
+static TRAILING_QUALITY: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\s+(?:hd|4k|hq)\z"));
 /// "Live Performance (Video)" says the same as "Live".
 static LIVE_PERFORMANCE: LazyLock<Regex> =
     LazyLock::new(|| re(r"(?i)\blive\s+performance(?:\s+video)?\b"));
@@ -279,6 +281,7 @@ pub fn music_video(title: &str, artist: &str) -> String {
     name = replace_all(&GROUP_NOISE, &name, " ");
     name = strip_video_groups(&name);
     name = cleanup_noise(&replace_all(&DESCRIPTORS, &name, ""));
+    name = replace_all(&TRAILING_QUALITY, &name, "");
     name = reduce_medley(&name);
 
     // A double-quoted title is the whole title ('Artist - "Song"').
