@@ -626,7 +626,15 @@ async fn the_web_ui_shows_the_daemon_and_syncs_on_request() {
         .unwrap()
         .replace("[server]\n", "[server]\nenabled = false\n");
     fs::write(&config, text).unwrap();
-    env.cmd(&["config", "import", &config]).assert().success();
+    // The sync may still hold the library lock for a moment after the
+    // videos are saved; the import refuses while it does.
+    daemon.wait_for("the config imported", || {
+        env.cmd(&["config", "import", &config])
+            .output()
+            .unwrap()
+            .status
+            .success()
+    });
     daemon.wait_for_log("server is off");
     assert!(
         http.get(&url).send().await.is_err(),
