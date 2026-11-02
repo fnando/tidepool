@@ -29,6 +29,7 @@ const GITHUB_API: &str = "https://api.github.com";
 const SUMS: &str = "SHA2-256SUMS";
 const SUMS_SIG: &str = "SHA2-256SUMS.sig";
 const DENO_REPOSITORY: &str = "denoland/deno";
+const EXECUTABLE_BUSY_RETRIES: usize = 5;
 /// The Deno major tidepool installs, and the oldest release yt-dlp accepts.
 const DENO_MAJOR: u64 = 2;
 const DENO_MINIMUM: &str = "2.3.0";
@@ -204,10 +205,20 @@ impl Drop for TempFile {
 ///
 /// When `binary` can't be run, exits with an error, or prints nothing.
 pub fn tool_version(binary: &Path) -> Result<String, String> {
-    let output = std::process::Command::new(binary)
-        .arg("--version")
-        .output()
-        .map_err(|e| e.to_string())?;
+    let mut retries = 0;
+    let output = loop {
+        match std::process::Command::new(binary).arg("--version").output() {
+            Ok(output) => break output,
+            Err(error)
+                if error.kind() == std::io::ErrorKind::ExecutableFileBusy
+                    && retries < EXECUTABLE_BUSY_RETRIES =>
+            {
+                retries += 1;
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            Err(error) => return Err(error.to_string()),
+        }
+    };
     let version = String::from_utf8_lossy(&output.stdout)
         .lines()
         .next()
@@ -750,5 +761,34 @@ mod tests {
         assert!(!deno_version_ok("3.0.0"), "a new major waits for tidepool");
         assert!(!deno_version_ok("1.46.3"));
         assert_eq!(version_of(Tool::Deno, "v2.9.8"), "2.9.8");
+    }
+
+    #[test]
+    fn tool_version_retries_when_the_binary_is_busy() {
+        let dir = tempfile::tempdir().unwrap();
+        let binary = dir.path().join("yt-dlp");
+        std::fs::write(&binary, "#!/bin/sh\necho 2026.01.01\n").unwrap();
+        std::fs::set_permissions(&binary, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let writer = std::fs::OpenOptions::new()
+            .write(true)
+            .open(&binary)
+            .unwrap();
+
+        let error = std::process::Command::new(&binary)
+            .arg("--version")
+            .output()
+            .unwrap_err();
+        assert_eq!(
+            error.kind(),
+            std::io::ErrorKind::ExecutableFileBusy,
+            "the open writer makes this a deterministic ETXTBSY case"
+        );
+
+        let release = std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(20));
+            drop(writer);
+        });
+        assert_eq!(tool_version(&binary).unwrap(), "2026.01.01");
+        release.join().unwrap();
     }
 }
