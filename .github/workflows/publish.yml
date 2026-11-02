@@ -91,6 +91,25 @@ jobs:
       - name: Checksums
         working-directory: dist
         run: sha256sum *.tar.gz > SHA256SUMS
+      # Like yt-dlp: a detached GPG signature of the checksums, made with the
+      # key whose public half is in the repo (tidepool-signing-key.asc).
+      - name: Sign the checksums
+        working-directory: dist
+        env:
+          SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+          SIGNING_PASSPHRASE: ${{ secrets.RELEASE_SIGNING_PASSPHRASE }}
+        run: |
+          if [ -z "$SIGNING_KEY" ]; then
+            echo "::error::The RELEASE_SIGNING_KEY secret isn't set; not publishing unsigned binaries"
+            exit 1
+          fi
+          export GNUPGHOME="$(mktemp -d)"
+          echo "$SIGNING_KEY" | gpg --batch --quiet --import
+          gpg --batch --yes --pinentry-mode loopback \
+            --passphrase "$SIGNING_PASSPHRASE" \
+            --detach-sign --output SHA256SUMS.sig SHA256SUMS
+          gpg --batch --verify SHA256SUMS.sig SHA256SUMS
+          rm -rf "$GNUPGHOME"
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
