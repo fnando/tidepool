@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use super::info::VideoInfo;
 use super::layout::{Layout, Values};
 use super::stages::Stage;
-use super::{metadata, place_all, relink};
+use super::{Placement, extension_of, metadata, place_all, relink};
 use crate::config::merge::EffectiveSource;
 use crate::config::{Duplicates, HookConfig, HookType};
 use crate::hooks;
@@ -83,7 +83,8 @@ pub async fn rerun(shared: &Shared<'_>, video: &Video<'_>) -> Rerun {
     };
     let files = &video.item.files;
     let source_title = meta["source"]["title"].as_str();
-    let position = meta["source"]["position"].as_u64().unwrap_or(0) as u32;
+    let position =
+        u32::try_from(meta["source"]["position"].as_u64().unwrap_or(0)).unwrap_or(u32::MAX);
     let source = video.source;
     let label = format!("{}: “{}”", source.key, info.title);
     let values = Values::new(&info, source, source_title, position);
@@ -162,9 +163,7 @@ pub async fn rerun(shared: &Shared<'_>, video: &Video<'_>) -> Rerun {
 
 /// The media's size now (0 when it's gone).
 fn media_size(files: &VideoFiles) -> u64 {
-    std::fs::metadata(&files.media)
-        .map(|m| m.len())
-        .unwrap_or(0)
+    std::fs::metadata(&files.media).map_or(0, |m| m.len())
 }
 
 fn read_metadata(video: &Video<'_>) -> Result<(serde_json::Value, VideoInfo), String> {
@@ -172,6 +171,11 @@ fn read_metadata(video: &Video<'_>) -> Result<(serde_json::Value, VideoInfo), St
 }
 
 /// A downloaded video's metadata.json, and the details in it.
+///
+/// # Errors
+///
+/// Returns a message when the file can't be read, isn't valid JSON, or its
+/// details don't have the expected types.
 pub fn load_metadata(
     files: &VideoFiles,
     video_id: &str,
@@ -205,42 +209,9 @@ async fn reprocess(
     hook_runs: &mut Vec<hooks::Report>,
 ) -> Result<(VideoFiles, u64, super::stages::Embedding), String> {
     let files = &video.item.files;
-    let source = video.source;
-    std::fs::create_dir_all(tmp).map_err(|e| format!("cannot create {}: {e}", tmp.display()))?;
-    let copy = |from: &str, name: String| -> Result<PathBuf, String> {
-        let to = tmp.join(name);
-        // A copy, never a link: hooks may change it in place.
-        std::fs::copy(from, &to).map_err(|e| format!("cannot copy {from}: {e}"))?;
-        Ok(to)
-    };
-    let ext = |path: &str| {
-        Path::new(path)
-            .extension()
-            .map(|e| e.to_string_lossy().into_owned())
-            .unwrap_or_default()
-    };
-    let layout = Layout::new(source, values, video.media_dir, shared.dirs)?;
+    let layout = Layout::new(video.source, values, video.media_dir, shared.dirs)?;
     let (cover_dest, cover_format) = layout.cover_file()?;
-    let mut raw = hooks::Files {
-        media: copy(&files.media, format!("media.{}", ext(&files.media)))?,
-        cover: match &files.cover {
-            Some(cover) if Path::new(cover).is_file() => {
-                Some(copy(cover, format!("cover.{}", ext(cover)))?)
-            }
-            _ => None,
-        },
-        subtitles: files
-            .subtitles
-            .iter()
-            .filter(|s| Path::new(&s.path).is_file())
-            .map(|s| {
-                Ok(hooks::Subtitle {
-                    lang: s.lang.clone(),
-                    path: copy(&s.path, format!("media.{}.{}", s.lang, ext(&s.path)))?,
-                })
-            })
-            .collect::<Result<_, String>>()?,
-    };
+    let mut raw = copy_to_work(files, tmp)?;
     let context = stage.context(info);
     stage
         .downloaded_hooks(&mut raw, values, &context, tmp, cover_format, hook_runs)
@@ -270,75 +241,18 @@ async fn reprocess(
         .embed(&raw.media, &data, None, shared.duplicates, remove_disabled)
         .await;
 
-    // Back where they were; a new media type gets the new extension.
     let old_media = PathBuf::from(&files.media);
-    let new_ext = raw
-        .media
-        .extension()
-        .map(|e| e.to_string_lossy().into_owned())
-        .unwrap_or_default();
-    let media_dest = if new_ext == ext(&files.media) {
-        old_media.clone()
-    } else {
-        old_media.with_extension(&new_ext)
-    };
-    let mut new = VideoFiles {
-        media: media_dest.display().to_string(),
-        cover: None,
-        subtitles: Vec::new(),
-        ..files.clone()
-    };
-    let mut moves = vec![(raw.media.clone(), media_dest.clone())];
-    if let Some(cover) = &raw.cover {
-        let dest = files
-            .cover
-            .as_ref()
-            .map(PathBuf::from)
-            .unwrap_or_else(|| cover_dest.clone());
-        moves.push((cover.clone(), dest.clone()));
-        new.cover = Some(dest.display().to_string());
-    }
-    for sub in &raw.subtitles {
-        let dest = match files.subtitles.iter().find(|s| s.lang == sub.lang) {
-            Some(existing) => PathBuf::from(&existing.path),
-            None => layout.subtitle_file(&sub.lang, &ext(&sub.path.display().to_string()))?,
-        };
-        moves.push((sub.path.clone(), dest.clone()));
-        new.subtitles.push(Subtitle {
-            lang: sub.lang.clone(),
-            path: dest.display().to_string(),
-        });
-    }
-
-    // Other sources hardlinked to the old media get the new file too.
-    let old_inode = std::fs::metadata(&old_media)
-        .ok()
-        .map(|m| (m.dev(), m.ino()));
-    let linked: Vec<&VideoFiles> = video
-        .others
-        .iter()
-        .filter(|o| {
-            old_inode.is_some()
-                && std::fs::metadata(&o.media).ok().map(|m| (m.dev(), m.ino())) == old_inode
-        })
-        .collect();
+    let Placement {
+        media_dest,
+        mut moves,
+        files: new,
+    } = moves_back(files, &raw, &layout, &cover_dest)?;
+    let linked = hardlinked(video.others, &old_media);
 
     let media_bytes = std::fs::metadata(&raw.media)
         .map_err(|e| format!("cannot read {}: {e}", raw.media.display()))?
         .len();
-    let mut meta = meta.clone();
-    meta["files"] = metadata::files_json(&new);
-    meta["media"]["size_bytes"] = media_bytes.into();
-    meta["embedded"] = serde_json::to_value(&embedding.embedded).expect("JSON");
-    meta["embedded_tags"] = if embedding.embedded.metadata {
-        serde_json::to_value(&data.tags).expect("JSON")
-    } else {
-        serde_json::Value::Null
-    };
-    meta["embed_error"] = embedding.error.clone().into();
-    if let Some(musicbrainz) = musicbrainz {
-        meta["musicbrainz"] = musicbrainz;
-    }
+    let meta = updated_metadata(meta, &new, media_bytes, &embedding, &data, musicbrainz);
     let meta_tmp = tmp.join("metadata.json");
     std::fs::write(
         &meta_tmp,
@@ -361,4 +275,132 @@ async fn reprocess(
         }
     }
     Ok((new, media_bytes, embedding))
+}
+
+/// Copies of the placed files that still exist in the work area `tmp`, named
+/// the way a download leaves them.
+fn copy_to_work(files: &VideoFiles, tmp: &Path) -> Result<hooks::Files, String> {
+    std::fs::create_dir_all(tmp).map_err(|e| format!("cannot create {}: {e}", tmp.display()))?;
+    let copy = |from: &str, name: String| -> Result<PathBuf, String> {
+        let to = tmp.join(name);
+        // A copy, never a link: hooks may change it in place.
+        std::fs::copy(from, &to).map_err(|e| format!("cannot copy {from}: {e}"))?;
+        Ok(to)
+    };
+    Ok(hooks::Files {
+        media: copy(
+            &files.media,
+            format!("media.{}", extension_of(&files.media)),
+        )?,
+        cover: match &files.cover {
+            Some(cover) if Path::new(cover).is_file() => {
+                Some(copy(cover, format!("cover.{}", extension_of(cover)))?)
+            }
+            _ => None,
+        },
+        subtitles: files
+            .subtitles
+            .iter()
+            .filter(|s| Path::new(&s.path).is_file())
+            .map(|s| {
+                Ok(hooks::Subtitle {
+                    lang: s.lang.clone(),
+                    path: copy(
+                        &s.path,
+                        format!("media.{}.{}", s.lang, extension_of(&s.path)),
+                    )?,
+                })
+            })
+            .collect::<Result<_, String>>()?,
+    })
+}
+
+/// Where the reprocessed files go: back where they were, except that a new
+/// media type gets the new extension (the metadata file isn't written yet).
+fn moves_back(
+    files: &VideoFiles,
+    raw: &hooks::Files,
+    layout: &Layout,
+    cover_dest: &Path,
+) -> Result<Placement, String> {
+    let old_media = PathBuf::from(&files.media);
+    let new_ext = raw
+        .media
+        .extension()
+        .map(|e| e.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let media_dest = if new_ext == extension_of(&files.media) {
+        old_media.clone()
+    } else {
+        old_media.with_extension(&new_ext)
+    };
+    let mut new = VideoFiles {
+        media: media_dest.display().to_string(),
+        cover: None,
+        subtitles: Vec::new(),
+        ..files.clone()
+    };
+    let mut moves = vec![(raw.media.clone(), media_dest.clone())];
+    if let Some(cover) = &raw.cover {
+        let dest = files
+            .cover
+            .as_ref()
+            .map_or_else(|| cover_dest.to_path_buf(), PathBuf::from);
+        moves.push((cover.clone(), dest.clone()));
+        new.cover = Some(dest.display().to_string());
+    }
+    for sub in &raw.subtitles {
+        let dest = match files.subtitles.iter().find(|s| s.lang == sub.lang) {
+            Some(existing) => PathBuf::from(&existing.path),
+            None => {
+                layout.subtitle_file(&sub.lang, &extension_of(&sub.path.display().to_string()))?
+            }
+        };
+        moves.push((sub.path.clone(), dest.clone()));
+        new.subtitles.push(Subtitle {
+            lang: sub.lang.clone(),
+            path: dest.display().to_string(),
+        });
+    }
+    Ok(Placement {
+        media_dest,
+        moves,
+        files: new,
+    })
+}
+
+/// Other sources' copies hardlinked to `media`: they get the new file too.
+fn hardlinked<'a>(others: &'a [VideoFiles], media: &Path) -> Vec<&'a VideoFiles> {
+    let inode = std::fs::metadata(media).ok().map(|m| (m.dev(), m.ino()));
+    others
+        .iter()
+        .filter(|o| {
+            inode.is_some() && std::fs::metadata(&o.media).ok().map(|m| (m.dev(), m.ino())) == inode
+        })
+        .collect()
+}
+
+/// `meta` with the new files, size, embedding and MusicBrainz match.
+fn updated_metadata(
+    meta: &serde_json::Value,
+    new: &VideoFiles,
+    media_bytes: u64,
+    embedding: &super::stages::Embedding,
+    data: &hooks::EmbedData,
+    musicbrainz: Option<serde_json::Value>,
+) -> serde_json::Value {
+    let mut meta = meta.clone();
+    meta["files"] = metadata::files_json(new);
+    meta["media"]["size_bytes"] = media_bytes.into();
+    meta["embedded"] = serde_json::to_value(&embedding.embedded).expect("JSON");
+    meta["embedded_tags"] = if embedding.embedded.metadata {
+        serde_json::to_value(&data.tags).expect("JSON")
+    } else {
+        serde_json::Value::Null
+    };
+    meta["embed_error"] = embedding.error.clone().into();
+    if let Some(musicbrainz) = musicbrainz {
+        meta["musicbrainz"] = musicbrainz;
+    }
+    meta
 }

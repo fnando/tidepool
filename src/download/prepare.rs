@@ -37,6 +37,7 @@ pub const PATHS: [&str; 5] = [
 ];
 
 impl Details {
+    #[must_use]
     pub fn of(info: &VideoInfo) -> Self {
         Self {
             title: info.title.clone(),
@@ -48,6 +49,7 @@ impl Details {
         }
     }
 
+    #[must_use]
     pub fn to_json(&self) -> Value {
         json!({
             "title": self.title,
@@ -66,15 +68,16 @@ impl Details {
             info.upload_date = self.upload_date.as_ref().map(|d| d.replace('-', ""));
             info.timestamp = None;
         }
-        info.title = self.title.clone();
-        info.description = self.description.clone();
-        info.channel = self.channel.clone();
+        info.title.clone_from(&self.title);
+        info.description.clone_from(&self.description);
+        info.channel.clone_from(&self.channel);
         info.tags = Some(self.tags.clone());
         info.categories = Some(self.categories.clone());
     }
 
     /// `original`'s value of each detail that differs here, for
     /// metadata.json; `None` when nothing changed.
+    #[must_use]
     pub fn originals(&self, original: &Details) -> Option<Value> {
         let (now, before) = (self.to_json(), original.to_json());
         let changed: Map<String, Value> = before
@@ -89,22 +92,31 @@ impl Details {
 }
 
 /// A `prepare` hook's input.
+#[must_use]
 pub fn input(details: &Details, paths: &BTreeMap<String, String>, context: &Value) -> Vec<u8> {
     let paths: Map<String, Value> = PATHS
         .iter()
         .filter_map(|key| Some((key.to_string(), json!(paths.get(*key)?))))
         .collect();
-    serde_json::to_vec(&json!({
+    json!({
         "details": details.to_json(),
         "paths": paths,
         "context": context,
-    }))
-    .expect("JSON")
+    })
+    .to_string()
+    .into_bytes()
 }
 
 /// Apply a `prepare` hook's output to `details` and `overrides` (the paths
 /// hooks set so far). `proposed` is what the paths are now; a changed path
 /// must stay inside `media_dir`. Nothing changes when it's invalid.
+///
+/// # Errors
+///
+/// Returns a message when the output isn't a JSON object, `details` or `paths`
+/// isn't an object, a detail or path can't be changed or has the wrong
+/// type, or a path isn't full, uses `..`, leaves `media_dir` or drops the
+/// placeholders or cover format its setting needs.
 pub fn apply(
     name: &str,
     output: &[u8],
@@ -248,7 +260,7 @@ fn check_path(
         if format(&normalized) != wanted {
             return Err(format!(
                 "{what} {path:?} must end in .{} like cover_file",
-                wanted.map(CoverFormat::extension).unwrap_or("jpg")
+                wanted.map_or("jpg", CoverFormat::extension)
             ));
         }
     }

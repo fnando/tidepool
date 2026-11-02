@@ -17,6 +17,7 @@ pub enum CoverFormat {
 
 impl CoverFormat {
     /// `jpg`/`jpeg`, `png` or `webp`, any case.
+    #[must_use]
     pub fn from_extension(extension: &str) -> Option<Self> {
         match extension.to_ascii_lowercase().as_str() {
             "jpg" | "jpeg" => Some(Self::Jpg),
@@ -26,6 +27,7 @@ impl CoverFormat {
         }
     }
 
+    #[must_use]
     pub fn extension(self) -> &'static str {
         match self {
             Self::Jpg => "jpg",
@@ -50,6 +52,7 @@ pub struct Cover {
 
 /// Candidate URLs, largest known size first, unknown sizes last; on equal
 /// size the wanted format comes first.
+#[must_use]
 pub fn candidates(
     video_id: &str,
     thumbnails: &[Thumbnail],
@@ -97,6 +100,11 @@ fn extension(format: ImageFormat) -> &'static str {
 }
 
 /// Convert fetched bytes to the wanted format.
+///
+/// # Errors
+///
+/// Returns a message when the bytes can't be decoded as `found` or the
+/// image can't be encoded in the wanted format.
 pub fn convert(
     bytes: Vec<u8>,
     found: ImageFormat,
@@ -134,7 +142,7 @@ pub async fn fetch_largest(
             .get(url)
             .send()
             .await
-            .and_then(|r| r.error_for_status())
+            .and_then(reqwest::Response::error_for_status)
         else {
             continue;
         };

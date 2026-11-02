@@ -1,5 +1,6 @@
 //! Command dispatch: turns a parsed [`Cli`] into work and an exit code.
 
+use std::fmt::Write as _;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
@@ -83,7 +84,7 @@ impl<'a> App<'a> {
             paths: dirs.state(),
             dirs,
             shutdown,
-            no_fallback: Default::default(),
+            no_fallback: std::cell::Cell::new(false),
             role,
             library: Some(library),
             fetched: Some(fetched),
@@ -92,6 +93,13 @@ impl<'a> App<'a> {
 }
 
 /// Run a parsed command; returns the process exit code.
+///
+/// # Errors
+///
+/// Fails if the home directory can't be found, or the command can't do its
+/// work (an invalid config, an unusable state database, a failed write, …);
+/// a [`UsageError`] for a bad command line. Failures a command reports itself
+/// show in the exit code instead.
 pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
     let dirs = Dirs::from_env().map_err(anyhow::Error::msg)?;
     let paths = dirs.state();
@@ -113,7 +121,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         dirs,
         paths,
         shutdown,
-        no_fallback: Default::default(),
+        no_fallback: std::cell::Cell::new(false),
         role: Role::OneShot,
         library: None,
         fetched: None,
@@ -124,7 +132,7 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
     if !matches!(cli.command, Command::Problems { .. } | Command::Init(_)) {
         app.show_problem_notices()?;
     }
-    if cli.config.is_none() && !cli.skip_config_check && checks_config_drift(&cli.command) {
+    if cli.config.is_none() && !cli.config_flags.skip_check && checks_config_drift(&cli.command) {
         app.check_config_drift()?;
     }
     match &cli.command {
@@ -136,14 +144,14 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
                     video: title,
                     source,
                 },
-        } => app.filter_test(title, source, out),
+        } => app.filter_test(title, source.as_ref(), out),
         Command::Tools { cmd } => app.tools(cmd, out).await,
         Command::Index(scope) => app.index(scope, out).await,
         Command::Download(args) => app.download(args, out).await,
         Command::Run(args) if !args.daemon => app.run_once(args, out).await,
         Command::Run(_) => crate::daemon::run(&app).await,
         Command::Reset(args) => app.reset(args, out),
-        Command::Problems { cmd } => app.problems(cmd, out),
+        Command::Problems { cmd } => app.problems(cmd.as_ref(), out),
         Command::Hooks { cmd } => app.hooks(cmd, out).await,
         Command::Embed(args) => app.embed(args, out).await,
         Command::CleanTitles(select) => app.clean_titles(select, out).await,
@@ -189,11 +197,13 @@ fn uses_stored_config(command: &Command) -> bool {
     match command {
         Command::Config(args) => matches!(
             args.cmd,
-            None | Some(ConfigCmd::Export { .. })
-                | Some(ConfigCmd::History)
-                | Some(ConfigCmd::Rollback { .. })
-                | Some(ConfigCmd::Diff { .. })
-                | Some(ConfigCmd::Check { path: None, .. })
+            None | Some(
+                ConfigCmd::Export { .. }
+                    | ConfigCmd::History
+                    | ConfigCmd::Rollback { .. }
+                    | ConfigCmd::Diff { .. }
+                    | ConfigCmd::Check { path: None, .. }
+            )
         ),
         Command::Filter { .. }
         | Command::Tools { .. }
@@ -231,7 +241,6 @@ impl App<'_> {
     /// The sources a command works on: the ones named with `--source`, or
     /// every enabled one.
     fn scoped_sources(
-        &self,
         config: &crate::config::Config,
         refs: &[SourceRef],
     ) -> anyhow::Result<Vec<EffectiveSource>> {
@@ -263,7 +272,7 @@ impl App<'_> {
         let current = ConfigStore::new(&state.conn).current().ok().flatten();
         match (&self.cli.config, self.cli.dry_run, current) {
             (Some(path), true, _) => {
-                tracing::debug!("using {} without storing it (dry run)", path.display())
+                tracing::debug!("using {} without storing it (dry run)", path.display());
             }
             (_, _, Some(rev)) => {
                 let when = rev
@@ -434,7 +443,7 @@ impl App<'_> {
                 1,
                 message,
                 version.as_deref(),
-                &Default::default(),
+                &std::collections::BTreeSet::new(),
                 &problem.hint(version.as_deref(), true),
                 now,
             )
@@ -454,7 +463,7 @@ impl App<'_> {
             resolve(&state.conn, problem, now)?;
             match outcome {
                 UpdateOutcome::Installed { .. } | UpdateOutcome::Updated { .. } => {
-                    tracing::info!("{outcome}")
+                    tracing::info!("{outcome}");
                 }
                 _ => tracing::debug!("{outcome}"),
             }
@@ -471,8 +480,8 @@ impl App<'_> {
         tracker: crate::problems::Tracker,
         ytdlp: &crate::tools::Ytdlp,
     ) -> anyhow::Result<()> {
-        let managed = config.tools.ytdlp.managed;
-        if managed && tracker.wants_update() {
+        let is_managed = config.tools.ytdlp.managed;
+        if is_managed && tracker.wants_update() {
             let manager = crate::tools::manager::Manager::new(&self.dirs);
             let hour = std::time::Duration::from_secs(3600);
             match manager
@@ -497,7 +506,7 @@ impl App<'_> {
         tracker.finish(
             &state.conn,
             version.as_deref(),
-            managed,
+            is_managed,
             jiff::Timestamp::now(),
         )?;
         Ok(())
@@ -506,7 +515,7 @@ impl App<'_> {
     async fn index(&self, scope: &ScopeArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
         let mut state = self.open_state()?;
         let loaded = self.current_config(&state)?;
-        let sources = self.scoped_sources(&loaded.config, &scope.sources)?;
+        let sources = Self::scoped_sources(&loaded.config, &scope.sources)?;
         self.log_context(&state, &loaded.config, &sources);
         if sources.is_empty() {
             writeln!(
@@ -631,7 +640,7 @@ impl App<'_> {
         tracker: &mut crate::problems::Tracker,
         out: &mut dyn Write,
     ) -> anyhow::Result<crate::download::Summary> {
-        use crate::download::{Context, Options, human_bytes};
+        use crate::download::{Context, Options};
 
         #[allow(unused_mut)]
         let mut thumbnail_base = crate::download::thumbnail::YTIMG.to_string();
@@ -704,51 +713,10 @@ impl App<'_> {
             return Ok(summary);
         }
         if summary.interrupted.is_none() && !self.cli.dry_run {
-            self.purge_trash(state, jiff::Timestamp::now(), out)?;
+            Self::purge_trash(state, jiff::Timestamp::now(), out)?;
         }
 
-        if summary.interrupted.is_some() {
-            writeln!(
-                out,
-                "stopped; unfinished downloads will resume on the next run"
-            )?;
-        } else if summary.downloaded + summary.skipped + summary.failed == 0 {
-            if summary.hooks_failed > 0 {
-                writeln!(
-                    out,
-                    "nothing to download; {} hook{} failed",
-                    summary.hooks_failed,
-                    if summary.hooks_failed == 1 { "" } else { "s" }
-                )?;
-            } else {
-                writeln!(out, "nothing to download")?;
-            }
-        } else {
-            let videos = if summary.downloaded == 1 {
-                "video"
-            } else {
-                "videos"
-            };
-            let mut parts = vec![format!(
-                "downloaded {} {videos} ({})",
-                summary.downloaded,
-                human_bytes(summary.bytes)
-            )];
-            if summary.skipped > 0 {
-                parts.push(format!("{} skipped", summary.skipped));
-            }
-            if summary.failed > 0 {
-                parts.push(format!("{} failed", summary.failed));
-            }
-            if summary.hooks_failed > 0 {
-                parts.push(format!(
-                    "{} hook{} failed",
-                    summary.hooks_failed,
-                    if summary.hooks_failed == 1 { "" } else { "s" }
-                ));
-            }
-            writeln!(out, "{}", parts.join("; "))?;
-        }
+        print_download_summary(&summary, out)?;
         Ok(summary)
     }
 
@@ -848,24 +816,7 @@ impl App<'_> {
                 writeln!(out, "{label}: hook {} worked this time", names.join(", "))?;
                 continue;
             }
-            let gave_up: Vec<&str> = names
-                .iter()
-                .filter(|h| {
-                    items::hook_status(&state.conn, source_key, video_id, h)
-                        .ok()
-                        .flatten()
-                        .as_deref()
-                        == Some("failed")
-                })
-                .map(String::as_str)
-                .collect();
-            let mut line = format!("{label}: tried again: {}", problems.join("; "));
-            if !gave_up.is_empty() {
-                line.push_str(&format!(
-                    " (no more retries for {}; `tidepool hooks run {video_id} --failed` tries again)",
-                    gave_up.join(", ")
-                ));
-            }
+            let line = retry_line(state, &label, source_key, video_id, &names, &problems);
             writeln!(out, "{line}")?;
         }
         Ok(failed)
@@ -888,7 +839,7 @@ impl App<'_> {
     async fn download(&self, args: &DownloadArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
         let mut state = self.open_state()?;
         let loaded = self.current_config(&state)?;
-        let sources = self.scoped_sources(&loaded.config, &args.scope.sources)?;
+        let sources = Self::scoped_sources(&loaded.config, &args.scope.sources)?;
         self.log_context(&state, &loaded.config, &sources);
         let _lock = self.lock()?;
         let ytdlp = self.ytdlp_binary(&state, &loaded.config).await?;
@@ -920,7 +871,7 @@ impl App<'_> {
     pub(crate) async fn sync_once(&self, out: &mut dyn Write) -> anyhow::Result<Option<String>> {
         let mut state = self.open_state()?;
         let config = self.current_config(&state)?.config;
-        let sources = self.scoped_sources(&config, &[])?;
+        let sources = Self::scoped_sources(&config, &[])?;
         if sources.is_empty() {
             return Ok(Some(
                 "no enabled sources; add one under [sources.<name>] in your config".into(),
@@ -1047,7 +998,7 @@ impl App<'_> {
     async fn run_once(&self, args: &RunArgs, out: &mut dyn Write) -> anyhow::Result<i32> {
         let mut state = self.open_state()?;
         let loaded = self.current_config(&state)?;
-        let sources = self.scoped_sources(&loaded.config, &args.sources)?;
+        let sources = Self::scoped_sources(&loaded.config, &args.sources)?;
         self.log_context(&state, &loaded.config, &sources);
         if sources.is_empty() {
             writeln!(
@@ -1100,7 +1051,7 @@ impl App<'_> {
     /// `tidepool problems [ack <id>]`.
     fn problems(
         &self,
-        cmd: &Option<crate::cli::ProblemsCmd>,
+        cmd: Option<&crate::cli::ProblemsCmd>,
         out: &mut dyn Write,
     ) -> anyhow::Result<i32> {
         use crate::problems::{acknowledge, describe, open, recently_resolved};
@@ -1199,11 +1150,12 @@ impl App<'_> {
             changes.join("\n")
         );
         if current.source != Source::Import {
-            message.push_str(&format!(
+            let _ = write!(
+                message,
                 "\nNote: the stored config came from a {} (revision {}); to keep it instead, write it \
                  back to the file with `tidepool config export --show-secrets > {name}`.",
                 current.source, current.rev
-            ));
+            );
         }
         bail!(message)
     }
@@ -1280,14 +1232,13 @@ impl App<'_> {
         select: &crate::cli::VideoSelection,
         out: &mut dyn Write,
     ) -> anyhow::Result<i32> {
-        use crate::download::layout::{Layout, Values};
-        use crate::download::stages::artist_id;
+        use crate::download::layout::Values;
 
         let dry_run = self.cli.dry_run;
         let state = self.open_state()?;
         let config = self.current_config(&state)?.config;
-        let selected = self.select_downloaded(&state, &config, select, out)?;
-        let _lock = if dry_run { None } else { Some(self.lock()?) };
+        let selected = Self::select_downloaded(&state, &config, select, out)?;
+        let library_lock = if dry_run { None } else { Some(self.lock()?) };
         let (mut renamed, mut unchanged, mut failed) = (Vec::new(), 0usize, 0usize);
         let mut skipped_sources = std::collections::BTreeSet::new();
         for item in &selected.videos {
@@ -1314,20 +1265,14 @@ impl App<'_> {
                 .unwrap_or(&info.title)
                 .to_string();
             let source_title = meta["source"]["title"].as_str().map(str::to_string);
-            let position = meta["source"]["position"].as_u64().unwrap_or(0) as u32;
+            let position = source_position(&meta);
             let values = Values::new(&info, source, source_title.as_deref(), position);
-            let Some(artist) = artist_id(source, &values) else {
-                writeln!(out, "{label}: skipped: no MUSICBRAINZ_ARTISTID")?;
-                continue;
-            };
-            let name = match crate::musicbrainz::artist_name(
-                &source.embed.musicbrainz_server,
-                &self.dirs.data_dir,
-                &artist,
-            )
-            .await
-            {
-                Ok(name) => name,
+            let name = match self.music_video_artist(source, &values).await {
+                Ok(Some(name)) => name,
+                Ok(None) => {
+                    writeln!(out, "{label}: skipped: no MUSICBRAINZ_ARTISTID")?;
+                    continue;
+                }
                 Err(e) => {
                     writeln!(out, "{label}: failed: {e}")?;
                     failed += 1;
@@ -1347,128 +1292,17 @@ impl App<'_> {
 
             // Where its files go with the new title.
             let mut new_info = info.clone();
-            new_info.title = cleaned.clone();
+            new_info.title.clone_from(&cleaned);
             let new_values = Values::new(&new_info, source, source_title.as_deref(), position);
-            let media_root = media_dir(source, &self.dirs).map_err(anyhow::Error::msg)?;
-            let layout = Layout::new(source, &new_values, &media_root, &self.dirs)
-                .map_err(anyhow::Error::msg)?;
-            let ext = |path: &str| {
-                Path::new(path)
-                    .extension()
-                    .map(|e| e.to_string_lossy().into_owned())
-                    .unwrap_or_default()
-            };
-            let files = &item.files;
-            let mut new = files.clone();
-            new.dir = layout.output_dir().display().to_string();
-            new.media = layout
-                .output_file(&ext(&files.media))
-                .map_err(anyhow::Error::msg)?
-                .display()
-                .to_string();
-            if files.cover.is_some() {
-                new.cover = Some(
-                    layout
-                        .cover_file()
-                        .map_err(anyhow::Error::msg)?
-                        .0
-                        .display()
-                        .to_string(),
-                );
-            }
-            for sub in &mut new.subtitles {
-                sub.path = layout
-                    .subtitle_file(&sub.lang, &ext(&sub.path))
-                    .map_err(anyhow::Error::msg)?
-                    .display()
-                    .to_string();
-            }
-            let metadata_dest = layout.metadata_file().map_err(anyhow::Error::msg)?;
-            new.metadata = metadata_dest.display().to_string();
-            if files.raw_info.is_some() {
-                let mut name = metadata_dest.file_stem().unwrap_or_default().to_owned();
-                name.push(".ytdlp.json");
-                new.raw_info = Some(metadata_dest.with_file_name(name).display().to_string());
-            }
-
-            // Media, cover, subtitles and raw info move; the metadata file is
-            // written last, at its new place.
-            let mut moves: Vec<(PathBuf, PathBuf)> = Vec::new();
-            let mut pairs: Vec<(Option<&String>, Option<&String>)> = vec![
-                (Some(&files.media), Some(&new.media)),
-                (files.cover.as_ref(), new.cover.as_ref()),
-                (files.raw_info.as_ref(), new.raw_info.as_ref()),
-            ];
-            for (old, now) in files.subtitles.iter().zip(&new.subtitles) {
-                pairs.push((Some(&old.path), Some(&now.path)));
-            }
-            for (old, now) in pairs {
-                if let (Some(old), Some(now)) = (old, now)
-                    && old != now
-                    && Path::new(old).exists()
-                {
-                    moves.push((PathBuf::from(old), PathBuf::from(now)));
-                }
-            }
-            if let Some((_, taken)) = moves.iter().find(|(_, to)| to.exists()) {
-                writeln!(out, "{label}: skipped: {} already exists", taken.display())?;
+            let (new, metadata_dest) =
+                Self::retitled_files(source, &new_values, &item.files, &self.dirs)?;
+            let meta = retitled_metadata(&meta, &cleaned, &youtube, &new);
+            if let Err(problem) = move_retitled(&item.files, &new, &metadata_dest, &meta) {
+                writeln!(out, "{label}: {problem}")?;
                 failed += 1;
                 continue;
             }
-            if files.metadata != new.metadata && metadata_dest.exists() {
-                writeln!(
-                    out,
-                    "{label}: skipped: {} already exists",
-                    metadata_dest.display()
-                )?;
-                failed += 1;
-                continue;
-            }
-            let mut done: Vec<(PathBuf, PathBuf)> = Vec::new();
-            let mut problem = None;
-            for (from, to) in &moves {
-                match crate::download::place(from, to) {
-                    Ok(()) => done.push((from.clone(), to.clone())),
-                    Err(e) => {
-                        problem = Some(format!("cannot move {}: {e}", from.display()));
-                        break;
-                    }
-                }
-            }
-            let mut meta = meta.clone();
-            meta["title"] = cleaned.clone().into();
-            if meta["original"]["title"].is_null() {
-                if !meta["original"].is_object() {
-                    meta["original"] = serde_json::json!({});
-                }
-                meta["original"]["title"] = youtube.clone().into();
-            }
-            meta["files"] = crate::download::metadata::files_json(&new);
-            if problem.is_none() {
-                let text = serde_json::to_string_pretty(&meta).expect("JSON") + "\n";
-                if let Err(e) =
-                    std::fs::create_dir_all(metadata_dest.parent().unwrap_or(Path::new("/")))
-                        .and_then(|_| std::fs::write(&metadata_dest, text))
-                {
-                    problem = Some(format!("cannot write {}: {e}", metadata_dest.display()));
-                }
-            }
-            if let Some(problem) = problem {
-                // Put back what moved.
-                for (from, to) in done.iter().rev() {
-                    let _ = crate::download::place(to, from);
-                }
-                writeln!(out, "{label}: failed: {problem}")?;
-                failed += 1;
-                continue;
-            }
-            if files.metadata != new.metadata {
-                let _ = std::fs::remove_file(&files.metadata);
-            }
-            if files.dir != new.dir {
-                let _ = std::fs::remove_dir(&files.dir);
-            }
-            let bytes = std::fs::metadata(&new.media).map(|m| m.len()).unwrap_or(0);
+            let bytes = std::fs::metadata(&new.media).map_or(0, |m| m.len());
             crate::state::items::update_files(
                 &state.conn,
                 &item.source_key,
@@ -1486,40 +1320,113 @@ impl App<'_> {
         // The new titles go into the files too.
         let mut code = exit::OK;
         if !dry_run && !renamed.is_empty() {
-            drop(_lock);
-            let embed_sources: Vec<SourceRef> = selected
-                .sources
-                .iter()
-                .filter(|s| s.embed.metadata && s.clean_title != crate::config::CleanTitle::None)
-                .map(|s| SourceRef::Key(s.key.clone()))
-                .collect();
-            if !embed_sources.is_empty() {
-                let args = crate::cli::EmbedArgs {
-                    select: crate::cli::VideoSelection {
-                        video_ids: renamed.clone(),
-                        all: false,
-                        sources: embed_sources,
-                        categories: Vec::new(),
-                    },
-                    remove_disabled: false,
-                };
-                code = self.embed(&args, out).await?;
-            }
+            drop(library_lock);
+            code = self.embed_retitled(&selected, &renamed, out).await?;
         }
-        let videos = |n: usize| if n == 1 { "video" } else { "videos" };
-        let verb = if dry_run { "would rename" } else { "renamed" };
         writeln!(
             out,
-            "{verb} {} {}; {unchanged} already clean{}",
-            renamed.len(),
-            videos(renamed.len()),
-            if failed > 0 {
-                format!("; {failed} failed")
-            } else {
-                String::new()
-            }
+            "{}",
+            clean_titles_summary(dry_run, renamed.len(), unchanged, failed)
         )?;
         Ok(if failed > 0 { exit::PARTIAL } else { code })
+    }
+
+    /// The name of the artist a music video's `MUSICBRAINZ_ARTISTID` tag
+    /// names, from MusicBrainz; `None` when it has no artist ID.
+    async fn music_video_artist(
+        &self,
+        source: &EffectiveSource,
+        values: &crate::download::layout::Values,
+    ) -> Result<Option<String>, String> {
+        let Some(artist) = crate::download::stages::artist_id(source, values) else {
+            return Ok(None);
+        };
+        crate::musicbrainz::artist_name(
+            &source.embed.musicbrainz_server,
+            &self.dirs.data_dir,
+            &artist,
+        )
+        .await
+        .map(Some)
+    }
+
+    /// Where a video's files go when its title changes, and its metadata
+    /// file's new place.
+    fn retitled_files(
+        source: &EffectiveSource,
+        values: &crate::download::layout::Values,
+        files: &crate::state::items::VideoFiles,
+        dirs: &Dirs,
+    ) -> anyhow::Result<(crate::state::items::VideoFiles, PathBuf)> {
+        let media_root = media_dir(source, dirs).map_err(anyhow::Error::msg)?;
+        let layout = crate::download::layout::Layout::new(source, values, &media_root, dirs)
+            .map_err(anyhow::Error::msg)?;
+        let ext = |path: &str| {
+            Path::new(path)
+                .extension()
+                .map(|e| e.to_string_lossy().into_owned())
+                .unwrap_or_default()
+        };
+        let mut new = files.clone();
+        new.dir = layout.output_dir().display().to_string();
+        new.media = layout
+            .output_file(&ext(&files.media))
+            .map_err(anyhow::Error::msg)?
+            .display()
+            .to_string();
+        if files.cover.is_some() {
+            new.cover = Some(
+                layout
+                    .cover_file()
+                    .map_err(anyhow::Error::msg)?
+                    .0
+                    .display()
+                    .to_string(),
+            );
+        }
+        for sub in &mut new.subtitles {
+            sub.path = layout
+                .subtitle_file(&sub.lang, &ext(&sub.path))
+                .map_err(anyhow::Error::msg)?
+                .display()
+                .to_string();
+        }
+        let metadata_dest = layout.metadata_file().map_err(anyhow::Error::msg)?;
+        new.metadata = metadata_dest.display().to_string();
+        if files.raw_info.is_some() {
+            let mut name = metadata_dest.file_stem().unwrap_or_default().to_owned();
+            name.push(".ytdlp.json");
+            new.raw_info = Some(metadata_dest.with_file_name(name).display().to_string());
+        }
+        Ok((new, metadata_dest))
+    }
+
+    /// Embed the new titles of `renamed`, in the sources that embed them.
+    async fn embed_retitled(
+        &self,
+        selected: &Selected,
+        renamed: &[String],
+        out: &mut dyn Write,
+    ) -> anyhow::Result<i32> {
+        let embed_sources: Vec<SourceRef> = selected
+            .sources
+            .iter()
+            .filter(|s| s.embed.metadata && s.clean_title != crate::config::CleanTitle::None)
+            .map(|s| SourceRef::Key(s.key.clone()))
+            .collect();
+        if embed_sources.is_empty() {
+            return Ok(exit::OK);
+        }
+        let args = crate::cli::EmbedArgs {
+            select: crate::cli::VideoSelection {
+                video_ids: renamed.to_vec(),
+                all: false,
+                sources: embed_sources,
+                categories: Vec::new(),
+            },
+            remove_disabled: false,
+        };
+        self.embed(&args, out).await
     }
 
     /// `tidepool hooks run`: run hooks again on videos already downloaded.
@@ -1531,43 +1438,9 @@ impl App<'_> {
         } = cmd;
         let state = self.open_state()?;
         let config = self.current_config(&state)?.config;
-        // `prepare` hooks only make sense before a video's files exist, and
-        // `before_cleanup` hooks are asked by cleanup.
-        let reruns = |name: &String| {
-            config.hooks.get(name).is_some_and(|h| {
-                !matches!(
-                    h.kind,
-                    crate::config::HookType::Prepare | crate::config::HookType::BeforeCleanup
-                )
-            })
-        };
-        for name in only_hooks {
-            if let Some(hook) = config.hooks.get(name)
-                && !reruns(name)
-            {
-                bail!(
-                    "hook {name:?} is a {} hook, which `hooks run` doesn't run: {}",
-                    hook.kind.as_str(),
-                    if hook.kind == crate::config::HookType::Prepare {
-                        "it only runs for new downloads"
-                    } else {
-                        "`tidepool cleanup` asks it"
-                    }
-                );
-            }
-            if !config.hooks.contains_key(name) {
-                let known: Vec<&str> = config.hooks.keys().map(String::as_str).collect();
-                bail!(
-                    "there's no hook {name:?} (hooks: {})",
-                    if known.is_empty() {
-                        "none".to_string()
-                    } else {
-                        known.join(", ")
-                    }
-                );
-            }
-        }
-        let selected = self.select_downloaded(&state, &config, select, out)?;
+        let reruns = |name: &String| reruns_hook(&config, name);
+        check_rerun_hooks(&config, only_hooks)?;
+        let selected = Self::select_downloaded(&state, &config, select, out)?;
         let _lock = self.lock()?;
         let mut tracker = crate::problems::Tracker::default();
         let mut rerun = Rerun::new(
@@ -1587,7 +1460,7 @@ impl App<'_> {
             let last_failed = if *only_failed {
                 crate::state::items::failed_hooks(&state.conn, &item.source_key, &item.video_id)?
             } else {
-                Default::default()
+                std::collections::HashSet::new()
             };
             let hook_names: Vec<String> = source
                 .hooks
@@ -1639,7 +1512,7 @@ impl App<'_> {
     ) -> anyhow::Result<i32> {
         let state = self.open_state()?;
         let config = self.current_config(&state)?.config;
-        let selected = self.select_downloaded(&state, &config, &args.select, out)?;
+        let selected = Self::select_downloaded(&state, &config, &args.select, out)?;
         let _lock = self.lock()?;
         let mode = crate::download::rerun::Mode::Embed {
             remove_disabled: args.remove_disabled,
@@ -1715,23 +1588,31 @@ impl App<'_> {
         scope: &ScopeArgs,
         out: &mut dyn Write,
     ) -> anyhow::Result<i32> {
-        use crate::cleanup::{Candidate, files_to_remove, plan, remove};
+        use crate::cleanup::plan;
         use crate::download::human_bytes;
         use crate::state::items;
 
         let dry_run = self.cli.dry_run;
         let state = self.open_state()?;
         let config = self.current_config(&state)?.config;
-        let sources = self.scoped_sources(&config, &scope.sources)?;
+        let sources = Self::scoped_sources(&config, &scope.sources)?;
         let _lock = if dry_run { None } else { Some(self.lock()?) };
         let now = jiff::Timestamp::now();
         if !dry_run {
-            self.purge_trash(&state, now, out)?;
+            Self::purge_trash(&state, now, out)?;
         }
         let limit = usize::try_from(config.general.regex_backtrack_limit).unwrap_or(usize::MAX);
-        let mut tracker = crate::problems::Tracker::default();
-        let (mut removed, mut freed, mut failed) = (0usize, 0u64, 0usize);
-        let mut trashed = false;
+        let mut run = CleanupRun {
+            app: self,
+            state: &state,
+            config: &config,
+            now,
+            tracker: crate::problems::Tracker::default(),
+            removed: 0,
+            freed: 0,
+            failed: 0,
+            trashed: false,
+        };
         for source in &sources {
             if self.shutdown.is_stopping() {
                 break;
@@ -1743,53 +1624,10 @@ impl App<'_> {
             let rules = RuleSet::compile(source, limit, now).map_err(anyhow::Error::msg)?;
             let ids: Vec<String> = kept.iter().map(|k| k.video_id.clone()).collect();
             let details = items::videos(&state.conn, &ids)?;
-            let marker = &source.cleanup.marker_file;
-            let candidates: Vec<Candidate> = kept
-                .iter()
-                .map(|k| {
-                    let video = details.get(&k.video_id);
-                    let unmatched = video.and_then(|v| match rules.decide(&Fields::from_item(v)) {
-                        crate::filter::Decision::Keep { .. }
-                        | crate::filter::Decision::Deferred { .. }
-                        | crate::filter::Decision::FilterError { .. } => None,
-                        other => Some(other.to_string()),
-                    });
-                    Candidate {
-                        video_id: k.video_id.clone(),
-                        position: k.position,
-                        bytes: k.media_bytes,
-                        downloaded_at: k.downloaded_at,
-                        published_at: video.and_then(|v| v.published_at),
-                        present: !k.files.is_removed("media") && Path::new(&k.files.media).exists(),
-                        unmatched,
-                        marked: !marker.is_empty() && Path::new(&k.files.dir).join(marker).exists(),
-                    }
-                })
-                .collect();
+            let candidates = cleanup_candidates(source, &kept, &details, &rules);
             let victims = plan(&source.cleanup, &candidates, now);
             // With --dry-run, a line per source: how many go and how many stay.
-            let tally = format!(
-                "{}: {} {}: {}, {} stay ({})",
-                source.key,
-                kept.len(),
-                if kept.len() == 1 { "video" } else { "videos" },
-                if victims.is_empty() {
-                    "none would be removed".to_string()
-                } else {
-                    format!(
-                        "{} would be removed ({})",
-                        victims.len(),
-                        human_bytes(victims.iter().map(|(i, _)| kept[*i].media_bytes).sum())
-                    )
-                },
-                kept.len() - victims.len(),
-                human_bytes(
-                    (0..kept.len())
-                        .filter(|i| candidates[*i].present && !victims.iter().any(|(v, _)| v == i))
-                        .map(|i| kept[i].media_bytes)
-                        .sum()
-                )
-            );
+            let tally = cleanup_tally(&source.key, &kept, &candidates, &victims);
             let trash_root =
                 crate::config::check::trash_dir(source, &self.dirs).map_err(anyhow::Error::msg)?;
             for (i, reason) in victims {
@@ -1809,111 +1647,23 @@ impl App<'_> {
                         "{label}: would remove ({reason}), {}",
                         human_bytes(k.media_bytes)
                     )?;
-                    removed += 1;
-                    freed += k.media_bytes;
+                    run.removed += 1;
+                    run.freed += k.media_bytes;
                     continue;
                 }
-                // A `finished` hook may still be working with the files.
-                let waiting = items::waiting_hooks(&state.conn, &source.key, &k.video_id)?;
-                if !waiting.is_empty() {
-                    writeln!(
-                        out,
-                        "{label}: kept for now: hook {} hasn't run yet",
-                        waiting.join(", ")
-                    )?;
-                    continue;
-                }
-                if let Some(why) = self
-                    .ask_before_cleanup(&state, &config, source, k, &label, &reason, &mut tracker)
-                    .await?
-                {
-                    writeln!(out, "{label}: kept: {why}")?;
-                    continue;
-                }
-                let paths = files_to_remove(&k.files, source.cleanup.keep);
-                let trash = (source.cleanup.delete == crate::config::CleanupDelete::Trash
-                    && !paths.is_empty())
-                .then(|| {
-                    trash_root.join(&source.key).join(format!(
-                        "{}-{}",
-                        k.video_id,
-                        now.strftime("%Y%m%dT%H%M%S")
-                    ))
-                });
-                match remove(&paths, Path::new(&k.files.dir), trash.as_deref()) {
-                    Ok((moved, bytes)) => {
-                        if let Some(dir) = &trash {
-                            let until = now
-                                .checked_add(
-                                    jiff::SignedDuration::try_from(source.cleanup.trash_for.0)
-                                        .unwrap_or(jiff::SignedDuration::ZERO),
-                                )
-                                .unwrap_or(now);
-                            items::add_trash(
-                                &state.conn,
-                                &items::Trashed {
-                                    id: 0,
-                                    source_key: source.key.clone(),
-                                    video_id: k.video_id.clone(),
-                                    dir: dir.display().to_string(),
-                                    files: moved,
-                                    bytes,
-                                    reason: reason.to_string(),
-                                    trashed_at: now.to_string(),
-                                    delete_after: until.to_string(),
-                                },
-                            )?;
-                            trashed = true;
-                        }
-                        items::mark_cleaned_up(
-                            &state.conn,
-                            &source.key,
-                            &k.video_id,
-                            &reason.to_string(),
-                            now,
-                        )?;
-                        let how = if trash.is_some() {
-                            "to the trash"
-                        } else {
-                            "deleted"
-                        };
-                        writeln!(out, "{label}: {how} ({reason}), {}", human_bytes(bytes))?;
-                        removed += 1;
-                        freed += bytes;
-                    }
-                    Err(e) => {
-                        failed += 1;
-                        writeln!(out, "{label}: {e}")?;
-                    }
-                }
+                run.clean_up_video(source, k, &reason, &label, &trash_root, out)
+                    .await?;
             }
             if dry_run {
                 writeln!(out, "{tally}")?;
             }
         }
-        let hooks_failed = tracker.has_failures();
+        let hooks_failed = run.tracker.has_failures();
+        let (summary, failed) = (run.summary(dry_run), run.failed);
         if !dry_run {
-            tracker.finish(&state.conn, None, false, now)?;
+            run.tracker.finish(&state.conn, None, false, now)?;
         }
-        let videos = if removed == 1 { "video" } else { "videos" };
-        if removed == 0 && failed == 0 {
-            writeln!(out, "nothing to clean up")?;
-        } else if dry_run {
-            writeln!(
-                out,
-                "would remove {removed} {videos} ({})",
-                human_bytes(freed)
-            )?;
-        } else {
-            let mut line = format!("removed {removed} {videos} ({})", human_bytes(freed));
-            if failed > 0 {
-                line.push_str(&format!("; {failed} couldn't be removed"));
-            }
-            if trashed {
-                line.push_str("; `tidepool trash restore <video_id>` brings one back");
-            }
-            writeln!(out, "{line}")?;
-        }
+        writeln!(out, "{summary}")?;
         if let Some(code) = self.shutdown.code() {
             return Ok(code);
         }
@@ -1955,9 +1705,9 @@ impl App<'_> {
             }
         };
         let source_title = meta["source"]["title"].as_str();
-        let position = meta["source"]["position"].as_u64().unwrap_or(0) as u32;
+        let position = source_position(&meta);
         let values = crate::download::layout::Values::new(&info, source, source_title, position);
-        let stage = crate::download::stages::Stage {
+        let hook_stage = crate::download::stages::Stage {
             source,
             hook_names: &source.hooks,
             hooks: &config.hooks,
@@ -1973,9 +1723,9 @@ impl App<'_> {
             ffprobe: Path::new("ffprobe"),
             data_dir: &self.dirs.data_dir,
         };
-        let context = stage.context(&info);
+        let context = hook_stage.context(&info);
         let mut reports = Vec::new();
-        let keep = stage
+        let keep = hook_stage
             .before_cleanup_hooks(
                 &values,
                 &kept.files,
@@ -1999,12 +1749,7 @@ impl App<'_> {
     }
 
     /// Delete for good what's been in the trash for its `trash_for`.
-    fn purge_trash(
-        &self,
-        state: &State,
-        now: jiff::Timestamp,
-        out: &mut dyn Write,
-    ) -> anyhow::Result<()> {
+    fn purge_trash(state: &State, now: jiff::Timestamp, out: &mut dyn Write) -> anyhow::Result<()> {
         let mut count = 0;
         let mut bytes = 0;
         for t in crate::state::items::trash(&state.conn)? {
@@ -2080,7 +1825,7 @@ impl App<'_> {
                     Vec::new()
                 } else {
                     let config = self.current_config(&state)?.config;
-                    self.scoped_sources(&config, sources)?
+                    Self::scoped_sources(&config, sources)?
                         .into_iter()
                         .map(|s| s.key)
                         .collect()
@@ -2138,7 +1883,6 @@ impl App<'_> {
     /// The downloaded videos a selection (ids, `--all`, `-s`, `--category`)
     /// picks. Ids that aren't downloaded are reported and skipped.
     fn select_downloaded(
-        &self,
         state: &State,
         config: &crate::config::Config,
         select: &crate::cli::VideoSelection,
@@ -2174,7 +1918,7 @@ impl App<'_> {
             }
         }
         if source_refs.is_empty() && categories.is_empty() {
-            picked = every.clone();
+            picked.clone_from(&every);
         }
         let keys: Vec<String> = picked.iter().map(|s| s.key.clone()).collect();
         let mut videos = crate::state::items::downloaded(&state.conn, &keys)?;
@@ -2199,31 +1943,11 @@ impl App<'_> {
 
     async fn tools(&self, cmd: &ToolsCmd, out: &mut dyn Write) -> anyhow::Result<i32> {
         use crate::cli::ToolName;
-        use crate::tools::manager::{Manager, Tool};
+        use crate::tools::manager::Manager;
 
         let config = self.config_or_defaults()?;
         let tools = &config.tools;
         let manager = Manager::new(&self.dirs);
-        let when = |t: jiff::Timestamp| t.strftime("%Y-%m-%d %H:%M:%S UTC").to_string();
-        // (tool, managed, your own path, update interval, what it's for)
-        let describe = |name: ToolName| match name {
-            ToolName::Ytdlp => (
-                Tool::Ytdlp(tools.ytdlp.channel),
-                tools.ytdlp.managed,
-                tools.ytdlp.path.as_str(),
-                tools.ytdlp.update_check.0,
-                format!("{} channel", tools.ytdlp.channel.as_str()),
-                "yt-dlp",
-            ),
-            ToolName::Deno => (
-                Tool::Deno,
-                tools.deno.managed,
-                tools.deno.path.as_str(),
-                tools.deno.update_check.0,
-                "2.x, the JavaScript runtime yt-dlp needs for YouTube".to_string(),
-                "deno",
-            ),
-        };
         let own = |name: &str, table: &str| {
             format!(
                 "managed = false in [tools.{table}]: tidepool doesn't update your {name}; update it \
@@ -2233,59 +1957,7 @@ impl App<'_> {
         match cmd {
             ToolsCmd::Status => {
                 for name in [ToolName::Ytdlp, ToolName::Deno] {
-                    let (tool, managed, path, every, what, table) = describe(name);
-                    let label = tool.name();
-                    if !managed {
-                        match crate::tools::manager::tool_version(Path::new(path)) {
-                            Ok(line) => {
-                                // yt-dlp prints "2026.10.01"; Deno "deno 2.9.8 (…)".
-                                let version = match tool {
-                                    Tool::Deno => line.split_whitespace().nth(1).unwrap_or(&line),
-                                    Tool::Ytdlp(_) => &line,
-                                };
-                                writeln!(
-                                    out,
-                                    "{label} {version} at {path} (your own; tidepool doesn't update it)"
-                                )?
-                            }
-                            Err(e) => writeln!(
-                                out,
-                                "{label}: cannot run {path:?} (tools.{table}.path): {e}"
-                            )?,
-                        }
-                        continue;
-                    }
-                    let binary = manager.binary(tool);
-                    let Some(state) = manager.state(tool).filter(|_| binary.exists()) else {
-                        writeln!(
-                            out,
-                            "{label} isn't downloaded yet (managed, {what}); it's downloaded on \
-                             first use, or run `tidepool tools update {table}`"
-                        )?;
-                        continue;
-                    };
-                    writeln!(out, "{label} {} (managed, {what})", state.version)?;
-                    writeln!(out, "  path: {}", binary.display())?;
-                    writeln!(out, "  installed: {}", when(state.installed_at))?;
-                    writeln!(
-                        out,
-                        "  last update check: {} (checks every {})",
-                        when(state.last_check_at),
-                        crate::config::types::format_duration(every)
-                    )?;
-                    if let Some(previous) = &state.previous_version {
-                        writeln!(
-                            out,
-                            "  previous version: {previous} (`tidepool tools rollback {table}` restores it)"
-                        )?;
-                    }
-                    if let Some(skipped) = &state.skip_version {
-                        writeln!(
-                            out,
-                            "  {skipped} was rolled back; staying on {} until a newer release",
-                            state.version
-                        )?;
-                    }
+                    print_tool_status(&manager, &ToolInfo::new(tools, name), out)?;
                 }
             }
             ToolsCmd::Update { tool: requested } => {
@@ -2295,8 +1967,13 @@ impl App<'_> {
                 };
                 let mut failed = false;
                 for name in names {
-                    let (tool, managed, _, _, _, table) = describe(name);
-                    if !managed {
+                    let ToolInfo {
+                        tool,
+                        is_managed,
+                        table,
+                        ..
+                    } = ToolInfo::new(tools, name);
+                    if !is_managed {
                         if requested.is_some() {
                             bail!("{}", own(tool.name(), table));
                         }
@@ -2324,8 +2001,13 @@ impl App<'_> {
                 }
             }
             ToolsCmd::Rollback { tool: name } => {
-                let (tool, managed, _, _, _, table) = describe(*name);
-                if !managed {
+                let ToolInfo {
+                    tool,
+                    is_managed,
+                    table,
+                    ..
+                } = ToolInfo::new(tools, *name);
+                if !is_managed {
                     bail!("{}", own(tool.name(), table));
                 }
                 let (from, to) = manager.rollback(tool)?;
@@ -2352,7 +2034,7 @@ impl App<'_> {
         match ConfigStore::new(&state.conn).import_if_changed(
             &name,
             &text,
-            self.cli.force_config,
+            self.cli.config_flags.force,
         )? {
             Imported::Created(rev) => tracing::info!("imported {name} as config revision {rev}"),
             Imported::Unchanged(rev) => tracing::debug!("{name} matches config revision {rev}"),
@@ -2361,12 +2043,12 @@ impl App<'_> {
     }
 
     /// Log environment findings, what passed at `ok_level`; returns the errors.
-    fn report(&self, findings: Vec<Finding>, ok_level: tracing::Level) -> usize {
+    fn report(findings: Vec<Finding>, ok_level: tracing::Level) -> usize {
         let mut errors = 0;
         for finding in findings {
             match finding {
                 Finding::Ok(message) if ok_level == tracing::Level::INFO => {
-                    tracing::info!("{message}")
+                    tracing::info!("{message}");
                 }
                 Finding::Ok(message) => tracing::debug!("{message}"),
                 Finding::Warning(message) => tracing::warn!("{message}"),
@@ -2459,7 +2141,7 @@ impl App<'_> {
         let rev = ConfigStore::new(&state.conn)
             .import(Some(&name), &text, &loaded)?
             .rev();
-        let errors = self.report(
+        let errors = Self::report(
             check_environment(&loaded.config, &self.dirs, Some(&path)),
             tracing::Level::INFO,
         );
@@ -2537,9 +2219,8 @@ impl App<'_> {
                 config.schedule.interval.0.unwrap_or_default()
             ),
         )?;
-        let exe = std::env::current_exe()
-            .map(|p| p.display().to_string())
-            .unwrap_or_else(|_| "tidepool".into());
+        let exe =
+            std::env::current_exe().map_or_else(|_| "tidepool".into(), |p| p.display().to_string());
         writeln!(
             out,
             "\nTo run it as a service, save this as ~/.config/systemd/user/tidepool.service\n\
@@ -2571,7 +2252,7 @@ impl App<'_> {
             .to_string()
     }
 
-    fn warn(&self, warnings: &[String]) {
+    fn warn(warnings: &[String]) {
         for warning in warnings {
             tracing::warn!("{warning}");
         }
@@ -2582,7 +2263,7 @@ impl App<'_> {
     pub(crate) fn current_config(&self, state: &State) -> anyhow::Result<Loaded> {
         if let (Some(path), true) = (&self.cli.config, self.cli.dry_run) {
             let loaded = load_file(path)?;
-            self.warn(&loaded.warnings);
+            Self::warn(&loaded.warnings);
             return Ok(loaded);
         }
         let store = ConfigStore::new(&state.conn);
@@ -2594,7 +2275,7 @@ impl App<'_> {
             ),
             _ => err.into(),
         })?;
-        self.warn(&loaded.warnings);
+        Self::warn(&loaded.warnings);
         Ok(loaded)
     }
 
@@ -2632,7 +2313,7 @@ impl App<'_> {
             Some(ConfigCmd::Import { path }) => {
                 let path = &self.import_path(path.as_deref())?;
                 let loaded = load_file(path)?;
-                self.warn(&loaded.warnings);
+                Self::warn(&loaded.warnings);
                 let name = Self::display_path(path);
                 if self.cli.dry_run {
                     writeln!(out, "{name} is valid (dry run: not imported)")?;
@@ -2644,19 +2325,18 @@ impl App<'_> {
                 match ConfigStore::new(&state.conn).import(Some(&name), &text, &loaded)? {
                     Imported::Created(rev) => writeln!(out, "imported {name} as revision {rev}")?,
                     Imported::Unchanged(rev) => {
-                        writeln!(out, "unchanged: {name} matches revision {rev}")?
+                        writeln!(out, "unchanged: {name} matches revision {rev}")?;
                     }
                 }
             }
             Some(ConfigCmd::Export { rev }) => {
                 let state = self.open_state()?;
                 let store = ConfigStore::new(&state.conn);
-                let revision = match rev {
-                    Some(rev) => store.get(*rev)?,
-                    None => {
-                        self.current_config(&state)?;
-                        store.current()?.expect("loaded above")
-                    }
+                let revision = if let Some(rev) = rev {
+                    store.get(*rev)?
+                } else {
+                    self.current_config(&state)?;
+                    store.current()?.expect("loaded above")
                 };
                 write!(out, "{}", show(&revision.toml))?;
             }
@@ -2669,7 +2349,7 @@ impl App<'_> {
                         "no config revisions yet; run `tidepool config import <path>`"
                     )?;
                 }
-                self.print_history(&history, out)?;
+                Self::print_history(&history, out)?;
             }
             Some(ConfigCmd::Rollback { rev }) => {
                 let state = self.open_state()?;
@@ -2690,15 +2370,14 @@ impl App<'_> {
         Ok(exit::OK)
     }
 
-    fn print_history(&self, history: &[Revision], out: &mut dyn Write) -> anyhow::Result<()> {
+    fn print_history(history: &[Revision], out: &mut dyn Write) -> anyhow::Result<()> {
         let current = history.last().map(|r| r.rev);
         for r in history {
             let marker = if Some(r.rev) == current { "*" } else { " " };
-            let created = r
-                .created_at
-                .parse::<jiff::Timestamp>()
-                .map(|t| t.strftime("%Y-%m-%d %H:%M:%S UTC").to_string())
-                .unwrap_or_else(|_| r.created_at.clone());
+            let created = r.created_at.parse::<jiff::Timestamp>().map_or_else(
+                |_| r.created_at.clone(),
+                |t| t.strftime("%Y-%m-%d %H:%M:%S UTC").to_string(),
+            );
             writeln!(
                 out,
                 "{marker} {:>4}  {created:<23}  {:<8}  {}  {}",
@@ -2726,21 +2405,20 @@ impl App<'_> {
             Some(store) => store.current()?,
             None => None,
         };
-        let file_path = match path
+        let file_path = if let Some(path) = path
             .map(Path::to_path_buf)
             .or_else(|| self.cli.config.clone())
         {
-            Some(path) => path,
-            None => {
-                let last = match &store {
-                    Some(store) => store.last_import()?,
-                    None => None,
-                };
-                last.and_then(|r| r.source_path)
-                    .map(PathBuf::from)
-                    .filter(|p| p.exists())
-                    .unwrap_or_else(|| self.dirs.default_config_file())
-            }
+            path
+        } else {
+            let last = match &store {
+                Some(store) => store.last_import()?,
+                None => None,
+            };
+            last.and_then(|r| r.source_path)
+                .map(PathBuf::from)
+                .filter(|p| p.exists())
+                .unwrap_or_else(|| self.dirs.default_config_file())
         };
         let name = Self::display_path(&file_path);
         let mut invalid = Vec::new();
@@ -2757,7 +2435,7 @@ impl App<'_> {
             }
             Some(text) => match load_str(&name, text) {
                 Ok(loaded) => {
-                    self.warn(&loaded.warnings);
+                    Self::warn(&loaded.warnings);
                     tracing::debug!("{name} is valid ({} sources)", loaded.config.sources.len());
                     Some(loaded)
                 }
@@ -2778,40 +2456,7 @@ impl App<'_> {
                 None
             }
             Some(current) => {
-                let label = format!("config revision {}", current.rev);
-                let loaded = match load_str(&label, &current.toml) {
-                    Ok(loaded) => Some(loaded),
-                    Err(err) => {
-                        tracing::error!(
-                            "the stored config (revision {}) no longer loads with this tidepool:\n{err}\n\
-                             fix it in your config file and run `tidepool config import`",
-                            current.rev
-                        );
-                        invalid.push(format!("the stored config (revision {})", current.rev));
-                        None
-                    }
-                };
-                let same = text.as_ref().is_some_and(|text| {
-                    crate::config::store::hash(text) == current.source_hash
-                        || file
-                            .as_ref()
-                            .is_some_and(|f| loaded.is_some() && f.normalized() == current.json)
-                });
-                if same {
-                    if loaded.is_some() {
-                        tracing::debug!(
-                            "the stored config (revision {}) is valid and matches {name}",
-                            current.rev
-                        );
-                    }
-                } else if text.is_some() {
-                    tracing::warn!(
-                        "{name} and the stored config (revision {}) differ: run `tidepool config import` \
-                         to apply it (`tidepool config diff` shows what changed)",
-                        current.rev
-                    );
-                }
-                loaded
+                check_stored_config(current, &name, text.as_deref(), file.as_ref(), &mut invalid)
             }
         };
 
@@ -2821,7 +2466,7 @@ impl App<'_> {
                 invalid.join(" and ") + if invalid.len() > 1 { " are" } else { " is" }
             );
         };
-        let env_failed = self.report(
+        let env_failed = Self::report(
             check_environment(
                 &loaded.config,
                 &self.dirs,
@@ -2910,7 +2555,7 @@ impl App<'_> {
     fn filter_test(
         &self,
         video: &str,
-        source: &Option<SourceRef>,
+        source: Option<&SourceRef>,
         out: &mut dyn Write,
     ) -> anyhow::Result<i32> {
         let state = self.open_state()?;
@@ -2956,6 +2601,612 @@ impl App<'_> {
     }
 }
 
+/// The last line of a one-shot download: what got downloaded, skipped or
+/// failed.
+fn print_download_summary(
+    summary: &crate::download::Summary,
+    out: &mut dyn Write,
+) -> std::io::Result<()> {
+    use crate::download::human_bytes;
+
+    if summary.interrupted.is_some() {
+        writeln!(
+            out,
+            "stopped; unfinished downloads will resume on the next run"
+        )?;
+    } else if summary.downloaded + summary.skipped + summary.failed == 0 {
+        if summary.hooks_failed > 0 {
+            writeln!(
+                out,
+                "nothing to download; {} hook{} failed",
+                summary.hooks_failed,
+                if summary.hooks_failed == 1 { "" } else { "s" }
+            )?;
+        } else {
+            writeln!(out, "nothing to download")?;
+        }
+    } else {
+        let videos = if summary.downloaded == 1 {
+            "video"
+        } else {
+            "videos"
+        };
+        let mut parts = vec![format!(
+            "downloaded {} {videos} ({})",
+            summary.downloaded,
+            human_bytes(summary.bytes)
+        )];
+        if summary.skipped > 0 {
+            parts.push(format!("{} skipped", summary.skipped));
+        }
+        if summary.failed > 0 {
+            parts.push(format!("{} failed", summary.failed));
+        }
+        if summary.hooks_failed > 0 {
+            parts.push(format!(
+                "{} hook{} failed",
+                summary.hooks_failed,
+                if summary.hooks_failed == 1 { "" } else { "s" }
+            ));
+        }
+        writeln!(out, "{}", parts.join("; "))?;
+    }
+    Ok(())
+}
+
+/// Whether `tidepool hooks run` runs hook `name`: `prepare` hooks only make
+/// sense before a video's files exist, and `before_cleanup` hooks are asked
+/// by cleanup.
+fn reruns_hook(config: &crate::config::Config, name: &str) -> bool {
+    config.hooks.get(name).is_some_and(|h| {
+        !matches!(
+            h.kind,
+            crate::config::HookType::Prepare | crate::config::HookType::BeforeCleanup
+        )
+    })
+}
+
+/// Fail if a hook `tidepool hooks run --hook` names doesn't exist or isn't
+/// one it runs.
+fn check_rerun_hooks(config: &crate::config::Config, names: &[String]) -> anyhow::Result<()> {
+    for name in names {
+        if let Some(hook) = config.hooks.get(name)
+            && !reruns_hook(config, name)
+        {
+            bail!(
+                "hook {name:?} is a {} hook, which `hooks run` doesn't run: {}",
+                hook.kind.as_str(),
+                if hook.kind == crate::config::HookType::Prepare {
+                    "it only runs for new downloads"
+                } else {
+                    "`tidepool cleanup` asks it"
+                }
+            );
+        }
+        if !config.hooks.contains_key(name) {
+            let known: Vec<&str> = config.hooks.keys().map(String::as_str).collect();
+            bail!(
+                "there's no hook {name:?} (hooks: {})",
+                if known.is_empty() {
+                    "none".to_string()
+                } else {
+                    known.join(", ")
+                }
+            );
+        }
+    }
+    Ok(())
+}
+
+/// What retrying `names` on a video did, and which of them gave up.
+fn retry_line(
+    state: &State,
+    label: &str,
+    source_key: &str,
+    video_id: &str,
+    names: &[String],
+    problems: &[String],
+) -> String {
+    let gave_up: Vec<&str> = names
+        .iter()
+        .filter(|h| {
+            crate::state::items::hook_status(&state.conn, source_key, video_id, h)
+                .ok()
+                .flatten()
+                .as_deref()
+                == Some("failed")
+        })
+        .map(String::as_str)
+        .collect();
+    let mut line = format!("{label}: tried again: {}", problems.join("; "));
+    if !gave_up.is_empty() {
+        let _ = write!(
+            line,
+            " (no more retries for {}; `tidepool hooks run {video_id} --failed` tries again)",
+            gave_up.join(", ")
+        );
+    }
+    line
+}
+
+/// What one `tidepool cleanup` works with, and how it's going.
+struct CleanupRun<'a> {
+    app: &'a App<'a>,
+    state: &'a State,
+    config: &'a crate::config::Config,
+    now: jiff::Timestamp,
+    tracker: crate::problems::Tracker,
+    removed: usize,
+    freed: u64,
+    failed: usize,
+    /// Something went to the trash.
+    trashed: bool,
+}
+
+impl CleanupRun<'_> {
+    /// Remove a video cleanup picked (to `trash_root`, or deleted), unless a
+    /// hook still has to run on it or a `before_cleanup` hook keeps it.
+    /// Prints what happened.
+    async fn clean_up_video(
+        &mut self,
+        source: &EffectiveSource,
+        k: &crate::state::items::Kept,
+        reason: &crate::cleanup::Reason,
+        label: &str,
+        trash_root: &Path,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<()> {
+        use crate::cleanup::{files_to_remove, remove};
+        use crate::state::items;
+
+        let (state, now) = (self.state, self.now);
+        // A `finished` hook may still be working with the files.
+        let waiting = items::waiting_hooks(&state.conn, &source.key, &k.video_id)?;
+        if !waiting.is_empty() {
+            writeln!(
+                out,
+                "{label}: kept for now: hook {} hasn't run yet",
+                waiting.join(", ")
+            )?;
+            return Ok(());
+        }
+        if let Some(why) = self
+            .app
+            .ask_before_cleanup(
+                state,
+                self.config,
+                source,
+                k,
+                label,
+                reason,
+                &mut self.tracker,
+            )
+            .await?
+        {
+            writeln!(out, "{label}: kept: {why}")?;
+            return Ok(());
+        }
+        let paths = files_to_remove(&k.files, source.cleanup.keep);
+        let trash = (source.cleanup.delete == crate::config::CleanupDelete::Trash
+            && !paths.is_empty())
+        .then(|| {
+            trash_root.join(&source.key).join(format!(
+                "{}-{}",
+                k.video_id,
+                now.strftime("%Y%m%dT%H%M%S")
+            ))
+        });
+        match remove(&paths, Path::new(&k.files.dir), trash.as_deref()) {
+            Ok((moved, bytes)) => {
+                if let Some(dir) = &trash {
+                    let until = now
+                        .checked_add(
+                            jiff::SignedDuration::try_from(source.cleanup.trash_for.0)
+                                .unwrap_or(jiff::SignedDuration::ZERO),
+                        )
+                        .unwrap_or(now);
+                    items::add_trash(
+                        &state.conn,
+                        &items::Trashed {
+                            id: 0,
+                            source_key: source.key.clone(),
+                            video_id: k.video_id.clone(),
+                            dir: dir.display().to_string(),
+                            files: moved,
+                            bytes,
+                            reason: reason.to_string(),
+                            trashed_at: now.to_string(),
+                            delete_after: until.to_string(),
+                        },
+                    )?;
+                    self.trashed = true;
+                }
+                items::mark_cleaned_up(
+                    &state.conn,
+                    &source.key,
+                    &k.video_id,
+                    &reason.to_string(),
+                    now,
+                )?;
+                let how = if trash.is_some() {
+                    "to the trash"
+                } else {
+                    "deleted"
+                };
+                writeln!(
+                    out,
+                    "{label}: {how} ({reason}), {}",
+                    crate::download::human_bytes(bytes)
+                )?;
+                self.removed += 1;
+                self.freed += bytes;
+            }
+            Err(e) => {
+                self.failed += 1;
+                writeln!(out, "{label}: {e}")?;
+            }
+        }
+        Ok(())
+    }
+
+    /// The last line: what was (or would be) removed.
+    fn summary(&self, dry_run: bool) -> String {
+        use crate::download::human_bytes;
+
+        let (removed, failed) = (self.removed, self.failed);
+        let videos = if removed == 1 { "video" } else { "videos" };
+        if removed == 0 && failed == 0 {
+            "nothing to clean up".to_string()
+        } else if dry_run {
+            format!(
+                "would remove {removed} {videos} ({})",
+                human_bytes(self.freed)
+            )
+        } else {
+            let mut line = format!("removed {removed} {videos} ({})", human_bytes(self.freed));
+            if failed > 0 {
+                let _ = write!(line, "; {failed} couldn't be removed");
+            }
+            if self.trashed {
+                line.push_str("; `tidepool trash restore <video_id>` brings one back");
+            }
+            line
+        }
+    }
+}
+
+/// A source's downloaded videos as cleanup sees them.
+fn cleanup_candidates(
+    source: &EffectiveSource,
+    kept: &[crate::state::items::Kept],
+    details: &std::collections::HashMap<String, crate::index::RemoteItem>,
+    rules: &RuleSet,
+) -> Vec<crate::cleanup::Candidate> {
+    let marker = &source.cleanup.marker_file;
+    kept.iter()
+        .map(|k| {
+            let video = details.get(&k.video_id);
+            let unmatched = video.and_then(|v| match rules.decide(&Fields::from_item(v)) {
+                crate::filter::Decision::Keep { .. }
+                | crate::filter::Decision::Deferred { .. }
+                | crate::filter::Decision::FilterError { .. } => None,
+                other => Some(other.to_string()),
+            });
+            crate::cleanup::Candidate {
+                video_id: k.video_id.clone(),
+                position: k.position,
+                bytes: k.media_bytes,
+                downloaded_at: k.downloaded_at,
+                published_at: video.and_then(|v| v.published_at),
+                present: !k.files.is_removed("media") && Path::new(&k.files.media).exists(),
+                unmatched,
+                marked: !marker.is_empty() && Path::new(&k.files.dir).join(marker).exists(),
+            }
+        })
+        .collect()
+}
+
+/// `tidepool cleanup --dry-run`'s line for a source: how many videos would
+/// go and how many stay.
+fn cleanup_tally(
+    key: &str,
+    kept: &[crate::state::items::Kept],
+    candidates: &[crate::cleanup::Candidate],
+    victims: &[(usize, crate::cleanup::Reason)],
+) -> String {
+    use crate::download::human_bytes;
+
+    format!(
+        "{key}: {} {}: {}, {} stay ({})",
+        kept.len(),
+        if kept.len() == 1 { "video" } else { "videos" },
+        if victims.is_empty() {
+            "none would be removed".to_string()
+        } else {
+            format!(
+                "{} would be removed ({})",
+                victims.len(),
+                human_bytes(victims.iter().map(|(i, _)| kept[*i].media_bytes).sum())
+            )
+        },
+        kept.len() - victims.len(),
+        human_bytes(
+            (0..kept.len())
+                .filter(|i| candidates[*i].present && !victims.iter().any(|(v, _)| v == i))
+                .map(|i| kept[i].media_bytes)
+                .sum()
+        )
+    )
+}
+
+/// A tool as `tidepool tools` describes it.
+struct ToolInfo<'a> {
+    tool: crate::tools::manager::Tool,
+    /// tidepool installs and updates it.
+    is_managed: bool,
+    /// Your own path to it.
+    path: &'a str,
+    update_check: std::time::Duration,
+    /// What it's for.
+    what: String,
+    /// Its `[tools.*]` table.
+    table: &'static str,
+}
+
+impl<'a> ToolInfo<'a> {
+    fn new(tools: &'a crate::config::types::ToolsConfig, name: crate::cli::ToolName) -> Self {
+        use crate::cli::ToolName;
+        use crate::tools::manager::Tool;
+
+        match name {
+            ToolName::Ytdlp => Self {
+                tool: Tool::Ytdlp(tools.ytdlp.channel),
+                is_managed: tools.ytdlp.managed,
+                path: tools.ytdlp.path.as_str(),
+                update_check: tools.ytdlp.update_check.0,
+                what: format!("{} channel", tools.ytdlp.channel.as_str()),
+                table: "yt-dlp",
+            },
+            ToolName::Deno => Self {
+                tool: Tool::Deno,
+                is_managed: tools.deno.managed,
+                path: tools.deno.path.as_str(),
+                update_check: tools.deno.update_check.0,
+                what: "2.x, the JavaScript runtime yt-dlp needs for YouTube".to_string(),
+                table: "deno",
+            },
+        }
+    }
+}
+
+/// `tidepool tools status` for one tool.
+fn print_tool_status(
+    manager: &crate::tools::manager::Manager,
+    info: &ToolInfo<'_>,
+    out: &mut dyn Write,
+) -> std::io::Result<()> {
+    use crate::tools::manager::Tool;
+
+    let when = |t: jiff::Timestamp| t.strftime("%Y-%m-%d %H:%M:%S UTC").to_string();
+    let ToolInfo {
+        tool,
+        path,
+        table,
+        what,
+        ..
+    } = info;
+    let label = tool.name();
+    if !info.is_managed {
+        match crate::tools::manager::tool_version(Path::new(path)) {
+            Ok(line) => {
+                // yt-dlp prints "2026.10.01"; Deno "deno 2.9.8 (…)".
+                let version = match tool {
+                    Tool::Deno => line.split_whitespace().nth(1).unwrap_or(&line),
+                    Tool::Ytdlp(_) => &line,
+                };
+                writeln!(
+                    out,
+                    "{label} {version} at {path} (your own; tidepool doesn't update it)"
+                )?;
+            }
+            Err(e) => writeln!(
+                out,
+                "{label}: cannot run {path:?} (tools.{table}.path): {e}"
+            )?,
+        }
+        return Ok(());
+    }
+    let binary = manager.binary(*tool);
+    let Some(state) = manager.state(*tool).filter(|_| binary.exists()) else {
+        return writeln!(
+            out,
+            "{label} isn't downloaded yet (managed, {what}); it's downloaded on \
+             first use, or run `tidepool tools update {table}`"
+        );
+    };
+    writeln!(out, "{label} {} (managed, {what})", state.version)?;
+    writeln!(out, "  path: {}", binary.display())?;
+    writeln!(out, "  installed: {}", when(state.installed_at))?;
+    writeln!(
+        out,
+        "  last update check: {} (checks every {})",
+        when(state.last_check_at),
+        crate::config::types::format_duration(info.update_check)
+    )?;
+    if let Some(previous) = &state.previous_version {
+        writeln!(
+            out,
+            "  previous version: {previous} (`tidepool tools rollback {table}` restores it)"
+        )?;
+    }
+    if let Some(skipped) = &state.skip_version {
+        writeln!(
+            out,
+            "  {skipped} was rolled back; staying on {} until a newer release",
+            state.version
+        )?;
+    }
+    Ok(())
+}
+
+/// `tidepool config check`: validate the stored config `current`, and say
+/// whether the file `name` (`text`, `file` when it loads) matches it.
+/// Returns it loaded; an invalid one is added to `invalid`.
+fn check_stored_config(
+    current: &Revision,
+    name: &str,
+    text: Option<&str>,
+    file: Option<&Loaded>,
+    invalid: &mut Vec<String>,
+) -> Option<Loaded> {
+    let label = format!("config revision {}", current.rev);
+    let loaded = match load_str(&label, &current.toml) {
+        Ok(loaded) => Some(loaded),
+        Err(err) => {
+            tracing::error!(
+                "the stored config (revision {}) no longer loads with this tidepool:\n{err}\n\
+                 fix it in your config file and run `tidepool config import`",
+                current.rev
+            );
+            invalid.push(format!("the stored config (revision {})", current.rev));
+            None
+        }
+    };
+    let same = text.is_some_and(|text| {
+        crate::config::store::hash(text) == current.source_hash
+            || file.is_some_and(|f| loaded.is_some() && f.normalized() == current.json)
+    });
+    if same {
+        if loaded.is_some() {
+            tracing::debug!(
+                "the stored config (revision {}) is valid and matches {name}",
+                current.rev
+            );
+        }
+    } else if text.is_some() {
+        tracing::warn!(
+            "{name} and the stored config (revision {}) differ: run `tidepool config import` \
+             to apply it (`tidepool config diff` shows what changed)",
+            current.rev
+        );
+    }
+    loaded
+}
+
+/// `tidepool clean-titles`' last line: how many were renamed, already
+/// clean, or failed.
+fn clean_titles_summary(dry_run: bool, renamed: usize, unchanged: usize, failed: usize) -> String {
+    let videos = if renamed == 1 { "video" } else { "videos" };
+    let verb = if dry_run { "would rename" } else { "renamed" };
+    format!(
+        "{verb} {renamed} {videos}; {unchanged} already clean{}",
+        if failed > 0 {
+            format!("; {failed} failed")
+        } else {
+            String::new()
+        }
+    )
+}
+
+/// The position in its source a video's metadata file records.
+fn source_position(meta: &Value) -> u32 {
+    meta["source"]["position"]
+        .as_u64()
+        .and_then(|p| u32::try_from(p).ok())
+        .unwrap_or(0)
+}
+
+/// A video's metadata with its new title (keeping YouTube's as the
+/// original) and its files' new places.
+fn retitled_metadata(
+    meta: &Value,
+    cleaned: &str,
+    youtube: &str,
+    new: &crate::state::items::VideoFiles,
+) -> Value {
+    let mut meta = meta.clone();
+    meta["title"] = cleaned.into();
+    if meta["original"]["title"].is_null() {
+        if !meta["original"].is_object() {
+            meta["original"] = serde_json::json!({});
+        }
+        meta["original"]["title"] = youtube.into();
+    }
+    meta["files"] = crate::download::metadata::files_json(new);
+    meta
+}
+
+/// Move a retitled video's media, cover, subtitles and raw info to their new
+/// places, then write its metadata file at its new place. All or nothing:
+/// on failure, what moved is put back, and the error says why (`skipped:` or
+/// `failed:`).
+fn move_retitled(
+    files: &crate::state::items::VideoFiles,
+    new: &crate::state::items::VideoFiles,
+    metadata_dest: &Path,
+    meta: &Value,
+) -> Result<(), String> {
+    let mut moves: Vec<(PathBuf, PathBuf)> = Vec::new();
+    let mut pairs: Vec<(Option<&String>, Option<&String>)> = vec![
+        (Some(&files.media), Some(&new.media)),
+        (files.cover.as_ref(), new.cover.as_ref()),
+        (files.raw_info.as_ref(), new.raw_info.as_ref()),
+    ];
+    for (old, now) in files.subtitles.iter().zip(&new.subtitles) {
+        pairs.push((Some(&old.path), Some(&now.path)));
+    }
+    for (old, now) in pairs {
+        if let (Some(old), Some(now)) = (old, now)
+            && old != now
+            && Path::new(old).exists()
+        {
+            moves.push((PathBuf::from(old), PathBuf::from(now)));
+        }
+    }
+    if let Some((_, taken)) = moves.iter().find(|(_, to)| to.exists()) {
+        return Err(format!("skipped: {} already exists", taken.display()));
+    }
+    if files.metadata != new.metadata && metadata_dest.exists() {
+        return Err(format!(
+            "skipped: {} already exists",
+            metadata_dest.display()
+        ));
+    }
+    let mut done: Vec<(PathBuf, PathBuf)> = Vec::new();
+    let mut problem = None;
+    for (from, to) in &moves {
+        match crate::download::place(from, to) {
+            Ok(()) => done.push((from.clone(), to.clone())),
+            Err(e) => {
+                problem = Some(format!("cannot move {}: {e}", from.display()));
+                break;
+            }
+        }
+    }
+    if problem.is_none() {
+        let text = serde_json::to_string_pretty(meta).expect("JSON") + "\n";
+        if let Err(e) = std::fs::create_dir_all(metadata_dest.parent().unwrap_or(Path::new("/")))
+            .and_then(|()| std::fs::write(metadata_dest, text))
+        {
+            problem = Some(format!("cannot write {}: {e}", metadata_dest.display()));
+        }
+    }
+    if let Some(problem) = problem {
+        // Put back what moved.
+        for (from, to) in done.iter().rev() {
+            let _ = crate::download::place(to, from);
+        }
+        return Err(format!("failed: {problem}"));
+    }
+    if files.metadata != new.metadata {
+        let _ = std::fs::remove_file(&files.metadata);
+    }
+    if files.dir != new.dir {
+        let _ = std::fs::remove_dir(&files.dir);
+    }
+    Ok(())
+}
+
 /// Everything stored about a known video, and each rule's verdict in each
 /// source it's in (or only in `only`). `false` when tidepool doesn't know it.
 pub(crate) fn explain_video(
@@ -2991,8 +3242,10 @@ pub(crate) fn explain_video(
         let status = statuses
             .iter()
             .find(|(key, _)| *key == source.key)
-            .map(|(_, status)| status.replace('_', " "))
-            .unwrap_or_else(|| "not in this source".into());
+            .map_or_else(
+                || "not in this source".into(),
+                |(_, status)| status.replace('_', " "),
+            );
         writeln!(out, "\nsource {} ({status})", source.key)?;
         write_rules(out, &rules, &Fields::from_item(item))?;
     }
@@ -3003,26 +3256,22 @@ pub(crate) fn explain_video(
 fn describe_video(out: &mut dyn Write, item: &crate::index::RemoteItem) -> std::io::Result<()> {
     writeln!(out, "{} “{}”", item.video_id, item.title)?;
     let unknown = || "not known yet".to_string();
-    let kind = item
-        .kind
-        .map(|k| k.as_str().to_string())
-        .unwrap_or_else(|| "not known yet (checked before download)".into());
+    let kind = item.kind.map_or_else(
+        || "not known yet (checked before download)".into(),
+        |k| k.as_str().to_string(),
+    );
     // 4m26s, 1h2m3s.
-    let duration = item
-        .duration
-        .map(|d| {
-            let (h, m, s) = (d / 3600, d % 3600 / 60, d % 60);
-            match (h, m) {
-                (0, 0) => format!("{s}s"),
-                (0, _) => format!("{m}m{s}s"),
-                _ => format!("{h}h{m}m{s}s"),
-            }
-        })
-        .unwrap_or_else(unknown);
+    let duration = item.duration.map_or_else(unknown, |d| {
+        let (h, m, s) = (d / 3600, d % 3600 / 60, d % 60);
+        match (h, m) {
+            (0, 0) => format!("{s}s"),
+            (0, _) => format!("{m}m{s}s"),
+            _ => format!("{h}h{m}m{s}s"),
+        }
+    });
     let published = item
         .published_at
-        .map(|t| t.strftime("%Y-%m-%d").to_string())
-        .unwrap_or_else(unknown);
+        .map_or_else(unknown, |t| t.strftime("%Y-%m-%d").to_string());
     writeln!(
         out,
         "  channel: {}",
@@ -3085,6 +3334,10 @@ fn write_rules(out: &mut dyn Write, rules: &RuleSet, item: &Fields<'_>) -> std::
 }
 
 /// Find the configured source a `--source` value refers to.
+///
+/// # Errors
+///
+/// A [`UsageError`] if no configured source has that key or ID.
 pub fn resolve_source<'a>(
     r: &SourceRef,
     sources: &'a [EffectiveSource],
@@ -3139,8 +3392,7 @@ fn replace_private_file(path: &Path, text: &str) -> anyhow::Result<()> {
 fn write_backup(path: &Path, text: &str, now: jiff::Timestamp) -> anyhow::Result<PathBuf> {
     let stem = path
         .file_stem()
-        .map(|s| s.to_string_lossy().into_owned())
-        .unwrap_or_else(|| "config".into());
+        .map_or_else(|| "config".into(), |s| s.to_string_lossy().into_owned());
     let stamp = now.strftime("%Y%m%dT%H%M%SZ").to_string();
     for n in 1.. {
         let suffix = if n == 1 {
@@ -3168,7 +3420,7 @@ fn colorize_diff(diff: &str) -> String {
         return diff.to_string();
     }
     diff.split_inclusive('\n')
-        .map(|line| {
+        .fold(String::with_capacity(diff.len()), |mut out, line| {
             let color = if line.starts_with("+++") || line.starts_with("---") {
                 "1"
             } else if line.starts_with('+') {
@@ -3178,13 +3430,14 @@ fn colorize_diff(diff: &str) -> String {
             } else if line.starts_with("@@") {
                 "36"
             } else {
-                return line.to_string();
+                out.push_str(line);
+                return out;
             };
             let body = line.trim_end_matches('\n');
             let end = &line[body.len()..];
-            format!("\x1b[{color}m{body}\x1b[0m{end}")
+            let _ = write!(out, "\x1b[{color}m{body}\x1b[0m{end}");
+            out
         })
-        .collect()
 }
 
 /// `-v`: which yt-dlp runs.

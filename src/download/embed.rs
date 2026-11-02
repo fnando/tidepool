@@ -2,6 +2,7 @@
 //! one ffmpeg stream-copy pass (no re-encoding).
 
 use std::collections::BTreeMap;
+use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -15,7 +16,7 @@ use super::thumbnail::{self, CoverFormat};
 /// What the container can hold.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Container {
-    /// mp4, m4v, mov: cover as an attached picture, subtitles as mov_text.
+    /// mp4, m4v, mov: cover as an attached picture, subtitles as `mov_text`.
     Mp4,
     /// m4a: cover as an attached picture, no subtitles.
     M4a,
@@ -72,6 +73,10 @@ pub struct Request<'a> {
 
 /// What ended up in the file, recorded in metadata.json.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "four independent flags, serialized as such into metadata.json and read field by field in app.rs"
+)]
 pub struct Embedded {
     pub metadata: bool,
     pub cover: bool,
@@ -80,6 +85,7 @@ pub struct Embedded {
 }
 
 impl Embedded {
+    #[must_use]
     pub fn any(&self) -> bool {
         self.metadata || self.cover || self.chapters || self.subtitles
     }
@@ -98,6 +104,12 @@ pub struct Output {
 
 /// Run ffmpeg to write a copy of `request.media` with everything embedded.
 /// Nothing to embed (or nothing the container can hold) returns `Ok(None)`.
+///
+/// # Errors
+///
+/// Returns a message when ffprobe or ffmpeg can't be run or fail (including
+/// when stopping starts), a cover or chapters file can't be written, or the
+/// new file is missing streams the original had.
 pub async fn embed(
     ffmpeg: &Path,
     ffprobe: &Path,
@@ -125,259 +137,31 @@ pub async fn embed(
         .unwrap_or_default();
     let container = Container::from_extension(&ext);
     let dir = request.media.parent().unwrap_or(Path::new("."));
-    let mut skipped = Vec::new();
-    let mut embedded = Embedded::default();
     let before = probe(ffprobe, request.media, &run).await?;
 
-    // What this pass replaces: a file embedded before (or reprocessed) keeps
-    // one cover, one set of subtitles and chapters, and exactly the given
-    // tags, instead of piling them up.
-    let new_cover = request.cover.is_some()
-        && matches!(
-            container,
-            Container::Mp4 | Container::M4a | Container::Audio | Container::Matroska
-        );
-    let new_subtitles = request.subtitles.iter().any(|(path, _)| {
-        let sub_ext = path
-            .extension()
-            .map(|e| e.to_string_lossy().to_ascii_lowercase())
-            .unwrap_or_default();
-        container.takes_subtitle(&sub_ext)
-    });
-    let new_chapters = !request.chapters.is_empty();
-    let remove = &request.remove;
-    let removed = Embedded {
-        cover: remove.cover
-            && !new_cover
-            && (before.pictures > 0 || before.image_attachments() > 0),
-        subtitles: remove.subtitles && !new_subtitles && before.subtitle > 0,
-        chapters: remove.chapters && !new_chapters && before.chapters > 0,
-        metadata: remove.metadata && request.tags.is_empty() && before.tags > 0,
-    };
-    let drop_cover = new_cover || removed.cover;
-    let drop_chapters = new_chapters || removed.chapters;
-    // Matroska keeps a cover as an attachment, but ffmpeg reads it as a
-    // picture stream and would write it back as a video track: a cover that
-    // stays is copied out and attached again.
-    let keep_mkv_cover = container == Container::Matroska && !drop_cover && before.pictures > 0;
-    let mut kept = before.real_video + before.audio;
-    let mut inputs: Vec<Vec<String>> = vec![vec!["-i".into(), path_arg(request.media)]];
-    let mut args: Vec<String> = Vec::new();
-    let mut map = |spec: &str| args.extend(["-map".into(), format!("0:{spec}?")]);
-    if drop_cover || keep_mkv_cover {
-        map("V"); // video without attached pictures
-    } else {
-        map("v");
-        kept += before.pictures;
-    }
-    map("a");
-    if !(new_subtitles || removed.subtitles) {
-        map("s");
-        kept += before.subtitle;
-    }
-    // mp4 stores chapters as a data track; new chapters bring their own.
-    if !(drop_chapters && matches!(container, Container::Mp4 | Container::M4a)) {
-        map("d");
-        kept += before.data;
-    }
-    // Attachments this pass keeps; new ones are numbered after them.
-    let mut attachments = 0;
-    if drop_cover && before.image_attachments() > 0 {
-        // A Matroska cover is an image attachment: keep the others (fonts…).
-        for (n, _) in before
-            .attachments
-            .iter()
-            .enumerate()
-            .filter(|(_, image)| !**image)
-        {
-            map(&format!("t:{n}"));
-            attachments += 1;
-        }
-    } else {
-        map("t");
-        attachments = before.attachments.len();
-    }
-    kept += attachments;
-    if removed.chapters {
-        args.extend(["-map_chapters".into(), "-1".into()]);
-    }
-    if !request.tags.is_empty() || removed.metadata {
-        // Exactly the given tags: drop the file's global ones (stream and
-        // chapter metadata stay).
-        args.extend(["-map_metadata:g".into(), "-1".into()]);
-        if container == Container::Other {
-            // ogg/opus keep tags as Vorbis comments on the audio stream.
-            args.extend(["-map_metadata:s:a".into(), "-1".into()]);
-        }
-    }
-    let mut added = 0;
+    let replaced = Replaced::new(request, container, &before);
+    let mut pass = Pass::keeping(request, container, &before, &replaced);
+    pass.add_cover(request, container, &before, dir, &ext)?;
+    pass.add_subtitles(request, container, &ext);
+    pass.add_chapters(request, dir)?;
+    pass.add_tags(request, &before);
 
-    // Cover.
-    if let Some((cover, format)) = request.cover {
-        match container {
-            Container::Mp4 | Container::M4a | Container::Audio => {
-                // These containers take JPEG or PNG only.
-                let cover = if format == CoverFormat::Webp {
-                    let bytes = std::fs::read(cover).map_err(|e| e.to_string())?;
-                    let (jpg, _) =
-                        thumbnail::convert(bytes, image::ImageFormat::WebP, CoverFormat::Jpg)?;
-                    let path = dir.join("embed-cover.jpg");
-                    std::fs::write(&path, jpg).map_err(|e| e.to_string())?;
-                    path
-                } else {
-                    cover.to_path_buf()
-                };
-                let index = inputs.len();
-                inputs.push(vec!["-i".into(), path_arg(&cover)]);
-                args.extend(["-map".into(), index.to_string()]);
-                args.extend([
-                    format!("-disposition:v:{}", before.real_video),
-                    "attached_pic".into(),
-                ]);
-                added += 1;
-                embedded.cover = true;
-            }
-            Container::Matroska => {
-                let (mime, name) = match format {
-                    CoverFormat::Jpg => ("image/jpeg", "cover.jpg"),
-                    CoverFormat::Png => ("image/png", "cover.png"),
-                    CoverFormat::Webp => ("image/webp", "cover.webp"),
-                };
-                args.extend(attach(cover, mime, name, attachments));
-                attachments += 1;
-                added += 1;
-                embedded.cover = true;
-            }
-            Container::Webm | Container::Other => skipped.push(format!(
-                "the cover (a .{ext} file can't hold one; it's still saved as cover_file)"
-            )),
-        }
-    }
-
-    // Subtitles.
-    let mut subtitle_index = 0;
-    for (path, lang) in &request.subtitles {
-        let sub_ext = path
-            .extension()
-            .map(|e| e.to_string_lossy().to_ascii_lowercase())
-            .unwrap_or_default();
-        if !container.takes_subtitle(&sub_ext) {
-            skipped.push(format!(
-                "{lang} subtitles (a .{ext} file can't hold .{sub_ext} subtitles; they're still saved as subtitle_file)"
-            ));
-            continue;
-        }
-        let index = inputs.len();
-        inputs.push(vec!["-i".into(), path_arg(path)]);
-        args.extend(["-map".into(), format!("{index}:s")]);
-        args.extend([
-            format!("-metadata:s:s:{subtitle_index}"),
-            format!("language={lang}"),
-        ]);
-        subtitle_index += 1;
-        added += 1;
-        embedded.subtitles = true;
-    }
-
-    // Chapters, through an ffmetadata file.
-    if !request.chapters.is_empty() {
-        let path = dir.join("embed-chapters.txt");
-        std::fs::write(&path, ffmetadata(request.chapters)).map_err(|e| e.to_string())?;
-        let index = inputs.len();
-        inputs.push(vec![
-            "-f".into(),
-            "ffmetadata".into(),
-            "-i".into(),
-            path_arg(&path),
-        ]);
-        args.extend(["-map_chapters".into(), index.to_string()]);
-        embedded.chapters = true;
-    }
-
-    // Tags.
-    for (key, value) in &request.tags {
-        args.extend(["-metadata".into(), format!("{key}={value}")]);
-        embedded.metadata = true;
-    }
-    // Tags to clear, wherever the file has them.
-    for key in &request.clear {
-        let name = key.to_ascii_lowercase();
-        let global = before.tag_names.contains(&name);
-        let streams = before.stream_tag_names.contains(&name);
-        if global {
-            args.extend(["-metadata".into(), format!("{key}=")]);
-        }
-        if streams {
-            args.extend(["-metadata:s".into(), format!("{key}=")]);
-        }
-        if global || streams {
-            embedded.metadata = true;
-        }
-    }
-
-    if !embedded.any() && !removed.any() {
+    if !pass.embedded.any() && !replaced.removed.any() {
         return Ok(None);
     }
-    if keep_mkv_cover && let Some((index, codec)) = &before.first_picture {
-        let (ext, mime) = if codec == "png" {
-            ("png", "image/png")
-        } else {
-            ("jpg", "image/jpeg")
-        };
-        let kept_cover = dir.join(format!("kept-cover.{ext}"));
-        let copied = run(
-            ffmpeg,
-            ["-hide_banner", "-nostdin", "-loglevel", "error", "-y", "-i"]
-                .into_iter()
-                .map(Into::into)
-                .chain([
-                    path_arg(request.media).into(),
-                    "-map".into(),
-                    format!("0:{index}").into(),
-                    "-c".into(),
-                    "copy".into(),
-                    "-frames:v".into(),
-                    "1".into(),
-                    path_arg(&kept_cover).into(),
-                ])
-                .collect(),
-        )
-        .await?;
-        if !copied.status.success() {
-            return Err(format!(
-                "cannot copy the cover out of {}: {}",
-                request.media.display(),
-                String::from_utf8_lossy(&copied.stderr).trim()
-            ));
-        }
-        args.extend(attach(
-            &kept_cover,
-            mime,
-            &format!("cover.{ext}"),
-            attachments,
-        ));
-        kept += 1;
+    if replaced.keep_mkv_cover
+        && let Some((index, codec)) = &before.first_picture
+    {
+        let (kept_cover, mime) =
+            copy_cover_out(ffmpeg, request.media, dir, *index, codec, &run).await?;
+        let name = format!("cover.{}", if mime == "image/png" { "png" } else { "jpg" });
+        pass.args
+            .extend(attach(&kept_cover, mime, &name, pass.attachments));
+        pass.kept += 1;
     }
 
-    args.extend(["-c".into(), "copy".into()]);
-    if container == Container::Mp4 && embedded.subtitles {
-        args.extend(["-c:s".into(), "mov_text".into()]);
-    }
-    if ext.eq_ignore_ascii_case("mp3") {
-        args.extend(["-id3v2_version".into(), "3".into()]);
-    }
     let output = dir.join(format!("embedded.{ext}"));
-    let mut command: Vec<String> = vec![
-        "-hide_banner".into(),
-        "-nostdin".into(),
-        "-loglevel".into(),
-        "error".into(),
-        "-y".into(),
-    ];
-    command.extend(inputs.into_iter().flatten());
-    command.extend(args);
-    command.push(path_arg(&output));
-
+    let command = pass.command(container, &ext, &output);
     let result = match run(ffmpeg, command.into_iter().map(Into::into).collect()).await {
         Ok(result) => result,
         Err(e) => {
@@ -397,38 +181,381 @@ pub async fn embed(
         let _ = std::fs::remove_file(&output);
     })?;
     // mp4 stores chapters as an extra text track, so more is fine.
-    if after.total < kept + added {
+    if after.total < pass.kept + pass.added {
         let _ = std::fs::remove_file(&output);
         return Err(format!(
             "the embedded file has {} streams instead of {}",
             after.total,
-            kept + added
+            pass.kept + pass.added
         ));
     }
-    // Containers only keep the tags they know (mp4 drops the rest without
-    // a word); say which didn't make it. ogg/opus keep tags on the audio
-    // stream, where they're all kept.
-    if container != Container::Other {
-        for key in request.tags.keys() {
-            if !after.tag_names.contains(&key.to_ascii_lowercase()) {
-                skipped.push(format!("tag {key} (a .{ext} file can't hold it)"));
+    pass.report_lost_tags(request, container, &ext, &after);
+    Ok(Some(Output {
+        path: output,
+        embedded: pass.embedded,
+        removed: replaced.removed,
+        skipped: pass.skipped,
+    }))
+}
+
+/// What a pass replaces: a file embedded before (or reprocessed) keeps one
+/// cover, one set of subtitles and chapters, and exactly the given tags,
+/// instead of piling them up.
+struct Replaced {
+    /// What's taken out without being replaced.
+    removed: Embedded,
+    /// What of the file's goes: replaced or removed.
+    dropped: Embedded,
+    /// Matroska keeps a cover as an attachment, but ffmpeg reads it as a
+    /// picture stream and would write it back as a video track: a cover that
+    /// stays is copied out and attached again.
+    keep_mkv_cover: bool,
+}
+
+impl Replaced {
+    fn new(request: &Request<'_>, container: Container, before: &Streams) -> Self {
+        let new_cover = request.cover.is_some()
+            && matches!(
+                container,
+                Container::Mp4 | Container::M4a | Container::Audio | Container::Matroska
+            );
+        let new_subtitles = request.subtitles.iter().any(|(path, _)| {
+            let sub_ext = path
+                .extension()
+                .map(|e| e.to_string_lossy().to_ascii_lowercase())
+                .unwrap_or_default();
+            container.takes_subtitle(&sub_ext)
+        });
+        let new_chapters = !request.chapters.is_empty();
+        let remove = &request.remove;
+        let removed = Embedded {
+            cover: remove.cover
+                && !new_cover
+                && (before.pictures > 0 || before.image_attachments() > 0),
+            subtitles: remove.subtitles && !new_subtitles && before.subtitle > 0,
+            chapters: remove.chapters && !new_chapters && before.chapters > 0,
+            metadata: remove.metadata && request.tags.is_empty() && before.tags > 0,
+        };
+        let dropped = Embedded {
+            cover: new_cover || removed.cover,
+            subtitles: new_subtitles || removed.subtitles,
+            chapters: new_chapters || removed.chapters,
+            metadata: !request.tags.is_empty() || removed.metadata,
+        };
+        Self {
+            keep_mkv_cover: container == Container::Matroska
+                && !dropped.cover
+                && before.pictures > 0,
+            removed,
+            dropped,
+        }
+    }
+}
+
+/// The ffmpeg command one pass builds, and what it puts in the file.
+#[derive(Default)]
+struct Pass {
+    /// Each input's arguments (`-i <file>`, with any format options).
+    inputs: Vec<Vec<String>>,
+    /// Mapping, metadata and attachment arguments.
+    args: Vec<String>,
+    /// Streams kept from the original file.
+    kept: usize,
+    /// Streams added to it.
+    added: usize,
+    /// Attachments in the output so far; new ones are numbered after them.
+    attachments: usize,
+    embedded: Embedded,
+    skipped: Vec<String>,
+}
+
+impl Pass {
+    /// Start with the streams of `request.media` this pass keeps.
+    fn keeping(
+        request: &Request<'_>,
+        container: Container,
+        before: &Streams,
+        replaced: &Replaced,
+    ) -> Self {
+        let mut pass = Self {
+            inputs: vec![vec!["-i".into(), path_arg(request.media)]],
+            kept: before.real_video + before.audio,
+            ..Self::default()
+        };
+        let args = &mut pass.args;
+        let map = |args: &mut Vec<String>, spec: &str| {
+            args.extend(["-map".into(), format!("0:{spec}?")]);
+        };
+        if replaced.dropped.cover || replaced.keep_mkv_cover {
+            map(args, "V"); // video without attached pictures
+        } else {
+            map(args, "v");
+            pass.kept += before.pictures;
+        }
+        map(args, "a");
+        if !replaced.dropped.subtitles {
+            map(args, "s");
+            pass.kept += before.subtitle;
+        }
+        // mp4 stores chapters as a data track; new chapters bring their own.
+        if !(replaced.dropped.chapters && matches!(container, Container::Mp4 | Container::M4a)) {
+            map(args, "d");
+            pass.kept += before.data;
+        }
+        if replaced.dropped.cover && before.image_attachments() > 0 {
+            // A Matroska cover is an image attachment: keep the others (fonts…).
+            for (n, _) in before
+                .attachments
+                .iter()
+                .enumerate()
+                .filter(|(_, image)| !**image)
+            {
+                map(args, &format!("t:{n}"));
+                pass.attachments += 1;
+            }
+        } else {
+            map(args, "t");
+            pass.attachments = before.attachments.len();
+        }
+        pass.kept += pass.attachments;
+        if replaced.removed.chapters {
+            args.extend(["-map_chapters".into(), "-1".into()]);
+        }
+        if replaced.dropped.metadata {
+            // Exactly the given tags: drop the file's global ones (stream and
+            // chapter metadata stay).
+            args.extend(["-map_metadata:g".into(), "-1".into()]);
+            if container == Container::Other {
+                // ogg/opus keep tags as Vorbis comments on the audio stream.
+                args.extend(["-map_metadata:s:a".into(), "-1".into()]);
+            }
+        }
+        pass
+    }
+
+    /// Add the cover: an attached picture, or an attachment in Matroska.
+    fn add_cover(
+        &mut self,
+        request: &Request<'_>,
+        container: Container,
+        before: &Streams,
+        dir: &Path,
+        ext: &str,
+    ) -> Result<(), String> {
+        let Some((cover, format)) = request.cover else {
+            return Ok(());
+        };
+        match container {
+            Container::Mp4 | Container::M4a | Container::Audio => {
+                // These containers take JPEG or PNG only.
+                let cover = if format == CoverFormat::Webp {
+                    let bytes = std::fs::read(cover).map_err(|e| e.to_string())?;
+                    let (jpg, _) =
+                        thumbnail::convert(bytes, image::ImageFormat::WebP, CoverFormat::Jpg)?;
+                    let path = dir.join("embed-cover.jpg");
+                    std::fs::write(&path, jpg).map_err(|e| e.to_string())?;
+                    path
+                } else {
+                    cover.to_path_buf()
+                };
+                let index = self.inputs.len();
+                self.inputs.push(vec!["-i".into(), path_arg(&cover)]);
+                self.args.extend(["-map".into(), index.to_string()]);
+                self.args.extend([
+                    format!("-disposition:v:{}", before.real_video),
+                    "attached_pic".into(),
+                ]);
+                self.added += 1;
+                self.embedded.cover = true;
+            }
+            Container::Matroska => {
+                let (mime, name) = match format {
+                    CoverFormat::Jpg => ("image/jpeg", "cover.jpg"),
+                    CoverFormat::Png => ("image/png", "cover.png"),
+                    CoverFormat::Webp => ("image/webp", "cover.webp"),
+                };
+                self.args
+                    .extend(attach(cover, mime, name, self.attachments));
+                self.attachments += 1;
+                self.added += 1;
+                self.embedded.cover = true;
+            }
+            Container::Webm | Container::Other => self.skipped.push(format!(
+                "the cover (a .{ext} file can't hold one; it's still saved as cover_file)"
+            )),
+        }
+        Ok(())
+    }
+
+    /// Add the subtitles the container can hold.
+    fn add_subtitles(&mut self, request: &Request<'_>, container: Container, ext: &str) {
+        let mut subtitle_index = 0;
+        for (path, lang) in &request.subtitles {
+            let sub_ext = path
+                .extension()
+                .map(|e| e.to_string_lossy().to_ascii_lowercase())
+                .unwrap_or_default();
+            if !container.takes_subtitle(&sub_ext) {
+                self.skipped.push(format!(
+                    "{lang} subtitles (a .{ext} file can't hold .{sub_ext} subtitles; they're still saved as subtitle_file)"
+                ));
+                continue;
+            }
+            let index = self.inputs.len();
+            self.inputs.push(vec!["-i".into(), path_arg(path)]);
+            self.args.extend(["-map".into(), format!("{index}:s")]);
+            self.args.extend([
+                format!("-metadata:s:s:{subtitle_index}"),
+                format!("language={lang}"),
+            ]);
+            subtitle_index += 1;
+            self.added += 1;
+            self.embedded.subtitles = true;
+        }
+    }
+
+    /// Add the chapters, through an ffmetadata file in `dir`.
+    fn add_chapters(&mut self, request: &Request<'_>, dir: &Path) -> Result<(), String> {
+        if request.chapters.is_empty() {
+            return Ok(());
+        }
+        let path = dir.join("embed-chapters.txt");
+        std::fs::write(&path, ffmetadata(request.chapters)).map_err(|e| e.to_string())?;
+        let index = self.inputs.len();
+        self.inputs.push(vec![
+            "-f".into(),
+            "ffmetadata".into(),
+            "-i".into(),
+            path_arg(&path),
+        ]);
+        self.args
+            .extend(["-map_chapters".into(), index.to_string()]);
+        self.embedded.chapters = true;
+        Ok(())
+    }
+
+    /// Add the tags, and clear the ones to clear wherever the file has them.
+    fn add_tags(&mut self, request: &Request<'_>, before: &Streams) {
+        for (key, value) in &request.tags {
+            self.args
+                .extend(["-metadata".into(), format!("{key}={value}")]);
+            self.embedded.metadata = true;
+        }
+        for key in &request.clear {
+            let name = key.to_ascii_lowercase();
+            let global = before.tag_names.contains(&name);
+            let streams = before.stream_tag_names.contains(&name);
+            if global {
+                self.args.extend(["-metadata".into(), format!("{key}=")]);
+            }
+            if streams {
+                self.args.extend(["-metadata:s".into(), format!("{key}=")]);
+            }
+            if global || streams {
+                self.embedded.metadata = true;
             }
         }
     }
-    // Some containers write a few stream tags on their own (mp4's
-    // handler name): say so when one couldn't be cleared.
-    for key in &request.clear {
-        let name = key.to_ascii_lowercase();
-        if after.tag_names.contains(&name) || after.stream_tag_names.contains(&name) {
-            skipped.push(format!("removing tag {key} (a .{ext} file always has it)"));
+
+    /// The full ffmpeg command line, writing to `output`.
+    fn command(&self, container: Container, ext: &str, output: &Path) -> Vec<String> {
+        let mut command: Vec<String> = vec![
+            "-hide_banner".into(),
+            "-nostdin".into(),
+            "-loglevel".into(),
+            "error".into(),
+            "-y".into(),
+        ];
+        command.extend(self.inputs.iter().flatten().cloned());
+        command.extend(self.args.iter().cloned());
+        command.extend(["-c".into(), "copy".into()]);
+        if container == Container::Mp4 && self.embedded.subtitles {
+            command.extend(["-c:s".into(), "mov_text".into()]);
+        }
+        if ext.eq_ignore_ascii_case("mp3") {
+            command.extend(["-id3v2_version".into(), "3".into()]);
+        }
+        command.push(path_arg(output));
+        command
+    }
+
+    /// Say which tags didn't make it into the new file (`after`).
+    fn report_lost_tags(
+        &mut self,
+        request: &Request<'_>,
+        container: Container,
+        ext: &str,
+        after: &Streams,
+    ) {
+        // Containers only keep the tags they know (mp4 drops the rest without
+        // a word); say which didn't make it. ogg/opus keep tags on the audio
+        // stream, where they're all kept.
+        if container != Container::Other {
+            for key in request.tags.keys() {
+                if !after.tag_names.contains(&key.to_ascii_lowercase()) {
+                    self.skipped
+                        .push(format!("tag {key} (a .{ext} file can't hold it)"));
+                }
+            }
+        }
+        // Some containers write a few stream tags on their own (mp4's
+        // handler name): say so when one couldn't be cleared.
+        for key in &request.clear {
+            let name = key.to_ascii_lowercase();
+            if after.tag_names.contains(&name) || after.stream_tag_names.contains(&name) {
+                self.skipped
+                    .push(format!("removing tag {key} (a .{ext} file always has it)"));
+            }
         }
     }
-    Ok(Some(Output {
-        path: output,
-        embedded,
-        removed,
-        skipped,
-    }))
+}
+
+/// Copy a Matroska file's cover (stream `index`, in `codec`) out of `media`
+/// into `dir`, to attach it again. Returns the copy and its MIME type.
+async fn copy_cover_out<F, Fut>(
+    ffmpeg: &Path,
+    media: &Path,
+    dir: &Path,
+    index: usize,
+    codec: &str,
+    run: &F,
+) -> Result<(PathBuf, &'static str), String>
+where
+    F: Fn(&Path, Vec<std::ffi::OsString>) -> Fut,
+    Fut: std::future::Future<Output = Result<std::process::Output, String>>,
+{
+    let (ext, mime) = if codec == "png" {
+        ("png", "image/png")
+    } else {
+        ("jpg", "image/jpeg")
+    };
+    let kept_cover = dir.join(format!("kept-cover.{ext}"));
+    let copied = run(
+        ffmpeg,
+        ["-hide_banner", "-nostdin", "-loglevel", "error", "-y", "-i"]
+            .into_iter()
+            .map(Into::into)
+            .chain([
+                path_arg(media).into(),
+                "-map".into(),
+                format!("0:{index}").into(),
+                "-c".into(),
+                "copy".into(),
+                "-frames:v".into(),
+                "1".into(),
+                path_arg(&kept_cover).into(),
+            ])
+            .collect(),
+    )
+    .await?;
+    if !copied.status.success() {
+        return Err(format!(
+            "cannot copy the cover out of {}: {}",
+            media.display(),
+            String::from_utf8_lossy(&copied.stderr).trim()
+        ));
+    }
+    Ok((kept_cover, mime))
 }
 
 /// What a file holds, by stream type.
@@ -516,7 +643,10 @@ where
             "video" if picture => {
                 streams.pictures += 1;
                 if streams.first_picture.is_none() {
-                    let index = stream["index"].as_u64().unwrap_or_default() as usize;
+                    let index = stream["index"]
+                        .as_u64()
+                        .and_then(|i| usize::try_from(i).ok())
+                        .unwrap_or_default();
                     let codec = stream["codec_name"].as_str().unwrap_or_default();
                     streams.first_picture = Some((index, codec.to_string()));
                 }
@@ -584,15 +714,24 @@ fn ffmetadata(chapters: &[Chapter]) -> String {
     };
     let mut out = String::from(";FFMETADATA1\n");
     for chapter in chapters {
-        let ms = |s: f64| (s * 1000.0).round() as i64;
-        out.push_str(&format!(
+        let _ = write!(
+            out,
             "[CHAPTER]\nTIMEBASE=1/1000\nSTART={}\nEND={}\ntitle={}\n",
-            ms(chapter.start_time),
-            ms(chapter.end_time),
+            millis(chapter.start_time),
+            millis(chapter.end_time),
             escape(&chapter.title)
-        ));
+        );
     }
     out
+}
+
+/// Seconds as whole milliseconds, rounded.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "std has no checked float-to-int conversion; `as` saturates, far past any chapter time"
+)]
+fn millis(seconds: f64) -> i64 {
+    (seconds * 1000.0).round() as i64
 }
 
 #[cfg(test)]

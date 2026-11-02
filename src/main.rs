@@ -50,5 +50,5 @@ async fn main() -> ExitCode {
             }
         }
     };
-    ExitCode::from(code as u8)
+    ExitCode::from(u8::try_from(code).unwrap_or(1))
 }

@@ -1,6 +1,7 @@
 //! What the web UI and its JSON API show, read from the state DB.
 
 use std::collections::BTreeMap;
+use std::fmt::Write as _;
 
 use rusqlite::Connection;
 use serde::Serialize;
@@ -48,7 +49,7 @@ pub struct SourceInfo {
     pub download: bool,
     pub last_indexed: Option<String>,
     /// Videos per group: downloaded, waiting, skipped, failed, unavailable,
-    /// cleaned_up.
+    /// `cleaned_up`.
     pub counts: BTreeMap<String, i64>,
     pub disk_bytes: u64,
     pub disk: String,
@@ -57,6 +58,7 @@ pub struct SourceInfo {
 }
 
 impl SourceInfo {
+    #[must_use]
     pub fn count(&self, group: &str) -> i64 {
         self.counts.get(group).copied().unwrap_or(0)
     }
@@ -71,6 +73,7 @@ pub struct ProblemInfo {
 }
 
 /// The groups a video's status falls in, as the dashboard counts them.
+#[must_use]
 pub fn group(status: &str) -> &'static str {
     match status {
         "done" => "downloaded",
@@ -83,6 +86,11 @@ pub fn group(status: &str) -> &'static str {
     }
 }
 
+/// What the status page shows: each service, and each source's counts.
+///
+/// # Errors
+///
+/// Fails if a database query fails.
 pub fn status(conn: &Connection, config: &Config) -> rusqlite::Result<Status> {
     let services = Service::ALL
         .into_iter()
@@ -133,7 +141,7 @@ pub fn status(conn: &Connection, config: &Config) -> rusqlite::Result<Status> {
                 .entry(group(&status).to_string())
                 .or_default() += n;
             if status == "done" {
-                *disk.entry(source).or_default() += bytes.max(0) as u64;
+                *disk.entry(source).or_default() += u64::try_from(bytes).unwrap_or(0);
             }
         }
     }
@@ -254,6 +262,10 @@ fn why(
 /// A page of `source`'s videos: in `group` (all when `None`), with
 /// `query` in the title, in source order. Returns the rows and how many
 /// match in all.
+///
+/// # Errors
+///
+/// Fails if a database query fails.
 pub fn videos(
     conn: &Connection,
     source: &str,
@@ -273,7 +285,7 @@ pub fn videos(
         } else {
             list.join(", ")
         };
-        filter.push_str(&format!(" AND i.status IN ({list})"));
+        let _ = write!(filter, " AND i.status IN ({list})");
     }
     let like = query.map(str::trim).filter(|q| !q.is_empty()).map(|q| {
         format!(
@@ -313,7 +325,7 @@ pub fn videos(
                 date: published.map(|p| p.chars().take(10).collect()),
                 size: bytes
                     .filter(|_| status == "done")
-                    .map(|b| human_bytes(b.max(0) as u64)),
+                    .map(|b| human_bytes(u64::try_from(b).unwrap_or(0))),
                 clean_title: None,
                 label: status_label(&status),
                 badge: status_badge(&status),
@@ -321,7 +333,7 @@ pub fn videos(
             })
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
-    Ok((rows, total.max(0) as usize))
+    Ok((rows, usize::try_from(total).unwrap_or(0)))
 }
 
 /// A `finished`/other hook's latest run for a video.
@@ -356,6 +368,10 @@ pub struct VideoDetail {
 }
 
 /// `None` when `source` doesn't have the video.
+///
+/// # Errors
+///
+/// Fails if a database query fails or a source's filters don't compile.
 pub fn video(
     conn: &Connection,
     config: &Config,
@@ -428,6 +444,7 @@ pub fn video(
 }
 
 /// The last `lines` lines of a video's hook log, if it has one.
+#[must_use]
 pub fn log_tail(path: &std::path::Path, lines: usize) -> Option<String> {
     let text = std::fs::read_to_string(path).ok()?;
     let all: Vec<&str> = text.lines().collect();
@@ -435,12 +452,14 @@ pub fn log_tail(path: &std::path::Path, lines: usize) -> Option<String> {
 }
 
 /// The title `clean_title = "music_video"` gives `title`, when it differs.
+#[must_use]
 pub fn clean_title(title: &str, artist: &str) -> Option<String> {
     let cleaned = crate::titles::music_video(title, artist);
     (cleaned != title).then_some(cleaned)
 }
 
 /// How a video's status reads on a badge.
+#[must_use]
 pub fn status_label(status: &str) -> String {
     match status {
         "filtered" => "excluded".into(),
@@ -449,6 +468,7 @@ pub fn status_label(status: &str) -> String {
 }
 
 /// The badge's CSS class (`st-<this>`).
+#[must_use]
 pub fn status_badge(status: &str) -> String {
     match status {
         "filtered" => "excluded".into(),

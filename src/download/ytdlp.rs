@@ -1,5 +1,6 @@
 //! Running yt-dlp for one video.
 
+use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
 
@@ -12,11 +13,13 @@ use super::info::VideoInfo;
 use crate::config::merge::EffectiveSource;
 
 /// The watch URL for a video id.
+#[must_use]
 pub fn watch_url(video_id: &str) -> String {
     format!("https://www.youtube.com/watch?v={video_id}")
 }
 
 /// Arguments to download one video into `tmp`.
+#[must_use]
 pub fn download_args(
     source: &EffectiveSource,
     video_id: &str,
@@ -64,19 +67,6 @@ pub struct Failure {
 
 /// The useful line of yt-dlp's stderr, and whether the failure is permanent.
 pub fn classify(stderr: &str) -> Failure {
-    let line = stderr
-        .lines()
-        .rev()
-        .find(|l| l.starts_with("ERROR:"))
-        .or_else(|| stderr.lines().rev().find(|l| !l.trim().is_empty()))
-        .unwrap_or("yt-dlp failed without an error message")
-        .trim();
-    // "ERROR: [youtube] <id>: message" → "message"
-    let message = line.strip_prefix("ERROR:").map(str::trim).unwrap_or(line);
-    let message = match message.strip_prefix('[').and_then(|m| m.split_once("] ")) {
-        Some((_, rest)) => rest.split_once(": ").map_or(rest, |(_, m)| m),
-        None => message,
-    };
     const PERMANENT: [&str; 8] = [
         "Video unavailable",
         "Private video",
@@ -87,6 +77,19 @@ pub fn classify(stderr: &str) -> Failure {
         "account associated with this video has been terminated",
         "This video is no longer available",
     ];
+    let line = stderr
+        .lines()
+        .rev()
+        .find(|l| l.starts_with("ERROR:"))
+        .or_else(|| stderr.lines().rev().find(|l| !l.trim().is_empty()))
+        .unwrap_or("yt-dlp failed without an error message")
+        .trim();
+    // "ERROR: [youtube] <id>: message" → "message"
+    let message = line.strip_prefix("ERROR:").map_or(line, str::trim);
+    let message = match message.strip_prefix('[').and_then(|m| m.split_once("] ")) {
+        Some((_, rest)) => rest.split_once(": ").map_or(rest, |(_, m)| m),
+        None => message,
+    };
     Failure {
         permanent: PERMANENT.iter().any(|p| line.contains(p)),
         message: message.to_string(),
@@ -111,7 +114,7 @@ pub struct Live {
 }
 
 impl Progress {
-    fn update(&mut self, line: &str, label: &str, live: Option<&Live>) {
+    fn update(&mut self, line: &str, label: &str, panel: Option<&Live>) {
         let Ok(p) = serde_json::from_str::<serde_json::Value>(line) else {
             return;
         };
@@ -128,8 +131,8 @@ impl Progress {
             self.file = file;
             self.step = None;
         }
-        let percent = ((downloaded / total) * 100.0).clamp(0.0, 100.0) as u64;
-        if let Some(live) = live
+        let percent = super::whole(((downloaded / total) * 100.0).clamp(0.0, 100.0));
+        if let Some(live) = panel
             && (self.throttle.ready() || percent == 100)
         {
             let speed = p["speed"].as_f64().filter(|s| *s > 0.0);
@@ -138,9 +141,9 @@ impl Progress {
                 source: live.source.clone(),
                 video_id: live.video_id.clone(),
                 title: live.title.clone(),
-                percent: Some(percent as u8),
-                size: Some(super::human_bytes(total as u64)),
-                speed: speed.map(|s| super::human_bytes(s as u64)),
+                percent: u8::try_from(percent).ok(),
+                size: Some(super::human_bytes(super::whole(total))),
+                speed: speed.map(|s| super::human_bytes(super::whole(s))),
                 eta: eta.map(|e| format!("{}:{:02}", e / 60, e % 60)),
             });
         }
@@ -151,13 +154,13 @@ impl Progress {
         self.step = Some(step);
         let mut line = format!(
             "{label}: {percent}% of {}",
-            super::human_bytes(total as u64)
+            super::human_bytes(super::whole(total))
         );
         if let Some(speed) = p["speed"].as_f64().filter(|s| *s > 0.0) {
-            line.push_str(&format!(" at {}/s", super::human_bytes(speed as u64)));
+            let _ = write!(line, " at {}/s", super::human_bytes(super::whole(speed)));
         }
         if let Some(eta) = p["eta"].as_u64().filter(|_| percent < 100) {
-            line.push_str(&format!(", {}:{:02} left", eta / 60, eta % 60));
+            let _ = write!(line, ", {}:{:02} left", eta / 60, eta % 60);
         }
         tracing::debug!("{line}");
     }
@@ -174,11 +177,17 @@ fn stopped() -> Failure {
 /// starts, yt-dlp and what it started are stopped (SIGTERM, then SIGKILL
 /// after `grace`, or right away on a second signal), and this returns only
 /// after they exited, so nothing writes to the work area anymore.
+///
+/// # Errors
+///
+/// Returns a [`Failure`] when yt-dlp can't be started, stopping starts,
+/// yt-dlp exits unsuccessfully (classified from its stderr), or it exits
+/// without printing the downloaded file's path.
 pub async fn download(
     ytdlp: &crate::tools::Ytdlp,
     args: &[String],
     label: &str,
-    live: Option<&Live>,
+    panel: Option<&Live>,
     shutdown: &Shutdown,
     grace: Duration,
 ) -> Result<PathBuf, Failure> {
@@ -198,8 +207,12 @@ pub async fn download(
             message: format!("cannot run {}: {e}", ytdlp.display()),
         })?;
 
-    let stdout = child.stdout.take().expect("piped stdout");
-    let mut stderr = child.stderr.take().expect("piped stderr");
+    let (Some(stdout), Some(mut stderr)) = (child.stdout.take(), child.stderr.take()) else {
+        return Err(Failure {
+            permanent: false,
+            message: format!("cannot read the output of {}", ytdlp.display()),
+        });
+    };
     let stderr_task = tokio::spawn(async move {
         let mut buf = String::new();
         let _ = tokio::io::AsyncReadExt::read_to_string(&mut stderr, &mut buf).await;
@@ -212,7 +225,7 @@ pub async fn download(
     loop {
         let line = tokio::select! {
             line = lines.next_line() => line,
-            _ = shutdown.stopping() => {
+            () = shutdown.stopping() => {
                 crate::process::stop(&mut child, grace, shutdown).await;
                 return Err(stopped());
             }
@@ -221,7 +234,7 @@ pub async fn download(
         let line = line.trim();
         if line.starts_with('{') {
             tracing::trace!("yt-dlp progress: {line}");
-            progress.update(line, label, live);
+            progress.update(line, label, panel);
         } else if !line.is_empty() {
             final_path = Some(PathBuf::from(line));
         }
@@ -251,6 +264,12 @@ pub async fn download(
 
 /// Full details for one video (`yt-dlp -J`), used for decisions that need
 /// fields the index didn't have.
+///
+/// # Errors
+///
+/// Returns a [`Failure`] when yt-dlp can't be run, stopping starts, yt-dlp
+/// exits unsuccessfully (classified from its stderr), or its JSON can't be
+/// parsed.
 pub async fn video_info(
     ytdlp: &crate::tools::Ytdlp,
     video_id: &str,

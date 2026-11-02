@@ -44,14 +44,19 @@ pub async fn stop(child: &mut Child, grace: Duration, shutdown: &Shutdown) {
     signal(child, libc::SIGTERM);
     tokio::select! {
         _ = child.wait() => return,
-        _ = tokio::time::sleep(grace) => {}
-        _ = shutdown.killing() => {}
+        () = tokio::time::sleep(grace) => {}
+        () = shutdown.killing() => {}
     }
     signal(child, libc::SIGKILL);
     let _ = child.kill().await;
 }
 
 /// Wait for a child; when stopping starts, stop it (see [`stop`]).
+///
+/// # Errors
+///
+/// [`Error::Wait`] if waiting on the child fails, [`Error::Stopped`] if
+/// stopping started before it exited.
 pub async fn wait(
     child: &mut Child,
     grace: Duration,
@@ -59,7 +64,7 @@ pub async fn wait(
 ) -> Result<ExitStatus, Error> {
     tokio::select! {
         status = child.wait() => status.map_err(Error::Wait),
-        _ = shutdown.stopping() => {
+        () = shutdown.stopping() => {
             stop(child, grace, shutdown).await;
             Err(Error::Stopped)
         }
@@ -68,6 +73,12 @@ pub async fn wait(
 
 /// Run a command to completion, collecting its output, unless stopping
 /// starts first.
+///
+/// # Errors
+///
+/// [`Error::Stopped`] if stopping started (before or while it ran),
+/// [`Error::Spawn`] if it can't be started, [`Error::Wait`] if waiting on it
+/// fails.
 pub async fn output(
     command: &mut Command,
     grace: Duration,
@@ -82,8 +93,9 @@ pub async fn output(
         .stderr(Stdio::piped())
         .spawn()
         .map_err(Error::Spawn)?;
-    let mut stdout = child.stdout.take().expect("piped stdout");
-    let mut stderr = child.stderr.take().expect("piped stderr");
+    let (Some(mut stdout), Some(mut stderr)) = (child.stdout.take(), child.stderr.take()) else {
+        return Err(Error::Spawn(std::io::Error::other("output isn't piped")));
+    };
     let out = tokio::spawn(async move {
         let mut buf = Vec::new();
         let _ = stdout.read_to_end(&mut buf).await;

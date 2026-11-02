@@ -115,6 +115,68 @@ struct Job {
     now: Timestamp,
 }
 
+impl Job {
+    /// How the video shows in the log: `<source>: “<title>”`.
+    fn label(&self) -> String {
+        format!("{}: “{}”", self.source.key, self.queued.item.title)
+    }
+
+    /// Place the files in `moves` (metadata last), clear the work area `tmp`
+    /// and, when `relink`, point the linked copy at the placed media.
+    fn save(
+        &self,
+        ctx: &Context,
+        tmp: &Path,
+        moves: &[(PathBuf, PathBuf)],
+        relink: bool,
+        media_dest: &Path,
+    ) -> Result<(), Failure> {
+        // Stopping: nothing is placed (an embed may have been cut short); the
+        // video goes back to the queue.
+        if ctx.shutdown.is_stopping() {
+            return Err(fail("stopped"));
+        }
+        self.step("saving");
+        place_all(moves)?;
+        let _ = std::fs::remove_dir_all(tmp);
+        if relink && let Some(other) = &self.copy_from {
+            relink_copy(media_dest, other, &self.label());
+        }
+        Ok(())
+    }
+
+    /// Tell the live panel which processing step the video is on.
+    fn step(&self, what: &str) {
+        crate::events::emit(crate::events::Event::Finishing {
+            source: self.source.key.clone(),
+            video_id: self.queued.video_id.clone(),
+            title: self.queued.item.title.clone(),
+            step: what.to_string(),
+        });
+    }
+
+    /// The processing stages for this job, logged under `label`.
+    fn stage<'a>(&'a self, ctx: &'a Context, label: &'a str) -> stages::Stage<'a> {
+        let source = &self.source;
+        stages::Stage {
+            source,
+            hook_names: &source.hooks,
+            hooks: &ctx.hooks,
+            video_id: &self.queued.video_id,
+            source_title: self.queued.source_title.as_deref(),
+            position: self.queued.position,
+            label,
+            home: &ctx.dirs.home,
+            hook_logs: &ctx.hook_logs,
+            shutdown: &ctx.shutdown,
+            grace: ctx.shutdown_timeout,
+            ffmpeg: &ctx.ffmpeg,
+            ffprobe: &ctx.ffprobe,
+            data_dir: &ctx.dirs.data_dir,
+        }
+    }
+}
+
 enum Outcome {
     /// Downloaded into the work area, waiting to be processed.
     Fetched {
@@ -157,10 +219,11 @@ struct Finished {
     /// Every hook that ran.
     hook_runs: Vec<hooks::Report>,
     /// The source's `finished` hooks, queued once the video is placed.
-    finished_hooks: Vec<String>,
+    pending_hooks: Vec<String>,
 }
 
 /// A hook report as stored in `hook_runs`.
+#[must_use]
 pub fn hook_run(
     source_key: &str,
     video_id: &str,
@@ -184,6 +247,11 @@ pub fn hook_run(
 }
 
 /// Human-readable size: `48.2 MB`.
+#[must_use]
+#[expect(
+    clippy::cast_precision_loss,
+    reason = "a one-decimal display value; precision past 2^52 bytes doesn't matter"
+)]
 pub fn human_bytes(bytes: u64) -> String {
     const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
     let mut value = bytes as f64;
@@ -199,6 +267,17 @@ pub fn human_bytes(bytes: u64) -> String {
     }
 }
 
+/// A float as a whole number, dropping the fraction. Negative values and
+/// NaN become 0, values past `u64::MAX` become `u64::MAX`.
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "std has no checked float-to-int conversion; `as` saturates, which is what's wanted"
+)]
+fn whole(value: f64) -> u64 {
+    value as u64
+}
+
 fn fail(message: impl Into<String>) -> Failure {
     Failure {
         permanent: false,
@@ -206,7 +285,7 @@ fn fail(message: impl Into<String>) -> Failure {
     }
 }
 
-fn io_fail(context: &str, path: &Path, err: std::io::Error) -> Failure {
+fn io_fail(context: &str, path: &Path, err: &std::io::Error) -> Failure {
     fail(format!("{context} {}: {err}", path.display()))
 }
 
@@ -278,7 +357,7 @@ pub(crate) fn place(src: &Path, dest: &Path) -> std::io::Result<()> {
         }
         Err(_) => std::fs::copy(src, &staged).map(drop),
     };
-    if let Err(e) = copied.and_then(|_| std::fs::rename(&staged, dest)) {
+    if let Err(e) = copied.and_then(|()| std::fs::rename(&staged, dest)) {
         let _ = std::fs::remove_file(&staged);
         return Err(e);
     }
@@ -302,7 +381,7 @@ fn place_all(moves: &[(PathBuf, PathBuf)]) -> Result<(), Failure> {
             for (_, placed) in &moves[..i] {
                 let _ = std::fs::remove_file(placed);
             }
-            return Err(io_fail("cannot move the download to", dest, e));
+            return Err(io_fail("cannot move the download to", dest, &e));
         }
     }
     Ok(())
@@ -327,6 +406,7 @@ fn is_work_folder(name: &str) -> bool {
 /// A video's work area: `<tmp_root>/<video_id>.<source>`. Fetching leaves
 /// the download in `fetched/`; processing works on a copy in `process/`, so
 /// it can start over from `fetched/` after a crash or Ctrl-C.
+#[must_use]
 pub fn work_area(tmp_root: &Path, video_id: &str, source_key: &str) -> PathBuf {
     tmp_root.join(format!("{video_id}.{source_key}"))
 }
@@ -347,7 +427,7 @@ async fn fetch(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
     let item = &job.queued.item;
     let video_id = &job.queued.video_id;
     let mut details = None;
-    let label = format!("{}: “{}”", source.key, item.title);
+    let label = job.label();
     tracing::debug!("{}: downloading “{}” [{video_id}]", source.key, item.title);
     crate::events::emit(crate::events::Event::Downloading {
         source: source.key.clone(),
@@ -411,7 +491,7 @@ async fn fetch(job: &Job, ctx: &Context) -> (Outcome, Option<RemoteItem>) {
     let _ = std::fs::remove_dir_all(&work);
     if let Err(err) = std::fs::create_dir_all(&fetched) {
         return (
-            Outcome::Failed(io_fail("cannot create", &fetched, err)),
+            Outcome::Failed(io_fail("cannot create", &fetched, &err)),
             details,
         );
     }
@@ -438,57 +518,53 @@ async fn fetch_files(
 ) -> Result<u64, Failure> {
     let source = &job.source;
     let video_id = &job.queued.video_id;
-    match (&job.copy_from, info_json) {
-        (Some(other), Some(text)) => {
-            let ext = extension_of(&other.media);
-            let media = PathBuf::from(&other.media);
-            link(
-                &media,
-                &fetched.join(format!("media.{ext}")),
-                ctx.duplicates,
-            )
-            .map_err(|e| io_fail("cannot link", &media, e))?;
-            for sub in &other.subtitles {
-                let path = PathBuf::from(&sub.path);
-                let name = format!("media.{}.{}", sub.lang, extension_of(&sub.path));
-                link(&path, &fetched.join(name), ctx.duplicates)
-                    .map_err(|e| io_fail("cannot link", &path, e))?;
-            }
-            let info_path = fetched.join(INFO_JSON);
-            std::fs::write(&info_path, text).map_err(|e| io_fail("cannot write", &info_path, e))?;
+    if let (Some(other), Some(text)) = (&job.copy_from, info_json) {
+        let ext = extension_of(&other.media);
+        let media = PathBuf::from(&other.media);
+        link(
+            &media,
+            &fetched.join(format!("media.{ext}")),
+            ctx.duplicates,
+        )
+        .map_err(|e| io_fail("cannot link", &media, &e))?;
+        for sub in &other.subtitles {
+            let path = PathBuf::from(&sub.path);
+            let name = format!("media.{}.{}", sub.lang, extension_of(&sub.path));
+            link(&path, &fetched.join(name), ctx.duplicates)
+                .map_err(|e| io_fail("cannot link", &path, &e))?;
         }
-        _ => {
-            let args =
-                ytdlp::download_args(source, video_id, fetched, job.paths.cookies.as_deref());
-            let live = ytdlp::Live {
-                source: source.key.clone(),
-                video_id: video_id.clone(),
-                title: job.queued.item.title.clone(),
-            };
-            let media = ytdlp::download(
-                &ctx.ytdlp,
-                &args,
-                label,
-                Some(&live),
-                &ctx.shutdown,
-                ctx.shutdown_timeout,
-            )
-            .await?;
-            let info_path = fetched.join(INFO_JSON);
-            let text = std::fs::read_to_string(&info_path)
-                .map_err(|e| io_fail("cannot read", &info_path, e))?;
-            let info = VideoInfo::parse(&text).map_err(fail)?;
-            *details = Some(merge_details(&job.queued.item, &info));
-            let name = media
-                .file_name()
-                .map(|n| n.to_string_lossy().into_owned())
-                .unwrap_or_default();
-            if !fetched.join(&name).is_file() {
-                return Err(fail(format!(
-                    "yt-dlp reported {} but it isn't in the work area",
-                    media.display()
-                )));
-            }
+        let info_path = fetched.join(INFO_JSON);
+        std::fs::write(&info_path, text).map_err(|e| io_fail("cannot write", &info_path, &e))?;
+    } else {
+        let args = ytdlp::download_args(source, video_id, fetched, job.paths.cookies.as_deref());
+        let live = ytdlp::Live {
+            source: source.key.clone(),
+            video_id: video_id.clone(),
+            title: job.queued.item.title.clone(),
+        };
+        let media = ytdlp::download(
+            &ctx.ytdlp,
+            &args,
+            label,
+            Some(&live),
+            &ctx.shutdown,
+            ctx.shutdown_timeout,
+        )
+        .await?;
+        let info_path = fetched.join(INFO_JSON);
+        let text = std::fs::read_to_string(&info_path)
+            .map_err(|e| io_fail("cannot read", &info_path, &e))?;
+        let info = VideoInfo::parse(&text).map_err(fail)?;
+        *details = Some(merge_details(&job.queued.item, &info));
+        let name = media
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        if !fetched.join(&name).is_file() {
+            return Err(fail(format!(
+                "yt-dlp reported {} but it isn't in the work area",
+                media.display()
+            )));
         }
     }
     let note = FetchNote {
@@ -496,9 +572,9 @@ async fn fetch_files(
     };
     let note_path = fetched.join(FETCH_NOTE);
     std::fs::write(&note_path, serde_json::to_vec(&note).expect("JSON"))
-        .map_err(|e| io_fail("cannot write", &note_path, e))?;
+        .map_err(|e| io_fail("cannot write", &note_path, &e))?;
     let (media, _) = work_files(fetched)?;
-    Ok(std::fs::metadata(&media).map(|m| m.len()).unwrap_or(0))
+    Ok(std::fs::metadata(&media).map_or(0, |m| m.len()))
 }
 
 /// The media file and subtitles in a work folder.
@@ -506,7 +582,7 @@ fn work_files(dir: &Path) -> Result<(PathBuf, Vec<hooks::Subtitle>), Failure> {
     let mut media = None;
     let mut subtitles: Vec<hooks::Subtitle> = Vec::new();
     for entry in std::fs::read_dir(dir)
-        .map_err(|e| io_fail("cannot read", dir, e))?
+        .map_err(|e| io_fail("cannot read", dir, &e))?
         .flatten()
     {
         let name = entry.file_name().to_string_lossy().into_owned();
@@ -542,13 +618,13 @@ async fn process(
     let scratch = work.join("process");
     let prepared = (|| {
         let _ = std::fs::remove_dir_all(&scratch);
-        std::fs::create_dir_all(&scratch).map_err(|e| io_fail("cannot create", &scratch, e))?;
+        std::fs::create_dir_all(&scratch).map_err(|e| io_fail("cannot create", &scratch, &e))?;
         let entries = std::fs::read_dir(&fetched).map_err(|_| {
             fail("its download is gone from the work area; it will be downloaded again")
         })?;
         for entry in entries.flatten() {
             stage_copy(&entry.path(), &scratch.join(entry.file_name()))
-                .map_err(|e| io_fail("cannot copy", &entry.path(), e))?;
+                .map_err(|e| io_fail("cannot copy", &entry.path(), &e))?;
         }
         let note: FetchNote = std::fs::read(scratch.join(FETCH_NOTE))
             .ok()
@@ -556,7 +632,7 @@ async fn process(
             .unwrap_or_default();
         let info_path = scratch.join(INFO_JSON);
         let text = std::fs::read_to_string(&info_path)
-            .map_err(|e| io_fail("cannot read", &info_path, e))?;
+            .map_err(|e| io_fail("cannot read", &info_path, &e))?;
         Ok::<_, Failure>((note, VideoInfo::parse(&text).map_err(fail)?))
     })();
     let (note, info) = match prepared {
@@ -605,61 +681,16 @@ async fn assemble(
 ) -> Result<Outcome, Failure> {
     let started = std::time::Instant::now();
     let source = &job.source;
-    let label = &format!("{}: “{}”", source.key, job.queued.item.title);
-    let video_id = &job.queued.video_id;
-    let other_cover = job
-        .copy_from
-        .as_ref()
-        .and_then(|other| other.cover.clone())
-        .map(PathBuf::from);
+    let label = &job.label();
     let (media, subtitles) = work_files(tmp)?;
-
-    let stage = stages::Stage {
-        source,
-        hook_names: &source.hooks,
-        hooks: &ctx.hooks,
-        video_id,
-        source_title: job.queued.source_title.as_deref(),
-        position: job.queued.position,
-        label,
-        home: &ctx.dirs.home,
-        hook_logs: &ctx.hook_logs,
-        shutdown: &ctx.shutdown,
-        grace: ctx.shutdown_timeout,
-        ffmpeg: &ctx.ffmpeg,
-        ffprobe: &ctx.ffprobe,
-        data_dir: &ctx.dirs.data_dir,
-    };
-
-    let step = |what: &str| {
-        crate::events::emit(crate::events::Event::Finishing {
-            source: source.key.clone(),
-            video_id: video_id.clone(),
-            title: job.queued.item.title.clone(),
-            step: what.to_string(),
-        })
-    };
-    step("preparing");
+    let stage = job.stage(ctx, label);
+    job.step("preparing");
 
     // `prepare` hooks: the details and paths everything below uses. The
     // details recorded for the video (`details`) stay YouTube's.
-    let original = prepare::Details::of(&info);
     let mut info = info;
-    if source.clean_title != crate::config::CleanTitle::None {
-        step("cleaning up the title");
-    }
-    stage.clean_title(&mut info).await?;
-    let overrides = stage
-        .prepare_hooks(
-            &mut info,
-            &job.paths.media_dir,
-            &ctx.dirs,
-            tmp,
-            &media,
-            hook_runs,
-        )
-        .await?;
-    let originals = prepare::Details::of(&info).originals(&original);
+    let (overrides, originals) =
+        prepare_details(job, ctx, &stage, &mut info, tmp, &media, hook_runs).await?;
 
     let values = Values::new(
         &info,
@@ -673,45 +704,11 @@ async fn assemble(
     let (cover_dest, cover_format) = layout.cover_file().map_err(fail)?;
     let metadata_dest = layout.metadata_file().map_err(fail)?;
 
-    step("getting the cover");
-    // Cover: reuse the other source's when it's already in the wanted
-    // format, or fetch the biggest.
-    let cover_tmp = tmp.join(format!("cover.{}", cover_format.extension()));
-    let mut cover: Option<Cover> = None;
-    let mut cover_file = None;
-    let reusable = other_cover.filter(|c| {
-        c.is_file()
-            && c.extension()
-                .and_then(|e| CoverFormat::from_extension(&e.to_string_lossy()))
-                == Some(cover_format)
-    });
-    if let Some(other_cover) = reusable {
-        link(&other_cover, &cover_tmp, ctx.duplicates)
-            .map_err(|e| io_fail("cannot link", &other_cover, e))?;
-        tracing::debug!("{label}: cover linked from {}", other_cover.display());
-        cover_file = Some(cover_tmp);
-    } else {
-        let thumbs = details.map(|d| d.thumbnails.clone()).unwrap_or_default();
-        let urls = thumbnail::candidates(video_id, &thumbs, &ctx.thumbnail_base, cover_format);
-        match thumbnail::fetch_largest(&ctx.http, &urls, cover_format).await {
-            Some(found) => {
-                tracing::debug!(
-                    "{label}: cover {}×{} from {}",
-                    found.width,
-                    found.height,
-                    found.source_url
-                );
-                std::fs::write(&cover_tmp, &found.bytes)
-                    .map_err(|e| io_fail("cannot write", &cover_tmp, e))?;
-                cover_file = Some(cover_tmp);
-                cover = Some(found);
-            }
-            None => tracing::warn!("{}: no cover image found for {video_id}", source.key),
-        }
-    }
+    job.step("getting the cover");
+    let (cover, cover_file) = get_cover(job, ctx, tmp, label, details, cover_format).await?;
 
     if stage.has(HookType::Downloaded) {
-        step("running hooks");
+        job.step("running hooks");
     }
     // `downloaded` hooks: on the raw files; they may replace them.
     let context = stage.context(&info);
@@ -724,6 +721,166 @@ async fn assemble(
         .downloaded_hooks(&mut raw, &values, &context, tmp, cover_format, hook_runs)
         .await?;
 
+    let Placement {
+        media_dest,
+        mut moves,
+        files,
+    } = plan_moves(source, &layout, &raw, tmp, &cover_dest, &metadata_dest)?;
+    // A `downloaded` hook may have removed the cover.
+    let cover = cover.filter(|_| raw.cover.is_some());
+
+    if stages::embedding_on(source) {
+        job.step("embedding");
+    }
+    // What gets embedded: processed by `embed` hooks, then embedded.
+    let mut data = hooks::EmbedData {
+        tags: stage.tags(&info, &values),
+        cover: raw.cover.clone(),
+        chapters: info.chapters.clone().unwrap_or_default(),
+        subtitles: raw.subtitles.clone(),
+    };
+    let musicbrainz = stage.musicbrainz(&mut data.tags, &info, None).await;
+    stage
+        .embed_hooks(&mut data, &values, &context, tmp, &raw, hook_runs)
+        .await?;
+    let embedding = stage
+        .embed(
+            &raw.media,
+            &data,
+            job.copy_from.as_ref(),
+            ctx.duplicates,
+            false,
+        )
+        .await;
+
+    let media_bytes = std::fs::metadata(&raw.media)
+        .map_err(|e| io_fail("cannot read", &raw.media, &e))?
+        .len();
+    let metadata = Metadata {
+        info: &info,
+        source,
+        source_title: job.queued.source_title.as_deref(),
+        position: job.queued.position,
+        files: &files,
+        media_bytes,
+        cover: cover.as_ref(),
+        embedded: &embedding.embedded,
+        embedded_tags: embedding.embedded.metadata.then_some(&data.tags),
+        embed_error: embedding.error.as_deref(),
+        original: originals.as_ref(),
+        musicbrainz: musicbrainz.as_ref(),
+        downloaded_at: job.now,
+        ytdlp_version: ctx.ytdlp_version.as_deref(),
+    };
+    let json =
+        serde_json::to_string_pretty(&metadata.to_json()).expect("metadata serializes") + "\n";
+    let metadata_path = write_metadata(tmp, &json)?;
+    moves.push((metadata_path, metadata_dest.clone()));
+
+    job.save(ctx, tmp, &moves, embedding.relink, &media_dest)?;
+    tracing::debug!(
+        "{label}: saved as {} ({:.1}s)",
+        media_dest.display(),
+        started.elapsed().as_secs_f64()
+    );
+
+    let metadata = std::fs::read_to_string(&files.metadata).unwrap_or(json);
+    Ok(Outcome::Done {
+        files,
+        metadata,
+        media_bytes,
+        linked: job.copy_from.is_some(),
+    })
+}
+
+/// Clean up the title and run the `prepare` hooks on `info`. Returns the
+/// paths the hooks set and the details they changed, as they were.
+async fn prepare_details(
+    job: &Job,
+    ctx: &Context,
+    stage: &stages::Stage<'_>,
+    info: &mut VideoInfo,
+    tmp: &Path,
+    media: &Path,
+    hook_runs: &mut Vec<hooks::Report>,
+) -> Result<(BTreeMap<String, String>, Option<serde_json::Value>), Failure> {
+    let original = prepare::Details::of(info);
+    if job.source.clean_title != crate::config::CleanTitle::None {
+        job.step("cleaning up the title");
+    }
+    stage.clean_title(info).await?;
+    let overrides = stage
+        .prepare_hooks(info, &job.paths.media_dir, &ctx.dirs, tmp, media, hook_runs)
+        .await?;
+    let originals = prepare::Details::of(info).originals(&original);
+    Ok((overrides, originals))
+}
+
+/// The cover in `tmp`: the other source's when it's already in the wanted
+/// format, or the biggest thumbnail. Returns the thumbnail fetched (none when
+/// reused or not found) and the cover file.
+async fn get_cover(
+    job: &Job,
+    ctx: &Context,
+    tmp: &Path,
+    label: &str,
+    details: Option<&RemoteItem>,
+    cover_format: CoverFormat,
+) -> Result<(Option<Cover>, Option<PathBuf>), Failure> {
+    let video_id = &job.queued.video_id;
+    let cover_tmp = tmp.join(format!("cover.{}", cover_format.extension()));
+    let reusable = job
+        .copy_from
+        .as_ref()
+        .and_then(|other| other.cover.clone())
+        .map(PathBuf::from)
+        .filter(|c| {
+            c.is_file()
+                && c.extension()
+                    .and_then(|e| CoverFormat::from_extension(&e.to_string_lossy()))
+                    == Some(cover_format)
+        });
+    if let Some(other_cover) = reusable {
+        link(&other_cover, &cover_tmp, ctx.duplicates)
+            .map_err(|e| io_fail("cannot link", &other_cover, &e))?;
+        tracing::debug!("{label}: cover linked from {}", other_cover.display());
+        return Ok((None, Some(cover_tmp)));
+    }
+    let thumbs = details.map(|d| d.thumbnails.clone()).unwrap_or_default();
+    let urls = thumbnail::candidates(video_id, &thumbs, &ctx.thumbnail_base, cover_format);
+    let Some(found) = thumbnail::fetch_largest(&ctx.http, &urls, cover_format).await else {
+        tracing::warn!("{}: no cover image found for {video_id}", job.source.key);
+        return Ok((None, None));
+    };
+    tracing::debug!(
+        "{label}: cover {}×{} from {}",
+        found.width,
+        found.height,
+        found.source_url
+    );
+    std::fs::write(&cover_tmp, &found.bytes)
+        .map_err(|e| io_fail("cannot write", &cover_tmp, &e))?;
+    Ok((Some(found), Some(cover_tmp)))
+}
+
+/// Where a video's files go.
+struct Placement {
+    media_dest: PathBuf,
+    /// Each file in the work area and where it goes.
+    moves: Vec<(PathBuf, PathBuf)>,
+    /// The video's files, as recorded.
+    files: items::VideoFiles,
+}
+
+/// Where each file in `raw` goes (the metadata file isn't written yet).
+fn plan_moves(
+    source: &EffectiveSource,
+    layout: &Layout,
+    raw: &hooks::Files,
+    tmp: &Path,
+    cover_dest: &Path,
+    metadata_dest: &Path,
+) -> Result<Placement, Failure> {
     let media_ext = raw
         .media
         .extension()
@@ -751,10 +908,8 @@ async fn assemble(
         });
     }
     if let Some(cover_tmp) = &raw.cover {
-        moves.push((cover_tmp.clone(), cover_dest.clone()));
+        moves.push((cover_tmp.clone(), cover_dest.to_path_buf()));
         files.cover = Some(cover_dest.display().to_string());
-    } else {
-        cover = None;
     }
 
     let raw_info = tmp.join("ytdlp.info.json");
@@ -765,92 +920,32 @@ async fn assemble(
         moves.push((raw_info, dest.clone()));
         files.raw_info = Some(dest.display().to_string());
     }
+    Ok(Placement {
+        media_dest,
+        moves,
+        files,
+    })
+}
 
-    if stages::embedding_on(source) {
-        step("embedding");
-    }
-    // What gets embedded: processed by `embed` hooks, then embedded.
-    let mut data = hooks::EmbedData {
-        tags: stage.tags(&info, &values),
-        cover: raw.cover.clone(),
-        chapters: info.chapters.clone().unwrap_or_default(),
-        subtitles: raw.subtitles.clone(),
-    };
-    let musicbrainz = stage.musicbrainz(&mut data.tags, &info, None).await;
-    stage
-        .embed_hooks(&mut data, &values, &context, tmp, &raw, hook_runs)
-        .await?;
-    let embedding = stage
-        .embed(
-            &raw.media,
-            &data,
-            job.copy_from.as_ref(),
-            ctx.duplicates,
-            false,
-        )
-        .await;
-
-    let media_bytes = std::fs::metadata(&raw.media)
-        .map_err(|e| io_fail("cannot read", &raw.media, e))?
-        .len();
-    let metadata = Metadata {
-        info: &info,
-        source,
-        source_title: job.queued.source_title.as_deref(),
-        position: job.queued.position,
-        files: &files,
-        media_bytes,
-        cover: cover.as_ref(),
-        embedded: &embedding.embedded,
-        embedded_tags: embedding.embedded.metadata.then_some(&data.tags),
-        embed_error: embedding.error.as_deref(),
-        original: originals.as_ref(),
-        musicbrainz: musicbrainz.as_ref(),
-        downloaded_at: job.now,
-        ytdlp_version: ctx.ytdlp_version.as_deref(),
-    };
-    let json =
-        serde_json::to_string_pretty(&metadata.to_json()).expect("metadata serializes") + "\n";
+/// Write `json` to `tmp/metadata.json`, synced to disk.
+fn write_metadata(tmp: &Path, json: &str) -> Result<PathBuf, Failure> {
     let metadata_path = tmp.join("metadata.json");
     let mut file = std::fs::File::create(&metadata_path)
-        .map_err(|e| io_fail("cannot write", &metadata_path, e))?;
+        .map_err(|e| io_fail("cannot write", &metadata_path, &e))?;
     file.write_all(json.as_bytes())
-        .and_then(|_| file.sync_all())
-        .map_err(|e| io_fail("cannot write", &metadata_path, e))?;
-    moves.push((metadata_path, metadata_dest.clone()));
+        .and_then(|()| file.sync_all())
+        .map_err(|e| io_fail("cannot write", &metadata_path, &e))?;
+    Ok(metadata_path)
+}
 
-    // Stopping: nothing is placed (an embed may have been cut short); the
-    // video goes back to the queue.
-    if ctx.shutdown.is_stopping() {
-        return Err(fail("stopped"));
+/// Linked duplicates share one file: the latest tags win for both.
+fn relink_copy(media_dest: &Path, other: &items::VideoFiles, label: &str) {
+    if let Err(e) = relink(media_dest, Path::new(&other.media)) {
+        tracing::warn!(
+            "{label}: cannot update the linked copy at {}: {e}",
+            other.media
+        );
     }
-    step("saving");
-    place_all(&moves)?;
-    let _ = std::fs::remove_dir_all(tmp);
-    if embedding.relink
-        && let Some(other) = &job.copy_from
-    {
-        // Linked duplicates share one file: the latest tags win for both.
-        if let Err(e) = relink(&media_dest, Path::new(&other.media)) {
-            tracing::warn!(
-                "{label}: cannot update the linked copy at {}: {e}",
-                other.media
-            );
-        }
-    }
-    tracing::debug!(
-        "{label}: saved as {} ({:.1}s)",
-        media_dest.display(),
-        started.elapsed().as_secs_f64()
-    );
-
-    let metadata = std::fs::read_to_string(&files.metadata).unwrap_or(json);
-    Ok(Outcome::Done {
-        files,
-        metadata,
-        media_bytes,
-        linked: job.copy_from.is_some(),
-    })
 }
 
 /// Point `other` at the same file as `ours` (a hardlink, or a copy across
@@ -881,6 +976,13 @@ fn extension_of(path: &str) -> String {
 /// downloaded again, and the work areas are cleared except for fetched
 /// downloads. Only the folders tidepool creates are touched, so a `tmp_dir`
 /// pointing somewhere shared never loses anything else.
+///
+/// Returns how many videos went back to the queue.
+///
+/// # Errors
+///
+/// Returns a message when the state database can't be read or updated, or
+/// a work area can't be listed or cleared.
 pub fn recover(state: &State, by_source: &BTreeMap<String, SourcePaths>) -> Result<usize, String> {
     let db = |e: rusqlite::Error| format!("state database: {e}");
     let mut reset = items::reset_interrupted(&state.conn).map_err(db)?;
@@ -903,7 +1005,9 @@ pub fn recover(state: &State, by_source: &BTreeMap<String, SourcePaths>) -> Resu
             if !is_work_folder(&name) || !entry.path().is_dir() {
                 continue;
             }
-            let (video, source) = name.split_once('.').expect("a work folder");
+            let Some((video, source)) = name.split_once('.') else {
+                continue;
+            };
             let fetched = items::item_statuses(&state.conn, video)
                 .map_err(db)?
                 .iter()
@@ -924,6 +1028,12 @@ pub fn recover(state: &State, by_source: &BTreeMap<String, SourcePaths>) -> Resu
 
 /// Download what's queued for `sources` and process what's downloaded,
 /// at the same time: each download is processed as soon as it's done.
+///
+/// # Errors
+///
+/// Returns a message when a source's paths can't be worked out, recovering
+/// or checking for missing files fails, or the state database can't be read
+/// or updated.
 pub async fn download_all(
     state: &mut State,
     sources: &[EffectiveSource],
@@ -947,93 +1057,42 @@ pub async fn download_all(
     }
     let mut summary = Summary::default();
     if options.fetch {
-        let by_source: std::collections::HashMap<_, _> = by_source
-            .iter()
-            .map(|(k, v)| (k.clone(), v.clone()))
-            .collect();
         summary.missing = missing::check(state, sources, &by_source, &ctx, out).await?;
     }
 
-    let keys: Vec<String> = sources.iter().map(|s| s.key.clone()).collect();
-    // Sources with `download = false` are only indexed; what they already
-    // downloaded still gets finished.
-    let downloading: Vec<String> = sources
-        .iter()
-        .filter(|s| s.download)
-        .map(|s| s.key.clone())
-        .collect();
-    let mut queue = if options.fetch {
-        items::download_queue(&state.conn, &downloading, now).map_err(db)?
-    } else {
-        Vec::new()
-    };
-    if let Some(limit) = options.limit {
-        queue.truncate(limit);
-    }
-    let waiting = if options.process {
-        items::process_queue(&state.conn, &keys).map_err(db)?
-    } else {
-        Vec::new()
-    };
+    let (queue, waiting) = queues(state, sources, &options).map_err(db)?;
     if queue.is_empty() && waiting.is_empty() {
         return Ok(summary);
     }
 
-    let ctx = Arc::new(ctx);
-    let fetch_slots = Arc::new(Semaphore::new(options.concurrency.max(1)));
-    let process_slots = Arc::new(Semaphore::new(options.process_concurrency.max(1)));
+    let mut tasks = Tasks {
+        ctx: Arc::new(ctx),
+        fetch_slots: Arc::new(Semaphore::new(options.concurrency.max(1))),
+        process_slots: Arc::new(Semaphore::new(options.process_concurrency.max(1))),
+        fetches: JoinSet::new(),
+        processes: JoinSet::new(),
+    };
     let sources: Vec<Arc<EffectiveSource>> = sources.iter().cloned().map(Arc::new).collect();
-    let source_of = |key: &str| {
-        sources
-            .iter()
-            .find(|s| s.key == key)
-            .expect("queued for a known source")
-            .clone()
-    };
-    let mut fetches: JoinSet<(Finished, Job)> = JoinSet::new();
-    let mut processes: JoinSet<Finished> = JoinSet::new();
-    let spawn_process = |state: &State, processes: &mut JoinSet<Finished>, mut job: Job| {
-        items::set_status(
-            &state.conn,
-            &job.queued.source_key,
-            &job.queued.video_id,
-            status::PROCESSING,
-        )?;
-        let (ctx, slots) = (ctx.clone(), process_slots.clone());
-        processes.spawn(
-            async move {
-                let mut hook_runs = Vec::new();
-                let outcome = tokio::select! {
-                    permit = slots.acquire_owned() => {
-                        let _permit = permit.expect("semaphore open");
-                        if ctx.shutdown.is_stopping() {
-                            Outcome::Stopped
-                        } else {
-                            process(&mut job, &ctx, &mut hook_runs).await.0
-                        }
-                    }
-                    _ = ctx.shutdown.stopping() => Outcome::Stopped,
-                };
-                finished(Phase::Process, &job, &ctx, outcome, None, hook_runs)
-            }
-            .in_current_span(),
-        );
-        Ok::<_, rusqlite::Error>(())
-    };
+    let source_of = |key: &str| sources.iter().find(|s| s.key == key).cloned();
 
     for queued in waiting {
+        let Some(source) = source_of(&queued.source_key) else {
+            continue;
+        };
         let job = Job {
             paths: by_source[&queued.source_key].clone(),
-            source: source_of(&queued.source_key),
+            source,
             queued,
             copy_from: None,
             now,
         };
-        spawn_process(state, &mut processes, job).map_err(db)?;
+        tasks.spawn_process(state, job).map_err(db)?;
     }
     for queued in queue {
-        let source = source_of(&queued.source_key);
-        let copy_from = match ctx.duplicates {
+        let Some(source) = source_of(&queued.source_key) else {
+            continue;
+        };
+        let copy_from = match tasks.ctx.duplicates {
             Duplicates::Download => None,
             _ => items::find_copy(&state.conn, &queued.video_id, &source.format, &source.key)
                 .map_err(db)?
@@ -1053,19 +1112,67 @@ pub async fn download_all(
             copy_from,
             now,
         };
-        let (ctx, slots) = (ctx.clone(), fetch_slots.clone());
-        fetches.spawn(
+        tasks.spawn_fetch(job);
+    }
+
+    tasks
+        .run(state, options.process, now, &mut summary, tracker, out)
+        .await
+        .map_err(db)?;
+    Ok(summary)
+}
+
+/// What a run downloads (sources with `download = false` are only indexed)
+/// and what it processes; what those sources already downloaded still gets
+/// finished.
+fn queues(
+    state: &State,
+    sources: &[EffectiveSource],
+    options: &Options,
+) -> rusqlite::Result<(Vec<QueuedItem>, Vec<QueuedItem>)> {
+    let keys: Vec<String> = sources.iter().map(|s| s.key.clone()).collect();
+    let downloading: Vec<String> = sources
+        .iter()
+        .filter(|s| s.download)
+        .map(|s| s.key.clone())
+        .collect();
+    let mut queue = if options.fetch {
+        items::download_queue(&state.conn, &downloading, options.now)?
+    } else {
+        Vec::new()
+    };
+    if let Some(limit) = options.limit {
+        queue.truncate(limit);
+    }
+    let waiting = if options.process {
+        items::process_queue(&state.conn, &keys)?
+    } else {
+        Vec::new()
+    };
+    Ok((queue, waiting))
+}
+
+/// A run's downloads and processing, each waiting for a free slot.
+struct Tasks {
+    ctx: Arc<Context>,
+    fetch_slots: Arc<Semaphore>,
+    process_slots: Arc<Semaphore>,
+    fetches: JoinSet<(Finished, Job)>,
+    processes: JoinSet<Finished>,
+}
+
+impl Tasks {
+    /// Download `job` once a download slot is free.
+    fn spawn_fetch(&mut self, job: Job) {
+        let (ctx, slots) = (self.ctx.clone(), self.fetch_slots.clone());
+        self.fetches.spawn(
             async move {
                 let (outcome, details) = tokio::select! {
-                    permit = slots.acquire_owned() => {
-                        let _permit = permit.expect("semaphore open");
-                        if ctx.shutdown.is_stopping() {
-                            (Outcome::Stopped, None)
-                        } else {
-                            fetch(&job, &ctx).await
-                        }
-                    }
-                    _ = ctx.shutdown.stopping() => (Outcome::Stopped, None),
+                    permit = slots.acquire_owned() => match permit {
+                        Ok(_permit) if !ctx.shutdown.is_stopping() => fetch(&job, &ctx).await,
+                        _ => (Outcome::Stopped, None),
+                    },
+                    () = ctx.shutdown.stopping() => (Outcome::Stopped, None),
                 };
                 let f = finished(Phase::Fetch, &job, &ctx, outcome, details, Vec::new());
                 (f, job)
@@ -1074,47 +1181,87 @@ pub async fn download_all(
         );
     }
 
-    loop {
-        if fetches.is_empty() && processes.is_empty() {
-            break;
-        }
-        tokio::select! {
-            Some(done) = fetches.join_next(), if !fetches.is_empty() => {
-                let Ok((f, job)) = done else { continue };
-                let fetched = matches!(f.outcome, Outcome::Fetched { .. });
-                record(state, &f, now, &mut summary, tracker, out).map_err(db)?;
-                if fetched {
-                    if options.process {
-                        spawn_process(state, &mut processes, job).map_err(db)?;
-                    } else if let Some(waiting) = &ctx.fetched {
-                        waiting.notify_one();
-                    }
-                }
+    /// Mark `job` as processing and process it once a slot is free.
+    fn spawn_process(&mut self, state: &State, mut job: Job) -> rusqlite::Result<()> {
+        items::set_status(
+            &state.conn,
+            &job.queued.source_key,
+            &job.queued.video_id,
+            status::PROCESSING,
+        )?;
+        let (ctx, slots) = (self.ctx.clone(), self.process_slots.clone());
+        self.processes.spawn(
+            async move {
+                let mut hook_runs = Vec::new();
+                let outcome = tokio::select! {
+                    permit = slots.acquire_owned() => match permit {
+                        Ok(_permit) if !ctx.shutdown.is_stopping() => {
+                            process(&mut job, &ctx, &mut hook_runs).await.0
+                        }
+                        _ => Outcome::Stopped,
+                    },
+                    () = ctx.shutdown.stopping() => Outcome::Stopped,
+                };
+                finished(Phase::Process, &job, &ctx, outcome, None, hook_runs)
             }
-            Some(done) = processes.join_next(), if !processes.is_empty() => {
-                let Ok(f) = done else { continue };
-                record(state, &f, now, &mut summary, tracker, out).map_err(db)?;
-            }
-            _ = ctx.shutdown.stopping() => {
-                // Running processes are being stopped; wait for every task.
-                // What finished in the meantime still counts; the rest goes
-                // back to where it was.
-                while let Some(done) = fetches.join_next().await {
-                    if let Ok((f, _)) = done {
-                        record_stopping(state, f, now, &mut summary, tracker, out).map_err(db)?;
-                    }
-                }
-                while let Some(done) = processes.join_next().await {
-                    if let Ok(f) = done {
-                        record_stopping(state, f, now, &mut summary, tracker, out).map_err(db)?;
-                    }
-                }
-                summary.interrupted = ctx.shutdown.code();
+            .in_current_span(),
+        );
+        Ok(())
+    }
+
+    /// Record each task as it ends, processing each download as soon as it's
+    /// fetched (when `process`), until every task is done or stopping starts.
+    async fn run(
+        &mut self,
+        state: &State,
+        process: bool,
+        now: Timestamp,
+        summary: &mut Summary,
+        tracker: &mut crate::problems::Tracker,
+        out: &mut dyn Write,
+    ) -> rusqlite::Result<()> {
+        loop {
+            if self.fetches.is_empty() && self.processes.is_empty() {
                 break;
             }
+            tokio::select! {
+                Some(done) = self.fetches.join_next(), if !self.fetches.is_empty() => {
+                    let Ok((f, job)) = done else { continue };
+                    let was_fetched = matches!(f.outcome, Outcome::Fetched { .. });
+                    record(state, &f, now, summary, tracker, out)?;
+                    if was_fetched {
+                        if process {
+                            self.spawn_process(state, job)?;
+                        } else if let Some(waiting) = &self.ctx.fetched {
+                            waiting.notify_one();
+                        }
+                    }
+                }
+                Some(done) = self.processes.join_next(), if !self.processes.is_empty() => {
+                    let Ok(f) = done else { continue };
+                    record(state, &f, now, summary, tracker, out)?;
+                }
+                () = self.ctx.shutdown.stopping() => {
+                    // Running processes are being stopped; wait for every task.
+                    // What finished in the meantime still counts; the rest goes
+                    // back to where it was.
+                    while let Some(done) = self.fetches.join_next().await {
+                        if let Ok((f, _)) = done {
+                            record_stopping(state, f, now, summary, tracker, out)?;
+                        }
+                    }
+                    while let Some(done) = self.processes.join_next().await {
+                        if let Ok(f) = done {
+                            record_stopping(state, f, now, summary, tracker, out)?;
+                        }
+                    }
+                    summary.interrupted = self.ctx.shutdown.code();
+                    break;
+                }
+            }
         }
+        Ok(())
     }
-    Ok(summary)
 }
 
 /// What a task did, for `record`.
@@ -1128,8 +1275,7 @@ fn finished(
 ) -> Finished {
     let title = details
         .as_ref()
-        .map(|d| d.title.clone())
-        .unwrap_or_else(|| job.queued.item.title.clone());
+        .map_or_else(|| job.queued.item.title.clone(), |d| d.title.clone());
     Finished {
         phase,
         previous_attempts: job.queued.attempts,
@@ -1140,7 +1286,7 @@ fn finished(
         outcome,
         details,
         hook_runs,
-        finished_hooks: hooks::of_type(&job.source.hooks, &ctx.hooks, HookType::Finished)
+        pending_hooks: hooks::of_type(&job.source.hooks, &ctx.hooks, HookType::Finished)
             .map(|(name, _)| name.to_string())
             .collect(),
     }
@@ -1209,45 +1355,24 @@ fn record(
             media_bytes,
             linked,
         } => {
-            items::mark_done(
-                &state.conn,
-                &f.source_key,
-                &f.video_id,
-                items::Done {
-                    files,
-                    metadata,
-                    format: &f.format,
-                    media_bytes: *media_bytes,
-                },
-                now,
-            )?;
+            let done = items::Done {
+                files,
+                metadata,
+                format: &f.format,
+                media_bytes: *media_bytes,
+            };
+            items::mark_done(&state.conn, &f.source_key, &f.video_id, done, now)?;
             items::queue_hooks(
                 &state.conn,
                 &f.source_key,
                 &f.video_id,
-                &f.finished_hooks,
+                &f.pending_hooks,
                 now,
             )?;
             summary.downloaded += 1;
             tracker.download_succeeded();
             summary.bytes += media_bytes;
-            crate::events::emit(crate::events::Event::Saved {
-                source: f.source_key.clone(),
-                video_id: f.video_id.clone(),
-                title: f.title.clone(),
-            });
-            let how = if *linked {
-                "linked from another source"
-            } else {
-                "downloaded"
-            };
-            let _ = writeln!(
-                out,
-                "{}: {how} “{}” ({})",
-                f.source_key,
-                f.title,
-                human_bytes(*media_bytes)
-            );
+            report_done(f, *media_bytes, *linked, out);
         }
         Outcome::Skipped(decision) => {
             items::record_decision(&state.conn, &f.source_key, &f.video_id, decision)?;
@@ -1269,27 +1394,7 @@ fn record(
             )?;
             summary.failed += 1;
             tracker.download_failed(&f.source_key, &failure.message, f.previous_attempts);
-            crate::events::emit(crate::events::Event::Failed {
-                source: f.source_key.clone(),
-                video_id: f.video_id.clone(),
-                title: f.title.clone(),
-                error: failure.message.clone(),
-            });
-            if failure.permanent {
-                tracing::warn!(
-                    "{}: “{}” is unavailable: {}",
-                    f.source_key,
-                    f.title,
-                    failure.message
-                );
-            } else {
-                tracing::error!(
-                    "{}: “{}” failed (will retry): {}",
-                    f.source_key,
-                    f.title,
-                    failure.message
-                );
-            }
+            report_failure(f, failure);
         }
         Outcome::Stopped => {
             crate::events::emit(crate::events::Event::Stopped {
@@ -1304,6 +1409,52 @@ fn record(
         }
     }
     Ok(())
+}
+
+/// Tell the live panel and `out` that a video was saved.
+fn report_done(f: &Finished, media_bytes: u64, linked: bool, out: &mut dyn Write) {
+    crate::events::emit(crate::events::Event::Saved {
+        source: f.source_key.clone(),
+        video_id: f.video_id.clone(),
+        title: f.title.clone(),
+    });
+    let how = if linked {
+        "linked from another source"
+    } else {
+        "downloaded"
+    };
+    let _ = writeln!(
+        out,
+        "{}: {how} “{}” ({})",
+        f.source_key,
+        f.title,
+        human_bytes(media_bytes)
+    );
+}
+
+/// Tell the live panel and the log that a video failed.
+fn report_failure(f: &Finished, failure: &Failure) {
+    crate::events::emit(crate::events::Event::Failed {
+        source: f.source_key.clone(),
+        video_id: f.video_id.clone(),
+        title: f.title.clone(),
+        error: failure.message.clone(),
+    });
+    if failure.permanent {
+        tracing::warn!(
+            "{}: “{}” is unavailable: {}",
+            f.source_key,
+            f.title,
+            failure.message
+        );
+    } else {
+        tracing::error!(
+            "{}: “{}” failed (will retry): {}",
+            f.source_key,
+            f.title,
+            failure.message
+        );
+    }
 }
 
 #[cfg(test)]

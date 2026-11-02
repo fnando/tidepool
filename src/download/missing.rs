@@ -5,7 +5,7 @@
 //! it, subtitles with yt-dlp (without the video), the metadata file from
 //! tidepool's copy. Otherwise the run reports them.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
@@ -29,6 +29,7 @@ pub struct Report {
 }
 
 /// What's missing of a video: `media`, `cover`, `subtitle:<lang>`, `metadata`.
+#[must_use]
 pub fn missing(files: &VideoFiles) -> Vec<String> {
     let gone = |path: &str| !Path::new(path).exists() && !Path::new(path).is_symlink();
     let mut out = Vec::new();
@@ -53,11 +54,18 @@ pub fn missing(files: &VideoFiles) -> Vec<String> {
     out
 }
 
-/// Check the downloaded videos of `sources`; restore or report.
+/// Check the downloaded videos of `sources`; restore or report. `paths`
+/// has every source's paths.
+///
+/// # Errors
+///
+/// Returns a message when the state database can't be read or updated, or
+/// writing to `out` fails. Files that can't be restored are counted in
+/// [`Report::failed`] instead.
 pub async fn check(
     state: &State,
     sources: &[EffectiveSource],
-    paths: &HashMap<String, SourcePaths>,
+    paths: &BTreeMap<String, SourcePaths>,
     ctx: &Context,
     out: &mut dyn Write,
 ) -> Result<Report, String> {
@@ -70,10 +78,9 @@ pub async fn check(
         if missing.is_empty() {
             continue;
         }
-        let source = sources
-            .iter()
-            .find(|s| s.key == item.source_key)
-            .expect("a chosen source");
+        let Some(source) = sources.iter().find(|s| s.key == item.source_key) else {
+            continue;
+        };
         let label = format!("{}: {}", item.source_key, item.video_id);
         tracing::debug!("{label}: missing {}", missing.join(", "));
         if !source.redownload_missing {

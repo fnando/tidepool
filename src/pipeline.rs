@@ -1,5 +1,6 @@
 //! The sync pipeline's stages, shared by `index` and `run`.
 
+use std::fmt::Write as _;
 use std::path::PathBuf;
 
 use jiff::Timestamp;
@@ -21,6 +22,7 @@ use crate::state::items::{IndexSummary, SourceRecord, record_index, status};
 
 /// A hash of a source's effective filters, stored with the source so later
 /// stages can tell when the rules changed.
+#[must_use]
 pub fn rules_hash(source: &EffectiveSource) -> String {
     let filters = serde_json::json!({
         "include": source.include,
@@ -30,13 +32,15 @@ pub fn rules_hash(source: &EffectiveSource) -> String {
         "max_duration": source.max_duration,
         "cutoff": source.cutoff,
     });
-    Sha256::digest(filters.to_string().as_bytes())
-        .iter()
-        .map(|b| format!("{b:02x}"))
-        .collect()
+    crate::hex::encode(&Sha256::digest(filters.to_string().as_bytes()))
 }
 
 /// `cookies_file`, expanded; `None` when unset.
+///
+/// # Errors
+///
+/// Returns a message when the path has an unclosed `${` or references an
+/// environment variable that isn't set.
 pub fn cookies_file(source: &EffectiveSource, dirs: &Dirs) -> Result<Option<PathBuf>, String> {
     if source.cookies_file.is_empty() {
         return Ok(None);
@@ -76,12 +80,9 @@ pub struct ApiPool {
 
 /// An API key's id: the start of its SHA-256, so the key itself is never
 /// stored anywhere but the config.
+#[must_use]
 pub fn key_id(key: &str) -> String {
-    Sha256::digest(key.as_bytes())
-        .iter()
-        .take(6)
-        .map(|b| format!("{b:02x}"))
-        .collect()
+    crate::hex::encode(&Sha256::digest(key.as_bytes())[..6])
 }
 
 /// List a source through the API, if it has a key that still works. `None`
@@ -116,7 +117,7 @@ async fn list_with_api(
             tracker.api_succeeded();
             Ok(Some(list))
         }
-        Err(e) => pool.failed(source, id, e, tracker).map(|()| None),
+        Err(e) => pool.failed(source, id, &e, tracker).map(|()| None),
     }
 }
 
@@ -191,17 +192,17 @@ impl ApiPool {
         &mut self,
         source: &EffectiveSource,
         id: String,
-        e: ApiError,
+        e: &ApiError,
         tracker: &mut crate::problems::Tracker,
     ) -> Result<(), IndexFailure> {
-        if e == ApiError::Stopped {
+        if *e == ApiError::Stopped {
             return Err(IndexFailure::Stopped);
         }
         let masked =
             crate::config::diff::mask_secret(source.youtube.api_key.as_deref().unwrap_or(""));
         if e.disables_key() {
             tracing::warn!("{}: {e}; using yt-dlp for the rest of this run", source.key);
-            let kind = match &e {
+            let kind = match e {
                 ApiError::Quota => Some(crate::problems::Kind::ApiQuota),
                 ApiError::KeyRejected(_) => Some(crate::problems::Kind::ApiKeyRejected),
                 _ => None,
@@ -213,7 +214,7 @@ impl ApiPool {
         } else {
             tracing::info!("{}: {e}; trying yt-dlp", source.key);
         }
-        fallback(source, &e)
+        fallback(source, e)
     }
 }
 
@@ -265,7 +266,7 @@ async fn resolve_channel(
                     "YouTube has no channel {reference}"
                 )));
             }
-            Err(e) => pool.failed(source, id, e, tracker)?,
+            Err(e) => pool.failed(source, id, &e, tracker)?,
         }
     }
     let (channel_id, title) = ytdlp::channel(ytdlp, &list.url, cookies, shutdown, grace)
@@ -328,17 +329,16 @@ async fn list_one(
         l.now,
     )
     .await?;
-    let (mut listed, how) = match api_list {
-        Some(listed) => (listed, "api"),
-        None => {
-            let listed = ytdlp::list(l.ytdlp, &url, l.cookies, l.shutdown, l.grace)
-                .await
-                .map_err(|e| match e {
-                    crate::index::IndexError::Stopped => IndexFailure::Stopped,
-                    e => IndexFailure::Failed(e.to_string()),
-                })?;
-            (listed, "ytdlp")
-        }
+    let (mut listed, how) = if let Some(listed) = api_list {
+        (listed, "api")
+    } else {
+        let listed = ytdlp::list(l.ytdlp, &url, l.cookies, l.shutdown, l.grace)
+            .await
+            .map_err(|e| match e {
+                crate::index::IndexError::Stopped => IndexFailure::Stopped,
+                e => IndexFailure::Failed(e.to_string()),
+            })?;
+        (listed, "ytdlp")
     };
     if channel_title.is_some() {
         listed.title = channel_title;
@@ -349,6 +349,12 @@ async fn list_one(
 /// List a source's `urls`, apply its filters and record the result. A list
 /// that can't be read doesn't stop the others (see `IndexSummary::errors`);
 /// only when none can be read is the whole source a failure.
+///
+/// # Errors
+///
+/// Fails when stopping starts, the source's filters or `cookies_file` are
+/// invalid, none of its lists can be read, or the state database can't be
+/// read or updated.
 #[allow(clippy::too_many_arguments)]
 pub async fn index_source(
     state: &mut State,
@@ -376,56 +382,13 @@ pub async fn index_source(
         now,
     };
     let lists = source.lists();
-    let several = lists.len() > 1;
     let started = std::time::Instant::now();
-
-    // Every list in order: a video belongs where it's first found, and
-    // positions run on from one list to the next.
-    let mut merged = RemoteList {
-        id: String::new(),
-        title: None,
-        items: Vec::new(),
-    };
-    let mut found_in: HashMap<String, Vec<String>> = HashMap::new();
-    let mut placed: HashSet<String> = HashSet::new();
-    let mut errors: Vec<(String, IndexFailure)> = Vec::new();
-    let mut hows: Vec<&str> = Vec::new();
-    for (n, list) in lists.iter().enumerate() {
-        match list_one(&lister, list, apis, tracker).await {
-            Ok((listed, how)) => {
-                if !hows.contains(&how) {
-                    hows.push(how);
-                }
-                if n == 0 {
-                    merged.title = listed.title;
-                }
-                for mut item in listed.items {
-                    let lists_of = found_in.entry(item.video_id.clone()).or_default();
-                    if !lists_of.contains(&list.id) {
-                        lists_of.push(list.id.clone());
-                    }
-                    if placed.insert(item.video_id.clone()) {
-                        item.position = u32::try_from(merged.items.len() + 1).unwrap_or(u32::MAX);
-                        merged.items.push(item);
-                    }
-                }
-            }
-            Err(IndexFailure::Stopped) => return Err(IndexFailure::Stopped),
-            Err(e) => errors.push((list.url.clone(), e)),
-        }
-    }
-    if hows.is_empty() {
-        // Nothing could be read: the source failed.
-        let no_fallback = errors
-            .iter()
-            .any(|(_, e)| matches!(e, IndexFailure::NoFallback(_)));
-        let message = describe_errors(&errors, several);
-        return Err(if no_fallback {
-            IndexFailure::NoFallback(message)
-        } else {
-            IndexFailure::Failed(message)
-        });
-    }
+    let Listing {
+        mut merged,
+        found_in,
+        errors,
+        hows,
+    } = list_all(&lister, &lists, apis, tracker).await?;
 
     // Rules on `kind`: settle what can be settled now. The API marks live
     // streams, so through it "not a Short" means a regular video; through
@@ -484,16 +447,7 @@ pub async fn index_source(
         now,
     )
     .map_err(|e| IndexFailure::Failed(format!("cannot record the index: {e}")))?;
-    for d in &summary.decisions {
-        let line = format!("“{}” [{}]: {}", d.title, d.video_id, d.decision);
-        if d.new {
-            tracing::debug!("{}: new: {line}", source.key);
-        } else if d.changed {
-            tracing::debug!("{}: changed: {line}", source.key);
-        } else {
-            tracing::trace!("{}: {line}", source.key);
-        }
-    }
+    log_decisions(&source.key, &summary);
     summary.errors = errors
         .into_iter()
         .map(|(url, e)| {
@@ -502,6 +456,96 @@ pub async fn index_source(
         })
         .collect();
     Ok(summary)
+}
+
+/// A source's lists, read and merged.
+struct Listing {
+    merged: RemoteList,
+    /// The lists each video was found in.
+    found_in: HashMap<String, Vec<String>>,
+    /// The lists that couldn't be read, by URL.
+    errors: Vec<(String, IndexFailure)>,
+    /// How the lists were read (`api`, `ytdlp`), in order of first use.
+    hows: Vec<&'static str>,
+}
+
+/// Read every list in order: a video belongs where it's first found, and
+/// positions run on from one list to the next.
+///
+/// # Errors
+///
+/// Fails when stopping starts, or when none of the lists can be read.
+async fn list_all(
+    reader: &Lister<'_>,
+    lists: &[SourceList],
+    apis: &mut ApiPool,
+    tracker: &mut crate::problems::Tracker,
+) -> Result<Listing, IndexFailure> {
+    let mut merged = RemoteList {
+        id: String::new(),
+        title: None,
+        items: Vec::new(),
+    };
+    let mut found_in: HashMap<String, Vec<String>> = HashMap::new();
+    let mut placed: HashSet<String> = HashSet::new();
+    let mut errors: Vec<(String, IndexFailure)> = Vec::new();
+    let mut hows: Vec<&str> = Vec::new();
+    for (n, list) in lists.iter().enumerate() {
+        match list_one(reader, list, apis, tracker).await {
+            Ok((listed, how)) => {
+                if !hows.contains(&how) {
+                    hows.push(how);
+                }
+                if n == 0 {
+                    merged.title = listed.title;
+                }
+                for mut item in listed.items {
+                    let in_lists = found_in.entry(item.video_id.clone()).or_default();
+                    if !in_lists.contains(&list.id) {
+                        in_lists.push(list.id.clone());
+                    }
+                    if placed.insert(item.video_id.clone()) {
+                        item.position = u32::try_from(merged.items.len() + 1).unwrap_or(u32::MAX);
+                        merged.items.push(item);
+                    }
+                }
+            }
+            Err(IndexFailure::Stopped) => return Err(IndexFailure::Stopped),
+            Err(e) => errors.push((list.url.clone(), e)),
+        }
+    }
+    if hows.is_empty() {
+        // Nothing could be read: the source failed.
+        let no_fallback = errors
+            .iter()
+            .any(|(_, e)| matches!(e, IndexFailure::NoFallback(_)));
+        let message = describe_errors(&errors, lists.len() > 1);
+        return Err(if no_fallback {
+            IndexFailure::NoFallback(message)
+        } else {
+            IndexFailure::Failed(message)
+        });
+    }
+    Ok(Listing {
+        merged,
+        found_in,
+        errors,
+        hows,
+    })
+}
+
+/// Log each video's decision: new and changed ones at debug level.
+fn log_decisions(key: &str, summary: &IndexSummary) {
+    for d in &summary.decisions {
+        let line = format!("“{}” [{}]: {}", d.title, d.video_id, d.decision);
+        if d.new {
+            tracing::debug!("{key}: new: {line}");
+        } else if d.changed {
+            tracing::debug!("{key}: changed: {line}");
+        } else {
+            tracing::trace!("{key}: {line}");
+        }
+    }
 }
 
 /// The rules' decision for each listed video, with `cleanup.max_items`
@@ -570,6 +614,7 @@ fn plural(n: usize, one: &str, many: &str) -> String {
 }
 
 /// One line per source: `lofi: 12 videos (3 new): 2 to download, 9 skipped (…)`.
+#[must_use]
 pub fn describe_index(key: &str, summary: &IndexSummary) -> String {
     let mut head = format!("{key}: {}", plural(summary.total, "video", "videos"));
     let mut notes = Vec::new();
@@ -580,7 +625,7 @@ pub fn describe_index(key: &str, summary: &IndexSummary) -> String {
         notes.push(format!("{} gone from the source", summary.removed));
     }
     if !notes.is_empty() {
-        head.push_str(&format!(" ({})", notes.join(", ")));
+        let _ = write!(head, " ({})", notes.join(", "));
     }
 
     let mut parts = Vec::new();

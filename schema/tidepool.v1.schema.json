@@ -17,7 +17,7 @@
           "type": "string"
         },
         "cover_file": {
-          "description": "The poster, a full path ending in .jpg, .png or .webp (which picks\nthe image format). Defaults to \"{output_dir}/{normalized_title}-poster.jpg\".",
+          "description": "The poster, a full path ending in .jpg, .png or .webp (which picks\nthe image format). Defaults to `{output_dir}/{normalized_title}-poster.jpg`.",
           "format": "cover-file-template",
           "type": "string"
         },
@@ -91,7 +91,7 @@
           "type": "string"
         },
         "media_dir": {
-          "description": "The media folder, a full path; path settings refer to it as {media_dir}.\nDefaults to ~/.local/share/tidepool/media.",
+          "description": "The media folder, a full path; path settings refer to it as `{media_dir}`.\nDefaults to `~/.local/share/tidepool/media`.",
           "format": "full-path",
           "type": "string"
         },
@@ -100,7 +100,7 @@
           "type": "string"
         },
         "metadata_file": {
-          "description": "tidepool's metadata.json, a full path. Defaults to \"{output_dir}/metadata.json\".",
+          "description": "tidepool's `metadata.json`, a full path. Defaults to `{output_dir}/metadata.json`.",
           "format": "metadata-file-template",
           "type": "string"
         },
@@ -113,12 +113,12 @@
           "type": "string"
         },
         "output_dir": {
-          "description": "Each video's directory, a full path; the file settings refer to it\nas {output_dir}. Defaults to \"{media_dir}/{source}/{upload_date} - {title} [{id}]\".",
+          "description": "Each video's directory, a full path; the file settings refer to it\nas `{output_dir}`. Defaults to `{media_dir}/{source}/{upload_date} - {title} [{id}]`.",
           "format": "output-dir-template",
           "type": "string"
         },
         "output_file": {
-          "description": "The media file, a full path; must contain {ext}.\nDefaults to \"{output_dir}/{normalized_title}.{ext}\".",
+          "description": "The media file, a full path; must contain `{ext}`.\nDefaults to `{output_dir}/{normalized_title}.{ext}`.",
           "format": "output-file-template",
           "type": "string"
         },
@@ -127,17 +127,17 @@
           "type": "boolean"
         },
         "subtitle_file": {
-          "description": "Each subtitle file, a full path; must contain {lang} and {ext}.\nDefaults to \"{output_dir}/{normalized_title}.{lang}.{ext}\".",
+          "description": "Each subtitle file, a full path; must contain `{lang}` and `{ext}`.\nDefaults to `{output_dir}/{normalized_title}.{lang}.{ext}`.",
           "format": "subtitle-file-template",
           "type": "string"
         },
         "tmp_dir": {
-          "description": "Work area for downloads in progress, a full path ({data_dir} and\n{media_dir} allowed). Defaults to {data_dir}/tmp.",
+          "description": "Work area for downloads in progress, a full path (`{data_dir}` and\n`{media_dir}` allowed). Defaults to `{data_dir}/tmp`.",
           "format": "tmp-dir-template",
           "type": "string"
         },
         "trash_dir": {
-          "description": "Where cleanup puts removed files until they're deleted for good, a\nfull path ({data_dir} and {media_dir} allowed). Defaults to\n{data_dir}/trash; on the media's disk, moving there is instant.",
+          "description": "Where cleanup puts removed files until they're deleted for good, a\nfull path (`{data_dir}` and `{media_dir}` allowed). Defaults to\n`{data_dir}/trash`; on the media's disk, moving there is instant.",
           "format": "trash-dir-template",
           "type": "string"
         },
@@ -502,7 +502,7 @@
           "type": "boolean"
         },
         "server": {
-          "description": "The MusicBrainz server (a mirror works); default https://musicbrainz.org,\nasked at most once a second.",
+          "description": "The MusicBrainz server (a mirror works); default `https://musicbrainz.org`,\nasked at most once a second.",
           "pattern": "^https?://",
           "type": "string"
         }
@@ -624,7 +624,7 @@
           "type": "string"
         },
         "cover_file": {
-          "description": "The poster, a full path ending in .jpg, .png or .webp (which picks\nthe image format). Defaults to \"{output_dir}/{normalized_title}-poster.jpg\".",
+          "description": "The poster, a full path ending in .jpg, .png or .webp (which picks\nthe image format). Defaults to `{output_dir}/{normalized_title}-poster.jpg`.",
           "format": "cover-file-template",
           "type": "string"
         },
@@ -702,7 +702,7 @@
           "type": "string"
         },
         "media_dir": {
-          "description": "The media folder, a full path; path settings refer to it as {media_dir}.\nDefaults to ~/.local/share/tidepool/media.",
+          "description": "The media folder, a full path; path settings refer to it as `{media_dir}`.\nDefaults to `~/.local/share/tidepool/media`.",
           "format": "full-path",
           "type": "string"
         },
@@ -711,7 +711,7 @@
           "type": "string"
         },
         "metadata_file": {
-          "description": "tidepool's metadata.json, a full path. Defaults to \"{output_dir}/metadata.json\".",
+          "description": "tidepool's `metadata.json`, a full path. Defaults to `{output_dir}/metadata.json`.",
           "format": "metadata-file-template",
           "type": "string"
         },
@@ -724,12 +724,12 @@
           "type": "string"
         },
         "output_dir": {
-          "description": "Each video's directory, a full path; the file settings refer to it\nas {output_dir}. Defaults to \"{media_dir}/{source}/{upload_date} - {title} [{id}]\".",
+          "description": "Each video's directory, a full path; the file settings refer to it\nas `{output_dir}`. Defaults to `{media_dir}/{source}/{upload_date} - {title} [{id}]`.",
           "format": "output-dir-template",
           "type": "string"
         },
         "output_file": {
-          "description": "The media file, a full path; must contain {ext}.\nDefaults to \"{output_dir}/{normalized_title}.{ext}\".",
+          "description": "The media file, a full path; must contain `{ext}`.\nDefaults to `{output_dir}/{normalized_title}.{ext}`.",
           "format": "output-file-template",
           "type": "string"
         },
@@ -738,17 +738,17 @@
           "type": "boolean"
         },
         "subtitle_file": {
-          "description": "Each subtitle file, a full path; must contain {lang} and {ext}.\nDefaults to \"{output_dir}/{normalized_title}.{lang}.{ext}\".",
+          "description": "Each subtitle file, a full path; must contain `{lang}` and `{ext}`.\nDefaults to `{output_dir}/{normalized_title}.{lang}.{ext}`.",
           "format": "subtitle-file-template",
           "type": "string"
         },
         "tmp_dir": {
-          "description": "Work area for downloads in progress, a full path ({data_dir} and\n{media_dir} allowed). Defaults to {data_dir}/tmp.",
+          "description": "Work area for downloads in progress, a full path (`{data_dir}` and\n`{media_dir}` allowed). Defaults to `{data_dir}/tmp`.",
           "format": "tmp-dir-template",
           "type": "string"
         },
         "trash_dir": {
-          "description": "Where cleanup puts removed files until they're deleted for good, a\nfull path ({data_dir} and {media_dir} allowed). Defaults to\n{data_dir}/trash; on the media's disk, moving there is instant.",
+          "description": "Where cleanup puts removed files until they're deleted for good, a\nfull path (`{data_dir}` and `{media_dir}` allowed). Defaults to\n`{data_dir}/trash`; on the media's disk, moving there is instant.",
           "format": "trash-dir-template",
           "type": "string"
         },

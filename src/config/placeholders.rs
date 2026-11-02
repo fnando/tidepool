@@ -43,6 +43,7 @@ impl Setting {
     }
 
     /// Whether rendered values are sanitized for use in file names.
+    #[must_use]
     pub fn sanitizes(self) -> bool {
         self.bit() & PATHS != 0
     }
@@ -53,6 +54,7 @@ impl Setting {
     }
 
     /// The setting's name in the config.
+    #[must_use]
     pub fn name(self) -> &'static str {
         match self {
             Setting::OutputDir => "output_dir",
@@ -103,6 +105,7 @@ pub struct Placeholder {
 }
 
 impl Placeholder {
+    #[must_use]
     pub fn allowed_in(&self, setting: Setting) -> bool {
         self.allowed & setting.bit() != 0
     }
@@ -151,6 +154,7 @@ pub const PLACEHOLDERS: &[Placeholder] = &[
 ];
 
 /// Look up a placeholder by name.
+#[must_use]
 pub fn lookup(name: &str) -> Option<&'static Placeholder> {
     PLACEHOLDERS.iter().find(|p| p.name == name)
 }
@@ -201,6 +205,12 @@ impl fmt::Display for TemplateError {
 }
 
 /// Split a template into literals and placeholders.
+///
+/// # Errors
+///
+/// [`TemplateError::Unbalanced`] for a stray, unclosed or empty brace, and
+/// [`TemplateError::BadFormatSpec`] for a format other than zero padding
+/// (`{name:03}`).
 pub fn parse(template: &str) -> Result<Vec<Segment>, TemplateError> {
     let mut segments = Vec::new();
     let mut literal = String::new();
@@ -258,6 +268,13 @@ pub fn parse(template: &str) -> Result<Vec<Segment>, TemplateError> {
 }
 
 /// Parse and check a template for a setting.
+///
+/// # Errors
+///
+/// When the template doesn't parse (see [`parse`]), uses a placeholder that's
+/// unknown or not allowed in `setting`, pads a non-numeric placeholder, leaves
+/// out one `setting` requires, isn't a full path where `setting` needs one, or
+/// (for `cover_file`) doesn't end in an image extension.
 pub fn validate(template: &str, setting: Setting) -> Result<Vec<Segment>, TemplateError> {
     let segments = parse(template)?;
     let mut used: Vec<&str> = Vec::new();
@@ -309,6 +326,7 @@ pub fn validate(template: &str, setting: Setting) -> Result<Vec<Segment>, Templa
 }
 
 /// The poster extension a `cover_file` ends with, lowercased.
+#[must_use]
 pub fn cover_extension(path: &str) -> Option<String> {
     let (_, extension) = path.rsplit_once('.')?;
     let extension = extension.to_ascii_lowercase();
@@ -318,18 +336,21 @@ pub fn cover_extension(path: &str) -> Option<String> {
 }
 
 /// A title for file names: transliterated to ASCII, then sanitized.
+#[must_use]
 pub fn normalize_title(title: &str) -> String {
     sanitize(&deunicode::deunicode(title))
 }
 
 /// A path that doesn't depend on the current directory: `/…`, `~`, `~/…` or
 /// `$VAR…`.
+#[must_use]
 pub fn is_full_path(path: &str) -> bool {
     path.starts_with('/') || path == "~" || path.starts_with("~/") || path.starts_with('$')
 }
 
 /// Strip characters that are unsafe in file names, collapse whitespace and cap
 /// the result at 120 bytes on a character boundary.
+#[must_use]
 pub fn sanitize(value: &str) -> String {
     const MAX_BYTES: usize = 120;
     let cleaned: String = value
@@ -389,6 +410,12 @@ pub fn render(
 /// Render a full-path template (`output`, `tmp_dir`): expand `~` and `$VARS`
 /// in the template itself, fill in placeholders (values used as given), and
 /// normalize the result. Fails unless it's a full path without `..`.
+///
+/// # Errors
+///
+/// When `~`/`$VARS` can't be expanded, the template isn't valid for
+/// `setting` (see [`validate`]), or it doesn't render to a full path without
+/// `..`.
 pub fn render_path(
     template: &str,
     setting: Setting,

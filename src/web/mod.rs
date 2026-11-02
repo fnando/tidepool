@@ -10,6 +10,7 @@
 
 pub mod data;
 
+use std::fmt::Write as _;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -63,6 +64,7 @@ pub struct Wake {
 }
 
 impl Web {
+    #[must_use]
     pub fn new(
         db: PathBuf,
         data_dir: PathBuf,
@@ -101,7 +103,7 @@ impl Web {
     fn session(&self) -> String {
         use sha2::Digest;
         let digest = sha2::Sha256::digest(format!("tidepool-session:{}", self.token));
-        digest.iter().map(|b| format!("{b:02x}")).collect()
+        crate::hex::encode(&digest)
     }
 
     /// Run `f` on a database connection, off the async threads.
@@ -129,6 +131,10 @@ impl Web {
 }
 
 /// Serve `web` on `listener` until `shutdown` stops it.
+///
+/// # Errors
+///
+/// Fails if accepting connections fails.
 pub async fn serve(
     web: Arc<Web>,
     listener: tokio::net::TcpListener,
@@ -230,7 +236,7 @@ async fn api_events(State(web): State<Arc<Web>>) -> Response {
         (receiver, shutdown),
         |(mut receiver, shutdown)| async move {
             let data = tokio::select! {
-                _ = shutdown.stopping() => return None,
+                () = shutdown.stopping() => return None,
                 got = receiver.recv() => match got {
                     Ok(event) => serde_json::to_string(&event).expect("events serialize"),
                     // Too far behind: say something changed, the page reloads.
@@ -376,25 +382,22 @@ async fn set_downloads(
             .current()?
             .ok_or_else(|| anyhow::anyhow!("there's no stored config yet"))?;
         let mut doc: toml_edit::DocumentMut = current.toml.parse()?;
-        let what = match &source {
-            Some(key) => {
-                let Some(table) = doc
-                    .get_mut("sources")
-                    .and_then(|s| s.get_mut(key.as_str()))
-                    .and_then(|t| t.as_table_like_mut())
-                else {
-                    return Ok(None);
-                };
-                table.insert("download", toml_edit::value(on));
-                format!("for {key}")
+        let what = if let Some(key) = &source {
+            let Some(table) = doc
+                .get_mut("sources")
+                .and_then(|s| s.get_mut(key.as_str()))
+                .and_then(|t| t.as_table_like_mut())
+            else {
+                return Ok(None);
+            };
+            table.insert("download", toml_edit::value(on));
+            format!("for {key}")
+        } else {
+            if doc.get("general").is_none() {
+                doc["general"] = toml_edit::table();
             }
-            None => {
-                if doc.get("general").is_none() {
-                    doc["general"] = toml_edit::table();
-                }
-                doc["general"]["download"] = toml_edit::value(on);
-                "for every source without its own setting".to_string()
-            }
+            doc["general"]["download"] = toml_edit::value(on);
+            "for every source without its own setting".to_string()
         };
         let text = doc.to_string();
         let loaded = crate::config::load_str("config", &text)?;
@@ -404,7 +407,7 @@ async fn set_downloads(
             if on { "on" } else { "off" }
         );
         if let Err(problem) = written {
-            message.push_str(&format!(" But {problem}."));
+            let _ = write!(message, " But {problem}.");
         }
         Ok(Some(message))
     })
@@ -435,16 +438,16 @@ async fn api_status(State(web): State<Arc<Web>>) -> Result<Json<data::Status>, W
     Ok(Json(web.status().await?))
 }
 
-fn api_message(message: String) -> Json<serde_json::Value> {
+fn api_message(message: &str) -> Json<serde_json::Value> {
     Json(serde_json::json!({ "message": message }))
 }
 
 async fn api_sync(State(web): State<Arc<Web>>) -> Result<Json<serde_json::Value>, WebError> {
-    Ok(api_message(sync_now(&web).await?))
+    Ok(api_message(&sync_now(&web).await?))
 }
 
 async fn api_cleanup(State(web): State<Arc<Web>>) -> Result<Json<serde_json::Value>, WebError> {
-    Ok(api_message(cleanup_now(&web).await?))
+    Ok(api_message(&cleanup_now(&web).await?))
 }
 
 async fn api_service(
@@ -452,7 +455,7 @@ async fn api_service(
     Path((name, action)): Path<(String, String)>,
 ) -> Result<Response, WebError> {
     match set_service(&web, &name, &action).await? {
-        Some(message) => Ok(api_message(message).into_response()),
+        Some(message) => Ok(api_message(&message).into_response()),
         None => Ok((
             StatusCode::NOT_FOUND,
             Json(serde_json::json!({ "error": "no such service or action" })),
@@ -579,7 +582,8 @@ async fn source_page(
                     r.get(0)
                 })
                 .unwrap_or(None);
-            let mut counts: std::collections::HashMap<&'static str, i64> = Default::default();
+            let mut counts: std::collections::HashMap<&'static str, i64> =
+                std::collections::HashMap::default();
             let mut stmt = conn.prepare(
                 "SELECT status, COUNT(*) FROM items WHERE source_key = ?1 GROUP BY status",
             )?;
@@ -862,7 +866,7 @@ async fn config_page(
             });
             Ok(ConfigPage {
                 csrf,
-                rev: current.as_ref().map(|c| c.rev).unwrap_or(0),
+                rev: current.as_ref().map_or(0, |c| c.rev),
                 text: current
                     .as_ref()
                     .map(|c| crate::config::diff::mask_toml(&c.toml))
@@ -972,12 +976,12 @@ async fn config_save(
     headers: HeaderMap,
     Form(form): Form<ConfigForm>,
 ) -> Result<Response, WebError> {
-    if web.read_only {
-        return Ok(read_only());
-    }
     enum Outcome {
         Result(ConfigResult),
         Saved(i64, Result<(), String>),
+    }
+    if web.read_only {
+        return Ok(read_only());
     }
     let outcome = web
         .db(move |conn| {
@@ -1210,7 +1214,7 @@ fn random_hex(bytes: usize) -> String {
     std::fs::File::open("/dev/urandom")
         .and_then(|mut f| f.read_exact(&mut buf))
         .expect("/dev/urandom");
-    buf.iter().map(|b| format!("{b:02x}")).collect()
+    crate::hex::encode(&buf)
 }
 
 #[cfg(test)]

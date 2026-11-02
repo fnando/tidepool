@@ -83,7 +83,7 @@ impl Github {
     fn manager(&self, bin: &Path) -> Manager {
         Manager::with(
             bin.to_path_buf(),
-            self.server.uri(),
+            &self.server.uri(),
             test_verifier(),
             Ok(ASSET),
             Ok("deno-x86_64-unknown-linux-gnu.zip".into()),
@@ -205,7 +205,7 @@ async fn rejects_bad_checksums_and_signatures_without_touching_the_current_binar
     // A release signed by another key (the real yt-dlp key isn't ours here).
     let other = Manager::with(
         bin.path().to_path_buf(),
-        gh.server.uri(),
+        &gh.server.uri(),
         Verifier::ytdlp(),
         Ok(ASSET),
         Ok("deno-x86_64-unknown-linux-gnu.zip".into()),
@@ -364,7 +364,7 @@ async fn unsupported_platforms_say_how_to_proceed() {
     let bin = tempfile::tempdir().unwrap();
     let manager = Manager::with(
         bin.path().to_path_buf(),
-        gh.server.uri(),
+        &gh.server.uri(),
         test_verifier(),
         Err("no yt-dlp release binary for x".into()),
         Err("no Deno release binary for x".into()),

@@ -35,6 +35,12 @@ pub struct Verifier {
 
 impl Verifier {
     /// The verifier for real yt-dlp releases.
+    ///
+    /// # Panics
+    ///
+    /// If the embedded yt-dlp signing key doesn't parse or isn't the one with
+    /// the expected fingerprint, which would mean the build is broken.
+    #[must_use]
     pub fn ytdlp() -> Self {
         let verifier = Self::from_armored(YTDLP_SIGNING_KEY).expect("embedded yt-dlp key parses");
         assert_eq!(
@@ -45,6 +51,11 @@ impl Verifier {
         verifier
     }
 
+    /// A verifier for an ASCII-armored public key.
+    ///
+    /// # Errors
+    ///
+    /// [`VerifyError::Key`] when `armored` isn't a single armored public key.
     pub fn from_armored(armored: &str) -> Result<Self, VerifyError> {
         let (key, _) = SignedPublicKey::from_armor_single(armored.as_bytes())
             .map_err(|e| VerifyError::Key(e.to_string()))?;
@@ -58,6 +69,11 @@ impl Verifier {
 
     /// Verify a binary detached signature over `content`, made by the primary
     /// key or one of its subkeys.
+    ///
+    /// # Errors
+    ///
+    /// [`VerifyError::BadSignature`] when `signature` doesn't parse, or
+    /// neither the key nor a subkey made it over `content`.
     pub fn verify(&self, content: &[u8], signature: &[u8]) -> Result<(), VerifyError> {
         let signature =
             DetachedSignature::from_bytes(signature).map_err(|_| VerifyError::BadSignature)?;
@@ -78,6 +94,11 @@ impl Verifier {
 }
 
 /// The expected SHA-256 of `asset` in a `SHA2-256SUMS` file.
+///
+/// # Errors
+///
+/// [`VerifyError::MissingChecksum`] when `sums` has no valid SHA-256 for
+/// `asset`.
 pub fn checksum_for(sums: &str, asset: &str) -> Result<String, VerifyError> {
     sums.lines()
         .filter_map(|line| line.split_once(char::is_whitespace))
@@ -89,6 +110,10 @@ pub fn checksum_for(sums: &str, asset: &str) -> Result<String, VerifyError> {
 
 /// The SHA-256 in a single-file checksum (Deno's `<asset>.sha256sum`):
 /// the first 64-hex-digit word.
+///
+/// # Errors
+///
+/// [`VerifyError::MissingChecksum`] when `text` has no 64-hex-digit word.
 pub fn single_checksum(text: &str, asset: &str) -> Result<String, VerifyError> {
     text.split_whitespace()
         .find(|w| w.len() == 64 && w.chars().all(|c| c.is_ascii_hexdigit()))
@@ -97,6 +122,10 @@ pub fn single_checksum(text: &str, asset: &str) -> Result<String, VerifyError> {
 }
 
 /// Compare a computed SHA-256 (hex) with the expected one.
+///
+/// # Errors
+///
+/// [`VerifyError::ChecksumMismatch`] when they differ.
 pub fn check_checksum(asset: &str, expected: &str, actual: &str) -> Result<(), VerifyError> {
     if expected.eq_ignore_ascii_case(actual) {
         Ok(())

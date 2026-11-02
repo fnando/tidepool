@@ -2,7 +2,7 @@
 //! gets in and out; each revision keeps the TOML text verbatim (comments
 //! included) next to the validated, normalized JSON.
 
-use std::fmt;
+use std::fmt::{self, Write as _};
 
 use rusqlite::{Connection, OptionalExtension, params};
 use sha2::{Digest, Sha256};
@@ -19,6 +19,7 @@ pub enum Source {
 }
 
 impl Source {
+    #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
             Source::Import => "import",
@@ -67,6 +68,7 @@ pub enum Imported {
 }
 
 impl Imported {
+    #[must_use]
     pub fn rev(self) -> i64 {
         match self {
             Imported::Unchanged(rev) | Imported::Created(rev) => rev,
@@ -100,11 +102,14 @@ pub enum StoreError {
 }
 
 /// SHA-256 of `text`, hex-encoded.
+#[must_use]
 pub fn hash(text: &str) -> String {
     Sha256::digest(text.as_bytes())
         .iter()
-        .map(|b| format!("{b:02x}"))
-        .collect()
+        .fold(String::new(), |mut out, b| {
+            let _ = write!(out, "{b:02x}");
+            out
+        })
 }
 
 /// Config revisions.
@@ -131,11 +136,22 @@ impl<'a> ConfigStore<'a> {
         Self { conn }
     }
 
+    /// The latest revision, if there is one.
+    ///
+    /// # Errors
+    ///
+    /// [`StoreError::Sqlite`] when the database query fails.
     pub fn current(&self) -> Result<Option<Revision>, StoreError> {
         let sql = format!("SELECT {COLUMNS} FROM config_revisions ORDER BY rev DESC LIMIT 1");
         Ok(self.conn.query_row(&sql, [], row).optional()?)
     }
 
+    /// Revision `rev`.
+    ///
+    /// # Errors
+    ///
+    /// [`StoreError::Sqlite`] when the database query fails, and
+    /// [`StoreError::NoSuchRevision`] when there's no revision `rev`.
     pub fn get(&self, rev: i64) -> Result<Revision, StoreError> {
         let sql = format!("SELECT {COLUMNS} FROM config_revisions WHERE rev = ?1");
         self.conn
@@ -145,6 +161,10 @@ impl<'a> ConfigStore<'a> {
     }
 
     /// All revisions, oldest first.
+    ///
+    /// # Errors
+    ///
+    /// [`StoreError::Sqlite`] when the database query fails.
     pub fn history(&self) -> Result<Vec<Revision>, StoreError> {
         let sql = format!("SELECT {COLUMNS} FROM config_revisions ORDER BY rev");
         let mut stmt = self.conn.prepare(&sql)?;
@@ -153,6 +173,10 @@ impl<'a> ConfigStore<'a> {
     }
 
     /// The most recent revision imported from a file.
+    ///
+    /// # Errors
+    ///
+    /// [`StoreError::Sqlite`] when the database query fails.
     pub fn last_import(&self) -> Result<Option<Revision>, StoreError> {
         let sql = format!(
             "SELECT {COLUMNS} FROM config_revisions WHERE source = 'import' AND source_path IS NOT NULL \
@@ -162,6 +186,12 @@ impl<'a> ConfigStore<'a> {
     }
 
     /// The current revision, re-validated against this binary's schema.
+    ///
+    /// # Errors
+    ///
+    /// [`StoreError::Sqlite`] when the database query fails,
+    /// [`StoreError::Empty`] when there's no revision yet, and
+    /// [`StoreError::Config`] when the stored config no longer loads.
     pub fn load_current(&self) -> Result<(Revision, Loaded), StoreError> {
         let current = self.current()?.ok_or(StoreError::Empty)?;
         let loaded = load_str(&format!("config revision {}", current.rev), &current.toml)?;
@@ -186,6 +216,10 @@ impl<'a> ConfigStore<'a> {
 
     /// Store `text` (already validated as `loaded`) as a new revision, unless
     /// the current revision has the same text and source path.
+    ///
+    /// # Errors
+    ///
+    /// [`StoreError::Sqlite`] when the database query fails.
     pub fn import(
         &self,
         path: Option<&str>,
@@ -209,6 +243,12 @@ impl<'a> ConfigStore<'a> {
     /// `--config <path>`: import if the file changed. If the current revision
     /// came from the UI, a rollback or a merge, a differing file is a conflict
     /// unless `force`.
+    ///
+    /// # Errors
+    ///
+    /// [`StoreError::Sqlite`] when the database query fails,
+    /// [`StoreError::Conflict`] for a conflict, and [`StoreError::Config`]
+    /// when `text` doesn't load.
     pub fn import_if_changed(
         &self,
         path: &str,
@@ -232,11 +272,21 @@ impl<'a> ConfigStore<'a> {
     }
 
     /// Store text edited in the web UI as a new revision.
+    ///
+    /// # Errors
+    ///
+    /// [`StoreError::Sqlite`] when the database query fails.
     pub fn save_edit(&self, text: &str, loaded: &Loaded) -> Result<i64, StoreError> {
         self.insert(Source::Ui, None, text, loaded)
     }
 
     /// Make `rev` current again, as a new revision.
+    ///
+    /// # Errors
+    ///
+    /// [`StoreError::Sqlite`] when the database query fails,
+    /// [`StoreError::NoSuchRevision`] when there's no revision `rev`, and
+    /// [`StoreError::Config`] when it no longer loads.
     pub fn rollback(&self, rev: i64) -> Result<i64, StoreError> {
         let old = self.get(rev)?;
         let loaded = load_str(&format!("config revision {rev}"), &old.toml)?;
@@ -251,6 +301,11 @@ impl<'a> ConfigStore<'a> {
 
 /// Write a config to `path`, keeping what was there as `<path>.bak` (with
 /// its permissions: it may hold an API key). Returns the backup's path.
+///
+/// # Errors
+///
+/// When backing up the old file, or writing and moving the new one into
+/// place, fails.
 pub fn write_file(
     path: &std::path::Path,
     text: &str,

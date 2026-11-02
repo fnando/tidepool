@@ -45,6 +45,7 @@ impl Stage<'_> {
         hooks::of_type(self.hook_names, self.hooks, kind)
     }
 
+    #[must_use]
     pub fn has(&self, kind: HookType) -> bool {
         self.of_type(kind).next().is_some()
     }
@@ -76,6 +77,7 @@ impl Stage<'_> {
     }
 
     /// What hooks get as read-only `context`.
+    #[must_use]
     pub fn context(&self, info: &VideoInfo) -> serde_json::Value {
         serde_json::json!({
             "video": {
@@ -102,6 +104,11 @@ impl Stage<'_> {
 
     /// `prepare` hooks: they may change `info`'s details and where the files
     /// go. Returns the paths they set (for `Layout::with_overrides`).
+    ///
+    /// # Errors
+    ///
+    /// Fails when a hook fails (or prints output that can't be used) and
+    /// its `on_failure` isn't `warn`, or when the paths can't be rendered.
     pub async fn prepare_hooks(
         &self,
         info: &mut VideoInfo,
@@ -139,6 +146,12 @@ impl Stage<'_> {
 
     /// `downloaded` hooks, on the raw files in the work area `tmp`; they may
     /// replace them.
+    ///
+    /// # Errors
+    ///
+    /// Fails when a hook fails (or prints output that can't be used) and
+    /// its `on_failure` isn't `warn`. Files a hook returns must exist, stay in
+    /// `tmp` and keep the cover's format.
     pub async fn downloaded_hooks(
         &self,
         raw: &mut hooks::Files,
@@ -149,7 +162,7 @@ impl Stage<'_> {
         hook_runs: &mut Vec<hooks::Report>,
     ) -> Result<(), Failure> {
         for (name, hook) in self.of_type(HookType::Downloaded) {
-            let input = serde_json::to_vec(&raw.to_json(context)).expect("JSON");
+            let input = raw.to_json(context).to_string().into_bytes();
             let hook_values =
                 stage_values(values, tmp, Some(&raw.media), raw.cover.as_deref(), None);
             let report = self.run_hook(name, hook, &hook_values, tmp, &input).await;
@@ -177,6 +190,11 @@ impl Stage<'_> {
     }
 
     /// `embed` hooks: process what gets embedded (skipped when nothing is).
+    ///
+    /// # Errors
+    ///
+    /// Fails when a hook fails (or prints output that can't be used) and
+    /// its `on_failure` isn't `warn`.
     pub async fn embed_hooks(
         &self,
         data: &mut hooks::EmbedData,
@@ -194,7 +212,7 @@ impl Stage<'_> {
                 );
                 continue;
             }
-            let input = serde_json::to_vec(&data.to_json(context)).expect("JSON");
+            let input = data.to_json(context).to_string().into_bytes();
             let hook_values =
                 stage_values(values, tmp, Some(&raw.media), raw.cover.as_deref(), None);
             let report = self.run_hook(name, hook, &hook_values, tmp, &input).await;
@@ -234,49 +252,7 @@ impl Stage<'_> {
                 .and_then(|e| CoverFormat::from_extension(&e.to_string_lossy()))?;
             Some((path.as_path(), format))
         });
-        let request = embed::Request {
-            media,
-            tags: if settings.metadata {
-                data.tags.clone()
-            } else {
-                BTreeMap::new()
-            },
-            cover: cover.filter(|_| settings.cover),
-            chapters: if settings.chapters {
-                &data.chapters
-            } else {
-                &[]
-            },
-            subtitles: if settings.subtitles {
-                data.subtitles
-                    .iter()
-                    .map(|s| (s.path.clone(), s.lang.clone()))
-                    .collect()
-            } else {
-                Vec::new()
-            },
-            // `embed.tags` set to "": out of the file, streams included.
-            clear: if settings.metadata {
-                settings
-                    .tags
-                    .iter()
-                    .filter(|(_, value)| value.trim().is_empty())
-                    .map(|(key, _)| key.clone())
-                    .collect()
-            } else {
-                Vec::new()
-            },
-            remove: if remove_disabled {
-                embed::Embedded {
-                    metadata: !settings.metadata,
-                    cover: !settings.cover,
-                    chapters: !settings.chapters,
-                    subtitles: !settings.subtitles,
-                }
-            } else {
-                embed::Embedded::default()
-            },
-        };
+        let request = self.embed_request(media, data, cover, remove_disabled);
         if settings.cover && cover.is_none() {
             tracing::warn!("{label}: no cover to embed");
         }
@@ -326,6 +302,61 @@ impl Stage<'_> {
         }
     }
 
+    /// What `embed` asks ffmpeg for: what the source's `embed` settings turn
+    /// on and, with `remove_disabled`, taking out what they turn off.
+    fn embed_request<'a>(
+        &self,
+        media: &'a Path,
+        data: &'a hooks::EmbedData,
+        cover: Option<(&'a Path, CoverFormat)>,
+        remove_disabled: bool,
+    ) -> embed::Request<'a> {
+        let settings = &self.source.embed;
+        embed::Request {
+            media,
+            tags: if settings.metadata {
+                data.tags.clone()
+            } else {
+                BTreeMap::new()
+            },
+            cover: cover.filter(|_| settings.cover),
+            chapters: if settings.chapters {
+                &data.chapters
+            } else {
+                &[]
+            },
+            subtitles: if settings.subtitles {
+                data.subtitles
+                    .iter()
+                    .map(|s| (s.path.clone(), s.lang.clone()))
+                    .collect()
+            } else {
+                Vec::new()
+            },
+            // `embed.tags` set to "": out of the file, streams included.
+            clear: if settings.metadata {
+                settings
+                    .tags
+                    .iter()
+                    .filter(|(_, value)| value.trim().is_empty())
+                    .map(|(key, _)| key.clone())
+                    .collect()
+            } else {
+                Vec::new()
+            },
+            remove: if remove_disabled {
+                embed::Embedded {
+                    metadata: !settings.metadata,
+                    cover: !settings.cover,
+                    chapters: !settings.chapters,
+                    subtitles: !settings.subtitles,
+                }
+            } else {
+                embed::Embedded::default()
+            },
+        }
+    }
+
     /// `finished` hooks, on the placed files; what they print is ignored. A
     /// failure doesn't undo anything; it's recorded so the hook can be run
     /// again.
@@ -348,7 +379,7 @@ impl Stage<'_> {
                 .unwrap_or(Path::new("/"))
                 .to_path_buf()
         };
-        let input = serde_json::to_vec(&placed.to_json(context)).expect("JSON");
+        let input = placed.to_json(context).to_string().into_bytes();
         let hook_values = stage_values(
             values,
             &output_dir,
@@ -387,7 +418,7 @@ impl Stage<'_> {
         };
         let mut input = placed.to_json(context);
         input["reason"] = reason.into();
-        let input = serde_json::to_vec(&input).expect("JSON");
+        let input = input.to_string().into_bytes();
         let hook_values = stage_values(
             values,
             &output_dir,
@@ -420,6 +451,10 @@ impl Stage<'_> {
     /// tags name the artist (`MUSICBRAINZ_ARTISTID`; the name comes from
     /// MusicBrainz). `Err` when the name can't be looked up: the download is
     /// tried again later rather than saved under YouTube's title.
+    ///
+    /// # Errors
+    ///
+    /// Fails when the artist's name can't be looked up on MusicBrainz.
     pub async fn clean_title(&self, info: &mut VideoInfo) -> Result<(), Failure> {
         if self.source.clean_title != crate::config::CleanTitle::MusicVideo {
             return Ok(());
@@ -557,6 +592,7 @@ impl Stage<'_> {
 
 /// The artist's MusicBrainz id the source's `embed.tags` set
 /// (`MUSICBRAINZ_ARTISTID`, rendered with `values`), if any.
+#[must_use]
 pub fn artist_id(source: &EffectiveSource, values: &Values) -> Option<String> {
     let (_, template) = source
         .embed
@@ -574,6 +610,7 @@ pub fn artist_id(source: &EffectiveSource, values: &Values) -> Option<String> {
 }
 
 /// Whether any `embed` option is on.
+#[must_use]
 pub fn embedding_on(source: &EffectiveSource) -> bool {
     let e = &source.embed;
     e.metadata || e.cover || e.chapters || e.subtitles

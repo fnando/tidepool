@@ -6,6 +6,12 @@ use std::time::Duration;
 ///
 /// Units: `s`, `m`, `h`, `d`, `w`. At least one `<number><unit>` group is
 /// required; groups may be concatenated.
+///
+/// # Errors
+///
+/// When `input` is empty, has a unit without a number before it, ends in a
+/// number without a unit, uses an unknown unit, or adds up to more seconds
+/// than fit in a `u64`.
 pub fn parse_duration(input: &str) -> Result<Duration, String> {
     let invalid =
         || format!("{input:?} is not a valid duration (e.g. \"30d\", \"12h\", \"1h30m\")");

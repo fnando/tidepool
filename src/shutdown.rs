@@ -28,6 +28,7 @@ async fn next_signal(term: &mut tokio::signal::unix::Signal) -> i32 {
 
 impl Shutdown {
     /// Listen for SIGINT/SIGTERM in the background.
+    #[must_use]
     pub fn listen() -> Self {
         let shutdown = Self::default();
         let handle = shutdown.clone();
@@ -57,6 +58,7 @@ impl Shutdown {
 
     /// A shutdown for one part of the process (a daemon service): it stops
     /// when this one does, and can also be stopped on its own.
+    #[must_use]
     pub fn child(&self) -> Self {
         Self {
             stop: self.stop.child_token(),
@@ -72,21 +74,23 @@ impl Shutdown {
         self.kill.cancel();
     }
 
+    #[must_use]
     pub fn is_stopping(&self) -> bool {
         self.stop.is_cancelled()
     }
 
     /// Resolves once stopping started.
     pub async fn stopping(&self) {
-        self.stop.cancelled().await
+        self.stop.cancelled().await;
     }
 
     /// Resolves once processes must be killed right away.
     pub async fn killing(&self) {
-        self.kill.cancelled().await
+        self.kill.cancelled().await;
     }
 
     /// The exit code to use, once stopping started.
+    #[must_use]
     pub fn code(&self) -> Option<i32> {
         let parent = || self.parent_code.as_ref().map(|c| c.load(Ordering::SeqCst));
         match self.code.load(Ordering::SeqCst) {

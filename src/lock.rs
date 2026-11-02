@@ -23,6 +23,11 @@ pub enum LockError {
 }
 
 /// Take the lock at `path`, waiting for any other holder to finish.
+///
+/// # Errors
+///
+/// [`LockError::Io`] if the lock file (or its directory) can't be created,
+/// locked or written.
 pub fn acquire_blocking(path: &Path) -> Result<LibraryLock, LockError> {
     let io = |source| LockError::Io {
         path: path.to_path_buf(),
@@ -54,6 +59,11 @@ fn record_pid(file: &mut File) -> std::io::Result<()> {
 }
 
 /// Take the lock at `path` without blocking, recording our PID in it.
+///
+/// # Errors
+///
+/// [`LockError::Held`] if someone else holds it, [`LockError::Io`] if the
+/// lock file (or its directory) can't be created, locked or written.
 pub fn acquire(path: &Path) -> Result<LibraryLock, LockError> {
     let io = |source| LockError::Io {
         path: path.to_path_buf(),
@@ -90,18 +100,16 @@ pub fn acquire(path: &Path) -> Result<LibraryLock, LockError> {
 
 /// The PID holding the lock at `path`, if anyone does (without taking it
 /// away from anyone: only a shared hold, let go right away).
+#[must_use]
 pub fn holder(path: &Path) -> Option<u32> {
     let mut file = OpenOptions::new().read(true).open(path).ok()?;
-    match file.try_lock_shared() {
-        Ok(()) => {
-            let _ = file.unlock();
-            None
-        }
-        Err(_) => {
-            let mut text = String::new();
-            let _ = file.read_to_string(&mut text);
-            Some(text.trim().parse().unwrap_or(0))
-        }
+    if let Ok(()) = file.try_lock_shared() {
+        let _ = file.unlock();
+        None
+    } else {
+        let mut text = String::new();
+        let _ = file.read_to_string(&mut text);
+        Some(text.trim().parse().unwrap_or(0))
     }
 }
 
@@ -121,6 +129,7 @@ pub struct SharedGuard {
 }
 
 impl Shared {
+    #[must_use]
     pub fn new(path: &Path) -> std::sync::Arc<Self> {
         std::sync::Arc::new(Self {
             path: path.to_path_buf(),
@@ -129,8 +138,15 @@ impl Shared {
     }
 
     /// Hold it, locking the file if nobody in this process does yet.
+    ///
+    /// # Errors
+    ///
+    /// As [`acquire`], when this process doesn't hold the file yet.
     pub fn acquire(self: &std::sync::Arc<Self>) -> Result<SharedGuard, LockError> {
-        let mut held = self.held.lock().unwrap_or_else(|e| e.into_inner());
+        let mut held = self
+            .held
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         if held.0 == 0 {
             held.1 = Some(acquire(&self.path)?);
         }
@@ -143,7 +159,11 @@ impl Shared {
 
 impl Drop for SharedGuard {
     fn drop(&mut self) {
-        let mut held = self.shared.held.lock().unwrap_or_else(|e| e.into_inner());
+        let mut held = self
+            .shared
+            .held
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         held.0 -= 1;
         if held.0 == 0 {
             held.1 = None;

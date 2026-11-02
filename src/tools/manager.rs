@@ -41,6 +41,7 @@ pub enum Tool {
 }
 
 impl Tool {
+    #[must_use]
     pub fn name(self) -> &'static str {
         match self {
             Tool::Ytdlp(_) => "yt-dlp",
@@ -198,6 +199,10 @@ impl Drop for TempFile {
 }
 
 /// The first line `<binary> --version` prints; it must exit 0.
+///
+/// # Errors
+///
+/// When `binary` can't be run, exits with an error, or prints nothing.
 pub fn tool_version(binary: &Path) -> Result<String, String> {
     let output = std::process::Command::new(binary)
         .arg("--version")
@@ -217,6 +222,10 @@ pub fn tool_version(binary: &Path) -> Result<String, String> {
 }
 
 /// Run `<binary> --version`; it must exit 0 and print something.
+///
+/// # Errors
+///
+/// When it doesn't (see [`tool_version`]).
 pub fn default_smoke_test(binary: &Path) -> Result<(), String> {
     tool_version(binary).map(drop)
 }
@@ -232,6 +241,14 @@ pub struct Manager {
 
 impl Manager {
     /// The real thing: GitHub, yt-dlp's signing key, this machine's binaries.
+    ///
+    /// # Panics
+    ///
+    /// If the HTTP client can't be built (see [`Manager::with`]), or the
+    /// embedded yt-dlp key is broken (see [`Verifier::ytdlp`]). Debug builds
+    /// also panic when `TIDEPOOL_TEST_SIGNING_KEY` is set to a file that can't
+    /// be read or isn't a public key.
+    #[must_use]
     pub fn new(dirs: &Dirs) -> Self {
         #[allow(unused_mut)]
         let (mut api_base, mut verifier) = (GITHUB_API.to_string(), Verifier::ytdlp());
@@ -250,16 +267,24 @@ impl Manager {
         }
         Self::with(
             dirs.bin_dir(),
-            api_base,
+            &api_base,
             verifier,
             current_asset(),
             current_deno_asset(),
         )
     }
 
+    /// A manager for `bin_dir` that talks to `api_base` instead of GitHub,
+    /// trusts `verifier`'s key and installs the given assets.
+    ///
+    /// # Panics
+    ///
+    /// If the HTTP client can't be built: its TLS backend fails to
+    /// initialize, or the system's DNS configuration can't be loaded.
+    #[must_use]
     pub fn with(
         bin_dir: PathBuf,
-        api_base: String,
+        api_base: &str,
         verifier: Verifier,
         ytdlp_asset: Result<&'static str, String>,
         deno_asset: Result<String, String>,
@@ -321,7 +346,7 @@ impl Manager {
             .header("Accept", "application/vnd.github+json")
             .send()
             .await
-            .and_then(|r| r.error_for_status())
+            .and_then(reqwest::Response::error_for_status)
             .map_err(|e| ManagerError::Http(format!("could not reach {url}: {e}")))
     }
 
@@ -380,6 +405,10 @@ impl Manager {
     }
 
     /// Check for a new release now and install it if there is one.
+    ///
+    /// # Errors
+    ///
+    /// As for [`Manager::update_with_smoke_test`].
     pub async fn update(&self, tool: Tool, now: Timestamp) -> Result<UpdateOutcome, ManagerError> {
         self.update_with_smoke_test(tool, now, default_smoke_test)
             .await
@@ -387,6 +416,13 @@ impl Manager {
 
     /// [`Manager::update`] with an injectable smoke test (on top of the
     /// version check for Deno).
+    ///
+    /// # Errors
+    ///
+    /// When there's no release binary for this machine, the GitHub check or
+    /// the download fails, the signature or checksum doesn't match, the new
+    /// binary fails its smoke test, or installing it (files, lock, state)
+    /// fails.
     pub async fn update_with_smoke_test(
         &self,
         tool: Tool,
@@ -499,11 +535,7 @@ impl Manager {
         }
         file.sync_all().map_err(io(&download))?;
         drop(file);
-        let actual: String = hasher
-            .finalize()
-            .iter()
-            .map(|b| format!("{b:02x}"))
-            .collect();
+        let actual = crate::hex::encode(&hasher.finalize());
         check_checksum(asset, &expected, &actual)?;
 
         // Deno comes zipped: the binary is the `deno` entry.
@@ -566,6 +598,11 @@ impl Manager {
     /// Make sure the binary exists (downloading it if needed) and check for
     /// an update when the last check is older than `update_check`. A failed
     /// check keeps the current binary and returns a warning.
+    ///
+    /// # Errors
+    ///
+    /// When the binary is missing and installing it fails (see
+    /// [`Manager::update`]).
     pub async fn ensure(
         &self,
         tool: Tool,
@@ -612,6 +649,12 @@ impl Manager {
 
     /// Swap the current and previous binaries; the version rolled back from
     /// isn't reinstalled until a newer release appears.
+    ///
+    /// # Errors
+    ///
+    /// [`ManagerError::NotInstalled`] or [`ManagerError::NoPrevious`] when
+    /// there's nothing to swap, and an error when taking the lock, renaming
+    /// the binaries or saving the state fails.
     pub fn rollback(&self, tool: Tool) -> Result<(String, String), ManagerError> {
         let name = tool.name();
         let binary = self.binary(tool);
@@ -678,10 +721,7 @@ fn check_deno_version(binary: &Path, expected: &str) -> Result<(), String> {
 
 fn file_sha256(path: &Path) -> Result<String, ManagerError> {
     let bytes = std::fs::read(path).map_err(io(path))?;
-    Ok(Sha256::digest(&bytes)
-        .iter()
-        .map(|b| format!("{b:02x}"))
-        .collect())
+    Ok(crate::hex::encode(&Sha256::digest(&bytes)))
 }
 
 /// Extract one file from a zip archive.

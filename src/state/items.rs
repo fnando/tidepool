@@ -32,6 +32,7 @@ pub mod status {
 }
 
 /// The status a filter decision puts an item in.
+#[must_use]
 pub fn status_for(decision: &Decision) -> &'static str {
     match decision {
         Decision::Keep { .. } => status::PENDING,
@@ -76,6 +77,7 @@ pub struct DecisionChange {
 }
 
 impl IndexSummary {
+    #[must_use]
     pub fn count(&self, status: &str) -> usize {
         self.by_status.get(status).copied().unwrap_or(0)
     }
@@ -97,6 +99,10 @@ pub struct SourceRecord<'a> {
 
 /// Record an index of `source` in one transaction. `decide` is applied to new
 /// items and to items that haven't been downloaded yet.
+///
+/// # Errors
+///
+/// If a DB read or write fails; nothing is recorded then.
 pub fn record_index(
     conn: &mut Connection,
     source: &SourceRecord<'_>,
@@ -106,6 +112,32 @@ pub fn record_index(
 ) -> rusqlite::Result<IndexSummary> {
     let now = now.to_string();
     let tx = super::State::write_transaction(conn)?;
+    upsert_source(&tx, source, list, &now)?;
+
+    let mut summary = IndexSummary {
+        total: list.items.len(),
+        ..IndexSummary::default()
+    };
+    let mut seen = HashSet::new();
+    for item in &list.items {
+        if !seen.insert(item.video_id.as_str()) {
+            continue; // the same video twice in one playlist: first position wins
+        }
+        record_item(&tx, source, item, &decide, &now, &mut summary)?;
+    }
+    summary.total = seen.len();
+    mark_removed(&tx, source, &seen, &mut summary)?;
+    summary.by_status = count_by_status(&tx, source.key)?;
+    tx.commit()?;
+    Ok(summary)
+}
+
+fn upsert_source(
+    tx: &rusqlite::Transaction<'_>,
+    source: &SourceRecord<'_>,
+    list: &RemoteList,
+    now: &str,
+) -> rusqlite::Result<()> {
     tx.execute(
         "INSERT INTO sources (key, lists, title, rules_hash, last_indexed_at, last_index_source)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6)
@@ -121,104 +153,117 @@ pub fn record_index(
             source.index_source
         ],
     )?;
-    // Where an item was seen before, for lists that failed this time.
-    let previous_lists =
-        |tx: &rusqlite::Transaction<'_>, video_id: &str| -> rusqlite::Result<Vec<String>> {
-            let text: Option<String> = tx
-                .query_row(
-                    "SELECT lists FROM items WHERE source_key = ?1 AND video_id = ?2",
-                    params![source.key, video_id],
-                    |r| r.get(0),
-                )
-                .optional()?
-                .flatten();
-            Ok(text
-                .and_then(|t| serde_json::from_str(&t).ok())
-                .unwrap_or_default())
-        };
+    Ok(())
+}
 
-    let mut summary = IndexSummary {
-        total: list.items.len(),
-        ..IndexSummary::default()
-    };
-    let mut seen = HashSet::new();
-    for item in &list.items {
-        if !seen.insert(item.video_id.as_str()) {
-            continue; // the same video twice in one playlist: first position wins
-        }
-        upsert_video(&tx, item, &now)?;
-        let mut lists = source
-            .found_in
-            .get(&item.video_id)
-            .cloned()
-            .unwrap_or_default();
-        if !source.failed.is_empty() {
-            for id in previous_lists(&tx, &item.video_id)? {
-                if source.failed.contains(&id) && !lists.contains(&id) {
-                    lists.push(id);
-                }
-            }
-        }
-        let lists = serde_json::to_string(&lists).unwrap_or_default();
+/// Where an item was seen before, for lists that failed this time.
+fn previous_lists(
+    tx: &rusqlite::Transaction<'_>,
+    source_key: &str,
+    video_id: &str,
+) -> rusqlite::Result<Vec<String>> {
+    let text: Option<String> = tx
+        .query_row(
+            "SELECT lists FROM items WHERE source_key = ?1 AND video_id = ?2",
+            params![source_key, video_id],
+            |r| r.get(0),
+        )
+        .optional()?
+        .flatten();
+    Ok(text
+        .and_then(|t| serde_json::from_str(&t).ok())
+        .unwrap_or_default())
+}
 
-        let existing: Option<(String, Option<String>)> = tx
-            .query_row(
-                "SELECT status, decision FROM items WHERE source_key = ?1 AND video_id = ?2",
-                params![source.key, item.video_id],
-                |r| Ok((r.get(0)?, r.get(1)?)),
-            )
-            .optional()?;
-        let previous_decision = existing.as_ref().and_then(|(_, d)| d.clone());
-        let existing = existing.map(|(status, _)| status);
-        let decide_now = existing
-            .as_deref()
-            .is_none_or(|s| status::UNDECIDED.contains(&s));
-        if existing.is_none() {
-            summary.new += 1;
-        }
-        if decide_now {
-            let decision = decide(item);
-            summary.decisions.push(DecisionChange {
-                video_id: item.video_id.clone(),
-                title: item.title.clone(),
-                new: existing.is_none(),
-                changed: existing.is_some()
-                    && previous_decision.as_deref() != Some(decision.to_json().as_str()),
-                decision: decision.to_string(),
-            });
-            tx.execute(
-                "INSERT INTO items (source_key, video_id, position, in_remote, status, decision, lists)
-                 VALUES (?1, ?2, ?3, 1, ?4, ?5, ?6)
-                 ON CONFLICT(source_key, video_id) DO UPDATE SET position = excluded.position,
-                   in_remote = 1, status = excluded.status, decision = excluded.decision,
-                   lists = excluded.lists",
-                params![
-                    source.key,
-                    item.video_id,
-                    item.position,
-                    status_for(&decision),
-                    decision.to_json(),
-                    lists
-                ],
-            )?;
-            if status_for(&decision) == status::FILTERED {
-                *summary
-                    .filtered
-                    .entry(decision.label().to_string())
-                    .or_default() += 1;
+/// Record one listed item: its lists and position, and a fresh decision if
+/// it's new or still undecided.
+fn record_item(
+    tx: &rusqlite::Transaction<'_>,
+    source: &SourceRecord<'_>,
+    item: &RemoteItem,
+    decide: &impl Fn(&RemoteItem) -> Decision,
+    now: &str,
+    summary: &mut IndexSummary,
+) -> rusqlite::Result<()> {
+    upsert_video(tx, item, now)?;
+    let mut lists = source
+        .found_in
+        .get(&item.video_id)
+        .cloned()
+        .unwrap_or_default();
+    if !source.failed.is_empty() {
+        for id in previous_lists(tx, source.key, &item.video_id)? {
+            if source.failed.contains(&id) && !lists.contains(&id) {
+                lists.push(id);
             }
-        } else {
-            tx.execute(
-                "UPDATE items SET position = ?3, in_remote = 1, lists = ?4
-                 WHERE source_key = ?1 AND video_id = ?2",
-                params![source.key, item.video_id, item.position, lists],
-            )?;
         }
     }
-    summary.total = seen.len();
+    let lists = serde_json::to_string(&lists).unwrap_or_default();
 
-    // Whatever wasn't seen has left the source, unless it may still be in a
-    // list that couldn't be read.
+    let existing: Option<(String, Option<String>)> = tx
+        .query_row(
+            "SELECT status, decision FROM items WHERE source_key = ?1 AND video_id = ?2",
+            params![source.key, item.video_id],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .optional()?;
+    let previous_decision = existing.as_ref().and_then(|(_, d)| d.clone());
+    let existing = existing.map(|(status, _)| status);
+    let decide_now = existing
+        .as_deref()
+        .is_none_or(|s| status::UNDECIDED.contains(&s));
+    if existing.is_none() {
+        summary.new += 1;
+    }
+    if !decide_now {
+        tx.execute(
+            "UPDATE items SET position = ?3, in_remote = 1, lists = ?4
+             WHERE source_key = ?1 AND video_id = ?2",
+            params![source.key, item.video_id, item.position, lists],
+        )?;
+        return Ok(());
+    }
+    let decision = decide(item);
+    summary.decisions.push(DecisionChange {
+        video_id: item.video_id.clone(),
+        title: item.title.clone(),
+        new: existing.is_none(),
+        changed: existing.is_some()
+            && previous_decision.as_deref() != Some(decision.to_json().as_str()),
+        decision: decision.to_string(),
+    });
+    tx.execute(
+        "INSERT INTO items (source_key, video_id, position, in_remote, status, decision, lists)
+         VALUES (?1, ?2, ?3, 1, ?4, ?5, ?6)
+         ON CONFLICT(source_key, video_id) DO UPDATE SET position = excluded.position,
+           in_remote = 1, status = excluded.status, decision = excluded.decision,
+           lists = excluded.lists",
+        params![
+            source.key,
+            item.video_id,
+            item.position,
+            status_for(&decision),
+            decision.to_json(),
+            lists
+        ],
+    )?;
+    if status_for(&decision) == status::FILTERED {
+        *summary
+            .filtered
+            .entry(decision.label().to_string())
+            .or_default() += 1;
+    }
+    Ok(())
+}
+
+/// Whatever wasn't `seen` has left the source, unless it may still be in a
+/// list that couldn't be read.
+fn mark_removed(
+    tx: &rusqlite::Transaction<'_>,
+    source: &SourceRecord<'_>,
+    seen: &HashSet<&str>,
+    summary: &mut IndexSummary,
+) -> rusqlite::Result<()> {
     let mut stmt =
         tx.prepare("SELECT video_id FROM items WHERE source_key = ?1 AND in_remote = 1")?;
     let previously: Vec<String> = stmt
@@ -227,7 +272,7 @@ pub fn record_index(
     drop(stmt);
     for video_id in previously.iter().filter(|id| !seen.contains(id.as_str())) {
         if !source.failed.is_empty()
-            && previous_lists(&tx, video_id)?
+            && previous_lists(tx, source.key, video_id)?
                 .iter()
                 .any(|id| source.failed.contains(id))
         {
@@ -239,17 +284,23 @@ pub fn record_index(
         )?;
         summary.removed += 1;
     }
+    Ok(())
+}
 
+/// Status counts over a source's videos that are currently in it.
+fn count_by_status(
+    tx: &rusqlite::Transaction<'_>,
+    source_key: &str,
+) -> rusqlite::Result<BTreeMap<String, usize>> {
     let mut stmt =
         tx.prepare("SELECT status, COUNT(*) FROM items WHERE source_key = ?1 AND in_remote = 1 GROUP BY status")?;
-    summary.by_status = stmt
-        .query_map([source.key], |r| {
-            Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)? as usize))
-        })?
-        .collect::<Result<_, _>>()?;
-    drop(stmt);
-    tx.commit()?;
-    Ok(summary)
+    stmt.query_map([source_key], |r| {
+        Ok((
+            r.get::<_, String>(0)?,
+            usize::try_from(r.get::<_, i64>(1)?).unwrap_or(usize::MAX),
+        ))
+    })?
+    .collect()
 }
 
 #[cfg(test)]
@@ -613,12 +664,12 @@ fn upsert_video(conn: &Connection, item: &RemoteItem, now: &str) -> rusqlite::Re
             item.channel_id,
             item.description,
             tags,
-            item.duration.map(|d| d as i64),
+            item.duration.map(|d| i64::try_from(d).unwrap_or(i64::MAX)),
             item.published_at.map(|t| t.to_string()),
             item.availability.as_str(),
             thumbs,
             now,
-            item.kind.map(|k| k.as_str()),
+            item.kind.map(super::super::index::VideoKind::as_str),
             item.kind.map(|_| KIND_VERSION),
         ],
     )?;
@@ -649,6 +700,10 @@ pub struct QueuedItem {
 
 /// Videos to download for these sources, in source order then position:
 /// pending, waiting on a field, or failed and due for a retry.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn download_queue(
     conn: &Connection,
     sources: &[String],
@@ -668,6 +723,10 @@ pub fn download_queue(
 
 /// Videos downloaded into their work area and waiting to be processed, in
 /// the order they were fetched.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn process_queue(conn: &Connection, sources: &[String]) -> rusqlite::Result<Vec<QueuedItem>> {
     let mut queue = queue_where(
         conn,
@@ -727,7 +786,9 @@ fn queue_where(
                     channel_id: r.get(7)?,
                     description: r.get(8)?,
                     tags: tags.and_then(|t| serde_json::from_str(&t).ok()),
-                    duration: r.get::<_, Option<i64>>(10)?.map(|d| d.max(0) as u64),
+                    duration: r
+                        .get::<_, Option<i64>>(10)?
+                        .map(|d| u64::try_from(d).unwrap_or(0)),
                     published_at: published.and_then(|p| p.parse().ok()),
                     availability: crate::index::Availability::parse(
                         availability.as_deref().unwrap_or("public"),
@@ -749,6 +810,11 @@ fn queue_where(
     Ok(queue)
 }
 
+/// Put an item in `status`.
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn set_status(
     conn: &Connection,
     source_key: &str,
@@ -763,6 +829,10 @@ pub fn set_status(
 }
 
 /// A decision made right before download (for `pending_check` items).
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn record_decision(
     conn: &Connection,
     source_key: &str,
@@ -782,6 +852,10 @@ pub fn record_decision(
 }
 
 /// Details learned from a full video lookup.
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn update_video_details(
     conn: &Connection,
     item: &RemoteItem,
@@ -817,11 +891,13 @@ pub struct Subtitle {
 }
 
 impl VideoFiles {
+    #[must_use]
     pub fn is_removed(&self, what: &str) -> bool {
         self.removed.iter().any(|r| r == what)
     }
 
     /// Every file, metadata last.
+    #[must_use]
     pub fn paths(&self) -> Vec<&str> {
         let mut out = vec![self.media.as_str()];
         out.extend(self.cover.as_deref());
@@ -836,7 +912,14 @@ impl VideoFiles {
     }
 }
 
+/// `value` as JSON, for a column; failing like any value that can't be
+/// stored.
+fn to_json(value: &(impl Serialize + ?Sized)) -> rusqlite::Result<String> {
+    serde_json::to_string(value).map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))
+}
+
 /// A finished download, as stored.
+#[derive(Clone, Copy)]
 pub struct Done<'a> {
     pub files: &'a VideoFiles,
     /// Its metadata.json, kept as a copy to restore it.
@@ -846,6 +929,11 @@ pub struct Done<'a> {
     pub media_bytes: u64,
 }
 
+/// Record a finished download: its files, metadata copy and size.
+///
+/// # Errors
+///
+/// If the DB write fails, or its files can't be serialized to JSON.
 pub fn mark_done(
     conn: &Connection,
     source_key: &str,
@@ -859,25 +947,31 @@ pub fn mark_done(
         format,
         media_bytes,
     } = done;
-    let json = serde_json::to_string(files).expect("files serialize");
+    let json = to_json(files)?;
     conn.execute(
         "UPDATE items SET status = 'done', dir = ?3, files = ?4, metadata = ?5, format = ?6, media_bytes = ?7,
            media_present = 1, missing = NULL, downloaded_at = ?8, attempts = 0, next_attempt_at = NULL,
            last_error = NULL
          WHERE source_key = ?1 AND video_id = ?2",
-        params![source_key, video_id, files.dir, json, metadata, format, media_bytes as i64, now.to_string()],
+        params![source_key, video_id, files.dir, json, metadata, format, i64::try_from(media_bytes).unwrap_or(i64::MAX), now.to_string()],
     )?;
     Ok(())
 }
 
 /// What's missing of a downloaded video (empty = nothing).
+///
+/// # Errors
+///
+/// If the DB write fails, or the list can't be serialized to JSON.
 pub fn set_missing(
     conn: &Connection,
     source_key: &str,
     video_id: &str,
     missing: &[String],
 ) -> rusqlite::Result<()> {
-    let json = (!missing.is_empty()).then(|| serde_json::to_string(missing).expect("JSON"));
+    let json = (!missing.is_empty())
+        .then(|| to_json(missing))
+        .transpose()?;
     conn.execute(
         "UPDATE items SET missing = ?3, media_present = ?4 WHERE source_key = ?1 AND video_id = ?2",
         params![
@@ -892,6 +986,10 @@ pub fn set_missing(
 
 /// Download a video again whose media is gone (its other files are
 /// replaced too).
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn requeue(conn: &Connection, source_key: &str, video_id: &str) -> rusqlite::Result<()> {
     conn.execute(
         "UPDATE items SET status = 'pending', attempts = 0, next_attempt_at = NULL, last_error = NULL
@@ -902,6 +1000,10 @@ pub fn requeue(conn: &Connection, source_key: &str, video_id: &str) -> rusqlite:
 }
 
 /// The stored copy of a video's metadata.json.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn metadata_copy(
     conn: &Connection,
     source_key: &str,
@@ -918,6 +1020,10 @@ pub fn metadata_copy(
 }
 
 /// The thumbnails the indexer found for a video.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn thumbnails(
     conn: &Connection,
     video_id: &str,
@@ -937,6 +1043,10 @@ pub fn thumbnails(
 
 /// A failed download: permanent failures become `unavailable`; others are
 /// retried later with exponential backoff (1h, 2h, 4h, … capped at a day).
+///
+/// # Errors
+///
+/// If a DB read or write fails.
 pub fn mark_failed(
     conn: &Connection,
     source_key: &str,
@@ -973,6 +1083,10 @@ pub fn mark_failed(
 
 /// The files of a finished download of the same video and format in
 /// another source, if any.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn find_copy(
     conn: &Connection,
     video_id: &str,
@@ -1017,6 +1131,7 @@ pub const MAX_HOOK_RETRY_WAIT: u64 = 3600;
 /// How long to wait before automatic retry number `retries + 1` of a
 /// failed `finished` hook (Sidekiq's curve: `n⁴ + 15 + rand(10)·(n + 1)`
 /// seconds, `jitter` in 0..10); `None` once that would pass an hour.
+#[must_use]
 pub fn hook_retry_wait(retries: u32, jitter: u32) -> Option<u64> {
     let n = u64::from(retries);
     let base = n.pow(4) + 15;
@@ -1039,6 +1154,11 @@ fn jitter() -> u32 {
 /// Store a run of a hook for a video: its history, and its latest state. A
 /// failed `finished` hook is tried again later (see [`hook_retry_wait`]),
 /// until it fails for good.
+///
+/// # Errors
+///
+/// If a DB read or write fails, or the hook's input values can't be serialized
+/// to JSON.
 pub fn record_hook_run(conn: &Connection, run: &HookRun) -> rusqlite::Result<()> {
     let (previous, previous_status): (u32, Option<String>) = conn
         .query_row(
@@ -1073,8 +1193,10 @@ pub fn record_hook_run(conn: &Connection, run: &HookRun) -> rusqlite::Result<()>
     let later = |seconds: u64| {
         finished_at
             .and_then(|t| {
-                t.checked_add(jiff::SignedDuration::from_secs(seconds as i64))
-                    .ok()
+                t.checked_add(jiff::SignedDuration::from_secs(
+                    i64::try_from(seconds).unwrap_or(i64::MAX),
+                ))
+                .ok()
             })
             .map(|t| t.to_string())
     };
@@ -1119,7 +1241,7 @@ pub fn record_hook_run(conn: &Connection, run: &HookRun) -> rusqlite::Result<()>
             run.started_at,
             run.finished_at,
             run.error,
-            serde_json::to_string(&run.values).expect("values serialize"),
+            to_json(&run.values)?,
             retries,
             next_attempt_at,
         ],
@@ -1128,6 +1250,10 @@ pub fn record_hook_run(conn: &Connection, run: &HookRun) -> rusqlite::Result<()>
 }
 
 /// A hook's latest status for a video: `ok`, `retrying` or `failed`.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn hook_status(
     conn: &Connection,
     source_key: &str,
@@ -1145,6 +1271,10 @@ pub fn hook_status(
 
 /// `finished` hooks due to run, per video: queued (`pending`) or waiting
 /// for an automatic retry. `(source_key, video_id, hooks)`.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn due_hooks(
     conn: &Connection,
     now: Timestamp,
@@ -1180,6 +1310,10 @@ pub fn due_hooks(
 }
 
 /// When the next queued or retried `finished` hook is due, if any.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn next_hook_due(conn: &Connection) -> rusqlite::Result<Option<Timestamp>> {
     let next: Option<String> = conn.query_row(
         "SELECT MIN(next_attempt_at) FROM hook_runs
@@ -1191,6 +1325,10 @@ pub fn next_hook_due(conn: &Connection) -> rusqlite::Result<Option<Timestamp>> {
 }
 
 /// Put every item in status `from` back to `to` (after a service crashed).
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn reset_status(conn: &Connection, from: &str, to: &str) -> rusqlite::Result<usize> {
     conn.execute(
         "UPDATE items SET status = ?2 WHERE status = ?1",
@@ -1199,6 +1337,10 @@ pub fn reset_status(conn: &Connection, from: &str, to: &str) -> rusqlite::Result
 }
 
 /// A video's `finished` hooks that haven't run yet, or will run again.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn waiting_hooks(
     conn: &Connection,
     source_key: &str,
@@ -1216,6 +1358,10 @@ pub fn waiting_hooks(
 
 /// The hooks whose last run failed (and may be waiting for a retry) for one
 /// video in one source.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn failed_hooks(
     conn: &Connection,
     source_key: &str,
@@ -1238,6 +1384,10 @@ pub struct Downloaded {
 }
 
 /// Every downloaded video of `sources`, in source order then position.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn downloaded(conn: &Connection, sources: &[String]) -> rusqlite::Result<Vec<Downloaded>> {
     let mut stmt = conn.prepare(
         "SELECT source_key, video_id, files FROM items
@@ -1268,6 +1418,10 @@ pub fn downloaded(conn: &Connection, sources: &[String]) -> rusqlite::Result<Vec
 }
 
 /// New file locations (and size) after a downloaded video was reprocessed.
+///
+/// # Errors
+///
+/// If the DB write fails, or its files can't be serialized to JSON.
 pub fn update_files(
     conn: &Connection,
     source_key: &str,
@@ -1275,7 +1429,7 @@ pub fn update_files(
     files: &VideoFiles,
     media_bytes: u64,
 ) -> rusqlite::Result<()> {
-    let json = serde_json::to_string(files).expect("files serialize");
+    let json = to_json(files)?;
     // Keep the metadata copy in step with the file on disk.
     let metadata = std::fs::read_to_string(&files.metadata).ok();
     conn.execute(
@@ -1286,7 +1440,7 @@ pub fn update_files(
             video_id,
             files.dir,
             json,
-            media_bytes as i64,
+            i64::try_from(media_bytes).unwrap_or(i64::MAX),
             metadata
         ],
     )?;
@@ -1295,6 +1449,10 @@ pub fn update_files(
 
 /// Videos tidepool knows in full (description, tags and duration from the
 /// API), as index items; the API path skips fetching their details again.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn known_details(
     conn: &Connection,
     ids: &[String],
@@ -1307,6 +1465,10 @@ pub fn known_details(
 }
 
 /// What's known about these videos, however little.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn videos(
     conn: &Connection,
     ids: &[String],
@@ -1341,7 +1503,9 @@ fn videos_where(
                     channel_id: r.get(3)?,
                     description: r.get(4)?,
                     tags: tags.and_then(|t| serde_json::from_str(&t).ok()),
-                    duration: r.get::<_, Option<i64>>(6)?.map(|d| d.max(0) as u64),
+                    duration: r
+                        .get::<_, Option<i64>>(6)?
+                        .map(|d| u64::try_from(d).unwrap_or(0)),
                     published_at: published.and_then(|p| p.parse().ok()),
                     availability: crate::index::Availability::parse(
                         availability.as_deref().unwrap_or("public"),
@@ -1365,6 +1529,10 @@ fn videos_where(
 }
 
 /// Kinds already found out for these videos.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn known_kinds(
     conn: &Connection,
     ids: &[String],
@@ -1384,6 +1552,10 @@ pub fn known_kinds(
 }
 
 /// A channel looked up earlier: its id and name.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn cached_channel(
     conn: &Connection,
     reference: &str,
@@ -1397,6 +1569,10 @@ pub fn cached_channel(
 }
 
 /// Remember what a channel reference points to.
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn save_channel(
     conn: &Connection,
     reference: &str,
@@ -1414,22 +1590,35 @@ pub fn save_channel(
 }
 
 /// The Pacific-time date YouTube's quota day runs on.
+#[must_use]
 pub fn quota_day(now: Timestamp) -> String {
-    now.in_tz("America/Los_Angeles")
-        .map(|z| z.date().to_string())
-        .unwrap_or_else(|_| now.to_string()[..10].to_string())
+    now.in_tz("America/Los_Angeles").map_or_else(
+        |_| now.to_string()[..10].to_string(),
+        |z| z.date().to_string(),
+    )
 }
 
 /// Units an API key spent on `day`.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn quota_used(conn: &Connection, key_id: &str, day: &str) -> rusqlite::Result<u32> {
     conn.query_row(
         "SELECT COALESCE(SUM(units), 0) FROM quota_usage WHERE key_id = ?1 AND day = ?2",
         params![key_id, day],
-        |r| r.get::<_, i64>(0).map(|u| u.max(0) as u32),
+        |r| {
+            r.get::<_, i64>(0)
+                .map(|u| u32::try_from(u.max(0)).unwrap_or(u32::MAX))
+        },
     )
 }
 
 /// Record units an API key spent indexing a source.
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn add_quota(
     conn: &Connection,
     key_id: &str,
@@ -1448,6 +1637,10 @@ pub fn add_quota(
 
 /// After a crash or an interrupt: downloads that didn't finish go back to
 /// `pending`. Returns how many.
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn reset_interrupted(conn: &Connection) -> rusqlite::Result<usize> {
     Ok(conn.execute(
         "UPDATE items SET status = 'pending' WHERE status = 'downloading'",
@@ -1459,6 +1652,10 @@ pub fn reset_interrupted(conn: &Connection) -> rusqlite::Result<usize> {
 }
 
 /// A video's download is in its work area, waiting to be processed.
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn mark_fetched(
     conn: &Connection,
     source_key: &str,
@@ -1474,6 +1671,10 @@ pub fn mark_fetched(
 }
 
 /// Fetched videos of `sources`: `(source, video)`.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn fetched(conn: &Connection, sources: &[String]) -> rusqlite::Result<Vec<(String, String)>> {
     let mut stmt = conn.prepare(
         "SELECT source_key, video_id FROM items WHERE source_key = ?1 AND status = 'fetched'",
@@ -1488,6 +1689,10 @@ pub fn fetched(conn: &Connection, sources: &[String]) -> rusqlite::Result<Vec<(S
 }
 
 /// Queue a placed video's `finished` hooks, to run in this order.
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn queue_hooks(
     conn: &Connection,
     source_key: &str,
@@ -1508,6 +1713,10 @@ pub fn queue_hooks(
 }
 
 /// A video's status in each source it's in: `(source, status)`.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn item_statuses(conn: &Connection, video_id: &str) -> rusqlite::Result<Vec<(String, String)>> {
     let mut stmt = conn
         .prepare("SELECT source_key, status FROM items WHERE video_id = ?1 ORDER BY source_key")?;
@@ -1516,6 +1725,10 @@ pub fn item_statuses(conn: &Connection, video_id: &str) -> rusqlite::Result<Vec<
 }
 
 /// Every item's status in a source.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn statuses(conn: &Connection, source_key: &str) -> rusqlite::Result<HashMap<String, String>> {
     let mut stmt = conn.prepare("SELECT video_id, status FROM items WHERE source_key = ?1")?;
     stmt.query_map([source_key], |r| Ok((r.get(0)?, r.get(1)?)))?
@@ -1533,6 +1746,10 @@ pub struct Kept {
 }
 
 /// A source's downloaded videos.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn kept(conn: &Connection, source_key: &str) -> rusqlite::Result<Vec<Kept>> {
     let mut stmt = conn.prepare(
         "SELECT video_id, position, files, media_bytes, downloaded_at FROM items
@@ -1556,7 +1773,7 @@ pub fn kept(conn: &Connection, source_key: &str) -> rusqlite::Result<Vec<Kept>> 
                 video_id,
                 position: position.unwrap_or(0),
                 files,
-                media_bytes: bytes.unwrap_or(0).max(0) as u64,
+                media_bytes: u64::try_from(bytes.unwrap_or(0)).unwrap_or(0),
                 downloaded_at: downloaded_at.and_then(|t| t.parse().ok()),
             });
         }
@@ -1565,6 +1782,10 @@ pub fn kept(conn: &Connection, source_key: &str) -> rusqlite::Result<Vec<Kept>> 
 }
 
 /// A video cleanup removed: it's never downloaded again (`reset` undoes it).
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn mark_cleaned_up(
     conn: &Connection,
     source_key: &str,
@@ -1581,6 +1802,10 @@ pub fn mark_cleaned_up(
 }
 
 /// A video back from the trash: downloaded again, as before.
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn mark_restored(conn: &Connection, source_key: &str, video_id: &str) -> rusqlite::Result<()> {
     conn.execute(
         "UPDATE items SET status = 'done', cleaned_up_at = NULL, cleanup_reason = NULL
@@ -1605,6 +1830,11 @@ pub struct Trashed {
     pub delete_after: String,
 }
 
+/// Put a video's files in the trash.
+///
+/// # Errors
+///
+/// If the DB write fails, or its files can't be serialized to JSON.
 pub fn add_trash(conn: &Connection, t: &Trashed) -> rusqlite::Result<()> {
     conn.execute(
         "INSERT INTO trash (source_key, video_id, dir, files, bytes, reason, trashed_at, delete_after)
@@ -1613,8 +1843,8 @@ pub fn add_trash(conn: &Connection, t: &Trashed) -> rusqlite::Result<()> {
             t.source_key,
             t.video_id,
             t.dir,
-            serde_json::to_string(&t.files).expect("JSON"),
-            t.bytes as i64,
+            to_json(&t.files)?,
+            i64::try_from(t.bytes).unwrap_or(i64::MAX),
             t.reason,
             t.trashed_at,
             t.delete_after,
@@ -1624,6 +1854,10 @@ pub fn add_trash(conn: &Connection, t: &Trashed) -> rusqlite::Result<()> {
 }
 
 /// Everything in the trash, oldest first.
+///
+/// # Errors
+///
+/// If the DB read fails.
 pub fn trash(conn: &Connection) -> rusqlite::Result<Vec<Trashed>> {
     let mut stmt = conn.prepare(
         "SELECT id, source_key, video_id, dir, files, bytes, reason, trashed_at, delete_after
@@ -1637,7 +1871,7 @@ pub fn trash(conn: &Connection) -> rusqlite::Result<Vec<Trashed>> {
             video_id: r.get(2)?,
             dir: r.get(3)?,
             files: serde_json::from_str(&files).unwrap_or_default(),
-            bytes: r.get::<_, i64>(5)?.max(0) as u64,
+            bytes: u64::try_from(r.get::<_, i64>(5)?).unwrap_or(0),
             reason: r.get(6)?,
             trashed_at: r.get(7)?,
             delete_after: r.get(8)?,
@@ -1646,6 +1880,11 @@ pub fn trash(conn: &Connection) -> rusqlite::Result<Vec<Trashed>> {
     .collect()
 }
 
+/// Take an entry out of the trash.
+///
+/// # Errors
+///
+/// If the DB write fails.
 pub fn remove_trash(conn: &Connection, id: i64) -> rusqlite::Result<()> {
     conn.execute("DELETE FROM trash WHERE id = ?1", [id])?;
     Ok(())
@@ -1653,6 +1892,10 @@ pub fn remove_trash(conn: &Connection, id: i64) -> rusqlite::Result<()> {
 
 /// Forget a video's download state in every source so it's downloaded
 /// again. Returns `(source, files)` for each item reset.
+///
+/// # Errors
+///
+/// If a DB read or write fails.
 pub fn reset_video(
     conn: &Connection,
     video_id: &str,

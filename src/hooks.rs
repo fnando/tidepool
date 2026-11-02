@@ -63,6 +63,7 @@ pub struct Report {
 }
 
 impl Report {
+    #[must_use]
     pub fn ok(&self) -> bool {
         self.result.is_ok()
     }
@@ -85,7 +86,7 @@ pub async fn run(run: &Run<'_>) -> Report {
         tracing::debug!(
             "hook {} failed (attempt {attempts} of {tries}): {}",
             run.name,
-            result.as_ref().err().map(String::as_str).unwrap_or("")
+            result.as_ref().err().map_or("", String::as_str)
         );
     };
     Report {
@@ -101,6 +102,11 @@ pub async fn run(run: &Run<'_>) -> Report {
 }
 
 /// The argv with placeholders filled in; the program's `~` and `$VARS` expanded.
+///
+/// # Errors
+///
+/// Fails if an element has an invalid placeholder, or the program's path
+/// can't be expanded (see [`crate::paths::expand`]).
 pub fn argv(
     hook: &HookConfig,
     values: &BTreeMap<String, String>,
@@ -122,6 +128,7 @@ pub fn argv(
 }
 
 /// `TIDEPOOL_*` variables for the placeholder values.
+#[must_use]
 pub fn env(kind: HookType, values: &BTreeMap<String, String>) -> Vec<(String, String)> {
     let mut out = vec![("TIDEPOOL_HOOK_TYPE".to_string(), kind.as_str().to_string())];
     for p in PLACEHOLDERS {
@@ -197,12 +204,12 @@ async fn run_once(run: &Run<'_>) -> (Result<Vec<u8>, String>, Option<i32>) {
     let timeout = run.hook.timeout.0;
     let status = tokio::select! {
         status = child.wait() => status,
-        _ = tokio::time::sleep(timeout) => {
+        () = tokio::time::sleep(timeout) => {
             crate::process::stop(&mut child, KILL_GRACE, run.shutdown).await;
             drain(logger).await;
             return (Err(format!("timed out after {}", crate::config::types::format_duration(timeout))), None);
         }
-        _ = run.shutdown.stopping() => {
+        () = run.shutdown.stopping() => {
             crate::process::stop(&mut child, KILL_GRACE, run.shutdown).await;
             drain(logger).await;
             return (Err("stopped".into()), None);
@@ -346,6 +353,7 @@ pub struct Files {
 }
 
 impl Files {
+    #[must_use]
     pub fn to_json(&self, context: &Value) -> Value {
         json!({
             "files": {
@@ -359,6 +367,11 @@ impl Files {
 
     /// Apply a `downloaded` hook's output. Missing keys keep their value;
     /// `null` drops the cover or the subtitles (the media can't be dropped).
+    ///
+    /// # Errors
+    ///
+    /// Fails if the output isn't a JSON object, a returned path isn't an
+    /// existing file, or the subtitles are malformed.
     pub fn apply(&mut self, name: &str, output: &[u8]) -> Result<(), String> {
         let Some(value) = parse_output(name, output)? else {
             return Ok(());
@@ -393,6 +406,7 @@ pub struct Placed {
 }
 
 impl Placed {
+    #[must_use]
     pub fn to_json(&self, context: &Value) -> Value {
         json!({
             "files": {
@@ -415,6 +429,7 @@ pub struct EmbedData {
 }
 
 impl EmbedData {
+    #[must_use]
     pub fn to_json(&self, context: &Value) -> Value {
         let chapters: Vec<Value> = self
             .chapters
@@ -433,6 +448,11 @@ impl EmbedData {
     /// Apply an `embed` hook's output. Missing keys keep their value; `null`
     /// removes it (a tag, the cover, all chapters or subtitles), and so does
     /// an empty tag. `context` is ignored.
+    ///
+    /// # Errors
+    ///
+    /// Fails if the output isn't a JSON object, or a tag, the cover, a
+    /// chapter or the subtitles are malformed.
     pub fn apply(&mut self, name: &str, output: &[u8]) -> Result<(), String> {
         let Some(value) = parse_output(name, output)? else {
             return Ok(());

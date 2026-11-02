@@ -41,6 +41,7 @@ pub enum ApiError {
 
 impl ApiError {
     /// Whether the key shouldn't be used again in this run.
+    #[must_use]
     pub fn disables_key(&self) -> bool {
         matches!(
             self,
@@ -64,6 +65,7 @@ pub struct Api {
 }
 
 impl Api {
+    #[must_use]
     pub fn new(key: &str, budget: u32, requests_per_second: u32) -> Self {
         #[allow(unused_mut)]
         let mut base = API.to_string();
@@ -73,7 +75,7 @@ impl Api {
             base = fake;
         }
         Self::with(
-            base,
+            &base,
             key,
             budget,
             requests_per_second,
@@ -81,8 +83,16 @@ impl Api {
         )
     }
 
+    /// A client for `base` instead of the real API, retrying after
+    /// `backoff` (doubling each time).
+    ///
+    /// # Panics
+    ///
+    /// If the HTTP client can't be built: its TLS backend fails to
+    /// initialize, or the system's DNS configuration can't be loaded.
+    #[must_use]
     pub fn with(
-        base: String,
+        base: &str,
         key: &str,
         budget: u32,
         requests_per_second: u32,
@@ -137,7 +147,7 @@ impl Api {
             let request = self.client.get(full).header("Accept", "application/json");
             let response = tokio::select! {
                 response = request.send() => response,
-                _ = shutdown.stopping() => return Err(ApiError::Stopped),
+                () = shutdown.stopping() => return Err(ApiError::Stopped),
             };
             match response {
                 Ok(response) => {
@@ -157,8 +167,8 @@ impl Api {
                 let wait = self.backoff * 2u32.pow(attempt - 1);
                 tracing::debug!("YouTube API: {last}; trying again in {wait:?}");
                 tokio::select! {
-                    _ = tokio::time::sleep(wait) => {}
-                    _ = shutdown.stopping() => return Err(ApiError::Stopped),
+                    () = tokio::time::sleep(wait) => {}
+                    () = shutdown.stopping() => return Err(ApiError::Stopped),
                 }
             }
         }
@@ -178,6 +188,14 @@ impl Api {
     }
 
     /// Every entry of a playlist, in order.
+    ///
+    /// # Errors
+    ///
+    /// When a request fails: [`ApiError::Quota`] once the budget or YouTube's
+    /// quota is used up, [`ApiError::KeyRejected`] for a bad key,
+    /// [`ApiError::Source`] when YouTube refuses the request,
+    /// [`ApiError::Unavailable`] when it keeps failing, and
+    /// [`ApiError::Stopped`] when `shutdown` stops it.
     pub async fn playlist(
         &self,
         playlist_id: &str,
@@ -209,6 +227,14 @@ impl Api {
 
     /// A channel's id and name, by `@handle` or `UC…` id; `None` if YouTube
     /// has no such channel.
+    ///
+    /// # Errors
+    ///
+    /// When a request fails: [`ApiError::Quota`] once the budget or YouTube's
+    /// quota is used up, [`ApiError::KeyRejected`] for a bad key,
+    /// [`ApiError::Source`] when YouTube refuses the request,
+    /// [`ApiError::Unavailable`] when it keeps failing, and
+    /// [`ApiError::Stopped`] when `shutdown` stops it.
     pub async fn channel(
         &self,
         reference: &str,
@@ -236,6 +262,14 @@ impl Api {
 
     /// Details for videos, 50 per request. Videos YouTube doesn't return
     /// (private, deleted) are left out.
+    ///
+    /// # Errors
+    ///
+    /// When a request fails: [`ApiError::Quota`] once the budget or YouTube's
+    /// quota is used up, [`ApiError::KeyRejected`] for a bad key,
+    /// [`ApiError::Source`] when YouTube refuses the request,
+    /// [`ApiError::Unavailable`] when it keeps failing, and
+    /// [`ApiError::Stopped`] when `shutdown` stops it.
     pub async fn videos(
         &self,
         ids: &[String],
@@ -379,8 +413,8 @@ impl Video {
             .filter_map(|(_, t)| {
                 Some(Thumbnail {
                     url: t["url"].as_str()?.to_string(),
-                    width: t["width"].as_u64().map(|w| w as u32),
-                    height: t["height"].as_u64().map(|h| h as u32),
+                    width: t["width"].as_u64().and_then(|w| u32::try_from(w).ok()),
+                    height: t["height"].as_u64().and_then(|h| u32::try_from(h).ok()),
                 })
             })
             .collect();
@@ -418,6 +452,7 @@ impl Video {
 
 /// An ISO 8601 duration (`PT1H2M3S`, `P1DT2H`, `P0D`) in seconds; `None`
 /// for zero (upcoming streams report `P0D`).
+#[must_use]
 pub fn parse_duration(text: &str) -> Option<u64> {
     let rest = text.strip_prefix('P')?;
     let mut seconds = 0u64;
@@ -446,6 +481,7 @@ pub fn parse_duration(text: &str) -> Option<u64> {
 
 /// Combine a playlist entry with its details (fresh from `videos`, or
 /// known from an earlier index) into what downstream code uses.
+#[must_use]
 pub fn remote_item(entry: &Entry, position: u32, video: Option<&Video>) -> RemoteItem {
     let Some(video) = video else {
         return RemoteItem {
@@ -499,6 +535,11 @@ pub fn remote_item(entry: &Entry, position: u32, video: Option<&Video>) -> Remot
 
 /// List a playlist through the API: every page, then details for videos
 /// `known` doesn't have in full.
+///
+/// # Errors
+///
+/// When listing the playlist or fetching video details fails (see
+/// [`Api::playlist`] and [`Api::videos`]).
 pub async fn list(
     api: &Api,
     playlist_id: &str,
@@ -520,7 +561,7 @@ pub async fn list(
     let mut fetched = api.videos(&wanted, shutdown).await?;
     let mut details: BTreeMap<usize, RemoteItem> = BTreeMap::new();
     for (i, entry) in entries.iter().enumerate() {
-        let position = i as u32 + 1;
+        let position = u32::try_from(i + 1).unwrap_or(u32::MAX);
         let item = match (fetched.remove(&entry.video_id), known.get(&entry.video_id)) {
             (Some(video), _) => remote_item(entry, position, Some(&video)),
             (None, Some(stored)) => RemoteItem {
@@ -556,7 +597,7 @@ mod tests {
     use super::super::youtube_fake as fake;
 
     fn api(server: &wiremock::MockServer, budget: u32) -> Api {
-        Api::with(server.uri(), "AIzaTestKey", budget, 1000, Duration::ZERO)
+        Api::with(&server.uri(), "AIzaTestKey", budget, 1000, Duration::ZERO)
     }
 
     #[tokio::test]

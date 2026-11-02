@@ -36,6 +36,7 @@ pub struct Fields<'a> {
 }
 
 impl<'a> Fields<'a> {
+    #[must_use]
     pub fn from_item(item: &'a RemoteItem) -> Self {
         Fields {
             title: Some(&item.title),
@@ -46,7 +47,7 @@ impl<'a> Fields<'a> {
             duration: item.duration,
             published_at: item.published_at,
             availability: Some(item.availability),
-            kind: item.kind.map(|k| k.as_str()),
+            kind: item.kind.map(super::index::VideoKind::as_str),
         }
     }
 }
@@ -135,6 +136,7 @@ impl Rule {
 }
 
 /// A rule field's name, as written in the config.
+#[must_use]
 pub fn field_name(field: RuleField) -> &'static str {
     match field {
         RuleField::Title => "title",
@@ -221,6 +223,7 @@ pub enum Decision {
 
 impl Decision {
     /// A short, stable label for summaries.
+    #[must_use]
     pub fn label(&self) -> &'static str {
         match self {
             Decision::Keep { .. } => "kept",
@@ -246,10 +249,17 @@ impl Decision {
         }
     }
 
+    /// The decision as JSON.
+    ///
+    /// # Panics
+    ///
+    /// Never in practice: a `Decision` is plain data that always serializes.
+    #[must_use]
     pub fn to_json(&self) -> String {
         serde_json::to_string(self).expect("decision serializes")
     }
 
+    #[must_use]
     pub fn from_json(json: &str) -> Option<Self> {
         serde_json::from_str(json).ok()
     }
@@ -313,6 +323,10 @@ pub struct RuleSet {
 impl RuleSet {
     /// Compile a source's filters. Patterns were validated at config load;
     /// a relative `cutoff` is measured back from `now`.
+    ///
+    /// # Errors
+    ///
+    /// Fails if a rule's pattern doesn't compile as a regex.
     pub fn compile(
         effective: &EffectiveSource,
         backtrack_limit: usize,
@@ -370,6 +384,7 @@ impl RuleSet {
     }
 
     /// Whether a rule looks at `kind` (so it's worth finding out).
+    #[must_use]
     pub fn uses_kind(&self) -> bool {
         self.include
             .iter()
@@ -377,6 +392,7 @@ impl RuleSet {
             .any(|r| r.fields.contains(&RuleField::Kind))
     }
 
+    #[must_use]
     pub fn decide(&self, item: &Fields<'_>) -> Decision {
         let structural = |reason| Decision::Structural { reason };
         let mut deferred: Option<Needs> = None;

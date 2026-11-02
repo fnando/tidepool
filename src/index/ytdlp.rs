@@ -37,6 +37,10 @@ struct FlatThumbnail {
 }
 
 /// Parse `yt-dlp --flat-playlist -J` output.
+///
+/// # Errors
+///
+/// [`IndexError::Parse`] when `json` isn't a playlist as yt-dlp prints it.
 pub fn parse_flat_playlist(json: &str) -> Result<RemoteList, IndexError> {
     let playlist: FlatPlaylist =
         serde_json::from_str(json).map_err(|e| IndexError::Parse(e.to_string()))?;
@@ -61,10 +65,7 @@ pub fn parse_flat_playlist(json: &str) -> Result<RemoteList, IndexError> {
                 channel_id: entry.channel_id,
                 description: None,
                 tags: None,
-                duration: entry
-                    .duration
-                    .filter(|d| *d >= 0.0)
-                    .map(|d| d.round() as u64),
+                duration: entry.duration.filter(|d| *d >= 0.0).map(whole_seconds),
                 published_at: entry.timestamp.and_then(|t| Timestamp::from_second(t).ok()),
                 thumbnails: entry
                     .thumbnails
@@ -132,8 +133,24 @@ pub fn list_args(url: &str, cookies_file: Option<&Path>) -> Vec<String> {
     args
 }
 
+/// A duration in seconds (not negative), rounded to whole seconds.
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "rounded and not negative; `as` saturates the absurdly long"
+)]
+fn whole_seconds(seconds: f64) -> u64 {
+    seconds.round() as u64
+}
+
 /// A channel's id and name: yt-dlp reads the channel page without listing
 /// any videos (`--playlist-items 0`).
+///
+/// # Errors
+///
+/// [`IndexError::Ytdlp`] when yt-dlp can't run or fails, [`IndexError::Stopped`]
+/// when `shutdown` stops it, and [`IndexError::Parse`] when its output has no
+/// channel id.
 pub async fn channel(
     ytdlp: &crate::tools::Ytdlp,
     url: &str,
@@ -180,6 +197,12 @@ pub async fn channel(
 }
 
 /// List a source with yt-dlp.
+///
+/// # Errors
+///
+/// [`IndexError::Ytdlp`] when yt-dlp can't run or fails, [`IndexError::Stopped`]
+/// when `shutdown` stops it, and [`IndexError::Parse`] when its output isn't
+/// a playlist.
 pub async fn list(
     ytdlp: &crate::tools::Ytdlp,
     url: &str,

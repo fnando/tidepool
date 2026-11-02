@@ -8,6 +8,7 @@ use super::merge::{DEFAULT_CATEGORY, category_of, category_settings, effective_s
 use super::types::Config;
 
 /// Run every semantic check.
+#[must_use]
 pub fn check(config: &Config) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     check_hook_references(config, &mut out);
@@ -104,7 +105,7 @@ fn check_kind_rules(config: &Config, out: &mut Vec<Diagnostic>) {
                         out.push(Diagnostic::error(
                             format!("{base}/{list}/{i}/value"),
                             format!("{:?} isn't a kind: use \"video\", \"short\" or \"live\"", v.value),
-                        ))
+                        ));
                     }
                     _ => {}
                 }

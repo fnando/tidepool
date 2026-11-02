@@ -58,6 +58,7 @@ impl std::fmt::Display for Reason {
 }
 
 /// Which candidates go, and why, oldest first.
+#[must_use]
 pub fn plan(cleanup: &Cleanup, candidates: &[Candidate], now: Timestamp) -> Vec<(usize, Reason)> {
     // Oldest first, per `order`; ties: further down the source goes first.
     let mut order: Vec<usize> = (0..candidates.len())
@@ -66,10 +67,10 @@ pub fn plan(cleanup: &Cleanup, candidates: &[Candidate], now: Timestamp) -> Vec<
     let c = |i: usize| &candidates[i];
     match cleanup.order {
         CleanupOrder::OldestDownloaded => {
-            order.sort_by_key(|&i| (c(i).downloaded_at, Reverse(c(i).position)))
+            order.sort_by_key(|&i| (c(i).downloaded_at, Reverse(c(i).position)));
         }
         CleanupOrder::OldestPublished => {
-            order.sort_by_key(|&i| (c(i).published_at, Reverse(c(i).position)))
+            order.sort_by_key(|&i| (c(i).published_at, Reverse(c(i).position)));
         }
         CleanupOrder::SourcePosition => order.sort_by_key(|&i| Reverse(c(i).position)),
     }
@@ -163,6 +164,11 @@ pub fn files_to_remove(files: &VideoFiles, keep: CleanupKeep) -> Vec<PathBuf> {
 /// with `None`. All or nothing: a failed move puts back what was moved.
 /// Returns `(where it was, where it is now)` for each file moved, and the
 /// bytes freed; a folder left empty is removed.
+///
+/// # Errors
+///
+/// Fails if the trash folder can't be created, a file can't be moved into it
+/// (after putting back what was already moved), or a file can't be deleted.
 pub fn remove(
     paths: &[PathBuf],
     dir: &Path,
@@ -171,7 +177,7 @@ pub fn remove(
     let bytes: u64 = paths
         .iter()
         .filter_map(|p| p.symlink_metadata().ok())
-        .filter(|m| m.is_file())
+        .filter(std::fs::Metadata::is_file)
         .map(|m| m.len())
         .sum();
     let mut moved: Vec<(PathBuf, PathBuf)> = Vec::new();
@@ -218,6 +224,11 @@ pub fn remove(
 
 /// Put trashed files back where they were. Nothing is moved if any of those
 /// places is taken.
+///
+/// # Errors
+///
+/// Fails if an original place is taken, a file is gone from the trash, or a
+/// move fails (after moving back what was already restored).
 pub fn restore(files: &[(String, String)]) -> Result<(), String> {
     for (from, to) in files {
         if Path::new(from).symlink_metadata().is_ok() {

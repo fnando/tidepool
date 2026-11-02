@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub const DEFAULT_SERVER: &str = "https://musicbrainz.org";
-const CACHE_FOR: Duration = Duration::from_secs(30 * 86_400);
+const CACHE_FOR: Duration = Duration::from_hours(720);
 /// musicbrainz.org allows one request per second.
 const OFFICIAL_SPACING: Duration = Duration::from_millis(1100);
 
@@ -52,6 +52,7 @@ pub enum Found {
 
 impl Found {
     /// The tags to add (MusicBrainz Picard's names).
+    #[must_use]
     pub fn tags(&self) -> Vec<(&'static str, String)> {
         match self {
             Found::Match { release, track } => {
@@ -70,6 +71,7 @@ impl Found {
     }
 
     /// What metadata.json records (`musicbrainz`).
+    #[must_use]
     pub fn record(&self, artist_id: &str) -> Value {
         match self {
             Found::Match { release, track } => serde_json::json!({
@@ -87,6 +89,7 @@ impl Found {
     }
 
     /// Tags from what metadata.json recorded for an earlier match.
+    #[must_use]
     pub fn tags_from_record(record: &Value) -> Option<Vec<(&'static str, String)>> {
         let get = |key: &str| record.get(key).and_then(Value::as_str).map(str::to_string);
         let mut tags = vec![
@@ -102,6 +105,12 @@ impl Found {
 }
 
 /// Find `title` among the artist's releases.
+///
+/// # Errors
+///
+/// When the artist's releases aren't cached and fetching them from `server`
+/// fails: the request fails, the server answers with an error (or stays
+/// busy), or its answer isn't JSON.
 pub async fn lookup(
     server: &str,
     data_dir: &Path,
@@ -115,6 +124,7 @@ pub async fn lookup(
 }
 
 /// Match a video title against the releases, and pick one release.
+#[must_use]
 pub fn pick(
     releases: &[Release],
     title: &str,
@@ -190,7 +200,10 @@ pub fn pick(
                 .then(date(a).cmp(&date(b)))
         }),
     };
-    let (release, track) = chosen.expect("a non-empty pool");
+    // The pool has at least one release, so one is always chosen.
+    let Some((release, track)) = chosen else {
+        return Found::None("no release to pick".into());
+    };
     Found::Match {
         release: Box::new((*release).clone()),
         track: (*track).clone(),
@@ -235,6 +248,7 @@ const VIDEO_WORDS: [&str; 16] = [
 
 /// A video title without what isn't the song's: the artist in front
 /// ("Artist - Song") and brackets like "(Official Video)".
+#[must_use]
 pub fn clean_title(title: &str, artist: Option<&str>) -> String {
     let mut text = title.trim().to_string();
     if let Some(artist) = artist.filter(|a| !a.is_empty())
@@ -269,6 +283,7 @@ pub fn clean_title(title: &str, artist: Option<&str>) -> String {
 }
 
 /// For comparing titles: ASCII, lowercase, letters and digits only.
+#[must_use]
 pub fn normalize(text: &str) -> String {
     deunicode::deunicode(text)
         .to_lowercase()
@@ -287,6 +302,11 @@ struct CachedArtist {
 }
 
 /// The artist's name (cached for 30 days).
+///
+/// # Errors
+///
+/// When the name isn't cached and fetching it from `server` fails (as for
+/// [`lookup`]), or the server has no artist `artist_id`.
 pub async fn artist_name(server: &str, data_dir: &Path, artist_id: &str) -> Result<String, String> {
     let path = cache_file(server, data_dir, &format!("{artist_id}.artist"));
     if let Ok(text) = std::fs::read_to_string(&path)
@@ -315,7 +335,9 @@ pub async fn artist_name(server: &str, data_dir: &Path, artist_id: &str) -> Resu
         fetched_at: jiff::Timestamp::now(),
         name,
     };
-    let _ = std::fs::write(&path, serde_json::to_vec(&cached).expect("JSON"));
+    if let Ok(json) = serde_json::to_vec(&cached) {
+        let _ = std::fs::write(&path, json);
+    }
     Ok(cached.name)
 }
 
@@ -369,7 +391,9 @@ async fn artist_releases(
             releases.len()
         );
         let page = get(server, &url).await?;
-        let total = page["release-count"].as_u64().unwrap_or(0) as usize;
+        let total = page["release-count"]
+            .as_u64()
+            .map_or(0, |n| usize::try_from(n).unwrap_or(usize::MAX));
         let got: Vec<Release> = page["releases"]
             .as_array()
             .into_iter()
@@ -445,16 +469,16 @@ fn http() -> &'static reqwest::Client {
 /// Wait for our turn: musicbrainz.org takes one request per second from
 /// the whole process; other servers (mirrors) don't wait.
 async fn wait_turn(server: &str) {
+    static NEXT: OnceLock<Mutex<HashMap<String, Instant>>> = OnceLock::new();
     let official = server.contains("musicbrainz.org");
     if !official {
         return;
     }
-    static NEXT: OnceLock<Mutex<HashMap<String, Instant>>> = OnceLock::new();
     let wait = {
         let mut next = NEXT
             .get_or_init(Mutex::default)
             .lock()
-            .unwrap_or_else(|e| e.into_inner());
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         let now = Instant::now();
         let slot = next.get(server).copied().unwrap_or(now).max(now);
         next.insert(server.to_string(), slot + OFFICIAL_SPACING);

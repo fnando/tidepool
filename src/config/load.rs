@@ -2,7 +2,7 @@
 //! Schema (all errors) → deserialize → semantic checks. Every problem is
 //! reported as `file:line:col path: message`.
 
-use std::fmt;
+use std::fmt::{self, Write as _};
 use std::ops::Range;
 use std::path::Path;
 
@@ -76,6 +76,7 @@ pub struct RenderedDiagnostic {
 
 impl Report {
     /// Render diagnostics, ordered by position in the file.
+    #[must_use]
     pub fn new(
         source_name: &str,
         text: &str,
@@ -112,6 +113,7 @@ impl Report {
         }
     }
 
+    #[must_use]
     pub fn has_errors(&self) -> bool {
         self.lines.iter().any(|l| l.severity == Severity::Error)
     }
@@ -126,13 +128,13 @@ impl Report {
     fn render(&self, line: &RenderedDiagnostic) -> String {
         let mut out = self.source_name.clone();
         if let Some((l, c)) = line.location {
-            out.push_str(&format!(":{l}:{c}"));
+            let _ = write!(out, ":{l}:{c}");
         }
         if line.severity == Severity::Warning {
             out.push_str(" warning:");
         }
         if !line.path.is_empty() {
-            out.push_str(&format!(" {}:", line.path));
+            let _ = write!(out, " {}:", line.path);
         }
         out.push(' ');
         out.push_str(&line.message);
@@ -175,12 +177,18 @@ pub struct Loaded {
 
 impl Loaded {
     /// Canonical JSON text, used to compare configs semantically.
+    #[must_use]
     pub fn normalized(&self) -> String {
-        serde_json::to_string(&self.json).expect("JSON value serializes")
+        self.json.to_string()
     }
 }
 
 /// Read and load a config file.
+///
+/// # Errors
+///
+/// [`ConfigError::Read`] when the file can't be read, and
+/// [`ConfigError::Invalid`] when the config has errors (see [`load_str`]).
 pub fn load_file(path: &Path) -> Result<Loaded, ConfigError> {
     let text = std::fs::read_to_string(path).map_err(|source| ConfigError::Read {
         path: path.display().to_string(),
@@ -190,6 +198,12 @@ pub fn load_file(path: &Path) -> Result<Loaded, ConfigError> {
 }
 
 /// Load config text; `source_name` prefixes every diagnostic.
+///
+/// # Errors
+///
+/// [`ConfigError::Invalid`], with every problem found, when the text isn't
+/// valid TOML, is for another config version, doesn't match the schema, or
+/// fails the semantic checks.
 pub fn load_str(source_name: &str, text: &str) -> Result<Loaded, ConfigError> {
     // 1. Parse, keeping spans.
     let doc = match Document::parse(text.to_string()) {
@@ -251,6 +265,7 @@ pub fn load_str(source_name: &str, text: &str) -> Result<Loaded, ConfigError> {
 }
 
 /// Every schema violation, as diagnostics with human-oriented messages.
+#[must_use]
 pub fn schema_diagnostics(json: &Value) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for error in validator().iter_errors(json) {
@@ -314,16 +329,7 @@ fn convert(error: &ValidationError<'_>, out: &mut Vec<Diagnostic>) {
                 }) =>
         {
             // A documented enum: one `const` per variant.
-            let options: Vec<Value> = context
-                .iter()
-                .flatten()
-                .filter_map(|e| match e.kind() {
-                    ValidationErrorKind::Constant { expected_value } => {
-                        Some((**expected_value).clone())
-                    }
-                    _ => None,
-                })
-                .collect();
+            let options = const_options(context);
             out.push(Diagnostic::error(
                 pointer,
                 not_one_of(instance, options.iter()),
@@ -363,56 +369,75 @@ fn convert(error: &ValidationError<'_>, out: &mut Vec<Diagnostic>) {
         ValidationErrorKind::OneOfNotValid { context }
         | ValidationErrorKind::OneOfMultipleValid { context }
         | ValidationErrorKind::AnyOf { context } => {
-            // Pick the branch that matches the value's type (e.g. a rule given
-            // as a string vs. as a table) and report its errors.
-            // Drop branches of the wrong type for this value; if that leaves
-            // several table shapes, drop those that don't know a key the user
-            // wrote (`pattern` rules out `{ field, value }`). What's left is
-            // the shape the user meant.
-            let mut relevant: Vec<_> = context
-                .iter()
-                .filter(|branch| {
-                    !branch.iter().any(|e| {
-                        e.instance_path().as_str() == pointer
-                            && matches!(e.kind(), ValidationErrorKind::Type { .. })
-                    })
-                })
-                .collect();
-            if relevant.len() > 1 {
-                let known: Vec<_> = relevant
-                    .iter()
-                    .copied()
-                    .filter(|branch| {
-                        !branch.iter().any(|e| {
-                            e.instance_path().as_str() == pointer
-                                && matches!(
-                                    e.kind(),
-                                    ValidationErrorKind::AdditionalProperties { .. }
-                                )
-                        })
-                    })
-                    .collect();
-                if !known.is_empty() {
-                    relevant = known;
-                }
-            }
-            if let [branch] = relevant.as_slice() {
-                for e in branch.iter() {
-                    convert(e, out);
-                }
-            } else if pointer_segments(&pointer)
-                .iter()
-                .any(|s| s == "include" || s == "exclude")
-            {
-                out.push(Diagnostic::error(
-                    pointer,
-                    "must be a regex string, a { field, pattern } table or a { field, value } table",
-                ));
-            } else {
-                out.push(Diagnostic::error(pointer, error.to_string()));
-            }
+            convert_alternatives(error, pointer, context, out);
         }
         _ => out.push(Diagnostic::error(pointer, error.to_string())),
+    }
+}
+
+/// The values of a documented enum's variants (one `const` per branch).
+fn const_options(context: &[Vec<ValidationError<'static>>]) -> Vec<Value> {
+    context
+        .iter()
+        .flatten()
+        .filter_map(|e| match e.kind() {
+            ValidationErrorKind::Constant { expected_value } => Some((**expected_value).clone()),
+            _ => None,
+        })
+        .collect()
+}
+
+/// A `oneOf`/`anyOf` failure: report the errors of the branch the user meant.
+fn convert_alternatives(
+    error: &ValidationError<'_>,
+    pointer: String,
+    context: &[Vec<ValidationError<'static>>],
+    out: &mut Vec<Diagnostic>,
+) {
+    // Pick the branch that matches the value's type (e.g. a rule given
+    // as a string vs. as a table) and report its errors.
+    // Drop branches of the wrong type for this value; if that leaves
+    // several table shapes, drop those that don't know a key the user
+    // wrote (`pattern` rules out `{ field, value }`). What's left is
+    // the shape the user meant.
+    let mut relevant: Vec<_> = context
+        .iter()
+        .filter(|branch| {
+            !branch.iter().any(|e| {
+                e.instance_path().as_str() == pointer
+                    && matches!(e.kind(), ValidationErrorKind::Type { .. })
+            })
+        })
+        .collect();
+    if relevant.len() > 1 {
+        let known: Vec<_> = relevant
+            .iter()
+            .copied()
+            .filter(|branch| {
+                !branch.iter().any(|e| {
+                    e.instance_path().as_str() == pointer
+                        && matches!(e.kind(), ValidationErrorKind::AdditionalProperties { .. })
+                })
+            })
+            .collect();
+        if !known.is_empty() {
+            relevant = known;
+        }
+    }
+    if let [branch] = relevant.as_slice() {
+        for e in *branch {
+            convert(e, out);
+        }
+    } else if pointer_segments(&pointer)
+        .iter()
+        .any(|s| s == "include" || s == "exclude")
+    {
+        out.push(Diagnostic::error(
+            pointer,
+            "must be a regex string, a { field, pattern } table or a { field, value } table",
+        ));
+    } else {
+        out.push(Diagnostic::error(pointer, error.to_string()));
     }
 }
 

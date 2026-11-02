@@ -10,6 +10,7 @@ const JITTER: f64 = 0.05;
 
 /// The next sync: `interval` after the last one ended, plus up to 5% of it
 /// (`jitter` is 0.0–1.0).
+#[must_use]
 pub fn next_sync(last_finished: Timestamp, interval: Duration, jitter: f64) -> Timestamp {
     let extra = interval.mul_f64(JITTER * jitter.clamp(0.0, 1.0));
     let wait = SignedDuration::try_from(interval + extra).unwrap_or(SignedDuration::MAX);
@@ -18,12 +19,14 @@ pub fn next_sync(last_finished: Timestamp, interval: Duration, jitter: f64) -> T
 
 /// How long until `next` (zero when it's due: missed syncs, after a restart
 /// or a sleep, become a single sync right away).
+#[must_use]
 pub fn wait_until(next: Timestamp, now: Timestamp) -> Duration {
     Duration::try_from(next.duration_since(now)).unwrap_or(Duration::ZERO)
 }
 
 /// How long to wait before restarting a service that stopped unexpectedly
 /// for the `failures`-th time in a row: 1 s, doubling, at most 5 minutes.
+#[must_use]
 pub fn restart_delay(failures: u32) -> Duration {
     let seconds = 1u64 << failures.saturating_sub(1).min(16);
     Duration::from_secs(seconds.min(300))
@@ -34,6 +37,7 @@ pub fn restart_delay(failures: u32) -> Duration {
 pub const HEALTHY_AFTER: Duration = Duration::from_secs(600);
 
 /// A random number in 0.0–1.0.
+#[must_use]
 pub fn jitter() -> f64 {
     use std::hash::{BuildHasher, Hasher};
     let mut hasher = std::collections::hash_map::RandomState::new().build_hasher();
@@ -43,7 +47,8 @@ pub fn jitter() -> f64 {
             .unwrap_or_default()
             .as_nanos(),
     );
-    (hasher.finish() % 1001) as f64 / 1000.0
+    let permille = u16::try_from(hasher.finish() % 1001).unwrap_or(1000);
+    f64::from(permille) / 1000.0
 }
 
 #[cfg(test)]

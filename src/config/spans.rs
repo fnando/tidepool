@@ -1,12 +1,14 @@
 //! TOML ↔ JSON plumbing: convert a span-preserving `toml_edit` document to
 //! `serde_json::Value`, and map JSON pointers back to TOML line:column.
 
+use std::fmt::Write as _;
 use std::ops::Range;
 
 use serde_json::{Map, Number, Value};
 use toml_edit::{Document, Item, TableLike};
 
 /// Convert a parsed TOML document to JSON. Datetimes become strings.
+#[must_use]
 pub fn to_json(doc: &Document<String>) -> Value {
     table_to_json(doc.as_table())
 }
@@ -38,8 +40,7 @@ fn value_to_json(value: &toml_edit::Value) -> Value {
         V::String(s) => Value::String(s.value().clone()),
         V::Integer(i) => Value::Number((*i.value()).into()),
         V::Float(f) => Number::from_f64(*f.value())
-            .map(Value::Number)
-            .unwrap_or_else(|| Value::String(f.value().to_string())),
+            .map_or_else(|| Value::String(f.value().to_string()), Value::Number),
         V::Boolean(b) => Value::Bool(*b.value()),
         V::Datetime(d) => Value::String(d.value().to_string()),
         V::Array(items) => Value::Array(items.iter().map(value_to_json).collect()),
@@ -48,6 +49,7 @@ fn value_to_json(value: &toml_edit::Value) -> Value {
 }
 
 /// Split a JSON pointer into unescaped segments.
+#[must_use]
 pub fn pointer_segments(pointer: &str) -> Vec<String> {
     if pointer.is_empty() {
         return Vec::new();
@@ -60,11 +62,12 @@ pub fn pointer_segments(pointer: &str) -> Vec<String> {
 }
 
 /// Render a JSON pointer as a dotted config path: `sources.lofi.include[0]`.
+#[must_use]
 pub fn dotted(pointer: &str) -> String {
     let mut out = String::new();
     for segment in pointer_segments(pointer) {
         if segment.chars().all(|c| c.is_ascii_digit()) && !segment.is_empty() {
-            out.push_str(&format!("[{segment}]"));
+            let _ = write!(out, "[{segment}]");
             continue;
         }
         if !out.is_empty() {
@@ -77,7 +80,7 @@ pub fn dotted(pointer: &str) -> String {
         if bare {
             out.push_str(&segment);
         } else {
-            out.push_str(&format!("{segment:?}"));
+            let _ = write!(out, "{segment:?}");
         }
     }
     out
@@ -118,6 +121,7 @@ impl<'a> Node<'a> {
 
 /// Byte span for a JSON pointer: the value's span, or with `prefer_key`, the
 /// key's. Falls back to the closest ancestor that has a span.
+#[must_use]
 pub fn locate(doc: &Document<String>, pointer: &str, prefer_key: bool) -> Option<Range<usize>> {
     let segments = pointer_segments(pointer);
     let mut node = Node::Item(doc.as_item());
@@ -152,6 +156,7 @@ pub fn locate(doc: &Document<String>, pointer: &str, prefer_key: bool) -> Option
 }
 
 /// 1-based line and column (in characters) of a byte offset.
+#[must_use]
 pub fn line_col(text: &str, offset: usize) -> (usize, usize) {
     let offset = offset.min(text.len());
     let before = &text[..offset];

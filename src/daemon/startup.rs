@@ -102,12 +102,13 @@ fn import(store: &ConfigStore<'_>, name: &str, text: &str) -> anyhow::Result<()>
 fn export(path: &Path, name: &str, toml: &str, rev: i64) -> anyhow::Result<()> {
     let backup = crate::config::store::write_file(path, toml)
         .map_err(|e| anyhow::anyhow!("cannot write {name}: {e}"))?;
-    match backup {
-        Some(backup) => tracing::info!(
+    if let Some(backup) = backup {
+        tracing::info!(
             "wrote config revision {rev} to {name} (the old file is {})",
             App::display_path(&backup)
-        ),
-        None => tracing::info!("wrote config revision {rev} to {name}"),
+        );
+    } else {
+        tracing::info!("wrote config revision {rev} to {name}");
     }
     Ok(())
 }

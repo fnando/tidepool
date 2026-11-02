@@ -28,6 +28,10 @@ pub struct StatePaths {
 
 impl Dirs {
     /// Resolve from the environment (`$HOME`, `$XDG_CONFIG_HOME`, `$XDG_DATA_HOME`).
+    ///
+    /// # Errors
+    ///
+    /// Fails if the home directory can't be found.
     pub fn from_env() -> Result<Self, String> {
         let xdg = Xdg::new().map_err(|e| format!("cannot find the home directory: {e}"))?;
         Ok(Self {
@@ -38,30 +42,36 @@ impl Dirs {
     }
 
     /// The conventional config file location.
+    #[must_use]
     pub fn default_config_file(&self) -> PathBuf {
         self.config_dir.join("config.toml")
     }
 
     /// The media folder when no category sets `media_dir`.
+    #[must_use]
     pub fn default_media_dir(&self) -> PathBuf {
         self.data_dir.join("media")
     }
 
     /// Managed binaries.
+    #[must_use]
     pub fn bin_dir(&self) -> PathBuf {
         self.data_dir.join("bin")
     }
 
     /// The managed Deno binary.
+    #[must_use]
     pub fn managed_deno(&self) -> PathBuf {
         self.bin_dir().join("deno")
     }
 
     /// The managed yt-dlp binary for a release channel.
+    #[must_use]
     pub fn managed_ytdlp(&self, channel: crate::config::YtdlpChannel) -> PathBuf {
         self.bin_dir().join(format!("yt-dlp-{}", channel.as_str()))
     }
 
+    #[must_use]
     pub fn state(&self) -> StatePaths {
         let dir = self.data_dir.clone();
         StatePaths {
@@ -75,11 +85,19 @@ impl Dirs {
 }
 
 /// Expand a leading `~` and `$VAR` / `${VAR}` references.
+///
+/// # Errors
+///
+/// Fails if a `${` isn't closed or a referenced variable is not set.
 pub fn expand(input: &str, home: &Path) -> Result<PathBuf, String> {
     expand_with(input, home, |name| std::env::var(name).ok())
 }
 
 /// [`expand`] with an injectable variable lookup.
+///
+/// # Errors
+///
+/// Fails if a `${` isn't closed or `var` returns `None` for a referenced name.
 pub fn expand_with(
     input: &str,
     home: &Path,

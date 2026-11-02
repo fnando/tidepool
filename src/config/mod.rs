@@ -8,6 +8,7 @@ pub mod size;
 pub const KEY_PATTERN: &str = "^[a-z0-9][a-z0-9_-]*$";
 
 /// Whether `s` is a valid source, category or hook name.
+#[must_use]
 pub fn is_valid_name(s: &str) -> bool {
     let mut chars = s.chars();
     matches!(chars.next(), Some(c) if c.is_ascii_lowercase() || c.is_ascii_digit())

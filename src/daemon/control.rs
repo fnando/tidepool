@@ -1,6 +1,7 @@
 //! `tidepool daemon status|pause|resume|restart|sync`: see and steer the
 //! running daemon through the state DB (the supervisor reads it every 2 s).
 
+use std::fmt::Write as _;
 use std::io::Write;
 use std::time::{Duration, Instant};
 
@@ -79,14 +80,15 @@ fn status(state: &State, running: Option<u32>, out: &mut dyn Write) -> anyhow::R
             }
         };
         if row.restarts > 0 {
-            line.push_str(&format!(
+            let _ = write!(
+                line,
                 " (restarted {} time{}",
                 row.restarts,
                 if row.restarts == 1 { "" } else { "s" }
-            ));
+            );
             if let (Some(error), Some(at)) = (&row.last_error, &row.last_error_at) {
-                let at = at.parse().map(local).unwrap_or_else(|_| at.clone());
-                line.push_str(&format!("; last at {at}: {error}"));
+                let at = at.parse().map_or_else(|_| at.clone(), local);
+                let _ = write!(line, "; last at {at}: {error}");
             }
             line.push(')');
         }

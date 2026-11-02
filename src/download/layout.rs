@@ -95,6 +95,13 @@ pub struct Layout {
 }
 
 impl Layout {
+    /// The paths for one video of `source`, starting with its `output_dir`.
+    ///
+    /// # Errors
+    ///
+    /// Returns a message when `output_dir` can't be rendered: its `~`/`$VARS`
+    /// can't be expanded, a placeholder isn't valid there, or it doesn't
+    /// render to a full path without `..`.
     pub fn new(
         source: &EffectiveSource,
         values: &Values,
@@ -140,6 +147,7 @@ impl Layout {
 
     /// Use the paths `prepare` hooks set. A new `output_dir` also moves the
     /// files whose templates use `{output_dir}`.
+    #[must_use]
     pub fn with_overrides(mut self, overrides: &BTreeMap<String, String>) -> Self {
         if let Some(dir) = overrides.get("output_dir") {
             self.output_dir = PathBuf::from(dir);
@@ -150,6 +158,11 @@ impl Layout {
 
     /// Every path as it would be, with `{ext}` and `{lang}` left in: what
     /// `prepare` hooks are shown.
+    ///
+    /// # Errors
+    ///
+    /// Returns a message when any of the paths can't be rendered (see
+    /// [`Layout::new`]), or `cover_file` doesn't end in an image extension.
     pub fn proposed(&self) -> Result<BTreeMap<String, String>, String> {
         let show = |p: PathBuf| p.display().to_string();
         Ok([
@@ -181,11 +194,17 @@ impl Layout {
     }
 
     /// The video's directory (`output_dir`).
+    #[must_use]
     pub fn output_dir(&self) -> &Path {
         &self.output_dir
     }
 
     /// The media file (`output_file`) for yt-dlp's extension.
+    ///
+    /// # Errors
+    ///
+    /// Returns a message when no `prepare` hook set it and `output_file`
+    /// can't be rendered (see [`Layout::new`]).
     pub fn output_file(&self, ext: &str) -> Result<PathBuf, String> {
         if let Some(path) = self.overridden("output_file", &[("ext", ext)]) {
             return Ok(path);
@@ -194,6 +213,11 @@ impl Layout {
     }
 
     /// The poster (`cover_file`) and the image format its extension asks for.
+    ///
+    /// # Errors
+    ///
+    /// Returns a message when `cover_file` can't be rendered (see
+    /// [`Layout::new`]) or doesn't end with `.jpg`, `.png` or `.webp`.
     pub fn cover_file(&self) -> Result<(PathBuf, CoverFormat), String> {
         let path = match self.overridden("cover_file", &[]) {
             Some(path) => path,
@@ -212,6 +236,11 @@ impl Layout {
     }
 
     /// One subtitle (`subtitle_file`).
+    ///
+    /// # Errors
+    ///
+    /// Returns a message when no `prepare` hook set it and
+    /// `subtitle_file` can't be rendered (see [`Layout::new`]).
     pub fn subtitle_file(&self, lang: &str, ext: &str) -> Result<PathBuf, String> {
         if let Some(path) = self.overridden("subtitle_file", &[("lang", lang), ("ext", ext)]) {
             return Ok(path);
@@ -224,6 +253,11 @@ impl Layout {
     }
 
     /// tidepool's metadata.json (`metadata_file`).
+    ///
+    /// # Errors
+    ///
+    /// Returns a message when no `prepare` hook set it and
+    /// `metadata_file` can't be rendered (see [`Layout::new`]).
     pub fn metadata_file(&self) -> Result<PathBuf, String> {
         if let Some(path) = self.overridden("metadata_file", &[]) {
             return Ok(path);

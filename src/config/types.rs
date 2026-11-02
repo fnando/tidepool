@@ -132,7 +132,7 @@ impl Default for DenoConfig {
     fn default() -> Self {
         Self {
             managed: true,
-            update_check: HumanDuration(Duration::from_secs(86400)),
+            update_check: HumanDuration(Duration::from_hours(24)),
             path: "deno".into(),
         }
     }
@@ -174,6 +174,7 @@ pub enum YtdlpChannel {
 }
 
 impl YtdlpChannel {
+    #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
             YtdlpChannel::Stable => "stable",
@@ -183,6 +184,7 @@ impl YtdlpChannel {
     }
 
     /// GitHub repository that publishes this channel's releases.
+    #[must_use]
     pub fn repository(self) -> &'static str {
         match self {
             YtdlpChannel::Stable => "yt-dlp/yt-dlp",
@@ -352,6 +354,7 @@ pub enum HookType {
 }
 
 impl HookType {
+    #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Prepare => "prepare",
@@ -389,19 +392,19 @@ macro_rules! options_struct {
         $(#[$meta])*
         pub struct $name {
             $($extra)*
-            /// The media folder, a full path; path settings refer to it as {media_dir}.
-            /// Defaults to ~/.local/share/tidepool/media.
+            /// The media folder, a full path; path settings refer to it as `{media_dir}`.
+            /// Defaults to `~/.local/share/tidepool/media`.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "full-path"))]
             pub media_dir: Option<String>,
-            /// Work area for downloads in progress, a full path ({data_dir} and
-            /// {media_dir} allowed). Defaults to {data_dir}/tmp.
+            /// Work area for downloads in progress, a full path (`{data_dir}` and
+            /// `{media_dir}` allowed). Defaults to `{data_dir}/tmp`.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "tmp-dir-template"))]
             pub tmp_dir: Option<String>,
             /// Where cleanup puts removed files until they're deleted for good, a
-            /// full path ({data_dir} and {media_dir} allowed). Defaults to
-            /// {data_dir}/trash; on the media's disk, moving there is instant.
+            /// full path (`{data_dir}` and `{media_dir}` allowed). Defaults to
+            /// `{data_dir}/trash`; on the media's disk, moving there is instant.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "trash-dir-template"))]
             pub trash_dir: Option<String>,
@@ -412,26 +415,26 @@ macro_rules! options_struct {
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub merge_output_format: Option<String>,
             /// Each video's directory, a full path; the file settings refer to it
-            /// as {output_dir}. Defaults to "{media_dir}/{source}/{upload_date} - {title} [{id}]".
+            /// as `{output_dir}`. Defaults to `{media_dir}/{source}/{upload_date} - {title} [{id}]`.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "output-dir-template"))]
             pub output_dir: Option<String>,
-            /// The media file, a full path; must contain {ext}.
-            /// Defaults to "{output_dir}/{normalized_title}.{ext}".
+            /// The media file, a full path; must contain `{ext}`.
+            /// Defaults to `{output_dir}/{normalized_title}.{ext}`.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "output-file-template"))]
             pub output_file: Option<String>,
             /// The poster, a full path ending in .jpg, .png or .webp (which picks
-            /// the image format). Defaults to "{output_dir}/{normalized_title}-poster.jpg".
+            /// the image format). Defaults to `{output_dir}/{normalized_title}-poster.jpg`.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "cover-file-template"))]
             pub cover_file: Option<String>,
-            /// Each subtitle file, a full path; must contain {lang} and {ext}.
-            /// Defaults to "{output_dir}/{normalized_title}.{lang}.{ext}".
+            /// Each subtitle file, a full path; must contain `{lang}` and `{ext}`.
+            /// Defaults to `{output_dir}/{normalized_title}.{lang}.{ext}`.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "subtitle-file-template"))]
             pub subtitle_file: Option<String>,
-            /// tidepool's metadata.json, a full path. Defaults to "{output_dir}/metadata.json".
+            /// tidepool's `metadata.json`, a full path. Defaults to `{output_dir}/metadata.json`.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             #[schemars(extend("format" = "metadata-file-template"))]
             pub metadata_file: Option<String>,
@@ -498,6 +501,7 @@ macro_rules! options_struct {
 
         impl $name {
             /// The shared options, for merging.
+            #[must_use]
             pub fn options(&self) -> Options {
                 Options {
                     media_dir: self.media_dir.clone(),
@@ -649,7 +653,7 @@ pub struct MusicBrainzOptions {
     /// Turn it off for a source or category (on when the table is set).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub enabled: Option<bool>,
-    /// The MusicBrainz server (a mirror works); default https://musicbrainz.org,
+    /// The MusicBrainz server (a mirror works); default `https://musicbrainz.org`,
     /// asked at most once a second.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(regex(pattern = r"^https?://"))]
@@ -728,6 +732,7 @@ pub enum CleanupKeep {
 }
 
 /// Format a duration with the largest unit that divides it exactly.
+#[must_use]
 pub fn format_duration(d: Duration) -> String {
     let secs = d.as_secs();
     for (unit, size) in [("w", 604_800), ("d", 86_400), ("h", 3600), ("m", 60)] {

@@ -23,12 +23,19 @@ impl Default for ShortsCheck {
         if let Ok(fake) = std::env::var("TIDEPOOL_TEST_SHORTS_BASE") {
             base = fake;
         }
-        Self::with(base)
+        Self::with(&base)
     }
 }
 
 impl ShortsCheck {
-    pub fn with(base: String) -> Self {
+    /// A check against `base` instead of YouTube.
+    ///
+    /// # Panics
+    ///
+    /// If the HTTP client can't be built: its TLS backend fails to
+    /// initialize, or the system's DNS configuration can't be loaded.
+    #[must_use]
+    pub fn with(base: &str) -> Self {
         let client = reqwest::Client::builder()
             .user_agent(concat!("tidepool/", env!("CARGO_PKG_VERSION")))
             .redirect(reqwest::redirect::Policy::none())
@@ -115,7 +122,7 @@ mod tests {
     #[tokio::test]
     async fn tells_shorts_from_videos() {
         let server = youtube().await;
-        let check = ShortsCheck::with(server.uri());
+        let check = ShortsCheck::with(&server.uri());
         assert_eq!(check.is_short("DdmxNoj2cGQ").await, Some(true));
         assert_eq!(check.is_short("HF1aUFFI-N0").await, Some(false));
         assert_eq!(check.is_short("consent0001").await, None, "not an answer");
@@ -143,7 +150,7 @@ mod tests {
     #[tokio::test]
     async fn classifies_only_what_could_be_a_short() {
         let server = youtube().await;
-        let check = ShortsCheck::with(server.uri());
+        let check = ShortsCheck::with(&server.uri());
         let mut items = vec![
             item("DdmxNoj2cGQ", Some(37)),
             item("HF1aUFFI-N0", Some(160)),

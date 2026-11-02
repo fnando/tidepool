@@ -30,6 +30,7 @@ pub enum Service {
 impl Service {
     pub const ALL: [Service; 3] = [Service::Syncer, Service::Processor, Service::Server];
 
+    #[must_use]
     pub fn name(self) -> &'static str {
         match self {
             Service::Syncer => "syncer",
@@ -38,6 +39,7 @@ impl Service {
         }
     }
 
+    #[must_use]
     pub fn parse(name: &str) -> Option<Self> {
         Self::ALL.into_iter().find(|s| s.name() == name)
     }
@@ -74,12 +76,18 @@ pub struct Handle {
 }
 
 impl Handle {
+    #[must_use]
     pub fn is_finished(&self) -> bool {
         self.thread.is_finished()
     }
 
     /// Wait for it to end: `Err` says why it ended on its own (an error, or
     /// a panic).
+    ///
+    /// # Errors
+    ///
+    /// Returns the service's own error, or a "crashed" message if its thread
+    /// panicked.
     pub fn join(self) -> Result<(), String> {
         match self.thread.join() {
             Ok(result) => result,
@@ -95,6 +103,10 @@ impl Handle {
 }
 
 /// Start `service` on its own thread.
+///
+/// # Errors
+///
+/// Fails if the OS can't spawn the thread.
 pub fn spawn(
     service: Service,
     cli: Arc<Cli>,
@@ -162,6 +174,7 @@ fn test_panic(service: Service) {
 }
 
 /// A time as the log shows it: local, to the minute.
+#[must_use]
 pub fn local(t: jiff::Timestamp) -> String {
     t.to_zoned(jiff::tz::TimeZone::system())
         .strftime("%Y-%m-%d %H:%M")
@@ -193,22 +206,19 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
             store::set_time(&state.conn, store::NEXT_SYNC_AT, next)?;
         }
         let next = store::get_time(&state.conn, store::NEXT_SYNC_AT)?.unwrap_or(now);
-        let wait = match interval {
-            Some(_) => {
-                let activity = format!("next sync at {}", local(next));
-                store::set_status(&state.conn, name, "idle", Some(&activity), now)?;
-                schedule::wait_until(next, now)
-            }
-            None => {
-                store::set_status(&state.conn, name, "idle", Some("no schedule"), now)?;
-                Duration::MAX
-            }
+        let wait = if interval.is_some() {
+            let activity = format!("next sync at {}", local(next));
+            store::set_status(&state.conn, name, "idle", Some(&activity), now)?;
+            schedule::wait_until(next, now)
+        } else {
+            store::set_status(&state.conn, name, "idle", Some("no schedule"), now)?;
+            Duration::MAX
         };
         drop(state);
         tokio::select! {
-            _ = tokio::time::sleep(wait.min(Duration::from_secs(86400 * 365))) => {}
-            _ = signals.sync_now.notified() => {}
-            _ = signals.cleanup_now.notified() => {
+            () = tokio::time::sleep(wait.min(Duration::from_hours(8760))) => {}
+            () = signals.sync_now.notified() => {}
+            () = signals.cleanup_now.notified() => {
                 let now = jiff::Timestamp::now();
                 let state = app.open_state()?;
                 store::set_status(&state.conn, name, "running", Some("cleaning up"), now)?;
@@ -226,7 +236,7 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
                 }
                 continue;
             }
-            _ = app.shutdown.stopping() => return Ok(()),
+            () = app.shutdown.stopping() => return Ok(()),
         }
 
         let state = app.open_state()?;
@@ -306,14 +316,14 @@ async fn processor(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
         store::set_status(&state.conn, name, "idle", None, jiff::Timestamp::now())?;
         drop(state);
         tokio::select! {
-            _ = tokio::time::sleep(wait.min(Duration::from_secs(3600))) => {}
-            _ = signals.fetched.notified() => {}
+            () = tokio::time::sleep(wait.min(Duration::from_secs(3600))) => {}
+            () = signals.fetched.notified() => {}
             changed = signals.config.changed() => {
                 if changed.is_err() {
                     return Ok(());
                 }
             }
-            _ = app.shutdown.stopping() => return Ok(()),
+            () = app.shutdown.stopping() => return Ok(()),
         }
     }
 }

@@ -6,6 +6,7 @@ use similar::TextDiff;
 use toml_edit::DocumentMut;
 
 /// Mask an API key: `AIzaSyAbc…x1Qw` → `AIza…x1Qw`.
+#[must_use]
 pub fn mask_key(key: &str) -> String {
     let chars: Vec<char> = key.chars().collect();
     if chars.len() <= 8 {
@@ -23,6 +24,7 @@ fn is_secret(path: &[&str]) -> bool {
 }
 
 /// Mask a secret for display; empty values stay empty.
+#[must_use]
 pub fn mask_secret(value: &str) -> String {
     if value.is_empty() {
         String::new()
@@ -33,6 +35,7 @@ pub fn mask_secret(value: &str) -> String {
 
 /// Mask secrets in TOML text, keeping comments and formatting. Text that
 /// doesn't parse is returned unchanged.
+#[must_use]
 pub fn mask_toml(text: &str) -> String {
     fn walk(table: &mut dyn toml_edit::TableLike, path: &mut Vec<String>) {
         for (key, item) in table.iter_mut() {
@@ -61,6 +64,7 @@ pub fn mask_toml(text: &str) -> String {
 /// Undo [`mask_toml`] on edited text: a secret still showing the mask of
 /// the one in `original` (same place) gets its real value back. Text that
 /// doesn't parse is returned unchanged (validation reports it).
+#[must_use]
 pub fn unmask_toml(edited: &str, original: &str) -> String {
     fn secrets(
         table: &dyn toml_edit::TableLike,
@@ -163,6 +167,7 @@ impl std::fmt::Display for Change {
 
 /// Differences between two configs, by key. Tables are compared key by key;
 /// arrays (e.g. `include`, `hooks`) are compared as whole values.
+#[must_use]
 pub fn key_changes(old: &Value, new: &Value) -> Vec<Change> {
     let mut out = Vec::new();
     walk("", old, new, &mut out);
@@ -218,6 +223,7 @@ fn walk(path: &str, old: &Value, new: &Value, out: &mut Vec<Change>) {
 }
 
 /// A unified diff of two TOML texts.
+#[must_use]
 pub fn text_diff(old: &str, new: &str, old_label: &str, new_label: &str) -> String {
     TextDiff::from_lines(old, new)
         .unified_diff()

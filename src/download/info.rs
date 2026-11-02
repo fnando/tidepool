@@ -50,12 +50,23 @@ struct RawThumbnail {
 }
 
 impl VideoInfo {
+    /// Parse yt-dlp's info JSON (`-J` or `--write-info-json`).
+    ///
+    /// # Errors
+    ///
+    /// Returns a message when `json` isn't valid JSON or doesn't have the
+    /// shape yt-dlp writes.
     pub fn parse(json: &str) -> Result<Self, String> {
         serde_json::from_str(json).map_err(|e| format!("unexpected yt-dlp info JSON: {e}"))
     }
 
     /// Rebuild the details tidepool uses from a video's metadata.json, for
     /// working on files already downloaded.
+    ///
+    /// # Errors
+    ///
+    /// Returns a message when the metadata's fields don't have the expected
+    /// types (for example, a missing `id` or a non-numeric duration).
     pub fn from_metadata(meta: &serde_json::Value) -> Result<Self, String> {
         let upload_date = meta["upload_date"]
             .as_str()
@@ -68,7 +79,7 @@ impl VideoInfo {
         let timestamp = meta["published_at"]
             .as_str()
             .and_then(|t| t.parse::<Timestamp>().ok())
-            .map(|t| t.as_second());
+            .map(jiff::Timestamp::as_second);
         let chapters: Vec<serde_json::Value> = meta["chapters"]
             .as_array()
             .into_iter()
@@ -100,6 +111,7 @@ impl VideoInfo {
     }
 
     /// Publish time: the exact timestamp, else the upload date at midnight UTC.
+    #[must_use]
     pub fn published_at(&self) -> Option<Timestamp> {
         self.timestamp
             .and_then(|t| Timestamp::from_second(t).ok())
@@ -112,6 +124,7 @@ impl VideoInfo {
     }
 
     /// `YYYY-MM-DD`.
+    #[must_use]
     pub fn upload_date_iso(&self) -> Option<String> {
         let d = self.upload_date.as_deref()?;
         if d.len() != 8 || !d.chars().all(|c| c.is_ascii_digit()) {
@@ -121,12 +134,14 @@ impl VideoInfo {
         iso.parse::<jiff::civil::Date>().ok().map(|_| iso)
     }
 
+    #[must_use]
     pub fn duration_seconds(&self) -> Option<u64> {
         self.duration
             .filter(|d| *d >= 0.0)
-            .map(|d| d.round() as u64)
+            .map(|d| super::whole(d.round()))
     }
 
+    #[must_use]
     pub fn thumbnails(&self) -> Vec<Thumbnail> {
         self.thumbnails
             .iter()
@@ -139,6 +154,7 @@ impl VideoInfo {
     }
 
     /// Codecs, with yt-dlp's "none" meaning absent.
+    #[must_use]
     pub fn codec(value: &Option<String>) -> Option<String> {
         value.clone().filter(|c| c != "none")
     }

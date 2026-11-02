@@ -13,6 +13,10 @@ use super::merge::category_settings;
 
 /// `text` (a config) with the defaults it leaves out. Comments, order and
 /// what's set stay as they are; defaults go at the end of their table.
+///
+/// # Errors
+///
+/// When `text` isn't valid TOML, or the defaults can't be turned into TOML.
 pub fn with_defaults(
     text: &str,
     config: &Config,
@@ -43,12 +47,12 @@ fn defaults(config: &Config, default_media_dir: &str) -> Result<DocumentMut, Str
         value(toml::Value::try_from(&empty.server))?,
     );
 
-    let mut category = match value(toml::Value::try_from(category_settings(
+    let toml::Value::Table(mut category) = value(toml::Value::try_from(category_settings(
         &empty,
         DEFAULT_CATEGORY_NAME,
-    )))? {
-        toml::Value::Table(t) => t,
-        _ => return Err("the default category isn't a table".into()),
+    )))?
+    else {
+        return Err("the default category isn't a table".into());
     };
     // Settings of a source, not of a category.
     for key in ["urls", "category", "enabled"] {
@@ -77,7 +81,7 @@ fn defaults(config: &Config, default_media_dir: &str) -> Result<DocumentMut, Str
 
 /// Add to `table` what `defaults` has and it doesn't, table by table.
 fn fill(table: &mut Table, defaults: &Table) {
-    for (key, default) in defaults.iter() {
+    for (key, default) in defaults {
         match (table.get_mut(key), default) {
             (None, Item::Table(sub)) => {
                 let mut sub = sub.clone();

@@ -27,6 +27,7 @@ impl Ytdlp {
     }
 
     /// A command for yt-dlp with the runtime option in place.
+    #[must_use]
     pub fn command(&self) -> tokio::process::Command {
         let mut command = tokio::process::Command::new(&self.path);
         command.args(self.runtime_args());
@@ -34,6 +35,7 @@ impl Ytdlp {
     }
 
     /// `--js-runtimes deno:<path>`, when a runtime is set.
+    #[must_use]
     pub fn runtime_args(&self) -> Vec<String> {
         match &self.deno {
             Some(deno) => vec!["--js-runtimes".into(), format!("deno:{}", deno.display())],
@@ -41,10 +43,12 @@ impl Ytdlp {
         }
     }
 
+    #[must_use]
     pub fn display(&self) -> std::path::Display<'_> {
         self.path.display()
     }
 
+    #[must_use]
     pub fn as_path(&self) -> &Path {
         &self.path
     }

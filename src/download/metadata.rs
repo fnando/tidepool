@@ -30,6 +30,7 @@ pub struct Metadata<'a> {
 
 /// Where a video's files are, for metadata.json: relative to the metadata
 /// file's folder when they're under it, absolute otherwise.
+#[must_use]
 pub fn files_json(files: &VideoFiles) -> Value {
     Metadata::files_json_of(files)
 }
@@ -46,8 +47,7 @@ impl Metadata<'_> {
         let show = |path: &str| {
             std::path::Path::new(path)
                 .strip_prefix(base)
-                .map(|p| p.display().to_string())
-                .unwrap_or_else(|_| path.to_string())
+                .map_or_else(|_| path.to_string(), |p| p.display().to_string())
         };
         let subtitles: Vec<Value> = files
             .subtitles
@@ -62,6 +62,7 @@ impl Metadata<'_> {
         })
     }
 
+    #[must_use]
     pub fn to_json(&self) -> Value {
         let info = self.info;
         let chapters: Vec<Value> = info

@@ -27,6 +27,7 @@ pub enum Availability {
 }
 
 impl Availability {
+    #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
             Availability::Public => "public",
@@ -39,6 +40,7 @@ impl Availability {
         }
     }
 
+    #[must_use]
     pub fn parse(s: &str) -> Self {
         match s {
             "unlisted" => Availability::Unlisted,
@@ -51,6 +53,7 @@ impl Availability {
         }
     }
 
+    #[must_use]
     pub fn downloadable(self) -> bool {
         matches!(self, Availability::Public | Availability::Unlisted)
     }
@@ -100,6 +103,7 @@ pub enum VideoKind {
 }
 
 impl VideoKind {
+    #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
             VideoKind::Video => "video",
@@ -108,6 +112,7 @@ impl VideoKind {
         }
     }
 
+    #[must_use]
     pub fn parse(s: &str) -> Option<Self> {
         match s {
             "video" => Some(VideoKind::Video),

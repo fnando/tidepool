@@ -22,14 +22,8 @@ pub struct Cli {
     )]
     pub config: Option<PathBuf>,
 
-    /// Import --config even if the stored config was edited since its last import
-    #[arg(long, global = true)]
-    pub force_config: bool,
-
-    /// Run with the stored config even if the config file has changes that
-    /// aren't imported yet
-    #[arg(long, global = true)]
-    pub skip_config_check: bool,
+    #[command(flatten)]
+    pub config_flags: ConfigFlags,
 
     /// Increase log verbosity (-v, -vv)
     #[arg(short, long, action = ArgAction::Count, global = true)]
@@ -49,6 +43,19 @@ pub struct Cli {
 
     #[command(subcommand)]
     pub command: Command,
+}
+
+/// How `--config` is weighed against the stored config.
+#[derive(Debug, Clone, Copy, Args)]
+pub struct ConfigFlags {
+    /// Import --config even if the stored config was edited since its last import
+    #[arg(long = "force-config", global = true)]
+    pub force: bool,
+
+    /// Run with the stored config even if the config file has changes that
+    /// aren't imported yet
+    #[arg(long = "skip-config-check", global = true)]
+    pub skip_check: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
@@ -350,6 +357,7 @@ pub enum SourceRef {
 }
 
 impl SourceRef {
+    #[must_use]
     pub fn raw(&self) -> &str {
         match self {
             SourceRef::Key(s) | SourceRef::Id(s) => s,

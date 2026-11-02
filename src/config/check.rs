@@ -25,6 +25,11 @@ pub enum Finding {
 
 /// A source's media folder (`media_dir`, expanding `~`/`$VARS`), defaulting
 /// to ~/.local/share/tidepool/media.
+///
+/// # Errors
+///
+/// When `media_dir` has an unclosed `${` or names an environment variable
+/// that isn't set.
 pub fn media_dir(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, String> {
     match &source.media_dir {
         Some(dir) => expand(dir, &dirs.home),
@@ -33,11 +38,22 @@ pub fn media_dir(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, Strin
 }
 
 /// A source's work area (`tmp_dir`, with `{media_dir}` and `{data_dir}` filled in).
+///
+/// # Errors
+///
+/// When the media folder can't be resolved (see [`media_dir`]), or `tmp_dir`
+/// has an unknown placeholder or doesn't render to a full path without `..`.
 pub fn tmp_dir(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, String> {
     work_dir(&source.tmp_dir, Setting::TmpDir, source, dirs)
 }
 
 /// A source's trash (`trash_dir`, with `{media_dir}` and `{data_dir}` filled in).
+///
+/// # Errors
+///
+/// When the media folder can't be resolved (see [`media_dir`]), or
+/// `trash_dir` has an unknown placeholder or doesn't render to a full path
+/// without `..`.
 pub fn trash_dir(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, String> {
     work_dir(&source.trash_dir, Setting::TrashDir, source, dirs)
 }
@@ -83,6 +99,7 @@ pub fn media_dirs(config: &Config, dirs: &Dirs) -> Vec<Result<PathBuf, String>> 
 
 /// Check what a run needs: yt-dlp (and ffmpeg when embedding needs it), a
 /// writable media root, and a private config file when it holds API keys.
+#[must_use]
 pub fn check_environment(config: &Config, dirs: &Dirs, config_file: Option<&Path>) -> Vec<Finding> {
     let mut out = check_tools(config, dirs);
     out.extend(check_storage(config, dirs, config_file));
@@ -90,6 +107,7 @@ pub fn check_environment(config: &Config, dirs: &Dirs, config_file: Option<&Path
 }
 
 /// yt-dlp and Deno (unless managed and not downloaded yet) and ffmpeg/ffprobe.
+#[must_use]
 pub fn check_tools(config: &Config, dirs: &Dirs) -> Vec<Finding> {
     let mut out = Vec::new();
 
@@ -155,6 +173,7 @@ pub fn check_tools(config: &Config, dirs: &Dirs) -> Vec<Finding> {
 }
 
 /// A writable media root, and a private config file when it holds secrets.
+#[must_use]
 pub fn check_storage(config: &Config, dirs: &Dirs, config_file: Option<&Path>) -> Vec<Finding> {
     let mut out = Vec::new();
     for root in media_dirs(config, dirs) {
@@ -258,6 +277,7 @@ pub struct EffectiveConfig {
 }
 
 impl EffectiveConfig {
+    #[must_use]
     pub fn new(config: &Config, dirs: &Dirs, show_secrets: bool) -> Self {
         let mut server = config.server.clone();
         if !show_secrets {
@@ -285,6 +305,13 @@ impl EffectiveConfig {
         }
     }
 
+    /// The effective config as pretty TOML.
+    ///
+    /// # Panics
+    ///
+    /// If the config can't be represented as TOML, which would be a bug in
+    /// its types rather than anything in the user's config.
+    #[must_use]
     pub fn to_toml(&self) -> String {
         toml::to_string_pretty(self).expect("effective config serializes to TOML")
     }

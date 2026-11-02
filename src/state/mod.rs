@@ -76,6 +76,11 @@ pub struct State {
 impl State {
     /// Open (creating if needed) the DB at `path`. The file is owner-only
     /// (0600) since it stores API keys; WAL mode, migrations applied.
+    ///
+    /// # Errors
+    ///
+    /// [`StateError::Io`] if the file or its directory can't be created or
+    /// restricted, or a DB error if it can't be opened or migrated.
     pub fn open(path: &Path) -> Result<Self, StateError> {
         let io = |source| StateError::Io {
             path: path.display().to_string(),
@@ -98,6 +103,10 @@ impl State {
     }
 
     /// An in-memory DB, for tests.
+    ///
+    /// # Errors
+    ///
+    /// If it can't be opened or migrated.
     pub fn open_in_memory() -> Result<Self, StateError> {
         Self::init(Connection::open_in_memory()?)
     }
@@ -105,6 +114,10 @@ impl State {
     /// A write transaction. It takes the write lock up front, so a busy DB
     /// (another service or process writing) is waited for (`busy_timeout`)
     /// instead of failing when a read inside it turns into a write.
+    ///
+    /// # Errors
+    ///
+    /// If the write lock can't be taken (still busy after the timeout).
     pub fn write_transaction(conn: &mut Connection) -> rusqlite::Result<rusqlite::Transaction<'_>> {
         conn.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
     }

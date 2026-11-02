@@ -12,6 +12,7 @@ use crate::config::schema::SCHEMA_ID;
 pub const SAMPLE_SOURCE_URL: &str = "https://www.youtube.com/playlist?list=PLXLpuA-bwY4s";
 
 /// The config file `init` writes.
+#[must_use]
 pub fn render() -> String {
     TEMPLATE
         .replace("@SCHEMA_ID@", SCHEMA_ID)

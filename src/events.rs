@@ -66,6 +66,7 @@ pub enum Event {
 
 impl Event {
     /// Download progress: frequent, and only the live panel cares.
+    #[must_use]
     pub fn is_progress(&self) -> bool {
         matches!(
             self,
@@ -143,7 +144,10 @@ pub fn live() -> Live {
     let Some(bus) = BUS.get() else {
         return Live::default();
     };
-    let state = bus.state.lock().unwrap_or_else(|e| e.into_inner());
+    let state = bus
+        .state
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     Live {
         syncing: state.syncing,
         checking: state.checking.clone(),
@@ -158,10 +162,38 @@ pub fn emit(event: Event) {
         return;
     };
     {
-        let mut state = bus.state.lock().unwrap_or_else(|e| e.into_inner());
+        let mut state = bus
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         apply(&mut state, &event);
     }
     let _ = bus.sender.send(event);
+}
+
+impl State {
+    /// Show a video in progress, as `label`.
+    fn track(
+        &mut self,
+        source: &str,
+        video_id: &str,
+        title: &str,
+        label: &str,
+        percent: Option<u8>,
+        detail: Option<String>,
+    ) {
+        self.active.insert(
+            (source.to_string(), video_id.to_string()),
+            Active {
+                source: source.to_string(),
+                video_id: video_id.to_string(),
+                title: title.to_string(),
+                state: label.into(),
+                percent,
+                detail,
+            },
+        );
+    }
 }
 
 fn apply(state: &mut State, event: &Event) {
@@ -198,53 +230,33 @@ fn apply(state: &mut State, event: &Event) {
             .flatten()
             .collect::<Vec<_>>()
             .join(" · ");
-            state.active.insert(
-                key(source, video_id),
-                Active {
-                    source: source.clone(),
-                    video_id: video_id.clone(),
-                    title: title.clone(),
-                    state: "downloading".into(),
-                    percent: *percent,
-                    detail: (!detail.is_empty()).then_some(detail),
-                },
+            state.track(
+                source,
+                video_id,
+                title,
+                "downloading",
+                *percent,
+                (!detail.is_empty()).then_some(detail),
             );
         }
         Event::Fetched {
             source,
             video_id,
             title,
-        } => {
-            state.active.insert(
-                key(source, video_id),
-                Active {
-                    source: source.clone(),
-                    video_id: video_id.clone(),
-                    title: title.clone(),
-                    state: "waiting".into(),
-                    percent: None,
-                    detail: None,
-                },
-            );
-        }
+        } => state.track(source, video_id, title, "waiting", None, None),
         Event::Finishing {
             source,
             video_id,
             title,
             step,
-        } => {
-            state.active.insert(
-                key(source, video_id),
-                Active {
-                    source: source.clone(),
-                    video_id: video_id.clone(),
-                    title: title.clone(),
-                    state: "finishing".into(),
-                    percent: None,
-                    detail: Some(step.clone()),
-                },
-            );
-        }
+        } => state.track(
+            source,
+            video_id,
+            title,
+            "finishing",
+            None,
+            Some(step.clone()),
+        ),
         Event::Saved {
             source,
             video_id,

@@ -43,6 +43,11 @@ pub const FORMATS: &[&str] = &[
 ];
 
 /// Check `value` against one of tidepool's custom formats, explaining failures.
+///
+/// # Errors
+///
+/// When `value` isn't valid for `format` (the message says why), or `format`
+/// isn't one of [`FORMATS`].
 pub fn check_format(format: &str, value: &str) -> Result<(), String> {
     let template = |setting| {
         placeholders::validate(value, setting)
@@ -50,10 +55,8 @@ pub fn check_format(format: &str, value: &str) -> Result<(), String> {
             .map_err(|e| format!("{value:?}: {e}"))
     };
     match format {
-        "duration" => parse_duration(value).map(drop),
-        "optional-duration" if value.is_empty() => Ok(()),
-        "optional-duration" => parse_duration(value).map(drop),
-        "optional-byte-size" if value.is_empty() => Ok(()),
+        "optional-duration" | "optional-byte-size" if value.is_empty() => Ok(()),
+        "duration" | "optional-duration" => parse_duration(value).map(drop),
         "optional-byte-size" => parse_size(value).map(drop),
         "cutoff" => value.parse::<Cutoff>().map(drop),
         "output-dir-template" => template(Setting::OutputDir),
@@ -118,6 +121,11 @@ pub enum SourceUrl {
 /// Parse a source URL: a playlist (any URL with `list=`) or a channel
 /// (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`, with or without a
 /// tab like `/videos`: a channel source is all its uploads).
+///
+/// # Errors
+///
+/// When `source` isn't an http(s) URL, isn't on a YouTube host, or names
+/// neither a playlist nor a channel.
 pub fn parse_source_url(source: &str) -> Result<SourceUrl, String> {
     const HOSTS: [&str; 5] = [
         "youtube.com",
@@ -170,6 +178,10 @@ pub fn parse_source_url(source: &str) -> Result<SourceUrl, String> {
 
 /// The YouTube id a source URL names: the playlist id, or the channel as
 /// written (`@handle`, `UC…`, `c/name`, `user/name`).
+///
+/// # Errors
+///
+/// When `source` isn't a playlist or channel URL (see [`parse_source_url`]).
 pub fn source_id_from_url(source: &str) -> Result<String, String> {
     parse_source_url(source).map(|url| match url {
         SourceUrl::Playlist(id) | SourceUrl::Channel(id) => id,
@@ -229,6 +241,12 @@ mod source_url_tests {
 }
 
 /// Generate the config schema.
+///
+/// # Panics
+///
+/// If the schema generated for [`Config`] isn't a JSON object, which would be
+/// a bug in its types.
+#[must_use]
 pub fn generate() -> Schema {
     let mut schema = SchemaSettings::draft2020_12()
         .into_generator()
@@ -276,13 +294,18 @@ fn strip_null(value: &mut Value) {
 
 /// The schema as pretty JSON with a trailing newline, as committed in
 /// `schema/tidepool.v1.schema.json`.
+#[must_use]
 pub fn schema_json() -> String {
-    let mut out = serde_json::to_string_pretty(generate().as_value()).expect("schema serializes");
-    out.push('\n');
-    out
+    format!("{:#}\n", generate().as_value())
 }
 
 /// The compiled validator, built once.
+///
+/// # Panics
+///
+/// If the generated config schema isn't a valid JSON Schema, which would be
+/// a bug in the config types.
+#[must_use]
 pub fn validator() -> &'static Validator {
     static VALIDATOR: OnceLock<Validator> = OnceLock::new();
     VALIDATOR.get_or_init(|| {

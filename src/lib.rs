@@ -8,6 +8,7 @@ pub mod daemon;
 pub mod download;
 pub mod events;
 pub mod filter;
+pub mod hex;
 pub mod hooks;
 pub mod index;
 pub mod init;

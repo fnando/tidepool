@@ -13,7 +13,10 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 
 use super::duration::Cutoff;
-use super::types::*;
+use super::types::{
+    CleanupDelete, CleanupKeep, CleanupOrder, Config, CutoffValue, HumanDuration, OptionalDuration,
+    OptionalSize, Options, Rule, RuleField, SourceConfig, Unmatched, YoutubeConfig,
+};
 
 /// The category every source builds on, and the one sources use by default.
 pub const DEFAULT_CATEGORY: &str = "default";
@@ -30,7 +33,7 @@ pub mod builtin {
     pub const TMP_DIR: &str = "{data_dir}/tmp";
     pub const TRASH_DIR: &str = "{data_dir}/trash";
     /// How long removed files stay in the trash.
-    pub const TRASH_FOR: std::time::Duration = std::time::Duration::from_secs(7 * 86_400);
+    pub const TRASH_FOR: std::time::Duration = std::time::Duration::from_hours(168);
 }
 
 /// One YouTube list a source reads: a playlist, or a channel's uploads.
@@ -47,6 +50,7 @@ pub struct SourceList {
 impl SourceList {
     /// `None` for a URL that isn't a playlist or channel (config validation
     /// rejects those).
+    #[must_use]
     pub fn parse(url: &str) -> Option<Self> {
         let (id, channel) = match super::schema::parse_source_url(url).ok()? {
             super::schema::SourceUrl::Playlist(id) => (id, false),
@@ -62,6 +66,10 @@ impl SourceList {
 
 /// One source with every option resolved.
 #[derive(Debug, Clone, PartialEq, Serialize)]
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "mirrors the source's settings in the config file, and is printed as such"
+)]
 pub struct EffectiveSource {
     #[serde(skip)]
     pub key: String,
@@ -102,6 +110,7 @@ pub struct EffectiveSource {
 
 impl EffectiveSource {
     /// The lists `urls` names, in order.
+    #[must_use]
     pub fn lists(&self) -> Vec<SourceList> {
         self.urls
             .iter()
@@ -110,12 +119,17 @@ impl EffectiveSource {
     }
 
     /// Each list's id (playlist id or channel), in order.
+    #[must_use]
     pub fn ids(&self) -> Vec<String> {
         self.lists().into_iter().map(|l| l.id).collect()
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "mirrors the `embed` table in the config file, and is printed as such"
+)]
 pub struct Embed {
     pub metadata: bool,
     pub cover: bool,
@@ -146,12 +160,14 @@ pub struct Cleanup {
 }
 
 /// The category a source uses.
+#[must_use]
 pub fn category_of(source: &SourceConfig) -> &str {
     source.category.as_deref().unwrap_or(DEFAULT_CATEGORY)
 }
 
 /// The option layers for a category, lowest priority first: `default`, then
 /// the category itself (when it's another one).
+#[must_use]
 pub fn category_layers(config: &Config, category: &str) -> Vec<Options> {
     let mut layers = Vec::new();
     if let Some(default) = config.category.get(DEFAULT_CATEGORY) {
@@ -166,6 +182,7 @@ pub fn category_layers(config: &Config, category: &str) -> Vec<Options> {
 }
 
 /// Resolve every source in `config`, in name order.
+#[must_use]
 pub fn effective_sources(config: &Config) -> Vec<EffectiveSource> {
     config
         .sources
@@ -175,6 +192,7 @@ pub fn effective_sources(config: &Config) -> Vec<EffectiveSource> {
 }
 
 /// Resolve one source against its categories.
+#[must_use]
 pub fn effective_source(config: &Config, key: &str, source: &SourceConfig) -> EffectiveSource {
     let category = category_of(source).to_string();
     let mut layers = category_layers(config, &category);
@@ -193,6 +211,117 @@ fn downloads(config: &Config, layers: &[Options]) -> bool {
         .unwrap_or(config.general.download)
 }
 
+/// `$table.$field` from the most specific layer that sets it, else
+/// `$default`.
+macro_rules! table {
+    ($layers:expr, $table:ident, $field:ident, $default:expr) => {
+        $layers
+            .iter()
+            .rev()
+            .find_map(|l| l.$table.as_ref().and_then(|t| t.$field.clone()))
+            .unwrap_or_else(|| $default)
+    };
+}
+
+fn resolve_embed(layers: &[Options]) -> Embed {
+    Embed {
+        metadata: table!(layers, embed, metadata, false),
+        cover: table!(layers, embed, cover, false),
+        chapters: table!(layers, embed, chapters, false),
+        subtitles: table!(layers, embed, subtitles, false),
+        tags: merged_tags(layers),
+        musicbrainz: musicbrainz(layers),
+        musicbrainz_server: musicbrainz_server(layers),
+    }
+}
+
+fn resolve_cleanup(layers: &[Options]) -> Cleanup {
+    Cleanup {
+        max_items: table!(layers, cleanup, max_items, 0),
+        max_age: table!(layers, cleanup, max_age, OptionalDuration(None)),
+        max_size: table!(layers, cleanup, max_size, OptionalSize::default()),
+        order: table!(layers, cleanup, order, CleanupOrder::OldestDownloaded),
+        unmatched: table!(layers, cleanup, unmatched, Unmatched::Keep),
+        keep: table!(layers, cleanup, keep, CleanupKeep::Metadata),
+        marker_file: table!(layers, cleanup, marker_file, String::new()),
+        keep_latest: table!(layers, cleanup, keep_latest, 0),
+        delete: table!(layers, cleanup, delete, CleanupDelete::Trash),
+        trash_for: table!(
+            layers,
+            cleanup,
+            trash_for,
+            HumanDuration(builtin::TRASH_FOR)
+        ),
+    }
+}
+
+fn resolve_youtube(layers: &[Options]) -> YoutubeConfig {
+    let defaults = YoutubeConfig::default();
+    YoutubeConfig {
+        api_key: layers
+            .iter()
+            .rev()
+            .find_map(|l| l.youtube.as_ref().and_then(|y| y.api_key.clone())),
+        daily_quota: table!(layers, youtube, daily_quota, defaults.daily_quota),
+        quota_warn_at: table!(layers, youtube, quota_warn_at, defaults.quota_warn_at),
+        fallback_to_ytdlp: table!(
+            layers,
+            youtube,
+            fallback_to_ytdlp,
+            defaults.fallback_to_ytdlp
+        ),
+        requests_per_second: table!(
+            layers,
+            youtube,
+            requests_per_second,
+            defaults.requests_per_second
+        ),
+    }
+}
+
+fn musicbrainz_server(layers: &[Options]) -> String {
+    layers
+        .iter()
+        .rev()
+        .filter_map(|l| l.embed.as_ref().and_then(|e| e.musicbrainz.as_ref()))
+        .find_map(|t| t.server.clone())
+        .unwrap_or_else(|| crate::musicbrainz::DEFAULT_SERVER.to_string())
+}
+/// On when any layer sets `embed.musicbrainz` and the last `enabled`
+/// set isn't false; the last `server` set wins.
+fn musicbrainz(layers: &[Options]) -> Option<String> {
+    let tables: Vec<&crate::config::MusicBrainzOptions> = layers
+        .iter()
+        .filter_map(|l| l.embed.as_ref().and_then(|e| e.musicbrainz.as_ref()))
+        .collect();
+    if tables.is_empty() || tables.iter().rev().find_map(|t| t.enabled) == Some(false) {
+        return None;
+    }
+    Some(
+        tables
+            .iter()
+            .rev()
+            .find_map(|t| t.server.clone())
+            .unwrap_or_else(|| crate::musicbrainz::DEFAULT_SERVER.to_string()),
+    )
+}
+fn list<T: Clone>(
+    layers: &[Options],
+    get: impl Fn(&Options) -> &Option<Vec<T>>,
+    inherit: impl Fn(&Options) -> bool,
+) -> Vec<T> {
+    let mut out = Vec::new();
+    for layer in layers {
+        if let Some(items) = get(layer) {
+            if !inherit(layer) {
+                out.clear();
+            }
+            out.extend(items.iter().cloned());
+        }
+    }
+    out
+}
+
 /// Apply `layers` (lowest priority first) over the built-in defaults.
 fn resolve(
     key: &str,
@@ -209,60 +338,8 @@ fn resolve(
                 .unwrap_or_else(|| $default)
         };
     }
-    fn musicbrainz_server(layers: &[Options]) -> String {
-        layers
-            .iter()
-            .rev()
-            .filter_map(|l| l.embed.as_ref().and_then(|e| e.musicbrainz.as_ref()))
-            .find_map(|t| t.server.clone())
-            .unwrap_or_else(|| crate::musicbrainz::DEFAULT_SERVER.to_string())
-    }
-    /// On when any layer sets `embed.musicbrainz` and the last `enabled`
-    /// set isn't false; the last `server` set wins.
-    fn musicbrainz(layers: &[Options]) -> Option<String> {
-        let tables: Vec<&crate::config::MusicBrainzOptions> = layers
-            .iter()
-            .filter_map(|l| l.embed.as_ref().and_then(|e| e.musicbrainz.as_ref()))
-            .collect();
-        if tables.is_empty() || tables.iter().rev().find_map(|t| t.enabled) == Some(false) {
-            return None;
-        }
-        Some(
-            tables
-                .iter()
-                .rev()
-                .find_map(|t| t.server.clone())
-                .unwrap_or_else(|| crate::musicbrainz::DEFAULT_SERVER.to_string()),
-        )
-    }
-    macro_rules! table {
-        ($table:ident, $field:ident, $default:expr) => {
-            layers
-                .iter()
-                .rev()
-                .find_map(|l| l.$table.as_ref().and_then(|t| t.$field.clone()))
-                .unwrap_or_else(|| $default)
-        };
-    }
-    fn list<T: Clone>(
-        layers: &[Options],
-        get: impl Fn(&Options) -> &Option<Vec<T>>,
-        inherit: impl Fn(&Options) -> bool,
-    ) -> Vec<T> {
-        let mut out = Vec::new();
-        for layer in layers {
-            if let Some(items) = get(layer) {
-                if !inherit(layer) {
-                    out.clear();
-                }
-                out.extend(items.iter().cloned());
-            }
-        }
-        out
-    }
     let inherit_rules = |l: &Options| l.inherit_rules.unwrap_or(false);
     let inherit_hooks = |l: &Options| l.inherit_hooks.unwrap_or(false);
-    let youtube_default = YoutubeConfig::default();
 
     EffectiveSource {
         key: key.to_string(),
@@ -298,45 +375,9 @@ fn resolve(
         keep_raw_info: pick!(keep_raw_info, false),
         download: pick!(download, true),
         clean_title: pick!(clean_title, crate::config::CleanTitle::None),
-        embed: Embed {
-            metadata: table!(embed, metadata, false),
-            cover: table!(embed, cover, false),
-            chapters: table!(embed, chapters, false),
-            subtitles: table!(embed, subtitles, false),
-            tags: merged_tags(layers),
-            musicbrainz: musicbrainz(layers),
-            musicbrainz_server: musicbrainz_server(layers),
-        },
-        cleanup: Cleanup {
-            max_items: table!(cleanup, max_items, 0),
-            max_age: table!(cleanup, max_age, OptionalDuration(None)),
-            max_size: table!(cleanup, max_size, OptionalSize::default()),
-            order: table!(cleanup, order, CleanupOrder::OldestDownloaded),
-            unmatched: table!(cleanup, unmatched, Unmatched::Keep),
-            keep: table!(cleanup, keep, CleanupKeep::Metadata),
-            marker_file: table!(cleanup, marker_file, String::new()),
-            keep_latest: table!(cleanup, keep_latest, 0),
-            delete: table!(cleanup, delete, CleanupDelete::Trash),
-            trash_for: table!(cleanup, trash_for, HumanDuration(builtin::TRASH_FOR)),
-        },
-        youtube: YoutubeConfig {
-            api_key: layers
-                .iter()
-                .rev()
-                .find_map(|l| l.youtube.as_ref().and_then(|y| y.api_key.clone())),
-            daily_quota: table!(youtube, daily_quota, youtube_default.daily_quota),
-            quota_warn_at: table!(youtube, quota_warn_at, youtube_default.quota_warn_at),
-            fallback_to_ytdlp: table!(
-                youtube,
-                fallback_to_ytdlp,
-                youtube_default.fallback_to_ytdlp
-            ),
-            requests_per_second: table!(
-                youtube,
-                requests_per_second,
-                youtube_default.requests_per_second
-            ),
-        },
+        embed: resolve_embed(layers),
+        cleanup: resolve_cleanup(layers),
+        youtube: resolve_youtube(layers),
     }
 }
 
@@ -358,6 +399,7 @@ fn merged_tags(layers: &[Options]) -> BTreeMap<String, String> {
 
 /// A category resolved on its own (`default` + the category, no source), for
 /// checks about categories rather than sources.
+#[must_use]
 pub fn category_settings(config: &Config, category: &str) -> EffectiveSource {
     let source = SourceConfig {
         urls: Vec::new(),
@@ -370,6 +412,7 @@ pub fn category_settings(config: &Config, category: &str) -> EffectiveSource {
 }
 
 /// A category's own resolved youtube settings.
+#[must_use]
 pub fn category_youtube(config: &Config, category: &str) -> YoutubeConfig {
     category_settings(config, category).youtube
 }

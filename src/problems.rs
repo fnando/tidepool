@@ -3,6 +3,7 @@
 //! kind of work succeeds again.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::Write as _;
 
 use jiff::Timestamp;
 use rusqlite::{Connection, OptionalExtension, params};
@@ -61,6 +62,7 @@ impl Kind {
         Kind::ServiceFailed,
     ];
 
+    #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
             Kind::Extraction => "ytdlp_extraction",
@@ -81,10 +83,12 @@ impl Kind {
         }
     }
 
+    #[must_use]
     pub fn parse(s: &str) -> Option<Kind> {
         Kind::ALL.into_iter().find(|k| k.as_str() == s)
     }
 
+    #[must_use]
     pub fn title(self) -> &'static str {
         match self {
             Kind::Extraction => "yt-dlp can't extract videos",
@@ -124,6 +128,7 @@ impl Kind {
     }
 
     /// Kinds an updated yt-dlp usually fixes.
+    #[must_use]
     pub fn fixed_by_update(self) -> bool {
         matches!(
             self,
@@ -145,10 +150,9 @@ impl Kind {
         )
     }
 
+    #[must_use]
     pub fn hint(self, ytdlp_version: Option<&str>, managed: bool) -> String {
-        let version = ytdlp_version
-            .map(|v| format!("yt-dlp {v}"))
-            .unwrap_or_else(|| "yt-dlp".into());
+        let version = ytdlp_version.map_or_else(|| "yt-dlp".into(), |v| format!("yt-dlp {v}"));
         let update = if managed {
             "tidepool checks for a newer yt-dlp right away; failed videos are retried on later runs"
                 .to_string()
@@ -175,6 +179,7 @@ impl Kind {
 }
 
 /// The problem kind of a yt-dlp failure message, if it's a systemic one.
+#[must_use]
 pub fn classify(message: &str) -> Option<Kind> {
     let m = message.to_lowercase();
     if m.contains("cannot run") {
@@ -255,6 +260,10 @@ fn open_problem(conn: &Connection, kind: Kind) -> rusqlite::Result<Option<Proble
 
 /// Something that happened `count` times; creates or bumps the open problem.
 /// A repeat un-hides an acknowledged problem and shows it again.
+///
+/// # Errors
+///
+/// When a database query fails.
 #[allow(clippy::too_many_arguments)]
 pub fn record(
     conn: &Connection,
@@ -267,39 +276,40 @@ pub fn record(
     now: Timestamp,
 ) -> rusqlite::Result<i64> {
     let now = now.to_string();
-    match open_problem(conn, kind)? {
-        Some(existing) => {
-            let mut all: BTreeSet<String> = existing.sources.into_iter().collect();
-            all.extend(sources.iter().cloned());
-            conn.execute(
-                "UPDATE problems SET count = count + ?2, last_seen = ?3, sample = ?4,
-                   ytdlp_version = COALESCE(?5, ytdlp_version), sources_json = ?6, hint = ?7,
-                   shown_cli_at = NULL, acknowledged_at = NULL
-                 WHERE id = ?1",
-                params![
-                    existing.id,
-                    count,
-                    now,
-                    sample,
-                    ytdlp_version,
-                    serde_json::to_string(&all).unwrap(),
-                    hint
-                ],
-            )?;
-            Ok(existing.id)
-        }
-        None => {
-            conn.execute(
-                "INSERT INTO problems (kind, first_seen, last_seen, count, sample, ytdlp_version, sources_json, hint)
-                 VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7)",
-                params![kind.as_str(), now, count, sample, ytdlp_version, serde_json::to_string(sources).unwrap(), hint],
-            )?;
-            Ok(conn.last_insert_rowid())
-        }
+    if let Some(existing) = open_problem(conn, kind)? {
+        let mut all: BTreeSet<String> = existing.sources.into_iter().collect();
+        all.extend(sources.iter().cloned());
+        conn.execute(
+            "UPDATE problems SET count = count + ?2, last_seen = ?3, sample = ?4,
+               ytdlp_version = COALESCE(?5, ytdlp_version), sources_json = ?6, hint = ?7,
+               shown_cli_at = NULL, acknowledged_at = NULL
+             WHERE id = ?1",
+            params![
+                existing.id,
+                count,
+                now,
+                sample,
+                ytdlp_version,
+                sources_json(&all)?,
+                hint
+            ],
+        )?;
+        Ok(existing.id)
+    } else {
+        conn.execute(
+            "INSERT INTO problems (kind, first_seen, last_seen, count, sample, ytdlp_version, sources_json, hint)
+             VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7)",
+            params![kind.as_str(), now, count, sample, ytdlp_version, sources_json(sources)?, hint],
+        )?;
+        Ok(conn.last_insert_rowid())
     }
 }
 
-/// The open problem of this kind is fixed.
+/// The open problem of this kind is fixed. False if there was none.
+///
+/// # Errors
+///
+/// When a database query fails.
 pub fn resolve(conn: &Connection, kind: Kind, now: Timestamp) -> rusqlite::Result<bool> {
     let changed = conn.execute(
         "UPDATE problems SET resolved_at = ?2 WHERE kind = ?1 AND resolved_at IS NULL",
@@ -310,6 +320,10 @@ pub fn resolve(conn: &Connection, kind: Kind, now: Timestamp) -> rusqlite::Resul
 
 /// A source is fine again: drop it from the problem, resolving it when no
 /// source is left.
+///
+/// # Errors
+///
+/// When a database query fails.
 pub fn resolve_source(
     conn: &Connection,
     kind: Kind,
@@ -328,13 +342,17 @@ pub fn resolve_source(
     } else {
         conn.execute(
             "UPDATE problems SET sources_json = ?2 WHERE id = ?1",
-            params![problem.id, serde_json::to_string(&left).unwrap()],
+            params![problem.id, sources_json(&left)?],
         )?;
     }
     Ok(())
 }
 
 /// Open problems, oldest first.
+///
+/// # Errors
+///
+/// When a database query fails.
 pub fn open(conn: &Connection) -> rusqlite::Result<Vec<Problem>> {
     let mut stmt = conn.prepare(&format!(
         "SELECT {COLUMNS} FROM problems WHERE resolved_at IS NULL ORDER BY id"
@@ -343,15 +361,24 @@ pub fn open(conn: &Connection) -> rusqlite::Result<Vec<Problem>> {
 }
 
 /// The most recently resolved problems.
+///
+/// # Errors
+///
+/// When a database query fails.
 pub fn recently_resolved(conn: &Connection, limit: usize) -> rusqlite::Result<Vec<Problem>> {
     let mut stmt = conn.prepare(&format!(
         "SELECT {COLUMNS} FROM problems WHERE resolved_at IS NOT NULL ORDER BY resolved_at DESC LIMIT ?1"
     ))?;
-    stmt.query_map([limit as i64], row)?.collect()
+    let limit = i64::try_from(limit).unwrap_or(i64::MAX);
+    stmt.query_map([limit], row)?.collect()
 }
 
 /// Hide an open problem until it happens again. False if there's no such
 /// open problem.
+///
+/// # Errors
+///
+/// When a database query fails.
 pub fn acknowledge(conn: &Connection, id: i64, now: Timestamp) -> rusqlite::Result<bool> {
     let changed = conn.execute(
         "UPDATE problems SET acknowledged_at = ?2 WHERE id = ?1 AND resolved_at IS NULL",
@@ -360,6 +387,11 @@ pub fn acknowledge(conn: &Connection, id: i64, now: Timestamp) -> rusqlite::Resu
     Ok(changed > 0)
 }
 
+/// Note that the CLI showed these problems.
+///
+/// # Errors
+///
+/// When a database query fails.
 pub fn mark_shown(conn: &Connection, ids: &[i64], now: Timestamp) -> rusqlite::Result<()> {
     for id in ids {
         conn.execute(
@@ -370,13 +402,20 @@ pub fn mark_shown(conn: &Connection, ids: &[i64], now: Timestamp) -> rusqlite::R
     Ok(())
 }
 
+/// A source list as stored in `sources_json`.
+fn sources_json(sources: &impl serde::Serialize) -> rusqlite::Result<String> {
+    serde_json::to_string(sources).map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))
+}
+
 fn short_time(t: &str) -> String {
-    t.parse::<Timestamp>()
-        .map(|t| t.strftime("%Y-%m-%d %H:%M UTC").to_string())
-        .unwrap_or_else(|_| t.to_string())
+    t.parse::<Timestamp>().map_or_else(
+        |_| t.to_string(),
+        |t| t.strftime("%Y-%m-%d %H:%M UTC").to_string(),
+    )
 }
 
 /// A problem as shown by `tidepool problems` and in notices.
+#[must_use]
 pub fn describe(problem: &Problem) -> String {
     let times = if problem.count == 1 {
         "once".to_string()
@@ -396,16 +435,16 @@ pub fn describe(problem: &Problem) -> String {
         short_time(&problem.last_seen),
     );
     if let Some(version) = &problem.ytdlp_version {
-        out.push_str(&format!(", yt-dlp {version}"));
+        let _ = write!(out, ", yt-dlp {version}");
     }
     if !problem.sources.is_empty() {
-        out.push_str(&format!("\n   sources: {}", problem.sources.join(", ")));
+        let _ = write!(out, "\n   sources: {}", problem.sources.join(", "));
     }
     if let Some(sample) = &problem.sample {
-        out.push_str(&format!("\n   last error: {sample}"));
+        let _ = write!(out, "\n   last error: {sample}");
     }
     if let Some(hint) = &problem.hint {
-        out.push_str(&format!("\n   hint: {hint}"));
+        let _ = write!(out, "\n   hint: {hint}");
     }
     out
 }
@@ -471,6 +510,7 @@ impl Tracker {
 
     /// A hook ran fine.
     /// Something failed in this run.
+    #[must_use]
     pub fn has_failures(&self) -> bool {
         !self.failures.is_empty()
     }
@@ -504,12 +544,17 @@ impl Tracker {
     }
 
     /// Kinds an updated yt-dlp could fix that this run ran into.
+    #[must_use]
     pub fn wants_update(&self) -> bool {
         self.failures.keys().any(|k| k.fixed_by_update())
     }
 
     /// Record what crossed a threshold and resolve what works again. Returns
     /// the kinds recorded.
+    ///
+    /// # Errors
+    ///
+    /// When a database query fails.
     pub fn finish(
         self,
         conn: &Connection,
