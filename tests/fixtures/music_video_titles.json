@@ -688,5 +688,20 @@
     "input": "Paramore - Hard Times (Official Visualizer Video)",
     "artist": "Paramore",
     "clip_name": "Hard Times"
+  },
+  {
+    "input": "Don't Let Me Down (Live Performance)",
+    "artist": "The Beatles",
+    "clip_name": "Don't Let Me Down (Live)"
+  },
+  {
+    "input": "The Beatles - Don't Let Me Down [Live Performance]",
+    "artist": "The Beatles",
+    "clip_name": "Don't Let Me Down [Live]"
+  },
+  {
+    "input": "Paramore - Hard Times (Live Performance Video)",
+    "artist": "Paramore",
+    "clip_name": "Hard Times (Live)"
   }
 ]

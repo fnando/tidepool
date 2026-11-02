@@ -62,6 +62,9 @@ static VIDEO_GROUP: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 static GROUP: LazyLock<Regex> = LazyLock::new(|| re(r"[(\[{][^)\]}]*[)\]}]"));
+/// "Live Performance (Video)" says the same as "Live".
+static LIVE_PERFORMANCE: LazyLock<Regex> =
+    LazyLock::new(|| re(r"(?i)\blive\s+performance(?:\s+video)?\b"));
 static LYRIC_VIDEO: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\blyric\s+video\b"));
 static SPACES: LazyLock<Regex> = LazyLock::new(|| re(r"\s+"));
 static EMPTY_GROUP: LazyLock<Regex> = LazyLock::new(|| re(r"[(\[{]\s*[)\]}]"));
@@ -269,6 +272,7 @@ pub fn music_video(title: &str, artist: &str) -> String {
     let mut name = replace_all(&SPACES, &name, " ").trim().to_string();
 
     let lyric_video = is_match(&LYRIC_VIDEO, &name);
+    name = replace_all(&LIVE_PERFORMANCE, &name, "Live");
 
     // Credit/annotation groups first, then descriptor phrases.
     name = replace_all(&GROUP_NOISE, &name, " ");
