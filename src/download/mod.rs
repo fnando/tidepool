@@ -645,6 +645,10 @@ async fn assemble(
     // details recorded for the video (`details`) stay YouTube's.
     let original = prepare::Details::of(&info);
     let mut info = info;
+    if source.clean_title != crate::config::CleanTitle::None {
+        step("cleaning up the title");
+    }
+    stage.clean_title(&mut info).await?;
     let overrides = stage
         .prepare_hooks(
             &mut info,

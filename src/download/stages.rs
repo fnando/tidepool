@@ -416,6 +416,33 @@ impl Stage<'_> {
         (!keep.is_empty()).then(|| keep.join("; "))
     }
 
+    /// `clean_title`: clean the video's title up when the source asks and its
+    /// tags name the artist (`MUSICBRAINZ_ARTISTID`; the name comes from
+    /// MusicBrainz). `Err` when the name can't be looked up: the download is
+    /// tried again later rather than saved under YouTube's title.
+    pub async fn clean_title(&self, info: &mut VideoInfo) -> Result<(), Failure> {
+        if self.source.clean_title != crate::config::CleanTitle::MusicVideo {
+            return Ok(());
+        }
+        let values = Values::new(info, self.source, self.source_title, self.position);
+        let Some(artist_id) = artist_id(self.source, &values) else {
+            return Ok(());
+        };
+        let name = crate::musicbrainz::artist_name(
+            &self.source.embed.musicbrainz_server,
+            self.data_dir,
+            &artist_id,
+        )
+        .await
+        .map_err(|e| fail(format!("cannot clean up the title: {e}")))?;
+        let cleaned = crate::titles::music_video(&info.title, &name);
+        if cleaned != info.title {
+            tracing::debug!("{}: title cleaned up: “{cleaned}”", self.label);
+            info.title = cleaned;
+        }
+        Ok(())
+    }
+
     /// `embed.musicbrainz`: album and track ids for `tags` that name the
     /// artist (`MUSICBRAINZ_ARTISTID`). `known` is what metadata.json
     /// recorded before: a match there is used again, not looked up. Tags set
@@ -526,6 +553,24 @@ impl Stage<'_> {
         }
         tags
     }
+}
+
+/// The artist's MusicBrainz id the source's `embed.tags` set
+/// (`MUSICBRAINZ_ARTISTID`, rendered with `values`), if any.
+pub fn artist_id(source: &EffectiveSource, values: &Values) -> Option<String> {
+    let (_, template) = source
+        .embed
+        .tags
+        .iter()
+        .find(|(k, _)| k.eq_ignore_ascii_case("MUSICBRAINZ_ARTISTID"))?;
+    let value = match placeholders::validate(template, Setting::Tags) {
+        Ok(segments) => placeholders::render(&segments, Setting::Tags, |name| {
+            values.get(name).map(str::to_string)
+        }),
+        Err(_) => template.clone(),
+    };
+    let value = value.trim();
+    (!value.is_empty()).then(|| value.to_string())
 }
 
 /// Whether any `embed` option is on.

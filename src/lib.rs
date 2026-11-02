@@ -19,5 +19,6 @@ pub mod problems;
 pub mod process;
 pub mod shutdown;
 pub mod state;
+pub mod titles;
 pub mod tools;
 pub mod web;

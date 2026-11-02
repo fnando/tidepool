@@ -466,6 +466,34 @@ If embedding fails, you keep the file as downloaded, with a warning.
 When the same video is in two sources and shares one file (see `duplicates`),
 the file carries the album and track of the source that downloaded it last.
 
+**Song titles for music videos.** YouTube titles often carry more than the
+song: "Dead Fish - Sonho Médio (Clipe Oficial)", "Anitta & Alesso - Is That
+For Me (Official Music Video)". With `clean_title = "music_video"` on a source
+or category, tidepool keeps only the song's title ("Sonho Médio", "Is That For
+Me") for videos tagged with their artist's `MUSICBRAINZ_ARTISTID` (see `tags`
+above); the artist's name comes from MusicBrainz. It takes out the artist and
+other credits wherever they sit ("feat. …", "&", "x", "Artist: Song"),
+"(Official Video)"-style notes in English and Portuguese, "[HD]", "[4K]",
+remaster and soundtrack notes, while keeping what names a different version,
+like "(Alternate Version)" or "(Acoustic)"; a lyric video keeps
+"(Lyric Video)" at the end.
+
+```toml
+[category.music]
+clean_title = "music_video"
+embed.tags = { MUSICBRAINZ_ARTISTID = "…" }   # per source, usually
+```
+
+The cleaned title is the video's title from then on: file names (`{title}`),
+the title written into the file, the metadata file (which keeps YouTube's under
+`original`), MusicBrainz matching and your hooks. It's cleaned before your
+`prepare` hooks run, so they can refine it. Videos without an artist id keep
+YouTube's title. When MusicBrainz can't be reached for the artist's name, the
+video waits and is tried again later, so it's never saved under the raw title
+(names are remembered for 30 days, so that's rare). The address in
+`embed.musicbrainz` is used for this even when looking up album and track ids
+is turned off there.
+
 **MusicBrainz album and track ids.** For music videos tagged with their
 artist's `MUSICBRAINZ_ARTISTID`, tidepool can find the song on one of the
 artist's MusicBrainz releases and add the release's and the track's ids too

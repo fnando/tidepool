@@ -84,6 +84,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # inherit_hooks = false             # elsewhere: true = add to the hooks inherited instead of replacing them
 # redownload_missing = false        # restore files that went missing (else each run reports them)
 # keep_raw_info = false             # keep yt-dlp's raw info.json
+# clean_title = "none"              # "music_video": only the song's title, for videos tagged MUSICBRAINZ_ARTISTID
 
 [category.default.youtube]          # YouTube Data API (optional)
 # api_key = "AIza..."               # without one, indexing uses yt-dlp only

@@ -1030,6 +1030,104 @@ async fn musicbrainz_ids_are_looked_up_from_the_artist() {
     assert_eq!(tags["MUSICBRAINZ_TRACKID"], "the-recording");
 }
 
+/// A fake MusicBrainz knowing Rick Astley (`rick-artist`); `artist_status`
+/// answers his artist lookup.
+async fn fake_musicbrainz(artist_status: u16) -> MockServer {
+    let server = MockServer::start().await;
+    Mock::given(path_regex("/ws/2/artist/rick-artist"))
+        .respond_with(
+            ResponseTemplate::new(artist_status)
+                .set_body_json(serde_json::json!({"id": "rick-artist", "name": "Rick Astley"})),
+        )
+        .mount(&server)
+        .await;
+    server
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn music_video_titles_are_cleaned_up_before_anything_else() {
+    let env = Env::new().await;
+    let musicbrainz = fake_musicbrainz(200).await;
+    let config = hooks_config(
+        &env,
+        &format!(
+            "clean_title = \"music_video\"\n[category.default.embed]\n\
+             tags = {{ MUSICBRAINZ_ARTISTID = \"rick-artist\" }}\n\
+             musicbrainz = {{ server = \"{}\", enabled = false }}",
+            musicbrainz.uri()
+        ),
+        "",
+    );
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    let dir = env
+        .media()
+        .join("dl/2009-10-25 - Never Gonna Give You Up [dQw4w9WgXcQ]");
+    assert!(
+        dir.join("Never Gonna Give You Up.mkv").is_file(),
+        "named after the song: {:?}",
+        fs::read_dir(env.media().join("dl"))
+            .unwrap()
+            .map(|e| e.unwrap().file_name())
+            .collect::<Vec<_>>()
+    );
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(dir.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(meta["title"], "Never Gonna Give You Up");
+    assert_eq!(
+        meta["original"]["title"],
+        "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)"
+    );
+    // The other video's title has nothing to clean.
+    assert!(
+        env.media()
+            .join("dl/2026-09-01 - Video okvideo01 [okvideo01]")
+            .is_dir()
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn titles_without_an_artist_id_stay_as_they_are() {
+    let env = Env::new().await;
+    let config = hooks_config(&env, "clean_title = \"music_video\"", "");
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    assert!(env.media().join(RICK_DIR).is_dir(), "YouTube's title");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_title_isnt_cleaned_up_without_musicbrainz_so_the_video_waits() {
+    let env = Env::new().await;
+    let musicbrainz = fake_musicbrainz(500).await;
+    let config = hooks_config(
+        &env,
+        &format!(
+            "clean_title = \"music_video\"\n[category.default.embed]\n\
+             tags = {{ MUSICBRAINZ_ARTISTID = \"rick-artist\" }}\n\
+             musicbrainz = {{ server = \"{}\" }}",
+            musicbrainz.uri()
+        ),
+        "",
+    );
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3)
+        .stderr(contains("cannot clean up the title"));
+    assert!(!env.media().join(RICK_DIR).exists());
+    let rick = env
+        .statuses("dl")
+        .into_iter()
+        .find(|(id, _, _)| id == "dQw4w9WgXcQ")
+        .unwrap();
+    assert_eq!(
+        (rick.1.as_str(), rick.2),
+        ("failed", 1),
+        "tried again later"
+    );
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn downloaded_hooks_can_replace_the_media() {
     let env = Env::new().await;

@@ -281,6 +281,45 @@ pub fn normalize(text: &str) -> String {
 }
 
 #[derive(Serialize, Deserialize)]
+struct CachedArtist {
+    fetched_at: jiff::Timestamp,
+    name: String,
+}
+
+/// The artist's name (cached for 30 days).
+pub async fn artist_name(server: &str, data_dir: &Path, artist_id: &str) -> Result<String, String> {
+    let path = cache_file(server, data_dir, &format!("{artist_id}.artist"));
+    if let Ok(text) = std::fs::read_to_string(&path)
+        && let Ok(cached) = serde_json::from_str::<CachedArtist>(&text)
+        && jiff::Timestamp::now()
+            .duration_since(cached.fetched_at)
+            .unsigned_abs()
+            < CACHE_FOR
+    {
+        return Ok(cached.name);
+    }
+    let url = format!(
+        "{}/ws/2/artist/{artist_id}?fmt=json",
+        server.trim_end_matches('/')
+    );
+    let artist = get(server, &url).await?;
+    let name = artist["name"]
+        .as_str()
+        .filter(|n| !n.is_empty())
+        .ok_or_else(|| format!("MusicBrainz ({server}) has no artist {artist_id}"))?
+        .to_string();
+    if let Some(dir) = path.parent() {
+        let _ = std::fs::create_dir_all(dir);
+    }
+    let cached = CachedArtist {
+        fetched_at: jiff::Timestamp::now(),
+        name,
+    };
+    let _ = std::fs::write(&path, serde_json::to_vec(&cached).expect("JSON"));
+    Ok(cached.name)
+}
+
+#[derive(Serialize, Deserialize)]
 struct Cached {
     fetched_at: jiff::Timestamp,
     releases: Vec<Release>,
@@ -655,6 +694,38 @@ mod tests {
         .await
         .unwrap();
         assert!(matches!(found, Found::Match { .. }));
+    }
+
+    #[tokio::test]
+    async fn artist_names_are_looked_up_and_cached() {
+        use wiremock::matchers::path;
+        use wiremock::{Mock, MockServer, ResponseTemplate};
+        let server = MockServer::start().await;
+        Mock::given(path("/ws/2/artist/dead-fish"))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(serde_json::json!({"id": "dead-fish", "name": "Dead Fish"})),
+            )
+            .expect(1)
+            .mount(&server)
+            .await;
+        Mock::given(path("/ws/2/artist/nobody"))
+            .respond_with(ResponseTemplate::new(404))
+            .mount(&server)
+            .await;
+        let dir = tempfile::tempdir().unwrap();
+        for _ in 0..2 {
+            assert_eq!(
+                artist_name(&server.uri(), dir.path(), "dead-fish")
+                    .await
+                    .unwrap(),
+                "Dead Fish"
+            );
+        }
+        let err = artist_name(&server.uri(), dir.path(), "nobody")
+            .await
+            .unwrap_err();
+        assert!(err.contains("404"), "{err}");
     }
 
     #[tokio::test]

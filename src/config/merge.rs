@@ -91,6 +91,7 @@ pub struct EffectiveSource {
     pub hooks: Vec<String>,
     pub redownload_missing: bool,
     pub keep_raw_info: bool,
+    pub clean_title: crate::config::CleanTitle,
     pub embed: Embed,
     pub cleanup: Cleanup,
     pub youtube: YoutubeConfig,
@@ -119,7 +120,12 @@ pub struct Embed {
     pub subtitles: bool,
     pub tags: BTreeMap<String, String>,
     /// The MusicBrainz server to look up album and track ids on, when on.
+    #[serde(skip)]
     pub musicbrainz: Option<String>,
+    /// The MusicBrainz server, even when ids aren't looked up (artist names
+    /// for `clean_title` still are).
+    #[serde(skip)]
+    pub musicbrainz_server: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -188,6 +194,14 @@ fn resolve(
                 .find_map(|l| l.$field.clone())
                 .unwrap_or_else(|| $default)
         };
+    }
+    fn musicbrainz_server(layers: &[Options]) -> String {
+        layers
+            .iter()
+            .rev()
+            .filter_map(|l| l.embed.as_ref().and_then(|e| e.musicbrainz.as_ref()))
+            .find_map(|t| t.server.clone())
+            .unwrap_or_else(|| crate::musicbrainz::DEFAULT_SERVER.to_string())
     }
     /// On when any layer sets `embed.musicbrainz` and the last `enabled`
     /// set isn't false; the last `server` set wins.
@@ -268,6 +282,7 @@ fn resolve(
         hooks: list(layers, |l| &l.hooks, inherit_hooks),
         redownload_missing: pick!(redownload_missing, false),
         keep_raw_info: pick!(keep_raw_info, false),
+        clean_title: pick!(clean_title, crate::config::CleanTitle::None),
         embed: Embed {
             metadata: table!(embed, metadata, false),
             cover: table!(embed, cover, false),
@@ -275,6 +290,7 @@ fn resolve(
             subtitles: table!(embed, subtitles, false),
             tags: merged_tags(layers),
             musicbrainz: musicbrainz(layers),
+            musicbrainz_server: musicbrainz_server(layers),
         },
         cleanup: Cleanup {
             max_items: table!(cleanup, max_items, 0),

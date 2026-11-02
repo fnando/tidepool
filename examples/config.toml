@@ -61,6 +61,7 @@ max_duration = "4h"
 cutoff = "30d"                      # skip videos published more than 30d ago; "2024-01-01" also works
 hooks = []
 redownload_missing = false          # true = restore missing files; false = just report them
+clean_title = "none"                # "music_video": only the song's title, for videos tagged MUSICBRAINZ_ARTISTID
 
 [category.default.youtube]
 # api_key = "AIza..."               # optional; without it, indexing uses yt-dlp only

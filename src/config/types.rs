@@ -79,6 +79,17 @@ impl Default for GeneralConfig {
     }
 }
 
+/// How titles are cleaned up.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum CleanTitle {
+    /// As YouTube has it.
+    #[default]
+    None,
+    /// The song's title only, for music videos.
+    MusicVideo,
+}
+
 /// Same video in several sources.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -461,6 +472,11 @@ macro_rules! options_struct {
             /// Keep yt-dlp's raw info JSON next to the metadata file (as `<metadata file name>.ytdlp.json`).
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub keep_raw_info: Option<bool>,
+            /// Clean up YouTube titles: `music_video` keeps only the song's title
+            /// ("Artist - Song (Official Video)" → "Song"), for videos tagged with
+            /// `MUSICBRAINZ_ARTISTID` (the artist's name comes from MusicBrainz).
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            pub clean_title: Option<CleanTitle>,
             /// Metadata embedded in the media file.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub embed: Option<EmbedOptions>,
@@ -499,6 +515,7 @@ macro_rules! options_struct {
                     inherit_hooks: self.inherit_hooks.clone(),
                     redownload_missing: self.redownload_missing.clone(),
                     keep_raw_info: self.keep_raw_info.clone(),
+                    clean_title: self.clean_title,
                     embed: self.embed.clone(),
                     cleanup: self.cleanup.clone(),
                     youtube: self.youtube.clone(),

@@ -4,6 +4,10 @@
       "additionalProperties": false,
       "description": "`[category.<name>]`: settings shared by the sources that pick it.\n`[category.default]` applies to every source.",
       "properties": {
+        "clean_title": {
+          "$ref": "#/$defs/CleanTitle",
+          "description": "Clean up YouTube titles: `music_video` keeps only the song's title\n(\"Artist - Song (Official Video)\" → \"Song\"), for videos tagged with\n`MUSICBRAINZ_ARTISTID` (the artist's name comes from MusicBrainz)."
+        },
         "cleanup": {
           "$ref": "#/$defs/CleanupOptions",
           "description": "Cleanup policies."
@@ -146,6 +150,21 @@
         }
       },
       "type": "object"
+    },
+    "CleanTitle": {
+      "description": "How titles are cleaned up.",
+      "oneOf": [
+        {
+          "const": "none",
+          "description": "As YouTube has it.",
+          "type": "string"
+        },
+        {
+          "const": "music_video",
+          "description": "The song's title only, for music videos.",
+          "type": "string"
+        }
+      ]
     },
     "CleanupDelete": {
       "oneOf": [
@@ -582,6 +601,10 @@
           "description": "The category whose settings this source uses. Defaults to \"default\".",
           "pattern": "^[a-z0-9][a-z0-9_-]*$",
           "type": "string"
+        },
+        "clean_title": {
+          "$ref": "#/$defs/CleanTitle",
+          "description": "Clean up YouTube titles: `music_video` keeps only the song's title\n(\"Artist - Song (Official Video)\" → \"Song\"), for videos tagged with\n`MUSICBRAINZ_ARTISTID` (the artist's name comes from MusicBrainz)."
         },
         "cleanup": {
           "$ref": "#/$defs/CleanupOptions",

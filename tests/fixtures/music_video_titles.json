@@ -1,0 +1,662 @@
+[
+  {
+    "input": "The Cure - Pictures Of You",
+    "artist": "The Cure",
+    "clip_name": "Pictures Of You"
+  },
+  {
+    "input": "blink-182 - Dammit",
+    "artist": "blink‐182",
+    "clip_name": "Dammit"
+  },
+  {
+    "input": "Foo Fighters - The Pretender",
+    "artist": "Foo Fighters",
+    "clip_name": "The Pretender"
+  },
+  {
+    "input": "+44 - When Your Heart Stops Beating",
+    "artist": "+44",
+    "clip_name": "When Your Heart Stops Beating"
+  },
+  {
+    "input": "Elvis Costello - 45",
+    "artist": "Elvis Costello",
+    "clip_name": "45"
+  },
+  {
+    "input": "The Cure - alt.end",
+    "artist": "The Cure",
+    "clip_name": "alt.end"
+  },
+  {
+    "input": "Anitta - Funk Rave (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Funk Rave"
+  },
+  {
+    "input": "Green Day - 21 Guns [Official Music Video]",
+    "artist": "Green Day",
+    "clip_name": "21 Guns"
+  },
+  {
+    "input": "Foo Fighters - Breakout (Official HD Video)",
+    "artist": "Foo Fighters",
+    "clip_name": "Breakout"
+  },
+  {
+    "input": "The Strokes - Taken for a Fool (Official Video)",
+    "artist": "The Strokes",
+    "clip_name": "Taken for a Fool"
+  },
+  {
+    "input": "A Wilhelm Scream - Be One To No One (Official Lyric Video)",
+    "artist": "A Wilhelm Scream",
+    "clip_name": "Be One To No One (Lyric Video)"
+  },
+  {
+    "input": "Olivia Rodrigo - good 4 u (Official Video)",
+    "artist": "Olivia Rodrigo",
+    "clip_name": "good 4 u"
+  },
+  {
+    "input": "Metallica： Enter Sandman (Official Music Video)",
+    "artist": "Metallica",
+    "clip_name": "Enter Sandman"
+  },
+  {
+    "input": "Paramore： Still Into You [OFFICIAL VIDEO]",
+    "artist": "Paramore",
+    "clip_name": "Still Into You"
+  },
+  {
+    "input": "Ramones - She's The One (Official Video) [HD]",
+    "artist": "Ramones",
+    "clip_name": "She's The One"
+  },
+  {
+    "input": "twenty one pilots： Stressed Out [OFFICIAL VIDEO]",
+    "artist": "twenty one pilots",
+    "clip_name": "Stressed Out"
+  },
+  {
+    "input": "Rancid - ＂New American＂",
+    "artist": "Rancid",
+    "clip_name": "New American"
+  },
+  {
+    "input": "The Strokes - ＂Threat of Joy＂ (OFFICIAL MUSIC VIDEO)",
+    "artist": "The Strokes",
+    "clip_name": "Threat of Joy"
+  },
+  {
+    "input": "A Wilhelm Scream ＂Midnight Ghost＂ (OFFICIAL VIDEO)",
+    "artist": "A Wilhelm Scream",
+    "clip_name": "Midnight Ghost"
+  },
+  {
+    "input": "The Used - All That I've Got (Video)",
+    "artist": "The Used",
+    "clip_name": "All That I've Got"
+  },
+  {
+    "input": "Dead Fish ＂Vitória＂ (clipe oficial)",
+    "artist": "Dead Fish",
+    "clip_name": "Vitória"
+  },
+  {
+    "input": "Rancid - 'Red Hot Moon' (Music Video)",
+    "artist": "Rancid",
+    "clip_name": "Red Hot Moon"
+  },
+  {
+    "input": "City And Colour - ＂Waiting...＂ [Official Video]",
+    "artist": "City and Colour",
+    "clip_name": "Waiting..."
+  },
+  {
+    "input": "The Beatles - The Beatles - Hey Jude (Official Music Video) [Remastered 2015]",
+    "artist": "The Beatles",
+    "clip_name": "Hey Jude"
+  },
+  {
+    "input": "The Beatles - The Beatles - Let It Be (Official Music Video) [Remastered 2015]",
+    "artist": "The Beatles",
+    "clip_name": "Let It Be"
+  },
+  {
+    "input": "The Beatles - The Beatles - Now And Then (Official Music Video)",
+    "artist": "The Beatles",
+    "clip_name": "Now And Then"
+  },
+  {
+    "input": "The Beatles - The Beatles - A Day In The Life (Official Video)",
+    "artist": "The Beatles",
+    "clip_name": "A Day In The Life"
+  },
+  {
+    "input": "Anitta - Girl From Rio (feat. DaBaby) [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Girl From Rio"
+  },
+  {
+    "input": "Olivia Rodrigo - expectations (feat. Chappell Roan) (Official Music Video)",
+    "artist": "Olivia Rodrigo",
+    "clip_name": "expectations"
+  },
+  {
+    "input": "Anitta feat. Cardi B & Myke Towers - Me Gusta [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Me Gusta"
+  },
+  {
+    "input": "Anitta part. Projota - Cobertor (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Cobertor"
+  },
+  {
+    "input": "Emicida - Sorrisos e lágrimas - part. Rael da Rima",
+    "artist": "Emicida",
+    "clip_name": "Sorrisos e lágrimas"
+  },
+  {
+    "input": "Emicida - AmarElo (Sample： Belchior - Sujeito de Sorte) part. Majur e Pabllo Vittar",
+    "artist": "Emicida",
+    "clip_name": "AmarElo"
+  },
+  {
+    "input": "Major Lazer - Sua Cara (Feat. Anitta & Pabllo Vittar) [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Sua Cara"
+  },
+  {
+    "input": "The Interrupters - ＂Love Never Dies (feat. The Skints)＂",
+    "artist": "The Interrupters",
+    "clip_name": "Love Never Dies"
+  },
+  {
+    "input": "Show das Poderosas (Clipe Oficial) - Anitta",
+    "artist": "Anitta",
+    "clip_name": "Show das Poderosas"
+  },
+  {
+    "input": "Quanto vale o show memo？ (Clipe Oficial) - Emicida",
+    "artist": "Emicida",
+    "clip_name": "Quanto vale o show memo"
+  },
+  {
+    "input": "Algum Ritmo - Gilsons, Jovem Dionisio",
+    "artist": "Gilsons",
+    "clip_name": "Algum Ritmo"
+  },
+  {
+    "input": "Bateu - Gilsons ft. Rachel Reis e Mulú (Vídeo Oficial)",
+    "artist": "Gilsons",
+    "clip_name": "Bateu"
+  },
+  {
+    "input": "REFLORESTA ｜ Gilberto Gil, Gilsons e Bem Gil",
+    "artist": "Gilsons",
+    "clip_name": "REFLORESTA"
+  },
+  {
+    "input": "Me Liga - Gilsons feat. Murilo Chester (vídeo oficial)",
+    "artist": "Gilsons",
+    "clip_name": "Me Liga"
+  },
+  {
+    "input": "SUPERCOMBO - Saco Cheio [Webclipe]",
+    "artist": "Supercombo",
+    "clip_name": "Saco Cheio"
+  },
+  {
+    "input": "Dead Fish - Sausalito (Clipe oficial)",
+    "artist": "Dead Fish",
+    "clip_name": "Sausalito"
+  },
+  {
+    "input": "Emicida - Rua Augusta [Clipe Oficial]",
+    "artist": "Emicida",
+    "clip_name": "Rua Augusta"
+  },
+  {
+    "input": "HATEEN - OBRIGADO TEMPESTADE (CLIPE OFICIAL)",
+    "artist": "Hateen",
+    "clip_name": "OBRIGADO TEMPESTADE"
+  },
+  {
+    "input": "Gilsons - Beijo Na Boca (Videoclipe Oficial)",
+    "artist": "Gilsons",
+    "clip_name": "Beijo Na Boca"
+  },
+  {
+    "input": "SUPERCOMBO - SE EU QUISER - CLIP OFICIAL",
+    "artist": "Supercombo",
+    "clip_name": "SE EU QUISER"
+  },
+  {
+    "input": "SUPERCOMBO - Morar - (Clipe Oficial)",
+    "artist": "Supercombo",
+    "clip_name": "Morar"
+  },
+  {
+    "input": "Anitta - Si O No (feat Maluma) ｜ Video Oficial",
+    "artist": "Anitta",
+    "clip_name": "Si O No"
+  },
+  {
+    "input": "Dead Fish - Dentes Amarelos (Lyric Video)",
+    "artist": "Dead Fish",
+    "clip_name": "Dentes Amarelos (Lyric Video)"
+  },
+  {
+    "input": "Green Day - Wake Me Up When September Ends [Official Music Video] [4K Upgrade]",
+    "artist": "Green Day",
+    "clip_name": "Wake Me Up When September Ends"
+  },
+  {
+    "input": "Green Day - Waiting (HD Upscale) [Official Music Video]",
+    "artist": "Green Day",
+    "clip_name": "Waiting"
+  },
+  {
+    "input": "Green Day - Longview [Official Music Video] (4K Upgrade)",
+    "artist": "Green Day",
+    "clip_name": "Longview"
+  },
+  {
+    "input": "The Cure - Boys Don't Cry (Official Music Video) [HD]",
+    "artist": "The Cure",
+    "clip_name": "Boys Don't Cry"
+  },
+  {
+    "input": "System Of A Down - Chop Suey! (Official HD Video)",
+    "artist": "System of a Down",
+    "clip_name": "Chop Suey!"
+  },
+  {
+    "input": "twenty one pilots： Heathens (from Suicide Squad： The Album) [OFFICIAL VIDEO]",
+    "artist": "twenty one pilots",
+    "clip_name": "Heathens"
+  },
+  {
+    "input": "Olivia Rodrigo - Can’t Catch Me Now (from The Hunger Games： The Ballad of Songbirds & Snakes)",
+    "artist": "Olivia Rodrigo",
+    "clip_name": "Can't Catch Me Now"
+  },
+  {
+    "input": "Anitta - Larissa (From Larissa： The Other Side of Anitta) [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Larissa"
+  },
+  {
+    "input": "Twenty One Pilots - “The Line” (from Arcane Season 2) [Official Music Video]",
+    "artist": "twenty one pilots",
+    "clip_name": "The Line"
+  },
+  {
+    "input": "Weezer - Africa (starring Weird Al Yankovic)",
+    "artist": "Weezer",
+    "clip_name": "Africa"
+  },
+  {
+    "input": "Weezer - Can't Knock The Hustle (starring Rivers Wentz)",
+    "artist": "Weezer",
+    "clip_name": "Can't Knock The Hustle"
+  },
+  {
+    "input": "Weezer - Undone - The Sweater Song (Official Music Video)",
+    "artist": "Weezer",
+    "clip_name": "Undone - The Sweater Song"
+  },
+  {
+    "input": "Nirvana - Heart-Shaped Box",
+    "artist": "Nirvana",
+    "clip_name": "Heart-Shaped Box"
+  },
+  {
+    "input": "The Cure - Hot Hot Hot!!!",
+    "artist": "The Cure",
+    "clip_name": "Hot Hot Hot!!!"
+  },
+  {
+    "input": "The Cure - Gone!",
+    "artist": "The Cure",
+    "clip_name": "Gone!"
+  },
+  {
+    "input": "Death Cab for Cutie- No Room In Frame",
+    "artist": "Death Cab for Cutie",
+    "clip_name": "No Room In Frame"
+  },
+  {
+    "input": "Death Cab for Cutie - Cath...",
+    "artist": "Death Cab for Cutie",
+    "clip_name": "Cath..."
+  },
+  {
+    "input": "The Cure - Close To Me (1990 Version)",
+    "artist": "The Cure",
+    "clip_name": "Close To Me (1990 Version)"
+  },
+  {
+    "input": "Weezer - Island In The Sun (Spike Jonze Version)",
+    "artist": "Weezer",
+    "clip_name": "Island In The Sun (Spike Jonze Version)"
+  },
+  {
+    "input": "Nirvana - In Bloom (Alternate Version)",
+    "artist": "Nirvana",
+    "clip_name": "In Bloom (Alternate Version)"
+  },
+  {
+    "input": "Weezer - El Scorcho (Director's Cut)",
+    "artist": "Weezer",
+    "clip_name": "El Scorcho (Director's Cut)"
+  },
+  {
+    "input": "Anitta feat. Rasel - Zen (Spanish Version) (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Zen (Spanish Version)"
+  },
+  {
+    "input": "The Strokes - You Only Live Once (Alternate Version - Official HD Video)",
+    "artist": "The Strokes",
+    "clip_name": "You Only Live Once (Alternate Version)"
+  },
+  {
+    "input": "VENCEREMOS (Clipe)",
+    "artist": "Dead Fish",
+    "clip_name": "VENCEREMOS"
+  },
+  {
+    "input": "Your New Twin Sized Bed",
+    "artist": "Death Cab for Cutie",
+    "clip_name": "Your New Twin Sized Bed"
+  },
+  {
+    "input": "Strawberry Fields Forever -  Restored HD Video",
+    "artist": "The Beatles",
+    "clip_name": "Strawberry Fields Forever"
+  },
+  {
+    "input": "Olivia Rodrigo - bad idea right？ (Official Video)",
+    "artist": "Olivia Rodrigo",
+    "clip_name": "bad idea right"
+  },
+  {
+    "input": "Metallica： Am I Savage？ (Official Music Video)",
+    "artist": "Metallica",
+    "clip_name": "Am I Savage"
+  },
+  {
+    "input": "System Of A Down - War？ (Official HD Video)",
+    "artist": "System of a Down",
+    "clip_name": "War"
+  },
+  {
+    "input": "Billie Eilish - What Was I Made For？ (Official Music Video)",
+    "artist": "Billie Eilish",
+    "clip_name": "What Was I Made For"
+  },
+  {
+    "input": "Anitta - Goals (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Goals"
+  },
+  {
+    "input": "Anitta - Meiga e Abusada (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Meiga e Abusada"
+  },
+  {
+    "input": "Anitta - Não Perco Meu Tempo [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Não Perco Meu Tempo"
+  },
+  {
+    "input": "Anitta - Na Batida (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Na Batida"
+  },
+  {
+    "input": "Anitta - Casi Casi (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Casi Casi"
+  },
+  {
+    "input": "Anitta - Girl From Rio (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Girl From Rio"
+  },
+  {
+    "input": "Anitta - Bang (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Bang"
+  },
+  {
+    "input": "Anitta - ROMEO (Official Video)",
+    "artist": "Anitta",
+    "clip_name": "ROMEO"
+  },
+  {
+    "input": "Anitta - Medicina [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Medicina"
+  },
+  {
+    "input": "Anitta - Used To Be (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Used To Be"
+  },
+  {
+    "input": "Anitta - Grip (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Grip"
+  },
+  {
+    "input": "Anitta - Deus Existe (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Deus Existe"
+  },
+  {
+    "input": "Anitta - Paradinha [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Paradinha"
+  },
+  {
+    "input": "Anitta - Ritmo Perfeito (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Ritmo Perfeito"
+  },
+  {
+    "input": "Anitta - Desgraça (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Desgraça"
+  },
+  {
+    "input": "Anitta - Deixa Ele Sofrer (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Deixa Ele Sofrer"
+  },
+  {
+    "input": "Anitta - Zen (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Zen"
+  },
+  {
+    "input": "Anitta - Veneno [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Veneno"
+  },
+  {
+    "input": "Anitta - Não Para (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Não Para"
+  },
+  {
+    "input": "Anitta - Envolver [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Envolver"
+  },
+  {
+    "input": "Anitta - So Much Love (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "So Much Love"
+  },
+  {
+    "input": "Anitta - Gata [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Gata"
+  },
+  {
+    "input": "Anitta - EQUILIBRIVM II",
+    "artist": "Anitta",
+    "clip_name": "EQUILIBRIVM II"
+  },
+  {
+    "input": "Anitta - Mil Veces",
+    "artist": "Anitta",
+    "clip_name": "Mil Veces"
+  },
+  {
+    "input": "Anitta - Aceita",
+    "artist": "Anitta",
+    "clip_name": "Aceita"
+  },
+  {
+    "input": "Anitta, KBrum - Sal Grosso (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Sal Grosso"
+  },
+  {
+    "input": "Anitta, PEDRO SAMPAIO - NO CHÃO NOVINHA (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "NO CHÃO NOVINHA"
+  },
+  {
+    "input": "Anitta, Maluma - El Que Espera [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "El Que Espera"
+  },
+  {
+    "input": "Anitta x Missy Elliott - Lobby [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Lobby"
+  },
+  {
+    "input": "Anitta, Los Brasileros - Meia Noite (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Meia Noite"
+  },
+  {
+    "input": "Anitta, Shakira - Choka Choka (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Choka Choka"
+  },
+  {
+    "input": "Anitta & Poo Bear - Will I See You (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Will I See You"
+  },
+  {
+    "input": "Anitta & J Balvin - Downtown [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Downtown"
+  },
+  {
+    "input": "Anitta feat. Arcangel & De La Ghetto - Tócame [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Tócame"
+  },
+  {
+    "input": "Anitta feat. Maluma - Sim Ou Não (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Sim Ou Não"
+  },
+  {
+    "input": "Anitta feat. MC Guimê - No Meu Talento (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "No Meu Talento"
+  },
+  {
+    "input": "Anitta part. Vitin - Cravo e Canela (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Cravo e Canela"
+  },
+  {
+    "input": "Anitta part. Jhama - Essa Mina É Louca (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Essa Mina É Louca"
+  },
+  {
+    "input": "Anitta - Faking Love (feat. Saweetie) [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Faking Love"
+  },
+  {
+    "input": "Anitta, Justin Quiles – Envolver Remix  [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Envolver Remix"
+  },
+  {
+    "input": "Anitta – Boys Don’t Cry [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Boys Don't Cry"
+  },
+  {
+    "input": "Anitta - Blá Blá Blá (DVD Meu Lugar Ao Vivo)",
+    "artist": "Anitta",
+    "clip_name": "Blá Blá Blá"
+  },
+  {
+    "input": "Anitta, Melly - Ternura ⧸ Luedji Luna - Bemba ⧸ Liniker - Caminhador (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Caminhador"
+  },
+  {
+    "input": "Anitta, Marina Sena - Mandinga ⧸ Rincon Sapiência, KING Saints - Nanã (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Nanã"
+  },
+  {
+    "input": "Anitta, Mc Zaac, Maejor feat. Tropkillaz & DJ Yuri Martins - Vai Malandra [Official Music Video]",
+    "artist": "Anitta",
+    "clip_name": "Vai Malandra"
+  },
+  {
+    "input": "Anitta, Brray, Bad Gyal - Double Team",
+    "artist": "Anitta",
+    "clip_name": "Double Team"
+  },
+  {
+    "input": "Alesso & Anitta - Is That For Me (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Is That For Me"
+  },
+  {
+    "input": "J Balvin, Jeon, Anitta - Machika (Official Video)",
+    "artist": "Anitta",
+    "clip_name": "Machika"
+  },
+  {
+    "input": "Billie Eilish, Khalid - lovely",
+    "artist": "Billie Eilish",
+    "clip_name": "lovely"
+  },
+  {
+    "input": "Lou Reed & Metallica： The View (Official Music Video)",
+    "artist": "Metallica",
+    "clip_name": "The View"
+  },
+  {
+    "input": "Something Corporate, Andrew McMahon in the Wilderness - Happy (Official Music Video)",
+    "artist": "Something Corporate",
+    "clip_name": "Happy"
+  },
+  {
+    "input": "Dashboard Confessional - Don't Wait (Closed Captioned)",
+    "artist": "Dashboard Confessional",
+    "clip_name": "Don't Wait"
+  }
+]
