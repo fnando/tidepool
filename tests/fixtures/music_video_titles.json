@@ -673,5 +673,20 @@
     "input": "Marisa Monte - Segue O Seco - Videoclip",
     "artist": "Marisa Monte",
     "clip_name": "Segue O Seco"
+  },
+  {
+    "input": "Frank Turner – Haven’t Been Doing So Well (Official Visualiser)",
+    "artist": "Frank Turner",
+    "clip_name": "Haven't Been Doing So Well"
+  },
+  {
+    "input": "Anitta - Envolver [Visualizer]",
+    "artist": "Anitta",
+    "clip_name": "Envolver"
+  },
+  {
+    "input": "Paramore - Hard Times (Official Visualizer Video)",
+    "artist": "Paramore",
+    "clip_name": "Hard Times"
   }
 ]
