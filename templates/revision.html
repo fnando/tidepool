@@ -1,23 +1,21 @@
 {% extends "layout.html" %}
 {% block title %}Revision {{ rev }} · tidepool{% endblock %}
 {% block content %}
-<p><a href="/config">← Config</a></p>
-<hgroup>
-  <h2>Revision {{ rev }}</h2>
-  <p class="muted">{{ created_at }} · {{ from }}</p>
-</hgroup>
-{% if rev != current %}
-  {% if !changes.is_empty() %}
-  <article><strong>Rolling back would change, from revision {{ current }}:</strong><pre>{{ changes.join("\n") }}</pre></article>
-  {% endif %}
-  {% if !read_only %}
+<a class="back" href="/config">← Config</a>
+<header class="page-head">
+  <div>
+    <h1>Revision {{ rev }}</h1>
+    <div class="totals"><span>{{ created_at }}</span><span>{{ from }}</span>{% if rev == current %}<span class="pill st-ok">current</span>{% endif %}</div>
+  </div>
+  {% if rev != current && !read_only %}
   <form hx-post="/config/rollback/{{ rev }}"
         hx-confirm="Make revision {{ rev }} current again (as a new revision)?">
-    <button type="submit">Roll back to revision {{ rev }}</button>
+    <button type="submit" class="primary">Roll back to revision {{ rev }}</button>
   </form>
   {% endif %}
-{% else %}
-<p class="muted">This is the current revision.</p>
+</header>
+{% if rev != current && !changes.is_empty() %}
+<div class="flash"><strong>Rolling back would change, from revision {{ current }}:</strong><pre>{{ changes.join("\n") }}</pre></div>
 {% endif %}
-<pre>{{ text }}</pre>
+<div class="card"><pre>{{ text }}</pre></div>
 {% endblock %}

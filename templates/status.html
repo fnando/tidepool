@@ -1,84 +1,95 @@
 <div id="status">
-  {% if let Some(message) = message %}<p class="flash" role="status">{{ message }}</p>{% endif %}
+  {% if let Some(message) = message %}<section><p class="flash" role="status">{{ message }}</p></section>{% endif %}
 
   <section>
-    <div class="row">
+    <div class="section-head">
       <h2>Daemon</h2>
       <div class="actions">
-        <button hx-post="/actions/sync" hx-target="#status" hx-swap="outerHTML">Sync now</button>
-        <button class="secondary" hx-post="/actions/cleanup" hx-target="#status" hx-swap="outerHTML">Clean up now</button>
+        <button class="small" hx-post="/actions/cleanup" hx-target="#status" hx-swap="outerHTML">Clean up now</button>
+        <button class="small primary" hx-post="/actions/sync" hx-target="#status" hx-swap="outerHTML">Sync now</button>
       </div>
     </div>
-    <p class="muted">
-      Downloads are <strong>{% if status.download %}on{% else %}off{% endif %}</strong> by default
-      {% if !read_only %}<button class="outline secondary small" hx-post="/actions/downloads/{% if status.download %}off{% else %}on{% endif %}" hx-target="#status" hx-swap="outerHTML">Turn {% if status.download %}off{% else %}on{% endif %}</button>{% endif %}
-    </p>
-    <p class="muted">
-      {% if let Some(next) = status.next_sync %}Next sync at {{ next }}.{% else %}No schedule: syncs only when asked.{% endif %}
-      {% if let Some(last) = status.last_sync %}Last sync ended at {{ last }}.{% endif %}
-      {% if status.waiting_downloads > 0 %}{{ status.waiting_downloads }} downloads to finish.{% endif %}
-      {% if status.waiting_hooks > 0 %}{{ status.waiting_hooks }} hooks to run.{% endif %}
-    </p>
-    <table class="compact">
-      <thead><tr><th>Part</th><th>Status</th><th>Doing</th><th></th></tr></thead>
-      <tbody>
+    <div class="card">
+      <div class="row inline">
+        <div class="row-main">
+          <div>Downloads are <strong>{% if status.download %}on{% else %}off{% endif %}</strong> by default</div>
+          <div class="meta">
+            <span>{% if let Some(next) = status.next_sync %}Next sync at {{ next }}{% else %}No schedule: syncs only when asked{% endif %}</span>
+            {% if let Some(last) = status.last_sync %}<span>Last sync ended at {{ last }}</span>{% endif %}
+            {% if status.waiting_downloads > 0 %}<span>{{ status.waiting_downloads }} downloads to finish</span>{% endif %}
+            {% if status.waiting_hooks > 0 %}<span>{{ status.waiting_hooks }} hooks to run</span>{% endif %}
+          </div>
+        </div>
+        {% if !read_only %}
+        <div class="row-side">
+          <button class="small" hx-post="/actions/downloads/{% if status.download %}off{% else %}on{% endif %}" hx-target="#status" hx-swap="outerHTML">Turn {% if status.download %}off{% else %}on{% endif %}</button>
+        </div>
+        {% endif %}
+      </div>
       {% for service in status.services %}
-        <tr>
-          <td>{{ service.name }}</td>
-          <td><span class="pill st-{{ service.status }}">{{ service.status }}</span>
-            {% if service.restarts > 0 %}<small class="muted" title="{{ service.last_error.as_deref().unwrap_or_default() }}">restarted {{ service.restarts }}×</small>{% endif %}</td>
-          <td>{{ service.activity.as_deref().unwrap_or_default() }}</td>
-          <td class="end">
-            {% if service.paused %}
-            <button class="outline small" hx-post="/actions/services/{{ service.name }}/resume" hx-target="#status" hx-swap="outerHTML">Resume</button>
-            {% else %}
-            <button class="outline secondary small" hx-post="/actions/services/{{ service.name }}/pause" hx-target="#status" hx-swap="outerHTML">Pause</button>
-            {% endif %}
-          </td>
-        </tr>
+      <div class="row inline">
+        <div class="row-main">
+          <div class="row-title">{{ service.name }}</div>
+          <div class="meta">
+            <span class="pill st-{{ service.status }}">{{ service.status }}</span>
+            {% if let Some(activity) = service.activity %}<span>{{ activity }}</span>{% endif %}
+            {% if service.restarts > 0 %}<span title="{{ service.last_error.as_deref().unwrap_or_default() }}">restarted {{ service.restarts }}×</span>{% endif %}
+          </div>
+        </div>
+        <div class="row-side">
+          {% if service.paused %}
+          <button class="small" hx-post="/actions/services/{{ service.name }}/resume" hx-target="#status" hx-swap="outerHTML">Resume</button>
+          {% else %}
+          <button class="small" hx-post="/actions/services/{{ service.name }}/pause" hx-target="#status" hx-swap="outerHTML">Pause</button>
+          {% endif %}
+        </div>
+      </div>
       {% endfor %}
-      </tbody>
-    </table>
+    </div>
   </section>
 
   {% if !status.problems.is_empty() %}
   <section>
-    <h2>Problems</h2>
+    <div class="section-head danger"><h2>Problems · {{ status.problems.len() }}</h2></div>
     {% for problem in status.problems %}
-    <article class="problem"><strong>{{ problem.title }}</strong><pre>{{ problem.text }}</pre></article>
+    <div class="card err">
+      <div class="row"><div class="row-main"><div class="row-title">{{ problem.title }}</div></div></div>
+      <pre>{{ problem.text }}</pre>
+    </div>
     {% endfor %}
   </section>
   {% endif %}
 
   <section>
-    <h2>Sources</h2>
+    <div class="section-head"><h2>Sources · {{ status.sources.len() }}</h2></div>
     {% if status.sources.is_empty() %}
-    <p>No sources yet; add one under <code>[sources.&lt;name&gt;]</code> in your config.</p>
+    <div class="card"><p class="empty">No sources yet; add one under <code>[sources.&lt;name&gt;]</code> in your config.</p></div>
     {% else %}
-    <table class="compact">
-      <thead><tr>
-        <th>Source</th><th class="num">Downloaded</th><th class="num">Waiting</th><th class="num">Skipped</th>
-        <th class="num">Failed</th><th class="num">Cleaned up</th><th class="num">Disk</th><th>Checked</th><th>Downloads</th>
-      </tr></thead>
-      <tbody>
-      {% for source in status.sources %}
-        <tr{% if !source.enabled %} class="disabled"{% endif %}>
-          <td><a href="/sources/{{ source.name }}"><strong>{{ source.name }}</strong></a>
-            {% if let Some(title) = source.title %}<br><small class="muted">{{ title }}</small>{% endif %}
-            {% if !source.enabled %}<br><small class="muted">disabled</small>{% endif %}</td>
-          <td class="num">{{ source.count("downloaded") }}</td>
-          <td class="num">{{ source.count("waiting") }}</td>
-          <td class="num">{{ source.count("skipped") }}</td>
-          <td class="num">{% if source.count("failed") + source.count("unavailable") > 0 %}<span class="pill st-failed">{{ source.count("failed") + source.count("unavailable") }}</span>{% else %}0{% endif %}</td>
-          <td class="num">{{ source.count("cleaned_up") }}</td>
-          <td class="num">{{ source.disk }}{% if let Some(max) = source.max_size %}<small class="muted"> / {{ max }}</small>{% endif %}</td>
-          <td><small>{{ source.last_indexed.as_deref().unwrap_or("never") }}</small></td>
-          <td>{% if source.download %}<span class="pill st-done">on</span>{% else %}<span class="pill st-paused">off</span>{% endif %}
-            {% if !read_only %}<button class="outline secondary small" hx-post="/actions/sources/{{ source.name }}/downloads/{% if source.download %}off{% else %}on{% endif %}" hx-target="#status" hx-swap="outerHTML">{% if source.download %}Turn off{% else %}Turn on{% endif %}</button>{% endif %}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+    {% for source in status.sources %}
+    <div class="card">
+      <div class="row{% if !source.enabled %} dim{% endif %}">
+        <div class="row-main">
+          <a class="row-title" href="/sources/{{ source.name }}"><strong>{{ source.name }}</strong></a>
+          {% if let Some(title) = source.title %}<div class="row-sub">{{ title }}</div>{% endif %}
+          <div class="meta">
+            {% if !source.enabled %}<span class="pill st-off">disabled</span>{% endif %}
+            <span class="pill st-{% if source.download %}on{% else %}off{% endif %}">Downloads {% if source.download %}on{% else %}off{% endif %}</span>
+            <span>{{ source.disk }}{% if let Some(max) = source.max_size %} / {{ max }}{% endif %}</span>
+            <span>Checked {{ source.last_indexed.as_deref().unwrap_or("never") }}</span>
+            {% if !read_only %}<button class="small" hx-post="/actions/sources/{{ source.name }}/downloads/{% if source.download %}off{% else %}on{% endif %}" hx-target="#status" hx-swap="outerHTML">{% if source.download %}Turn off{% else %}Turn on{% endif %}</button>{% endif %}
+          </div>
+        </div>
+        <div class="stats">
+          {% let failed = source.count("failed") + source.count("unavailable") %}
+          <a class="stat{% if source.count("downloaded") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=downloaded"><b>{{ source.count("downloaded") }}</b><span>downloaded</span></a>
+          <a class="stat{% if source.count("waiting") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=waiting"><b>{{ source.count("waiting") }}</b><span>waiting</span></a>
+          <a class="stat{% if source.count("skipped") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=skipped"><b>{{ source.count("skipped") }}</b><span>skipped</span></a>
+          <a class="stat{% if failed == 0 %} zero{% else %} bad{% endif %}" href="/sources/{{ source.name }}?status=failed"><b>{{ failed }}</b><span>failed</span></a>
+          <a class="stat{% if source.count("cleaned_up") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=cleaned_up"><b>{{ source.count("cleaned_up") }}</b><span>cleaned up</span></a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
     {% endif %}
   </section>
 </div>

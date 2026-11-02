@@ -1,43 +1,54 @@
 {% extends "layout.html" %}
 {% block title %}{{ name }} · tidepool{% endblock %}
 {% block content %}
-<hgroup>
-  <h2>{{ name }}</h2>
-  {% if let Some(title) = title %}<p class="muted">{{ title }}</p>{% endif %}
-</hgroup>
+<a class="back" href="/">← Dashboard</a>
+<header class="page-head">
+  <div>
+    <h1>{{ name }}</h1>
+    <div class="totals">
+      {% if let Some(title) = title %}<span>{{ title }}</span>{% endif %}
+      <span>{{ all_count }} videos</span>
+    </div>
+  </div>
+</header>
 
-<form method="get" action="/sources/{{ name }}" class="filters">
-  <select name="status" aria-label="Status" onchange="this.form.submit()">
-    <option value=""{% if status.is_empty() %} selected{% endif %}>All ({{ all_count }})</option>
-    {% for group in groups %}
-    <option value="{{ group.key }}"{% if group.selected %} selected{% endif %}>{{ group.label }} ({{ group.count }})</option>
-    {% endfor %}
-  </select>
+<nav class="filter-bar" aria-label="Status">
+  <a class="chip{% if status.is_empty() %} active{% endif %}" href="{{ self.status_link("") }}">All <b>{{ all_count }}</b></a>
+  {% for group in groups %}
+  <a class="chip{% if group.selected %} active{% endif %}" href="{{ self.status_link(group.key) }}"><span class="dot g-{{ group.key }}"></span>{{ group.label }} <b>{{ group.count }}</b></a>
+  {% endfor %}
+</nav>
+
+<form method="get" action="/sources/{{ name }}" class="search" role="search">
+  <input type="hidden" name="status" value="{{ status }}">
   <input type="search" name="q" value="{{ query }}" placeholder="Search titles or ids" aria-label="Search">
-  <button type="submit" class="secondary">Filter</button>
+  <button type="submit">Search</button>
 </form>
 
 {% if rows.is_empty() %}
-<p>No videos{% if !status.is_empty() || !query.is_empty() %} match{% endif %}.</p>
+<div class="card"><p class="empty">No videos{% if !status.is_empty() || !query.is_empty() %} match{% endif %}.</p></div>
 {% else %}
-<table class="compact">
-  <thead><tr><th>Video</th><th>Status</th><th>Why</th><th>Published</th><th class="num">Size</th></tr></thead>
-  <tbody>
-  {% for row in rows %}
-    <tr>
-      <td>{% if let Some(clean) = row.clean_title %}<a href="/sources/{{ name }}/videos/{{ row.video_id }}">{{ clean }}</a><br><small class="muted" title="YouTube's title">{{ row.title }}</small>{% else %}<a href="/sources/{{ name }}/videos/{{ row.video_id }}">{{ row.title }}</a>{% endif %}<br><small class="muted">{{ row.video_id }}</small></td>
-      <td><span class="pill st-{{ row.badge }}">{{ row.label }}</span></td>
-      <td><small>{{ row.why.as_deref().unwrap_or_default() }}</small></td>
-      <td><small>{{ row.date.as_deref().unwrap_or_default() }}</small></td>
-      <td class="num"><small>{{ row.size.as_deref().unwrap_or_default() }}</small></td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+<div class="card">
+{% for row in rows %}
+  <div class="row">
+    <div class="row-main">
+      {% if let Some(clean) = row.clean_title %}<a class="row-title" href="/sources/{{ name }}/videos/{{ row.video_id }}">{{ clean }}</a>
+      <div class="row-sub" title="YouTube's title">{{ row.title }}</div>{% else %}<a class="row-title" href="/sources/{{ name }}/videos/{{ row.video_id }}">{{ row.title }}</a>{% endif %}
+      <div class="meta">
+        <span class="pill st-{{ row.badge }}">{{ row.label }}</span>
+        {% if let Some(why) = row.why %}<span>{{ why }}</span>{% endif %}
+        {% if let Some(date) = row.date %}<span>{{ date }}</span>{% endif %}
+        {% if let Some(size) = row.size %}<span>{{ size }}</span>{% endif %}
+        <code>{{ row.video_id }}</code>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
 <nav class="pages">
-  {% if page > 1 %}<a href="{{ self.page_link(page - 1) }}">← Newer</a>{% endif %}
+  {% if page > 1 %}<a class="btn" href="{{ self.page_link(page - 1) }}">← Newer</a>{% endif %}
   <span class="muted">Page {{ page }} of {{ pages }} · {{ total }} videos</span>
-  {% if page < pages %}<a href="{{ self.page_link(page + 1) }}">Older →</a>{% endif %}
+  {% if page < pages %}<a class="btn" href="{{ self.page_link(page + 1) }}">Older →</a>{% endif %}
 </nav>
 {% endif %}
 {% endblock %}

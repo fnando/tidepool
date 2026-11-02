@@ -1,31 +1,36 @@
 <section id="jobs"{% if busy %} hx-get="/sources/{{ video.source }}/videos/{{ video.video_id }}/jobs" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
   {% if let Some(message) = message %}<p class="flash" role="status">{{ message }}</p>{% endif %}
-  <div class="actions">
-    {% if video.status == "done" %}
-    <button hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/hooks" hx-target="#jobs" hx-swap="outerHTML">Run hooks again</button>
-    <button hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/embed" hx-target="#jobs" hx-swap="outerHTML">Embed again</button>
-    {% endif %}
-    {% if video.in_trash %}
-    <button hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/restore" hx-target="#jobs" hx-swap="outerHTML">Restore from trash</button>
-    {% endif %}
-    <button class="secondary" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/reset" hx-target="#jobs" hx-swap="outerHTML">Download again</button>
-    {% if !video.files.is_empty() %}
-    <button class="secondary outline" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/reset_delete" hx-target="#jobs" hx-swap="outerHTML"
-            hx-confirm="Delete this video's files and download it again?">Delete files and download again</button>
-    {% endif %}
+  <div class="section-head">
+    <h2>Actions</h2>
+    <div class="actions">
+      {% if video.status == "done" %}
+      <button class="small" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/hooks" hx-target="#jobs" hx-swap="outerHTML">Run hooks again</button>
+      <button class="small" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/embed" hx-target="#jobs" hx-swap="outerHTML">Embed again</button>
+      {% endif %}
+      {% if video.in_trash %}
+      <button class="small" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/restore" hx-target="#jobs" hx-swap="outerHTML">Restore from trash</button>
+      {% endif %}
+      <button class="small" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/reset" hx-target="#jobs" hx-swap="outerHTML">Download again</button>
+      {% if !video.files.is_empty() %}
+      <button class="small danger" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/reset_delete" hx-target="#jobs" hx-swap="outerHTML"
+              hx-confirm="Delete this video's files and download it again?">Delete files and download again</button>
+      {% endif %}
+    </div>
   </div>
   {% if !jobs.is_empty() %}
-  <table class="compact">
-    <thead><tr><th>Asked</th><th>What</th><th>Result</th></tr></thead>
-    <tbody>
-    {% for job in jobs %}
-      <tr>
-        <td><small>{{ job.created_at }}</small></td>
-        <td>{{ job.action }}</td>
-        <td>{% if job.done_at.is_none() %}<span class="pill st-running">waiting</span>{% else if job.ok == Some(true) %}<small>{{ job.result.as_deref().unwrap_or_default() }}</small>{% else %}<span class="pill st-failed">failed</span> <small>{{ job.result.as_deref().unwrap_or_default() }}</small>{% endif %}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+  <div class="card table-wrap">
+    <table>
+      <thead><tr><th>Asked</th><th>What</th><th>Result</th></tr></thead>
+      <tbody>
+      {% for job in jobs %}
+        <tr>
+          <td><small>{{ job.created_at }}</small></td>
+          <td>{{ job.action }}</td>
+          <td>{% if job.done_at.is_none() %}<span class="pill st-pending">waiting</span>{% else if job.ok == Some(true) %}<span class="pill st-ok">done</span> <small>{{ job.result.as_deref().unwrap_or_default() }}</small>{% else %}<span class="pill st-failed">failed</span> <small>{{ job.result.as_deref().unwrap_or_default() }}</small>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% endif %}
 </section>

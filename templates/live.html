@@ -1,40 +1,61 @@
 <section id="live">
-  <div class="row">
+  <div class="section-head">
     <h2>In progress</h2>
-    <small class="muted">{% if live.syncing %}Syncing{% if let Some(source) = live.checking %}: checking {{ source }}{% endif %}…{% else %}Not syncing{% endif %}</small>
+    <span class="hint">{% if live.syncing %}Syncing{% if let Some(source) = live.checking %}: checking {{ source }}{% endif %}…{% else %}Not syncing{% endif %}</span>
   </div>
   {% if live.active.is_empty() %}
-  <p class="muted">Nothing downloading or being finished.</p>
+  <div class="card"><p class="empty">Nothing downloading or being finished.</p></div>
   {% else %}
-  <table class="compact">
-    <tbody>
-    {% for video in live.active %}
-      <tr>
-        <td><a href="/sources/{{ video.source }}/videos/{{ video.video_id }}">{{ video.title }}</a><br><small class="muted">{{ video.source }}</small></td>
-        <td class="progress-cell">
-          {% if video.state == "downloading" %}
-            {% if let Some(percent) = video.percent %}<progress value="{{ percent }}" max="100"></progress>{% else %}<progress></progress>{% endif %}
-            <small>downloading{% if let Some(percent) = video.percent %} {{ percent }}%{% endif %}{% if let Some(detail) = video.detail %} · {{ detail }}{% endif %}</small>
-          {% else if video.state == "finishing" %}
-            <small><span class="pill st-running">finishing</span> {{ video.detail.as_deref().unwrap_or_default() }}</small>
+  {% for video in live.active %}
+  <div class="card">
+    <div class="row">
+      <div class="row-main">
+        <a class="row-title" href="/sources/{{ video.source }}/videos/{{ video.video_id }}">{{ video.title }}</a>
+        <div class="meta">
+          {% if video.state == "downloading" %}<span class="pill st-downloading">Downloading</span>
+          {% else if video.state == "finishing" %}<span class="pill st-finishing">Finishing</span>
+          {% else %}<span class="pill st-waiting">Downloaded</span>{% endif %}
+          <a href="/sources/{{ video.source }}">{{ video.source }}</a>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        {% if video.state == "downloading" %}
+          {% if let Some(percent) = video.percent %}
+          <span class="percent">{{ percent }}%</span>
+          <div class="bar st-downloading"><span style="width: {{ percent }}%"></span></div>
           {% else %}
-            <small><span class="pill st-idle">downloaded</span> waiting to be finished</small>
+          <span class="percent quiet">Starting…</span>
+          <div class="bar st-downloading indeterminate"><span></span></div>
           {% endif %}
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+          {% if let Some(detail) = video.detail %}<span class="progress-note">{{ detail }}</span>{% endif %}
+        {% else if video.state == "finishing" %}
+          <div class="bar st-finishing indeterminate"><span></span></div>
+          <span class="progress-note">{{ video.detail.as_deref().unwrap_or_default() }}</span>
+        {% else %}
+          <div class="bar st-waiting"><span style="width: 100%"></span></div>
+          <span class="progress-note">Waiting to be finished</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
   {% endif %}
   {% if !live.recent.is_empty() %}
-  <details{% if live.active.is_empty() %} open{% endif %}><summary>Just now</summary>
-    <ul class="recent">
+  <details{% if live.active.is_empty() %} open{% endif %}><summary>Just now · {{ live.recent.len() }}</summary>
+    <div class="card">
     {% for done in live.recent %}
-      <li><small class="muted">{{ done.at }}</small>
-        <a href="/sources/{{ done.source }}/videos/{{ done.video_id }}">{{ done.title }}</a>
-        {% if let Some(error) = done.error %}<span class="pill st-failed">failed</span> <small>{{ error }}</small>{% else %}<span class="pill st-done">saved</span>{% endif %}</li>
+      <div class="row">
+        <div class="row-main">
+          <a class="row-title" href="/sources/{{ done.source }}/videos/{{ done.video_id }}">{{ done.title }}</a>
+          <div class="meta">
+            {% if let Some(error) = done.error %}<span class="pill st-failed">Failed</span> <span>{{ error }}</span>{% else %}<span class="pill st-saved">Saved</span>{% endif %}
+            <a href="/sources/{{ done.source }}">{{ done.source }}</a>
+          </div>
+        </div>
+        <div class="row-side"><small class="muted">{{ done.at }}</small></div>
+      </div>
     {% endfor %}
-    </ul>
+    </div>
   </details>
   {% endif %}
 </section>

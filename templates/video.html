@@ -1,46 +1,52 @@
 {% extends "layout.html" %}
 {% block title %}{{ video.title }} · tidepool{% endblock %}
 {% block content %}
-<p><a href="/sources/{{ video.source }}">← {{ video.source }}</a></p>
-<hgroup>
-  {% if let Some(clean) = video.clean_title %}<h2>{{ clean }}</h2>
-  <p class="muted"><small>YouTube's title: {{ video.title }}</small></p>{% else %}<h2>{{ video.title }}</h2>{% endif %}
-  <p><a href="https://www.youtube.com/watch?v={{ video.video_id }}" rel="noreferrer">{{ video.video_id }}</a>
-    · <span class="pill st-{{ video.badge }}">{{ video.label }}</span>
-    {% if let Some(why) = video.why %}· {{ why }}{% endif %}</p>
-</hgroup>
+<a class="back" href="/sources/{{ video.source }}">← {{ video.source }}</a>
+<header class="page-head">
+  <div>
+    {% if let Some(clean) = video.clean_title %}<h1>{{ clean }}</h1>
+    <div class="subtitle">YouTube's title: {{ video.title }}</div>{% else %}<h1>{{ video.title }}</h1>{% endif %}
+    <div class="totals">
+      <span class="pill st-{{ video.badge }}">{{ video.label }}</span>
+      {% if let Some(why) = video.why %}<span>{{ why }}</span>{% endif %}
+      <a href="https://www.youtube.com/watch?v={{ video.video_id }}" rel="noreferrer"><code>{{ video.video_id }}</code> ↗</a>
+    </div>
+  </div>
+</header>
 
 {% include "jobs.html" %}
 
 <section>
-  <h3>Rules</h3>
-  <pre>{{ video.explanation }}</pre>
+  <div class="section-head"><h2>Rules</h2></div>
+  <div class="card"><pre>{{ video.explanation }}</pre></div>
 </section>
 
 {% if !video.files.is_empty() %}
 <section>
-  <h3>Files</h3>
-  <ul>{% for file in video.files %}<li><code>{{ file }}</code></li>{% endfor %}</ul>
+  <div class="section-head"><h2>Files · {{ video.files.len() }}</h2></div>
+  <div class="card"><ul class="plain">{% for file in video.files %}<li><code>{{ file }}</code></li>{% endfor %}</ul></div>
 </section>
 {% endif %}
 
 {% if !video.hook_runs.is_empty() %}
 <section>
-  <h3>Hooks</h3>
-  <table class="compact">
-    <thead><tr><th>Hook</th><th>Type</th><th>Status</th><th>Last run</th><th>Error</th></tr></thead>
-    <tbody>
-    {% for run in video.hook_runs %}
-      <tr>
-        <td>{{ run.hook }}</td><td>{{ run.kind }}</td>
-        <td><span class="pill st-{{ run.status }}">{{ run.status }}</span>
-          {% if let Some(next) = run.next_attempt_at %}<br><small class="muted">next try {{ next }}</small>{% endif %}</td>
-        <td><small>{{ run.finished_at.as_deref().unwrap_or_default() }}</small></td>
-        <td><small>{{ run.error.as_deref().unwrap_or_default() }}</small></td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+  <div class="section-head"><h2>Hooks</h2></div>
+  <div class="card table-wrap">
+    <table>
+      <thead><tr><th>Hook</th><th>Type</th><th>Status</th><th>Last run</th><th>Error</th></tr></thead>
+      <tbody>
+      {% for run in video.hook_runs %}
+        <tr>
+          <td>{{ run.hook }}</td><td>{{ run.kind }}</td>
+          <td><span class="pill st-{{ run.status }}">{{ run.status }}</span>
+            {% if let Some(next) = run.next_attempt_at %}<br><small>next try {{ next }}</small>{% endif %}</td>
+          <td><small>{{ run.finished_at.as_deref().unwrap_or_default() }}</small></td>
+          <td><small>{{ run.error.as_deref().unwrap_or_default() }}</small></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% if let Some(log) = log %}
   <details><summary>Hook log (last lines)</summary><pre>{{ log }}</pre></details>
   {% endif %}

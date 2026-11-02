@@ -530,6 +530,17 @@ struct SourcePage {
 }
 
 impl SourcePage {
+    /// The list filtered by `status` group (all of them when empty),
+    /// keeping the search.
+    fn status_link(&self, status: &str) -> String {
+        format!(
+            "/sources/{}?status={}&q={}",
+            encode(&self.name),
+            encode(status),
+            encode(&self.query)
+        )
+    }
+
     fn page_link(&self, page: usize) -> String {
         format!(
             "/sources/{}?status={}&q={}&page={page}",
@@ -1105,7 +1116,6 @@ async fn login(
 
 async fn asset(Path(file): Path<String>) -> Response {
     let (body, kind): (&'static str, &str) = match file.as_str() {
-        "pico.min.css" => (include_str!("../../assets/vendor/pico.min.css"), "text/css"),
         "htmx.min.js" => (
             include_str!("../../assets/vendor/htmx.min.js"),
             "text/javascript",
@@ -1375,7 +1385,7 @@ mod tests {
         assert_eq!(status, StatusCode::OK, "{body}");
         assert!(body.contains("Lofi Girl") && body.contains("Rainy beats"));
         assert!(body.contains("Page 1 of 2 · 63 videos"), "{body}");
-        assert!(body.contains("Skipped (1)") && body.contains("Waiting (60)"));
+        assert!(body.contains("Skipped <b>1</b>") && body.contains("Waiting <b>60</b>"));
         assert!(
             body.contains("/sources/lofi?status=&#38;q=&#38;page=2"),
             "{body}"
@@ -1444,7 +1454,7 @@ mod tests {
         );
         assert!(body.contains(">Lofi trailer</a>"), "nothing to clean");
         let (_, _, body) = send(&s.web, get("/sources/lofi/videos/aaaaaaaaaaa")).await;
-        assert!(body.contains("<h2>Night Drive</h2>"), "{body}");
+        assert!(body.contains("<h1>Night Drive</h1>"), "{body}");
     }
 
     #[tokio::test]
@@ -1655,7 +1665,7 @@ mod tests {
         });
         let (_, _, body) = send(&s.web, get("/fragments/live")).await;
         assert!(
-            body.contains("Live test") && body.contains("downloading 42%"),
+            body.contains("Live test") && body.contains(">Downloading<") && body.contains(">42%<"),
             "{body}"
         );
         let (_, _, page) = send(&s.web, get("/")).await;
@@ -1718,7 +1728,7 @@ mod tests {
             body.contains("Downloads are off for lofi (config revision 2)."),
             "{body}"
         );
-        assert!(body.contains("st-paused\">off"), "{body}");
+        assert!(body.contains("st-off\">Downloads off"), "{body}");
         let file = std::fs::read_to_string(s.dir.path().join("config.toml")).unwrap();
         assert!(file.starts_with("# my config"), "comments kept");
         assert!(file.contains("download = false"), "{file}");

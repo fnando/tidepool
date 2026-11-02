@@ -5,19 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>{% block title %}tidepool{% endblock %}</title>
-  <link rel="stylesheet" href="/assets/pico.min.css">
   <link rel="stylesheet" href="/assets/app.css">
   <script src="/assets/htmx.min.js" defer></script>
 </head>
 <body hx-headers='{"X-CSRF-Token": "{{ csrf }}"}'>
-  <header class="container">
-    <nav>
-      <ul><li><a href="/" class="brand"><strong>tidepool</strong></a></li></ul>
-      <ul><li><a href="/">Dashboard</a></li><li><a href="/config">Config</a></li></ul>
+  <div class="app">
+    <nav class="topnav">
+      <a href="/" class="brand">tidepool</a>
+      <div class="links">
+        <a href="/" data-section="/">Dashboard</a>
+        <a href="/config" data-section="/config">Config</a>
+      </div>
     </nav>
-  </header>
-  <main class="container">
-    {% block content %}{% endblock %}
-  </main>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <script>
+    (function () {
+      var path = location.pathname;
+      var current = path.indexOf("/config") === 0 ? "/config" : (path === "/login" ? "" : "/");
+      document.querySelectorAll(".topnav [data-section]").forEach(function (link) {
+        if (link.getAttribute("data-section") === current) link.classList.add("active");
+      });
+    })();
+  </script>
 </body>
 </html>
