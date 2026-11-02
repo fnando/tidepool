@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/inline"
+
+gemfile do
+  gem "toml-rb"
+end
+
+require "digest/sha2"
+require "toml-rb"
+require "fileutils"
+
+def build(target, bin: "cargo", command: "build")
+  system("#{bin} #{command} --target #{target} --release --quiet") || exit(1)
+  release_dir = "target/#{target}/release"
+  version = TomlRB.load_file(File.join(Dir.pwd, "Cargo.toml"))
+                  .dig("package", "version")
+
+  exe = target.include?("windows") ? "tidepool.exe" : "tidepool"
+  output_dir = "build/v#{version}"
+  output_path = "#{output_dir}/tidepool-#{target}.tar.gz"
+
+  FileUtils.mkdir_p(output_dir)
+
+  system "tar -C #{release_dir} -czf #{output_path} #{exe}"
+end
+
+system("cargo clippy --quiet -- -Dwarnings -Dclippy::all -Dclippy::pedantic") || exit(1)
+
+FileUtils.rm_rf("build")
+
+build "aarch64-apple-darwin"
+build "x86_64-apple-darwin"
+build "x86_64-unknown-linux-gnu", bin: "cross"
+build "aarch64-unknown-linux-gnu", bin: "cross"
+build "x86_64-unknown-linux-musl", bin: "cross"
+build "aarch64-unknown-linux-musl", bin: "cross"
