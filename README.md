@@ -915,6 +915,18 @@ Get a free key from the [Google Cloud console](https://console.cloud.google.com/
 with the *YouTube Data API v3* enabled, put it in your config file and apply
 the change with `tidepool config import`.
 
+**Keeping the key out of the file.** Write the name of an environment
+variable instead, and tidepool reads the key from it whenever it runs; handy
+in a container, or to share your config without the key:
+
+```toml
+[category.default.youtube]
+api_key = "$YOUTUBE_API_KEY"
+```
+
+If the variable isn't set, tidepool says so and checks your sources with
+yt-dlp, as if there were no key. `server.token` works the same way.
+
 **Quota.** Google gives each project 10,000 units a day. Checking a source
 costs 1 unit for every 50 videos in it, plus 1 unit for every 50 videos tidepool
 hasn't seen before; a 1,000-video playlist costs about 20 units once nothing is
@@ -929,7 +941,7 @@ instead and tells you about it in `tidepool problems`. To stop instead, set
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `api_key` | none | Your key; without one, tidepool uses yt-dlp |
+| `api_key` | none | Your key, or `"$VARIABLE"` to read it from one; without one, tidepool uses yt-dlp |
 | `daily_quota` | `10000` | Your project's daily quota |
 | `quota_warn_at` | `0.8` | Warn once this share of the quota is used |
 | `fallback_to_ytdlp` | `true` | Use yt-dlp when the key can't be used |
@@ -1122,6 +1134,10 @@ remembers it:
 listen = "0.0.0.0:8787"
 token = "a long random secret"
 ```
+
+The token can also come from an environment variable, like
+`token = "$TIDEPOOL_TOKEN"`. If that variable isn't set, tidepool won't
+accept other addresses, the same as having no token.
 
 **For scripts**, the same information is at `/api/v1/status` (JSON), and
 `POST` to `/api/v1/sync`, `/api/v1/cleanup` or

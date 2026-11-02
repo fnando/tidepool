@@ -261,7 +261,8 @@ fn resolve_youtube(layers: &[Options]) -> YoutubeConfig {
         api_key: layers
             .iter()
             .rev()
-            .find_map(|l| l.youtube.as_ref().and_then(|y| y.api_key.clone())),
+            .find_map(|l| l.youtube.as_ref().and_then(|y| y.api_key.as_deref()))
+            .and_then(super::secret::resolve),
         daily_quota: table!(layers, youtube, daily_quota, defaults.daily_quota),
         quota_warn_at: table!(layers, youtube, quota_warn_at, defaults.quota_warn_at),
         fallback_to_ytdlp: table!(

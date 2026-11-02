@@ -596,7 +596,7 @@
         },
         "token": {
           "default": "",
-          "description": "Access token; required for a non-loopback `listen` address. \"\" = none.",
+          "description": "Access token, or `$NAME` to read it from that environment variable;\nrequired for a non-loopback `listen` address. \"\" = none.",
           "type": "string"
         }
       },
@@ -836,7 +836,7 @@
       "description": "`youtube` in a category or source: YouTube Data API settings, merged key\nby key like the other options.",
       "properties": {
         "api_key": {
-          "description": "YouTube Data API v3 key. Optional; without it, indexing uses yt-dlp only.",
+          "description": "YouTube Data API v3 key, or `$NAME` to read it from that environment\nvariable. Optional; without it, indexing uses yt-dlp only.",
           "minLength": 1,
           "type": "string"
         },

@@ -199,7 +199,8 @@ impl YtdlpChannel {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct YoutubeOptions {
-    /// YouTube Data API v3 key. Optional; without it, indexing uses yt-dlp only.
+    /// YouTube Data API v3 key, or `$NAME` to read it from that environment
+    /// variable. Optional; without it, indexing uses yt-dlp only.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
     pub api_key: Option<String>,
@@ -270,7 +271,8 @@ pub struct ServerConfig {
     /// Address the web UI listens on, e.g. "127.0.0.1:8787".
     #[schemars(extend("format" = "socket-address"))]
     pub listen: String,
-    /// Access token; required for a non-loopback `listen` address. "" = none.
+    /// Access token, or `$NAME` to read it from that environment variable;
+    /// required for a non-loopback `listen` address. "" = none.
     pub token: String,
     /// Disable the config editor in the web UI.
     pub read_only_config: bool,

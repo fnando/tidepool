@@ -215,12 +215,17 @@ pub fn check_storage(config: &Config, dirs: &Dirs, config_file: Option<&Path>) -
     out
 }
 
+/// Whether the file itself holds a secret (not just `$NAME` references).
 fn has_secrets(config: &Config) -> bool {
-    let key =
-        |y: &Option<super::types::YoutubeOptions>| y.as_ref().is_some_and(|y| y.api_key.is_some());
+    let literal = |value: &str| !value.is_empty() && super::secret::env_name(value).is_none();
+    let key = |y: &Option<super::types::YoutubeOptions>| {
+        y.as_ref()
+            .and_then(|y| y.api_key.as_deref())
+            .is_some_and(literal)
+    };
     config.category.values().any(|c| key(&c.youtube))
         || config.sources.values().any(|s| key(&s.youtube))
-        || !config.server.token.is_empty()
+        || literal(&config.server.token)
 }
 
 fn channel_name(ytdlp: &YtdlpConfig) -> String {

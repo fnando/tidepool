@@ -18,7 +18,49 @@ pub fn check(config: &Config) -> Vec<Diagnostic> {
     check_durations(config, &mut out);
     check_youtube(config, &mut out);
     check_server(config, &mut out);
+    check_env_references(config, &mut out);
     out
+}
+
+/// Secrets naming an environment variable that isn't set (here and now:
+/// a container may set it only where the daemon runs).
+fn check_env_references(config: &Config, out: &mut Vec<Diagnostic>) {
+    let unset = |value: &str| {
+        super::secret::env_name(value)
+            .filter(|_| super::secret::resolve(value).is_none())
+            .map(str::to_string)
+    };
+    let key =
+        |youtube: Option<&super::types::YoutubeOptions>, pointer: String, out: &mut Vec<_>| {
+            if let Some(name) = youtube.and_then(|y| y.api_key.as_deref()).and_then(unset) {
+                out.push(Diagnostic::warning(
+                    pointer,
+                    format!("${name} isn't set, so there's no API key: yt-dlp indexes instead"),
+                ));
+            }
+        };
+    for (name, category) in &config.category {
+        key(
+            category.youtube.as_ref(),
+            format!("/category/{name}/youtube/api_key"),
+            out,
+        );
+    }
+    for (name, source) in &config.sources {
+        key(
+            source.youtube.as_ref(),
+            format!("/sources/{name}/youtube/api_key"),
+            out,
+        );
+    }
+    if config.server.enabled
+        && let Some(name) = unset(&config.server.token)
+    {
+        out.push(Diagnostic::warning(
+            "/server/token",
+            format!("${name} isn't set, so the web UI has no sign-in"),
+        ));
+    }
 }
 
 fn check_hook_references(config: &Config, out: &mut Vec<Diagnostic>) {
@@ -219,7 +261,8 @@ fn check_server(config: &Config, out: &mut Vec<Diagnostic>) {
     let Ok(addr) = server.listen.parse::<std::net::SocketAddr>() else {
         return;
     };
-    if server.enabled && !addr.ip().is_loopback() && server.token.is_empty() {
+    if server.enabled && !addr.ip().is_loopback() && super::secret::resolve(&server.token).is_none()
+    {
         out.push(Diagnostic::error(
             "/server/listen",
             format!(
@@ -227,5 +270,58 @@ fn check_server(config: &Config, out: &mut Vec<Diagnostic>) {
                 server.listen
             ),
         ));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::config::load_str;
+
+    #[test]
+    fn secrets_can_name_environment_variables() {
+        // HOME is always set; the other one never is.
+        let loaded = load_str(
+            "c.toml",
+            "[category.default.youtube]\napi_key = \"$HOME\"\n\n\
+             [sources.lofi]\nurls = ['https://www.youtube.com/playlist?list=PLaaaaaaaa']\n\
+             youtube.api_key = \"${TIDEPOOL_TEST_NEVER_SET}\"\n\n\
+             [server]\ntoken = \"$TIDEPOOL_TEST_NEVER_SET\"\n",
+        )
+        .unwrap();
+        assert_eq!(
+            loaded.warnings,
+            [
+                "c.toml:6:19 warning: sources.lofi.youtube.api_key: $TIDEPOOL_TEST_NEVER_SET isn't set, so there's no API key: yt-dlp indexes instead",
+                "c.toml:9:9 warning: server.token: $TIDEPOOL_TEST_NEVER_SET isn't set, so the web UI has no sign-in",
+            ]
+        );
+        let config = &loaded.config;
+        let home = std::env::var("HOME").unwrap();
+        let category = crate::config::merge::category_settings(config, "default");
+        assert_eq!(category.youtube.api_key, Some(home));
+        let source =
+            crate::config::merge::effective_source(config, "lofi", &config.sources["lofi"]);
+        assert_eq!(
+            source.youtube.api_key, None,
+            "unset: no key, not the category's"
+        );
+        // Stored as written.
+        assert_eq!(
+            loaded.json["category"]["default"]["youtube"]["api_key"],
+            "$HOME"
+        );
+    }
+
+    #[test]
+    fn an_unset_token_doesnt_open_the_web_ui_to_other_machines() {
+        let err = load_str(
+            "c.toml",
+            "[server]\nlisten = \"0.0.0.0:8787\"\ntoken = \"$TIDEPOOL_TEST_NEVER_SET\"\n",
+        )
+        .unwrap_err();
+        assert!(
+            err.to_string().contains("server.token is required"),
+            "{err}"
+        );
     }
 }

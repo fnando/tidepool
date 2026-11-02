@@ -2,6 +2,7 @@
 
 pub mod duration;
 pub mod placeholders;
+pub mod secret;
 pub mod size;
 
 /// Source, category and hook names: `^[a-z0-9][a-z0-9_-]*$`.

@@ -90,7 +90,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # clean_title = "none"              # "music_video": only the song's title, for videos tagged MUSICBRAINZ_ARTISTID
 
 [category.default.youtube]          # YouTube Data API (optional)
-# api_key = "AIza..."               # without one, indexing uses yt-dlp only
+# api_key = "AIza..."               # or "$YOUTUBE_API_KEY" to read it from that variable; without one, indexing uses yt-dlp only
 # daily_quota = 10000               # the key's Google Cloud project daily quota
 # quota_warn_at = 0.8               # warn at this fraction of daily_quota
 # fallback_to_ytdlp = true          # with a key: use yt-dlp on quota exhaustion or API errors

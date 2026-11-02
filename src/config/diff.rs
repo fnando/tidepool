@@ -26,8 +26,9 @@ fn is_secret(path: &[&str]) -> bool {
 /// Mask a secret for display; empty values stay empty.
 #[must_use]
 pub fn mask_secret(value: &str) -> String {
-    if value.is_empty() {
-        String::new()
+    if value.is_empty() || super::secret::env_name(value).is_some() {
+        // Empty, or naming an environment variable: nothing to hide.
+        value.to_string()
     } else {
         mask_key(value)
     }
@@ -267,6 +268,11 @@ mod tests {
              [category.music]\nyoutube = { api_key = \"AIza…zzzz\" }\n\n\
              [sources.lofi]\nurls = [\"u\"]\nyoutube.api_key = \"AIza…yyyy\"\n\n\
              [server]\ntoken = \"my-l…oken\"\n"
+        );
+        // A variable's name isn't a secret.
+        assert_eq!(
+            mask_toml("[server]\ntoken = \"$TIDEPOOL_TOKEN\"\n"),
+            "[server]\ntoken = \"$TIDEPOOL_TOKEN\"\n"
         );
         assert_eq!(
             mask_toml("[server]\ntoken = \"\"\n"),

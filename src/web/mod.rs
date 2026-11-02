@@ -85,7 +85,7 @@ impl Web {
         };
         Self {
             db,
-            token: server.token.clone(),
+            token: crate::config::secret::resolve(&server.token).unwrap_or_default(),
             csrf: random_hex(16),
             hosts,
             sync_now: wake.sync_now,

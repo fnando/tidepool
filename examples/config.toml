@@ -66,7 +66,7 @@ clean_title = "none"                # "music_video": only the song's title, for 
 download = true                     # false = only check sources (index), don't download
 
 [category.default.youtube]
-# api_key = "AIza..."               # optional; without it, indexing uses yt-dlp only
+# api_key = "AIza..."               # optional, or "$YOUTUBE_API_KEY" to read it from that variable; without it, indexing uses yt-dlp only
 daily_quota = 10000                 # raise only if Google granted your project an extension
 quota_warn_at = 0.8                 # warn in logs and the web UI at 80% of daily_quota
 fallback_to_ytdlp = true            # with a key: use yt-dlp on quota/5xx; always on without api_key
