@@ -27,6 +27,64 @@ pub struct Status {
     pub waiting_downloads: i64,
     /// `finished` hooks waiting to run (or to be tried again).
     pub waiting_hooks: i64,
+    /// Whether indexing uses the YouTube API, and how much of it today.
+    pub youtube_api: YoutubeApi,
+}
+
+/// What the sources' YouTube API keys spent today.
+fn youtube_api(conn: &Connection, config: &Config) -> rusqlite::Result<YoutubeApi> {
+    let mut api = YoutubeApi::default();
+    let mut seen = std::collections::BTreeSet::new();
+    let day = crate::state::items::quota_day(jiff::Timestamp::now());
+    for source in effective_sources(config) {
+        match source.youtube.api_key.as_deref() {
+            None => api.keyless += 1,
+            Some(key) => {
+                let id = crate::pipeline::key_id(key);
+                if seen.insert(id.clone()) {
+                    let used = crate::state::items::quota_used(conn, &id, &day)?;
+                    api.keys.push((used, source.youtube.daily_quota));
+                }
+            }
+        }
+    }
+    Ok(api)
+}
+
+/// The YouTube API keys the sources use, and what they spent today.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+pub struct YoutubeApi {
+    /// Units spent today and the daily quota, per distinct key.
+    pub keys: Vec<(u32, u32)>,
+    /// Sources without a key: yt-dlp indexes them.
+    pub keyless: usize,
+}
+
+impl YoutubeApi {
+    /// Something spent units today.
+    #[must_use]
+    pub fn used(&self) -> bool {
+        self.keys.iter().any(|(used, _)| *used > 0)
+    }
+
+    /// e.g. "120 of 10000 units used today", "key set, not used today".
+    #[must_use]
+    pub fn summary(&self) -> String {
+        let usage = match self.keys.as_slice() {
+            [] => return "no key, so yt-dlp indexes".into(),
+            [(0, _)] => "key set, not used today".to_string(),
+            [(used, quota)] => format!("{used} of {quota} units used today"),
+            keys => {
+                let used: u32 = keys.iter().map(|(used, _)| used).sum();
+                format!("{} keys, {used} units used today", keys.len())
+            }
+        };
+        match self.keyless {
+            0 => usage,
+            1 => format!("{usage}; 1 source has no key"),
+            n => format!("{usage}; {n} sources have no key"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -192,6 +250,7 @@ pub fn status(conn: &Connection, config: &Config) -> rusqlite::Result<Status> {
         waiting_hooks: count(
             "SELECT COUNT(*) FROM hook_runs WHERE type = 'finished' AND status IN ('pending', 'retrying')",
         )?,
+        youtube_api: youtube_api(conn, config)?,
     })
 }
 
@@ -473,5 +532,32 @@ pub fn status_badge(status: &str) -> String {
     match status {
         "filtered" => "excluded".into(),
         other => other.to_string(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::YoutubeApi;
+
+    #[test]
+    fn says_whether_the_youtube_api_is_used() {
+        let api = |keys: Vec<(u32, u32)>, keyless| YoutubeApi { keys, keyless };
+        let cases = [
+            (api(vec![], 2), "no key, so yt-dlp indexes", false),
+            (api(vec![(0, 10_000)], 0), "key set, not used today", false),
+            (
+                api(vec![(120, 10_000)], 1),
+                "120 of 10000 units used today; 1 source has no key",
+                true,
+            ),
+            (
+                api(vec![(5, 10_000), (0, 500)], 3),
+                "2 keys, 5 units used today; 3 sources have no key",
+                true,
+            ),
+        ];
+        for (api, summary, used) in cases {
+            assert_eq!((api.summary().as_str(), api.used()), (summary, used));
+        }
     }
 }

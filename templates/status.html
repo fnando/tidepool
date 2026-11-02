@@ -18,6 +18,7 @@
             {% if let Some(last) = status.last_sync %}<span>Last sync ended at {{ last }}</span>{% endif %}
             {% if status.waiting_downloads > 0 %}<span>{{ status.waiting_downloads }} downloads to finish</span>{% endif %}
             {% if status.waiting_hooks > 0 %}<span>{{ status.waiting_hooks }} hooks to run</span>{% endif %}
+            <span class="api{% if status.youtube_api.used() %} used{% endif %}">YouTube API: {{ status.youtube_api.summary() }}</span>
           </div>
         </div>
         {% if !read_only %}

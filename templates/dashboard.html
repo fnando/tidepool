@@ -3,7 +3,10 @@
 <header class="page-head">
   <div>
     <h1>Dashboard</h1>
-    <div class="totals"><span class="live stale" id="connection">Connecting</span></div>
+    <div class="totals">
+      <span class="live stale" id="connection">Connecting</span>
+      {% for v in versions %}<span class="version"{% if !v.how.is_empty() %} title="{{ v.how }}"{% endif %}>{{ v.name }} {% if let Some(version) = v.version %}{{ version }}{% else if v.how == "managed" %}<em>not downloaded yet</em>{% else %}<em>not found</em>{% endif %}</span>{% endfor %}
+    </div>
   </div>
 </header>
 {% include "live.html" %}

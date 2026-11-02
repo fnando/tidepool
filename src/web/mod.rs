@@ -9,6 +9,7 @@
 //! without asking first).
 
 pub mod data;
+mod versions;
 
 use std::fmt::Write as _;
 use std::net::SocketAddr;
@@ -52,6 +53,8 @@ pub struct Web {
     read_only: bool,
     /// Ends the live event streams when the server stops.
     shutdown: crate::shutdown::Shutdown,
+    /// What yt-dlp and Deno said their versions are.
+    versions: Arc<versions::Versions>,
 }
 
 /// The daemon's signals the web UI uses.
@@ -95,6 +98,7 @@ impl Web {
             data_dir,
             read_only: server.read_only_config,
             shutdown: wake.shutdown,
+            versions: Arc::default(),
         }
     }
 
@@ -119,6 +123,17 @@ impl Web {
         .await
         .map_err(|e| WebError(anyhow::anyhow!(e)))?
         .map_err(WebError)
+    }
+
+    /// tidepool's version, and the yt-dlp and Deno the config uses.
+    async fn versions(self: &Arc<Self>) -> Result<Vec<versions::Software>, WebError> {
+        let tools = self
+            .db(|conn| Ok(ConfigStore::new(conn).load_current()?.1.config.tools))
+            .await?;
+        let (versions, bin_dir) = (self.versions.clone(), self.data_dir.join("bin"));
+        tokio::task::spawn_blocking(move || versions.all(&tools, &bin_dir))
+            .await
+            .map_err(|e| WebError(anyhow::anyhow!(e)))
     }
 
     async fn status(self: &Arc<Self>) -> Result<data::Status, WebError> {
@@ -209,6 +224,7 @@ struct DashboardPage {
     message: Option<String>,
     read_only: bool,
     live: crate::events::Live,
+    versions: Vec<versions::Software>,
 }
 
 #[derive(Template)]
@@ -272,13 +288,14 @@ struct LoginPage {
 }
 
 async fn dashboard(State(web): State<Arc<Web>>) -> Result<Html<String>, WebError> {
-    let status = web.status().await?;
+    let (status, versions) = tokio::try_join!(web.status(), web.versions())?;
     render(DashboardPage {
         csrf: web.csrf.clone(),
         status,
         message: None,
         read_only: web.read_only,
         live: crate::events::live(),
+        versions,
     })
 }
 
@@ -1843,6 +1860,34 @@ mod tests {
         let (_, _, page) = send(&s.web, get("/")).await;
         assert!(page.contains(&asset_url("app.css")), "{page}");
         assert!(asset_url("app.css").len() > "/assets/app.css?v=".len());
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn the_dashboard_shows_what_runs() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let s = setup("");
+        let (_, _, body) = send(&s.web, get("/")).await;
+        let tidepool = concat!("tidepool ", env!("CARGO_PKG_VERSION"));
+        assert!(body.contains(tidepool), "{body}");
+        assert!(
+            body.contains("yt-dlp <em>not downloaded yet</em>"),
+            "{body}"
+        );
+        assert!(
+            body.contains("YouTube API: no key, so yt-dlp indexes"),
+            "{body}"
+        );
+
+        let bin = s.dir.path().join("data/bin");
+        std::fs::create_dir_all(&bin).unwrap();
+        let channel = crate::config::types::YtdlpConfig::default().channel;
+        let ytdlp = bin.join(crate::tools::manager::Tool::Ytdlp(channel).file_name());
+        std::fs::write(&ytdlp, "#!/bin/sh\necho 2026.10.01\n").unwrap();
+        std::fs::set_permissions(&ytdlp, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let (_, _, body) = send(&s.web, get("/")).await;
+        assert!(body.contains(">yt-dlp 2026.10.01<"), "{body}");
     }
 
     #[tokio::test]

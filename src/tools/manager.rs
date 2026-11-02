@@ -50,7 +50,8 @@ impl Tool {
     }
 
     /// The installed file's name in the bin dir.
-    fn file_name(self) -> String {
+    #[must_use]
+    pub fn file_name(self) -> String {
         match self {
             Tool::Ytdlp(channel) => format!("yt-dlp-{}", channel.as_str()),
             Tool::Deno => "deno".into(),

@@ -607,3 +607,7 @@ ul.plain li + li { border-top: 1px solid var(--border); }
 
   th, td { padding: 9px 12px; }
 }
+
+/* ---------- dashboard: versions, API use ---------- */
+.totals .version em { font-style: normal; color: var(--faint); }
+.meta .api.used { color: var(--ok); }
