@@ -204,10 +204,7 @@ impl Drop for TempFile {
 ///
 /// When `binary` can't be run, exits with an error, or prints nothing.
 pub fn tool_version(binary: &Path) -> Result<String, String> {
-    let output = std::process::Command::new(binary)
-        .arg("--version")
-        .output()
-        .map_err(|e| e.to_string())?;
+    let output = run_fresh(binary, "--version").map_err(|e| e.to_string())?;
     let version = String::from_utf8_lossy(&output.stdout)
         .lines()
         .next()
@@ -219,6 +216,24 @@ pub fn tool_version(binary: &Path) -> Result<String, String> {
     } else {
         Err(format!("`--version` exited with {}", output.status))
     }
+}
+
+/// Run a binary that was just written. On Linux, a child another thread is
+/// starting can briefly hold a copy of the file still open for writing, and
+/// running it then fails with "Text file busy" until that child has started
+/// (rust-lang/rust#114554); so wait a little and try again.
+fn run_fresh(binary: &Path, arg: &str) -> std::io::Result<std::process::Output> {
+    let mut wait = std::time::Duration::from_millis(10);
+    for _ in 0..8 {
+        match std::process::Command::new(binary).arg(arg).output() {
+            Err(e) if e.kind() == std::io::ErrorKind::ExecutableFileBusy => {
+                std::thread::sleep(wait);
+                wait *= 2;
+            }
+            result => return result,
+        }
+    }
+    std::process::Command::new(binary).arg(arg).output()
 }
 
 /// Run `<binary> --version`; it must exit 0 and print something.
