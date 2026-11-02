@@ -6,7 +6,7 @@
   {% if let Some(clean) = video.clean_title %}<h2>{{ clean }}</h2>
   <p class="muted"><small>YouTube's title: {{ video.title }}</small></p>{% else %}<h2>{{ video.title }}</h2>{% endif %}
   <p><a href="https://www.youtube.com/watch?v={{ video.video_id }}" rel="noreferrer">{{ video.video_id }}</a>
-    · <span class="pill st-{{ video.status }}">{{ video.status }}</span>
+    · <span class="pill st-{{ video.badge }}">{{ video.label }}</span>
     {% if let Some(why) = video.why %}· {{ why }}{% endif %}</p>
 </hgroup>
 

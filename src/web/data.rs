@@ -221,6 +221,9 @@ pub struct VideoRow {
     pub video_id: String,
     pub title: String,
     pub status: String,
+    /// `status` as the badge says it, and its CSS class.
+    pub label: String,
+    pub badge: String,
     /// Why it's in that status: the rule that dropped it, the error, …
     pub why: Option<String>,
     /// Published (`YYYY-MM-DD`).
@@ -312,6 +315,8 @@ pub fn videos(
                     .filter(|_| status == "done")
                     .map(|b| human_bytes(b.max(0) as u64)),
                 clean_title: None,
+                label: status_label(&status),
+                badge: status_badge(&status),
                 status,
             })
         })?
@@ -337,6 +342,9 @@ pub struct VideoDetail {
     pub video_id: String,
     pub title: String,
     pub status: String,
+    /// `status` as the badge says it, and its CSS class.
+    pub label: String,
+    pub badge: String,
     pub why: Option<String>,
     /// Each rule's verdict, as `tidepool filter test` shows it.
     pub explanation: String,
@@ -408,6 +416,8 @@ pub fn video(
         video_id: video_id.to_string(),
         title: title.unwrap_or_default(),
         why: why(&status, decision.as_deref(), error, cleanup),
+        label: status_label(&status),
+        badge: status_badge(&status),
         status,
         explanation: String::from_utf8_lossy(&explanation).trim().to_string(),
         files,
@@ -428,4 +438,20 @@ pub fn log_tail(path: &std::path::Path, lines: usize) -> Option<String> {
 pub fn clean_title(title: &str, artist: &str) -> Option<String> {
     let cleaned = crate::titles::music_video(title, artist);
     (cleaned != title).then_some(cleaned)
+}
+
+/// How a video's status reads on a badge.
+pub fn status_label(status: &str) -> String {
+    match status {
+        "filtered" => "excluded".into(),
+        other => other.replace('_', " "),
+    }
+}
+
+/// The badge's CSS class (`st-<this>`).
+pub fn status_badge(status: &str) -> String {
+    match status {
+        "filtered" => "excluded".into(),
+        other => other.to_string(),
+    }
 }

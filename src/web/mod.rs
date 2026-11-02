@@ -1381,6 +1381,11 @@ mod tests {
         let (_, _, body) = send(&s.web, get("/sources/lofi?status=skipped")).await;
         assert!(body.contains("Lofi trailer") && !body.contains("Rainy beats"));
         assert!(body.contains("drop (matches exclude[0])"), "why: {body}");
+        assert!(
+            body.contains(r#"<span class="pill st-excluded">excluded</span>"#),
+            "{body}"
+        );
+        assert!(!body.contains(">filtered<"));
         let (_, _, body) = send(&s.web, get("/sources/lofi?status=failed")).await;
         assert!(body.contains("HTTP 429"));
         let (_, _, body) = send(&s.web, get("/sources/lofi?q=RAINY")).await;
