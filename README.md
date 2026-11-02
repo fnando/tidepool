@@ -11,7 +11,7 @@ notifications along the way.
 > scripts, clean up, and keep doing all of that in the background, with a web
 > page to keep an eye on it and edit your config.
 
-Works on Linux and macOS.
+Works on Linux and macOS (Apple Silicon).
 
 ## Requirements
 
