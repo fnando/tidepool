@@ -84,7 +84,9 @@ static TRAILING_CREDIT: LazyLock<Regex> =
     LazyLock::new(|| re(r"(?i)\s+(?:feat\.?|ft\.?|featuring|part\.|starring)\s+.*\z"));
 static DOUBLE_QUOTED: LazyLock<Regex> = LazyLock::new(|| re(r#"(?s)"(.*)""#));
 static SINGLE_QUOTED: LazyLock<Regex> = LazyLock::new(|| re(r"(?s)\A'(.+)'\z"));
-static MEDLEY_SPLIT: LazyLock<Regex> = LazyLock::new(|| re(r"\s*⧸\s*"));
+/// Between a medley's pieces: "⧸" (how file names show "/"), or a "/" with
+/// spaces around it ("AC/DC" and "10/16" aren't split).
+static MEDLEY_SPLIT: LazyLock<Regex> = LazyLock::new(|| re(r"\s*⧸\s*|\s+/\s+"));
 
 fn replace_all(regex: &Regex, text: &str, with: &str) -> String {
     regex.replace_all(text, with).into_owned()
@@ -222,7 +224,7 @@ fn split_top_level(name: &str) -> Vec<String> {
 /// A collaboration medley ("A - song ⧸ B - song ⧸ C - song") credits the
 /// last song; a slashed mashup title ("Numb ⧸ Encore") stays whole.
 fn reduce_medley(name: &str) -> String {
-    if !name.contains('⧸') {
+    if !name.contains('⧸') && !name.contains(" / ") {
         return name.to_string();
     }
     let mut pieces: Vec<&str> = MEDLEY_SPLIT.split(name).flatten().collect();

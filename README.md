@@ -493,7 +493,9 @@ above); the artist's name comes from MusicBrainz. It takes out the artist and
 other credits wherever they sit ("feat. …", "&", "x", "Artist: Song"),
 "(Official Video)"-style notes in English and Portuguese ("(Clipe Oficial)", "(Videoclip)", "(Official Visualizer)"), "[HD]", "[4K]", "[EDIT]", a trailing "HD",
 remaster and soundtrack notes, while keeping what names a different version,
-like "(Alternate Version)" or "(Acoustic)"; "(Live Performance)" becomes
+like "(Alternate Version)" or "(Acoustic)". A medley of several songs
+("A - Song / B - Song / C - Last Song") keeps only the last song, while a
+mashup title like "Numb / Encore" stays whole. "(Live Performance)" becomes
 "(Live)", and a lyric video keeps "(Lyric Video)" at the end.
 
 ```toml

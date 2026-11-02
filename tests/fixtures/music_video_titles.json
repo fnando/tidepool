@@ -728,5 +728,20 @@
     "input": "Weezer - HD Dreams",
     "artist": "Weezer",
     "clip_name": "HD Dreams"
+  },
+  {
+    "input": "Anitta, Melly - Ternura / Luedji Luna - Bemba / Liniker - Caminhador (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Caminhador"
+  },
+  {
+    "input": "Anitta, Marina Sena - Mandinga / Rincon Sapiência, KING Saints - Nanã (Official Music Video)",
+    "artist": "Anitta",
+    "clip_name": "Nanã"
+  },
+  {
+    "input": "JAY-Z & Linkin Park - Numb / Encore (Official Video)",
+    "artist": "Linkin Park",
+    "clip_name": "Numb ⧸ Encore"
   }
 ]
