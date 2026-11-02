@@ -59,12 +59,89 @@ pub struct Signals {
     pub library: Arc<crate::lock::Shared>,
     /// A download is waiting to be processed.
     pub fetched: Arc<Notify>,
-    /// Sync now instead of waiting for the schedule.
-    pub sync_now: Arc<Notify>,
+    /// Sync now (everything, or some sources) instead of waiting for the
+    /// schedule.
+    pub sync_now: Arc<SyncNow>,
     /// Clean up now (the syncer does it).
     pub cleanup_now: Arc<Notify>,
     /// The current config revision; changes when a new one is stored.
     pub config: watch::Receiver<i64>,
+}
+
+/// What to do with a source asked for by name.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum SyncMode {
+    /// Look for new videos only.
+    Index,
+    /// Look for new videos, download them, clean up.
+    Sync,
+}
+
+/// What's been asked of the syncer since it last looked.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct Asked {
+    /// Sync every source (as the schedule does).
+    pub everything: bool,
+    /// Sources asked for by name; syncing wins over indexing.
+    pub sources: std::collections::BTreeMap<String, SyncMode>,
+}
+
+impl Asked {
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        !self.everything && self.sources.is_empty()
+    }
+
+    /// The sources asked for with `mode`.
+    #[must_use]
+    pub fn keys(&self, mode: SyncMode) -> Vec<String> {
+        self.sources
+            .iter()
+            .filter(|(_, m)| **m == mode)
+            .map(|(key, _)| key.clone())
+            .collect()
+    }
+}
+
+/// Requests to sync before the schedule says so: everything, or just some
+/// sources.
+#[derive(Default)]
+pub struct SyncNow {
+    notify: Notify,
+    asked: std::sync::Mutex<Asked>,
+}
+
+impl SyncNow {
+    /// Sync every source now.
+    pub fn all(&self) {
+        self.lock().everything = true;
+        self.notify.notify_one();
+    }
+
+    /// Sync or index this source now.
+    pub fn source(&self, key: &str, mode: SyncMode) {
+        let mut asked = self.lock();
+        let entry = asked.sources.entry(key.to_string()).or_insert(mode);
+        *entry = (*entry).max(mode);
+        drop(asked);
+        self.notify.notify_one();
+    }
+
+    /// Wait until something is asked.
+    pub async fn notified(&self) {
+        self.notify.notified().await;
+    }
+
+    /// What's been asked, clearing it.
+    pub fn take(&self) -> Asked {
+        std::mem::take(&mut *self.lock())
+    }
+
+    fn lock(&self) -> std::sync::MutexGuard<'_, Asked> {
+        self.asked
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
 }
 
 /// A running service.
@@ -215,9 +292,13 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
             Duration::MAX
         };
         drop(state);
-        tokio::select! {
-            () = tokio::time::sleep(wait.min(Duration::from_hours(8760))) => {}
-            () = signals.sync_now.notified() => {}
+        // The schedule syncs everything; a request may name sources.
+        let asked = tokio::select! {
+            () = tokio::time::sleep(wait.min(Duration::from_hours(8760))) => Asked {
+                everything: true,
+                ..Asked::default()
+            },
+            () = signals.sync_now.notified() => signals.sync_now.take(),
             () = signals.cleanup_now.notified() => {
                 let now = jiff::Timestamp::now();
                 let state = app.open_state()?;
@@ -237,7 +318,19 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
                 continue;
             }
             () = app.shutdown.stopping() => return Ok(()),
+        };
+        if asked.is_empty() {
+            // Already done by a sync that took the request.
+            continue;
         }
+        if !asked.everything {
+            for mode in [SyncMode::Sync, SyncMode::Index] {
+                sync_sources(app, &asked.keys(mode), mode, &mut out).await?;
+            }
+            continue;
+        }
+        // Sources asked for by name are synced along with the rest.
+        signals.sync_now.take();
 
         let state = app.open_state()?;
         let started = jiff::Timestamp::now();
@@ -245,7 +338,7 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
         let activity = format!("syncing since {}", local(started));
         store::set_status(&state.conn, name, "running", Some(&activity), started)?;
         crate::events::emit(crate::events::Event::SyncStarted);
-        let result = app.sync_once(&mut out).await;
+        let result = app.sync_once(&[], false, &mut out).await;
         out.flush()?;
         if app.shutdown.is_stopping() {
             return Ok(());
@@ -261,19 +354,60 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
         let when = next
             .map(|t| format!("; next sync at {}", local(t)))
             .unwrap_or_default();
-        let summary = match result {
-            Ok(Some(summary)) => format!("{summary}{when}"),
-            Ok(None) => format!("sync skipped{when}"),
-            // One sync failing doesn't stop the schedule.
-            Err(e) => format!("sync failed: {e:#}{when}"),
-        };
-        if summary.starts_with("sync failed") {
-            tracing::error!("{summary}");
-        } else {
-            tracing::info!("{summary}");
-        }
-        crate::events::emit(crate::events::Event::SyncFinished { summary });
+        // One sync failing doesn't stop the schedule.
+        report(result, "", &when);
     }
+}
+
+/// Log how a sync went (`prefix`: the sources asked for, if any) and tell
+/// the live view.
+fn report(result: anyhow::Result<Option<String>>, prefix: &str, suffix: &str) {
+    let summary = match result {
+        Ok(Some(summary)) => format!("{summary}{suffix}"),
+        Ok(None) => format!("sync skipped{suffix}"),
+        Err(e) => format!("sync failed: {e:#}{suffix}"),
+    };
+    if summary.starts_with("sync failed") {
+        tracing::error!("{prefix}{summary}");
+    } else {
+        tracing::info!("{prefix}{summary}");
+    }
+    crate::events::emit(crate::events::Event::SyncFinished { summary });
+}
+
+/// Sync or index just these sources, when asked; the schedule stays as it
+/// was.
+async fn sync_sources(
+    app: &App<'_>,
+    keys: &[String],
+    mode: SyncMode,
+    out: &mut LogWriter,
+) -> anyhow::Result<()> {
+    if keys.is_empty() || app.shutdown.is_stopping() {
+        return Ok(());
+    }
+    let state = app.open_state()?;
+    let started = jiff::Timestamp::now();
+    let doing = match mode {
+        SyncMode::Sync => "syncing",
+        SyncMode::Index => "indexing",
+    };
+    let activity = format!("{doing} {} since {}", keys.join(", "), local(started));
+    store::set_status(
+        &state.conn,
+        Service::Syncer.name(),
+        "running",
+        Some(&activity),
+        started,
+    )?;
+    crate::events::emit(crate::events::Event::SyncStarted);
+    let result = app.sync_once(keys, mode == SyncMode::Index, out).await;
+    out.flush()?;
+    if app.shutdown.is_stopping() {
+        return Ok(());
+    }
+    report(result, &format!("{}: ", keys.join(", ")), "");
+    Ok(())
 }
 
 /// Finish downloads as they come in, and run queued hooks when they're
@@ -469,5 +603,32 @@ impl Write for LogWriter {
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SyncNow;
+
+    #[test]
+    fn sync_requests_add_up() {
+        use super::SyncMode::{Index, Sync};
+
+        let asked = SyncNow::default();
+        assert!(asked.take().is_empty());
+        asked.source("lofi", Index);
+        asked.source("jazz", Sync);
+        asked.source("lofi", Sync);
+        asked.source("jazz", Index);
+        asked.source("rock", Index);
+        let taken = asked.take();
+        assert!(!taken.everything);
+        assert_eq!(taken.keys(Sync), ["jazz", "lofi"], "syncing wins");
+        assert_eq!(taken.keys(Index), ["rock"]);
+        assert!(asked.take().is_empty(), "taking clears it");
+
+        asked.source("lofi", Index);
+        asked.all();
+        assert!(asked.take().everything);
     }
 }

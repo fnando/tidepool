@@ -130,7 +130,7 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
     let signals = Signals {
         library,
         fetched: Arc::new(Notify::new()),
-        sync_now: Arc::new(Notify::new()),
+        sync_now: Arc::default(),
         cleanup_now: Arc::new(Notify::new()),
         config: config_rx,
     };
@@ -345,7 +345,7 @@ fn handle_request(
             if store::service(&state.conn, Service::Syncer.name())?.paused {
                 return Ok("the syncer is paused; resume it first".into());
             }
-            signals.sync_now.notify_one();
+            signals.sync_now.all();
             Ok("syncing now".into())
         }
         "restart" => {

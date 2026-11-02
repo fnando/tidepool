@@ -231,6 +231,54 @@ button.htmx-request { opacity: .6; }
 
 .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
+/* a main button with a menu of other options beside it */
+.split { position: relative; display: inline-flex; }
+.split > button { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.menu > summary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  border-left-color: color-mix(in srgb, #fff 35%, var(--accent));
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--accent);
+  color: #fff;
+}
+.menu { margin: 0; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu > summary::before { content: none; }
+.menu > summary::after {
+  content: "";
+  border: 4px solid transparent;
+  border-top-color: currentColor;
+  margin-top: 4px;
+}
+.menu > summary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.menu-items {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 10;
+  min-width: 220px;
+  margin: 0;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.15);
+}
+.menu-items button {
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  border: 0;
+  text-align: left;
+  white-space: normal;
+}
+
 input, select, textarea {
   font: inherit;
   color: var(--text);
@@ -583,6 +631,7 @@ ul.plain li + li { border-top: 1px solid var(--border); }
   .app { padding: 0 14px 60px; }
   .topnav { padding: 12px 0; margin-bottom: 6px; }
   .page-head { flex-direction: column; align-items: stretch; }
+  .menu-items { right: auto; left: 0; }
   .page-head h1 { font-size: 24px; }
 
   /* chips scroll in one row, bleeding to the screen edges */

@@ -41,7 +41,7 @@ pub struct Web {
     csrf: String,
     /// `Host` values accepted; empty: any (a token protects the server).
     hosts: Vec<String>,
-    sync_now: Arc<Notify>,
+    sync_now: Arc<crate::daemon::service::SyncNow>,
     cleanup_now: Arc<Notify>,
     /// Wakes the processor (it does the work asked on video pages).
     processor: Arc<Notify>,
@@ -59,7 +59,7 @@ pub struct Web {
 
 /// The daemon's signals the web UI uses.
 pub struct Wake {
-    pub sync_now: Arc<Notify>,
+    pub sync_now: Arc<crate::daemon::service::SyncNow>,
     pub cleanup_now: Arc<Notify>,
     pub processor: Arc<Notify>,
     /// The server's: stopping it ends the live event streams.
@@ -175,6 +175,7 @@ pub fn router(web: Arc<Web>) -> Router {
             post(action_source_downloads),
         )
         .route("/sources/{name}", get(source_page))
+        .route("/sources/{name}/{action}", post(source_action))
         .route("/sources/{name}/videos/{id}", get(video_page))
         .route("/sources/{name}/videos/{id}/jobs", get(jobs_fragment))
         .route("/sources/{name}/videos/{id}/{action}", post(video_action))
@@ -320,7 +321,7 @@ async fn sync_now(web: &Arc<Web>) -> Result<String, WebError> {
     if paused {
         return Ok("The syncer is paused; resume it first.".into());
     }
-    web.sync_now.notify_one();
+    web.sync_now.all();
     Ok("Syncing now.".into())
 }
 
@@ -362,6 +363,116 @@ async fn action_sync(State(web): State<Arc<Web>>) -> Result<Html<String>, WebErr
     fragment(&web, Some(message)).await
 }
 
+/// A source's buttons (`sync`, `index`, `enable`, `disable`); answers
+/// with them again, saying what happened.
+async fn source_action(
+    State(web): State<Arc<Web>>,
+    Path((name, action)): Path<(String, String)>,
+) -> Result<Response, WebError> {
+    use crate::daemon::service::SyncMode;
+
+    let mode = match action.as_str() {
+        "sync" => Some(SyncMode::Sync),
+        "index" => Some(SyncMode::Index),
+        "enable" | "disable" => None,
+        _ => return Ok(not_found("such action")),
+    };
+    let message = if let Some(mode) = mode {
+        let key = name.clone();
+        let paused = web
+            .db(move |conn| {
+                let (_, loaded) = ConfigStore::new(conn).load_current()?;
+                if !crate::config::merge::effective_sources(&loaded.config)
+                    .iter()
+                    .any(|s| s.key == key)
+                {
+                    return Ok(None);
+                }
+                Ok(Some(store::service(conn, Service::Syncer.name())?.paused))
+            })
+            .await?;
+        match paused {
+            None => return Ok(not_found("such source")),
+            Some(true) => "The syncer is paused; resume it first.".to_string(),
+            Some(false) => {
+                web.sync_now.source(&name, mode);
+                let doing = match mode {
+                    SyncMode::Sync => "Syncing",
+                    SyncMode::Index => "Looking for new videos in",
+                };
+                format!("{doing} {name} now; the dashboard shows the progress.")
+            }
+        }
+    } else if web.read_only {
+        "Editing the config is off (server.read_only_config).".to_string()
+    } else {
+        let on = action == "enable";
+        let key = name.clone();
+        let edited = web
+            .db(move |conn| {
+                edit_config(conn, |doc| {
+                    let table = source_table(doc, &key)?;
+                    if on {
+                        // Enabled is the default.
+                        table.remove("enabled");
+                    } else {
+                        table.insert("enabled", toml_edit::value(false));
+                    }
+                    Some(())
+                })
+            })
+            .await?;
+        let Some(Edited { rev, written, .. }) = edited else {
+            return Ok(not_found("such source"));
+        };
+        let mut message = format!(
+            "{name} is {} (config revision {rev}).",
+            if on {
+                "enabled: syncs include it"
+            } else {
+                "disabled: syncs skip it"
+            }
+        );
+        if let Err(problem) = written {
+            let _ = write!(message, " But {problem}.");
+        }
+        message
+    };
+    let Some(actions) = source_actions(&web, &name, Some(message)).await? else {
+        return Ok(not_found("such source"));
+    };
+    Ok(render(SourceActionsFragment { actions })?.into_response())
+}
+
+/// The buttons at the top of a source's page.
+struct SourceActions {
+    name: String,
+    enabled: bool,
+    read_only: bool,
+    message: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "source_actions.html")]
+struct SourceActionsFragment {
+    actions: SourceActions,
+}
+
+/// `None` when there's no such source.
+async fn source_actions(
+    web: &Arc<Web>,
+    name: &str,
+    message: Option<String>,
+) -> Result<Option<SourceActions>, WebError> {
+    let read_only = web.read_only;
+    Ok(source_named(web, name).await?.map(|source| SourceActions {
+        name: source.key,
+        enabled: source.enabled,
+        read_only,
+        message,
+    }))
+}
+
 async fn action_cleanup(State(web): State<Arc<Web>>) -> Result<Html<String>, WebError> {
     let message = cleanup_now(&web).await?;
     fragment(&web, Some(message)).await
@@ -396,30 +507,25 @@ async fn set_downloads(
         ));
     }
     web.db(move |conn| {
-        let current = ConfigStore::new(conn)
-            .current()?
-            .ok_or_else(|| anyhow::anyhow!("there's no stored config yet"))?;
-        let mut doc: toml_edit::DocumentMut = current.toml.parse()?;
-        let what = if let Some(key) = &source {
-            let Some(table) = doc
-                .get_mut("sources")
-                .and_then(|s| s.get_mut(key.as_str()))
-                .and_then(|t| t.as_table_like_mut())
-            else {
-                return Ok(None);
-            };
-            table.insert("download", toml_edit::value(on));
-            format!("for {key}")
-        } else {
-            if doc.get("general").is_none() {
-                doc["general"] = toml_edit::table();
+        let Some(Edited {
+            said: what,
+            rev,
+            written,
+        }) = edit_config(conn, |doc| {
+            if let Some(key) = &source {
+                source_table(doc, key)?.insert("download", toml_edit::value(on));
+                Some(format!("for {key}"))
+            } else {
+                if doc.get("general").is_none() {
+                    doc["general"] = toml_edit::table();
+                }
+                doc["general"]["download"] = toml_edit::value(on);
+                Some("for every source without its own setting".to_string())
             }
-            doc["general"]["download"] = toml_edit::value(on);
-            "for every source without its own setting".to_string()
+        })?
+        else {
+            return Ok(None);
         };
-        let text = doc.to_string();
-        let loaded = crate::config::load_str("config", &text)?;
-        let (rev, written) = store_and_write(conn, |store| Ok(store.save_edit(&text, &loaded)?))?;
         let mut message = format!(
             "Downloads are {} {what} (config revision {rev}).",
             if on { "on" } else { "off" }
@@ -430,6 +536,45 @@ async fn set_downloads(
         Ok(Some(message))
     })
     .await
+}
+
+/// `[sources.<key>]` in a config being edited.
+fn source_table<'a>(
+    doc: &'a mut toml_edit::DocumentMut,
+    key: &str,
+) -> Option<&'a mut dyn toml_edit::TableLike> {
+    doc.get_mut("sources")
+        .and_then(|s| s.get_mut(key))
+        .and_then(|t| t.as_table_like_mut())
+}
+
+/// A config edit, saved.
+struct Edited<T> {
+    /// What the edit said.
+    said: T,
+    /// The new revision.
+    rev: i64,
+    /// Whether the config file was written too, or why not.
+    written: Result<(), String>,
+}
+
+/// Edit the stored config's text with `edit` (`None`: nothing to edit) and
+/// save it as a new revision, written to the config file too.
+fn edit_config<T>(
+    conn: &rusqlite::Connection,
+    edit: impl FnOnce(&mut toml_edit::DocumentMut) -> Option<T>,
+) -> anyhow::Result<Option<Edited<T>>> {
+    let current = ConfigStore::new(conn)
+        .current()?
+        .ok_or_else(|| anyhow::anyhow!("there's no stored config yet"))?;
+    let mut doc: toml_edit::DocumentMut = current.toml.parse()?;
+    let Some(said) = edit(&mut doc) else {
+        return Ok(None);
+    };
+    let text = doc.to_string();
+    let loaded = crate::config::load_str("config", &text)?;
+    let (rev, written) = store_and_write(conn, |store| Ok(store.save_edit(&text, &loaded)?))?;
+    Ok(Some(Edited { said, rev, written }))
 }
 
 async fn action_downloads(
@@ -545,6 +690,7 @@ struct SourcePage {
     page: usize,
     pages: usize,
     total: usize,
+    actions: SourceActions,
 }
 
 impl SourcePage {
@@ -597,15 +743,17 @@ async fn source_page(
     let text = query.q.unwrap_or_default();
     let page = query.page.unwrap_or(1).max(1);
     let csrf = web.csrf.clone();
+    let read_only = web.read_only;
     let found = web
         .db(move |conn| {
             let (_, loaded) = ConfigStore::new(conn).load_current()?;
-            if !crate::config::merge::effective_sources(&loaded.config)
+            let Some(enabled) = crate::config::merge::effective_sources(&loaded.config)
                 .iter()
-                .any(|s| s.key == name)
-            {
+                .find(|s| s.key == name)
+                .map(|s| s.enabled)
+            else {
                 return Ok(None);
-            }
+            };
             let title: Option<String> = conn
                 .query_row("SELECT title FROM sources WHERE key = ?1", [&name], |r| {
                     r.get(0)
@@ -649,6 +797,12 @@ async fn source_page(
                 total,
                 status,
                 query: text,
+                actions: SourceActions {
+                    name: name.clone(),
+                    enabled,
+                    read_only,
+                    message: None,
+                },
                 name,
             }))
         })
@@ -1329,7 +1483,7 @@ mod tests {
             &server,
             "127.0.0.1:8787".parse().unwrap(),
             Wake {
-                sync_now: Arc::new(Notify::new()),
+                sync_now: Arc::default(),
                 cleanup_now: Arc::new(Notify::new()),
                 processor: Arc::new(Notify::new()),
                 shutdown: crate::shutdown::Shutdown::default(),
@@ -1727,7 +1881,7 @@ mod tests {
                 &ServerConfig::default(),
                 "127.0.0.1:8787".parse().unwrap(),
                 Wake {
-                    sync_now: Arc::new(Notify::new()),
+                    sync_now: Arc::default(),
                     cleanup_now: Arc::new(Notify::new()),
                     processor: Arc::new(Notify::new()),
                     shutdown: crate::shutdown::Shutdown::default(),
@@ -1931,6 +2085,104 @@ mod tests {
         )
         .await;
         assert_eq!(status, StatusCode::FORBIDDEN);
+    }
+
+    #[tokio::test]
+    async fn a_source_syncs_or_indexes_now_from_its_page() {
+        use crate::daemon::service::SyncMode;
+
+        let s = setup("");
+        let (_, _, page) = send(&s.web, get("/sources/lofi")).await;
+        assert!(page.contains(r#"hx-post="/sources/lofi/sync""#), "{page}");
+        assert!(page.contains(r#"hx-post="/sources/lofi/index""#), "{page}");
+        let (status, _, _) = send(&s.web, post("/sources/lofi/sync")).await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "needs the CSRF token");
+
+        let csrf = s.web.csrf.clone();
+        let act = |name: &str, action: &str| {
+            post(&format!("/sources/{name}/{action}")).header("x-csrf-token", csrf.as_str())
+        };
+        let (status, _, _) = send(&s.web, act("nope", "sync")).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        let (status, _, _) = send(&s.web, act("lofi", "explode")).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        assert!(s.web.sync_now.take().is_empty());
+
+        let (status, _, body) = send(&s.web, act("lofi", "index")).await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(
+            body.contains("Looking for new videos in lofi now"),
+            "{body}"
+        );
+        assert!(
+            body.contains(r#"id="source-actions""#),
+            "the buttons again: {body}"
+        );
+        tokio::time::timeout(std::time::Duration::from_secs(1), s.web.sync_now.notified())
+            .await
+            .expect("the syncer was told");
+        let (_, _, body) = send(&s.web, act("lofi", "sync")).await;
+        assert!(body.contains("Syncing lofi now"), "{body}");
+        let asked = s.web.sync_now.take();
+        assert!(!asked.everything);
+        assert_eq!(asked.sources.get("lofi"), Some(&SyncMode::Sync));
+
+        s.web
+            .db(|conn| Ok(store::set_paused(conn, Service::Syncer.name(), true)?))
+            .await
+            .unwrap();
+        let (_, _, body) = send(&s.web, act("lofi", "sync")).await;
+        assert!(body.contains("The syncer is paused"), "{body}");
+        assert!(s.web.sync_now.take().is_empty());
+    }
+
+    #[tokio::test]
+    async fn a_source_is_disabled_and_enabled_from_its_page() {
+        let s = setup("");
+        let csrf = s.web.csrf.clone();
+        let act = |action: &str| {
+            post(&format!("/sources/lofi/{action}")).header("x-csrf-token", csrf.as_str())
+        };
+        let (_, _, page) = send(&s.web, get("/sources/lofi")).await;
+        assert!(
+            page.contains(r#"hx-post="/sources/lofi/disable""#),
+            "{page}"
+        );
+        assert!(!page.contains(">Disabled<"), "{page}");
+
+        let (status, _, body) = send(&s.web, act("disable")).await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        assert!(
+            body.contains("lofi is disabled: syncs skip it (config revision 2)."),
+            "{body}"
+        );
+        assert!(
+            body.contains(">Disabled<") && body.contains("/sources/lofi/enable"),
+            "{body}"
+        );
+        let toml = |s: &Setup| {
+            let conn = Db::open(&s.db).unwrap().conn;
+            ConfigStore::new(&conn).current().unwrap().unwrap().toml
+        };
+        assert!(toml(&s).contains("enabled = false"), "{}", toml(&s));
+
+        let (_, _, body) = send(&s.web, act("enable")).await;
+        assert!(
+            body.contains("lofi is enabled: syncs include it (config revision 3)."),
+            "{body}"
+        );
+        assert!(
+            !toml(&s).contains("enabled"),
+            "back to the default: {}",
+            toml(&s)
+        );
+
+        let (status, _, _) = send(
+            &s.web,
+            post("/sources/nope/disable").header("x-csrf-token", csrf.as_str()),
+        )
+        .await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
     }
 
     #[tokio::test]

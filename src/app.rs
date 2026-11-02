@@ -868,10 +868,18 @@ impl App<'_> {
     /// One sync of the daemon's syncer: index every enabled source, download
     /// what's new (the processor finishes it), clean up. `None` when another
     /// tidepool holds the library.
-    pub(crate) async fn sync_once(&self, out: &mut dyn Write) -> anyhow::Result<Option<String>> {
+    /// One sync: index, download and clean up `only` these sources (keys),
+    /// or every enabled one. `index_only`: look for new videos, nothing more.
+    pub(crate) async fn sync_once(
+        &self,
+        only: &[String],
+        index_only: bool,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<Option<String>> {
         let mut state = self.open_state()?;
         let config = self.current_config(&state)?.config;
-        let sources = Self::scoped_sources(&config, &[])?;
+        let refs: Vec<SourceRef> = only.iter().cloned().map(SourceRef::Key).collect();
+        let sources = Self::scoped_sources(&config, &refs)?;
         if sources.is_empty() {
             return Ok(Some(
                 "no enabled sources; add one under [sources.<name>] in your config".into(),
@@ -896,6 +904,22 @@ impl App<'_> {
         if self.shutdown.is_stopping() {
             return Ok(Some("stopped".into()));
         }
+        let couldnt = |failed: usize| {
+            format!(
+                "{failed} source{} couldn't be checked",
+                if failed == 1 { "" } else { "s" }
+            )
+        };
+        let plural = if sources.len() == 1 { "" } else { "s" };
+        if index_only {
+            self.finish_problems(&state, &config, tracker, &ytdlp)
+                .await?;
+            let mut parts = vec![format!("indexed {} source{plural}", sources.len())];
+            if failed > 0 {
+                parts.push(couldnt(failed));
+            }
+            return Ok(Some(parts.join(", ")));
+        }
         let summary = self
             .download_sources(
                 &mut state,
@@ -914,18 +938,8 @@ impl App<'_> {
         self.finish_problems(&state, &config, tracker, &ytdlp)
             .await?;
         drop(lock);
-        self.cleanup(
-            &ScopeArgs {
-                sources: Vec::new(),
-            },
-            out,
-        )
-        .await?;
-        let mut parts = vec![format!(
-            "synced {} source{}",
-            sources.len(),
-            if sources.len() == 1 { "" } else { "s" }
-        )];
+        self.cleanup(&ScopeArgs { sources: refs }, out).await?;
+        let mut parts = vec![format!("synced {} source{plural}", sources.len())];
         if summary.fetched > 0 {
             parts.push(format!("{} downloaded", summary.fetched));
         }
@@ -933,10 +947,7 @@ impl App<'_> {
             parts.push(format!("{} failed", summary.failed));
         }
         if failed > 0 {
-            parts.push(format!(
-                "{failed} source{} couldn't be checked",
-                if failed == 1 { "" } else { "s" }
-            ));
+            parts.push(couldnt(failed));
         }
         Ok(Some(parts.join(", ")))
     }

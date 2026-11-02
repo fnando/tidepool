@@ -1092,12 +1092,18 @@ right away, and pause or resume each part. An "In progress" panel shows what's
 happening as it happens: the source being checked, each download with how far
 along it is, its speed and time left, each video being finished (hooks,
 embedding, saving), and what was just saved or failed. The page updates
-itself the moment something changes.
+itself the moment something changes. It also shows the tidepool, yt-dlp and
+Deno versions running, and whether the YouTube API key was used today (and
+how much of its daily quota).
 
 Click a source to see its videos, 50 at a time: filter by status
 (downloaded, waiting, skipped, failed, unavailable, cleaned up), search titles
 or ids, and see why each one is where it is (the rule that skipped it, the
-error that failed it, why cleanup removed it). Click a video for everything
+error that failed it, why cleanup removed it). Its Sync now button checks
+just that source for new videos and downloads them right away (its menu has
+Index now, to only look for new videos); the schedule stays as it was.
+Disable turns the source off (`enabled = false`, saved as a new config
+revision) until you enable it again. Click a video for everything
 about it: what each of your rules says about it (like `tidepool filter
 test`), its files, its hooks and their log, and buttons to run its hooks
 again, embed again, download it again (optionally deleting its files first),

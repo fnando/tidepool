@@ -496,6 +496,97 @@ async fn sync_now_and_restart_on_request() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn a_source_indexed_or_synced_from_its_page_leaves_the_schedule_alone() {
+    let env = Env::new().await;
+    let config = env.config("1h", "");
+    env.cmd(&["config", "import", &config]).assert().success();
+    let later = jiff::Timestamp::now()
+        .checked_add(jiff::SignedDuration::from_hours(1))
+        .unwrap()
+        .to_string();
+    env.db()
+        .execute(
+            "INSERT INTO daemon_state (key, value) VALUES ('next_sync_at', ?1)",
+            [&later],
+        )
+        .unwrap();
+    let daemon = env.daemon(&config, &[]);
+    daemon.wait_for_log("web UI at http://127.0.0.1:");
+    let url = daemon
+        .log()
+        .lines()
+        .find_map(|l| {
+            l.split("web UI at ")
+                .nth(1)
+                .map(str::trim)
+                .map(str::to_string)
+        })
+        .unwrap();
+    let rick = env.path("media").join(RICK_DIR);
+    assert!(!rick.exists(), "the next sync is an hour away");
+
+    let http = reqwest::Client::new();
+    let page = http
+        .get(format!("{url}/sources/dl"))
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+    let csrf = page
+        .split("\"X-CSRF-Token\": \"")
+        .nth(1)
+        .and_then(|rest| rest.split('"').next())
+        .unwrap()
+        .to_string();
+    let ask = |action: &str| {
+        http.post(format!("{url}/sources/dl/{action}"))
+            .header("x-csrf-token", &csrf)
+            .send()
+    };
+    let answer = ask("index").await.unwrap();
+    assert!(answer.status().is_success());
+    assert!(
+        answer
+            .text()
+            .await
+            .unwrap()
+            .contains("Looking for new videos in dl now")
+    );
+    daemon.wait_for_log("dl: indexed 1 source");
+    let pending: i64 = env
+        .db()
+        .query_row(
+            "SELECT COUNT(*) FROM items WHERE source_key = 'dl' AND status = 'pending'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert!(pending > 0, "found, not downloaded");
+    assert!(!rick.exists(), "indexing doesn't download");
+
+    let answer = ask("sync").await.unwrap();
+    assert!(answer.status().is_success());
+    assert!(answer.text().await.unwrap().contains("Syncing dl now"));
+    daemon.wait_for("Rick's video saved", || {
+        rick.join("metadata.json").is_file()
+    });
+    daemon.wait_for_log("dl: synced 1 source");
+    let next: String = env
+        .db()
+        .query_row(
+            "SELECT value FROM daemon_state WHERE key = 'next_sync_at'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(next, later, "the schedule is as it was");
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0), "{log}");
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn the_config_file_must_match_the_stored_config() {
     let env = Env::new().await;
     let config = env.config("1h", "");

@@ -49,6 +49,20 @@
         fail("Couldn't reach tidepool. Is it still running?");
       });
       document.addEventListener("htmx:beforeRequest", function () { toast.hidden = true; });
+
+      // Menus close when you click elsewhere, pick an option, or press Escape.
+      function closeMenus(except) {
+        document.querySelectorAll("details.menu[open]").forEach(function (menu) {
+          if (menu !== except) menu.open = false;
+        });
+      }
+      document.addEventListener("click", function (event) {
+        var menu = event.target.closest("details.menu");
+        closeMenus(event.target.closest(".menu-items") ? null : menu);
+      });
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeMenus(null);
+      });
     })();
   </script>
 </body>
