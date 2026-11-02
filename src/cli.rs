@@ -72,8 +72,6 @@ pub enum Command {
         #[command(subcommand)]
         cmd: TrashCmd,
     },
-    /// List known items
-    List(ListArgs),
     /// Run hooks again
     Hooks {
         #[command(subcommand)]
@@ -111,23 +109,6 @@ pub enum Command {
     },
 }
 
-impl Command {
-    /// Milestone in which a not-yet-implemented command lands.
-    pub fn milestone(&self) -> Option<&'static str> {
-        match self {
-            Command::Init(_) | Command::Config(_) | Command::Filter { .. } => None,
-            Command::Index(_) | Command::Download(_) | Command::Reset(_) | Command::Run(_) => None,
-            Command::Problems { .. } => None,
-            Command::Tools { .. } => None,
-            Command::Hooks { .. } => None,
-            Command::Embed(_) | Command::CleanTitles(_) => None,
-            Command::Cleanup(_) | Command::Trash { .. } => None,
-            Command::Daemon { .. } => None,
-            Command::List(_) => Some("M6"),
-        }
-    }
-}
-
 #[derive(Debug, Clone, Args)]
 pub struct ScopeArgs {
     /// Limit to these sources: name, playlist id or URL; repeatable
@@ -145,31 +126,6 @@ pub struct DownloadArgs {
     /// Parallel downloads (overrides general.concurrency)
     #[arg(long, value_name = "N", value_parser = clap::value_parser!(u32).range(1..))]
     pub concurrency: Option<u32>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
-pub enum ItemStatus {
-    Pending,
-    Done,
-    Filtered,
-    CleanedUp,
-    Failed,
-}
-
-#[derive(Debug, Clone, Args)]
-pub struct ListArgs {
-    #[command(flatten)]
-    pub scope: ScopeArgs,
-    #[arg(long, value_enum)]
-    pub status: Option<ItemStatus>,
-    /// Downloaded items whose media is no longer there
-    #[arg(long)]
-    pub missing: bool,
-    /// Show API quota used today
-    #[arg(long)]
-    pub quota: bool,
-    #[arg(long)]
-    pub json: bool,
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -221,8 +177,6 @@ pub enum ConfigCmd {
     Rollback { rev: i64 },
     /// Show how a file differs from the current revision
     Diff { path: Option<PathBuf> },
-    /// Three-way merge a file into the stored config
-    Merge { path: PathBuf },
 }
 
 #[derive(Debug, Clone, Subcommand)]

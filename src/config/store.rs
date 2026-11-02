@@ -89,7 +89,8 @@ pub enum StoreError {
     #[error(
         "{path} differs from the stored config, which was changed by {changed_by} (revision {rev}) after it was last imported.\n\
          Refusing to overwrite those edits. Compare with `tidepool config diff {path}`, \
-         merge with `tidepool config merge {path}`, or pass --force-config to import anyway."
+         keep them with `tidepool config export --show-secrets > {path}`, or pass \
+         --force-config to import anyway."
     )]
     Conflict {
         path: String,

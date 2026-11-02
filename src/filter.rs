@@ -192,7 +192,7 @@ pub enum Structural {
 }
 
 /// Why an item is kept or dropped. Stored in the DB and shown by
-/// `tidepool list` and `tidepool filter test`.
+/// the web UI and `tidepool filter test`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case", tag = "decision")]
 pub enum Decision {

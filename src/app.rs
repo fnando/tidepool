@@ -150,10 +150,6 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Cleanup(scope) => app.cleanup(scope, out).await,
         Command::Trash { cmd } => app.trash(cmd, out),
         Command::Daemon { cmd } => crate::daemon::control::command(&app, cmd, out).await,
-        other => {
-            let milestone = other.milestone().unwrap_or("a later milestone");
-            bail!("this command is not implemented yet (planned for {milestone})")
-        }
     }
 }
 
@@ -2689,9 +2685,6 @@ impl App<'_> {
             }
             Some(ConfigCmd::Diff { path }) => {
                 return self.config_diff(path.as_deref(), args.show_secrets, out);
-            }
-            Some(ConfigCmd::Merge { .. }) => {
-                bail!("`config merge` is not implemented yet (planned for M7)")
             }
         }
         Ok(exit::OK)

@@ -398,10 +398,7 @@ fn schema_command_prints_the_committed_schema() {
 #[test]
 fn exit_codes() {
     let env = Env::new();
-    env.cmd(&["list"])
-        .assert()
-        .code(1)
-        .stderr(contains("not implemented yet (planned for M6)"));
+    env.cmd(&["list"]).assert().code(2);
     env.cmd(&["run"])
         .assert()
         .code(1)
