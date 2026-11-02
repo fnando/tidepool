@@ -25,7 +25,7 @@
   <tbody>
   {% for row in rows %}
     <tr>
-      <td><a href="/sources/{{ name }}/videos/{{ row.video_id }}">{{ row.title }}</a><br><small class="muted">{{ row.video_id }}</small></td>
+      <td>{% if let Some(clean) = row.clean_title %}<a href="/sources/{{ name }}/videos/{{ row.video_id }}">{{ clean }}</a><br><small class="muted" title="YouTube's title">{{ row.title }}</small>{% else %}<a href="/sources/{{ name }}/videos/{{ row.video_id }}">{{ row.title }}</a>{% endif %}<br><small class="muted">{{ row.video_id }}</small></td>
       <td><span class="pill st-{{ row.status }}">{{ row.status }}</span></td>
       <td><small>{{ row.why.as_deref().unwrap_or_default() }}</small></td>
       <td><small>{{ row.date.as_deref().unwrap_or_default() }}</small></td>

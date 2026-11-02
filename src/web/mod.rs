@@ -45,6 +45,8 @@ pub struct Web {
     processor: Arc<Notify>,
     /// Where hook logs are (`<video_id>.log`).
     hook_logs: PathBuf,
+    /// tidepool's data folder (the MusicBrainz cache).
+    data_dir: PathBuf,
     /// `server.read_only_config`: no editing the config.
     read_only: bool,
     /// Ends the live event streams when the server stops.
@@ -63,6 +65,7 @@ pub struct Wake {
 impl Web {
     pub fn new(
         db: PathBuf,
+        data_dir: PathBuf,
         hook_logs: PathBuf,
         server: &ServerConfig,
         addr: SocketAddr,
@@ -87,6 +90,7 @@ impl Web {
             cleanup_now: wake.cleanup_now,
             processor: wake.processor,
             hook_logs,
+            data_dir,
             read_only: server.read_only_config,
             shutdown: wake.shutdown,
         }
@@ -459,6 +463,39 @@ async fn api_service(
 
 const PER_PAGE: usize = 50;
 
+/// The artist's name `clean_title = "music_video"` needs for `source`'s
+/// videos, when it's on and the source names the artist; `None` otherwise
+/// (or when MusicBrainz can't say: titles then show as they are).
+async fn clean_title_artist(
+    web: &Arc<Web>,
+    source: &crate::config::merge::EffectiveSource,
+) -> Option<String> {
+    if source.clean_title != crate::config::CleanTitle::MusicVideo {
+        return None;
+    }
+    let id =
+        crate::download::stages::artist_id(source, &crate::download::layout::Values::default())?;
+    crate::musicbrainz::artist_name(&source.embed.musicbrainz_server, &web.data_dir, &id)
+        .await
+        .map_err(|e| tracing::debug!("web UI: no artist name for {}: {e}", source.key))
+        .ok()
+}
+
+/// A source from the current config.
+async fn source_named(
+    web: &Arc<Web>,
+    name: &str,
+) -> Result<Option<crate::config::merge::EffectiveSource>, WebError> {
+    let name = name.to_string();
+    web.db(move |conn| {
+        let (_, loaded) = ConfigStore::new(conn).load_current()?;
+        Ok(crate::config::merge::effective_sources(&loaded.config)
+            .into_iter()
+            .find(|s| s.key == name))
+    })
+    .await
+}
+
 #[derive(Deserialize, Default)]
 struct ListQuery {
     status: Option<String>,
@@ -583,10 +620,17 @@ async fn source_page(
             }))
         })
         .await?;
-    match found {
-        Some(page) => Ok(render(page)?.into_response()),
-        None => Ok(not_found("such source")),
+    let Some(mut page) = found else {
+        return Ok(not_found("such source"));
+    };
+    if let Some(source) = source_named(&web, &page.name).await?
+        && let Some(artist) = clean_title_artist(&web, &source).await
+    {
+        for row in &mut page.rows {
+            row.clean_title = data::clean_title(&row.title, &artist);
+        }
     }
+    Ok(render(page)?.into_response())
 }
 
 #[derive(Template)]
@@ -630,9 +674,14 @@ async fn video_page(
     State(web): State<Arc<Web>>,
     Path((source, id)): Path<(String, String)>,
 ) -> Result<Response, WebError> {
-    let Some((video, jobs)) = video_and_jobs(&web, source, id.clone()).await? else {
+    let Some((mut video, jobs)) = video_and_jobs(&web, source.clone(), id.clone()).await? else {
         return Ok(not_found("such video in this source"));
     };
+    if let Some(source) = source_named(&web, &source).await?
+        && let Some(artist) = clean_title_artist(&web, &source).await
+    {
+        video.clean_title = data::clean_title(&video.title, &artist);
+    }
     let log = data::log_tail(&web.hook_logs.join(format!("{id}.log")), 40);
     Ok(render(VideoPage {
         csrf: web.csrf.clone(),
@@ -1196,6 +1245,7 @@ mod tests {
         };
         let web = Arc::new(Web::new(
             db.clone(),
+            dir.path().join("data"),
             dir.path().join("logs"),
             &server,
             "127.0.0.1:8787".parse().unwrap(),
@@ -1341,6 +1391,51 @@ mod tests {
 
         let (status, _, _) = send(&s.web, get("/sources/nope")).await;
         assert_eq!(status, StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn lists_show_the_title_clean_title_will_use() {
+        use wiremock::matchers::path;
+        use wiremock::{Mock, MockServer, ResponseTemplate};
+        let musicbrainz = MockServer::start().await;
+        Mock::given(path("/ws/2/artist/lofi-girl"))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(serde_json::json!({"id": "lofi-girl", "name": "Lofi Girl"})),
+            )
+            .expect(1)
+            .mount(&musicbrainz)
+            .await;
+        let s = setup("");
+        seed(&s.db);
+        let state = Db::open(&s.db).unwrap();
+        state
+            .conn
+            .execute(
+                "UPDATE videos SET title = 'Lofi Girl - Night Drive (Official Video)' WHERE id = 'aaaaaaaaaaa'",
+                [],
+            )
+            .unwrap();
+        let text = format!(
+            "{CONFIG}clean_title = \"music_video\"\n\
+             embed.tags = {{ MUSICBRAINZ_ARTISTID = \"lofi-girl\" }}\n\
+             embed.musicbrainz = {{ server = \"{}\" }}\n",
+            musicbrainz.uri()
+        );
+        let loaded = crate::config::load_str("c.toml", &text).unwrap();
+        ConfigStore::new(&state.conn)
+            .save_edit(&text, &loaded)
+            .unwrap();
+
+        let (_, _, body) = send(&s.web, get("/sources/lofi")).await;
+        assert!(body.contains(">Night Drive</a>"), "{body}");
+        assert!(
+            body.contains("Lofi Girl - Night Drive (Official Video)"),
+            "YouTube's too"
+        );
+        assert!(body.contains(">Lofi trailer</a>"), "nothing to clean");
+        let (_, _, body) = send(&s.web, get("/sources/lofi/videos/aaaaaaaaaaa")).await;
+        assert!(body.contains("<h2>Night Drive</h2>"), "{body}");
     }
 
     #[tokio::test]
@@ -1513,6 +1608,7 @@ mod tests {
             read_only: true,
             ..Web::new(
                 s.db.clone(),
+                s.dir.path().join("data"),
                 s.dir.path().join("logs"),
                 &ServerConfig::default(),
                 "127.0.0.1:8787".parse().unwrap(),

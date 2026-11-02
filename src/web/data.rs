@@ -226,6 +226,8 @@ pub struct VideoRow {
     /// Published (`YYYY-MM-DD`).
     pub date: Option<String>,
     pub size: Option<String>,
+    /// The title `clean_title` gives it, when that differs.
+    pub clean_title: Option<String>,
 }
 
 /// Why a video is where it is, in words.
@@ -309,6 +311,7 @@ pub fn videos(
                 size: bytes
                     .filter(|_| status == "done")
                     .map(|b| human_bytes(b.max(0) as u64)),
+                clean_title: None,
                 status,
             })
         })?
@@ -340,6 +343,8 @@ pub struct VideoDetail {
     pub files: Vec<String>,
     pub hook_runs: Vec<HookRunRow>,
     pub in_trash: bool,
+    /// The title `clean_title` gives it, when that differs.
+    pub clean_title: Option<String>,
 }
 
 /// `None` when `source` doesn't have the video.
@@ -408,6 +413,7 @@ pub fn video(
         files,
         hook_runs,
         in_trash: in_trash > 0,
+        clean_title: None,
     }))
 }
 
@@ -416,4 +422,10 @@ pub fn log_tail(path: &std::path::Path, lines: usize) -> Option<String> {
     let text = std::fs::read_to_string(path).ok()?;
     let all: Vec<&str> = text.lines().collect();
     Some(all[all.len().saturating_sub(lines)..].join("\n"))
+}
+
+/// The title `clean_title = "music_video"` gives `title`, when it differs.
+pub fn clean_title(title: &str, artist: &str) -> Option<String> {
+    let cleaned = crate::titles::music_video(title, artist);
+    (cleaned != title).then_some(cleaned)
 }

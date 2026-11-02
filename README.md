@@ -1100,6 +1100,10 @@ overwriting it. History lists every revision; open one to see what rolling
 back to it would change, and roll back. Set `read_only_config = true` under
 `[server]` to turn editing off.
 
+For sources with `clean_title = "music_video"`, the list and the video's page
+show the title each video gets (YouTube's below it), including videos not
+downloaded yet, so you can check the cleanup before anything is saved.
+
 With the web interface on, `schedule.interval` can be empty: tidepool then
 only syncs when you ask (the button, or `tidepool daemon sync`). Set
 `enabled = false` under `[server]` to turn the web interface off; changes to
