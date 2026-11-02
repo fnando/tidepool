@@ -1,7 +1,12 @@
 {% if let Some(errors) = errors %}
 <div class="flash error"><strong>It has mistakes; nothing was saved.</strong><pre>{{ errors }}</pre></div>
-{% else if changes.is_empty() %}
+{% else if !text_changed %}
 <p class="flash">No changes from revision {{ rev }}.</p>
+{% else if changes.is_empty() %}
+<div class="flash">
+  <strong>Only comments or formatting changed; the settings are the same as revision {{ rev }}.</strong> Saving keeps the new text.
+  <details><summary>Text diff</summary><pre>{{ diff }}</pre></details>
+</div>
 {% else %}
 <div class="flash{% if saved %} ok{% endif %}">
   <strong>{% if saved %}Saved. {% endif %}Changes from revision {{ rev }}:</strong>

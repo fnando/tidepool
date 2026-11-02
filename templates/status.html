@@ -81,11 +81,11 @@
         </div>
         <div class="stats">
           {% let failed = source.count("failed") + source.count("unavailable") %}
-          <a class="stat{% if source.count("downloaded") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=downloaded"><b>{{ source.count("downloaded") }}</b><span>downloaded</span></a>
-          <a class="stat{% if source.count("waiting") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=waiting"><b>{{ source.count("waiting") }}</b><span>waiting</span></a>
-          <a class="stat{% if source.count("skipped") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=skipped"><b>{{ source.count("skipped") }}</b><span>skipped</span></a>
-          <a class="stat{% if failed == 0 %} zero{% else %} bad{% endif %}" href="/sources/{{ source.name }}?status=failed"><b>{{ failed }}</b><span>failed</span></a>
-          <a class="stat{% if source.count("cleaned_up") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=cleaned_up"><b>{{ source.count("cleaned_up") }}</b><span>cleaned up</span></a>
+          <a class="stat s-downloaded{% if source.count("downloaded") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=downloaded"><b>{{ source.count("downloaded") }}</b><span>downloaded</span></a>
+          <a class="stat s-waiting{% if source.count("waiting") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=waiting"><b>{{ source.count("waiting") }}</b><span>waiting</span></a>
+          <a class="stat s-skipped{% if source.count("skipped") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=skipped"><b>{{ source.count("skipped") }}</b><span>skipped</span></a>
+          <a class="stat s-failed{% if failed == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=failed"><b>{{ failed }}</b><span>failed</span></a>
+          <a class="stat s-cleaned_up{% if source.count("cleaned_up") == 0 %} zero{% endif %}" href="/sources/{{ source.name }}?status=cleaned_up"><b>{{ source.count("cleaned_up") }}</b><span>cleaned up</span></a>
         </div>
       </div>
     </div>

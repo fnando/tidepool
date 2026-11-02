@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>{% block title %}tidepool{% endblock %}</title>
-  <link rel="stylesheet" href="/assets/app.css">
-  <script src="/assets/htmx.min.js" defer></script>
+  <link rel="stylesheet" href="{{ crate::web::asset_url("app.css") }}">
+  <script src="{{ crate::web::asset_url("htmx.min.js") }}" defer></script>
 </head>
 <body hx-headers='{"X-CSRF-Token": "{{ csrf }}"}'>
   <div class="app">
@@ -21,6 +21,7 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+  <div id="toast" class="flash error toast" role="alert" hidden></div>
   <script>
     (function () {
       var path = location.pathname;
@@ -28,6 +29,26 @@
       document.querySelectorAll(".topnav [data-section]").forEach(function (link) {
         if (link.getAttribute("data-section") === current) link.classList.add("active");
       });
+
+      // htmx drops failed requests silently; say so.
+      var toast = document.getElementById("toast");
+      var timer = null;
+      function fail(text) {
+        toast.textContent = text;
+        toast.hidden = false;
+        clearTimeout(timer);
+        timer = setTimeout(function () { toast.hidden = true; }, 8000);
+      }
+      toast.addEventListener("click", function () { toast.hidden = true; });
+      document.addEventListener("htmx:responseError", function (event) {
+        var xhr = event.detail.xhr;
+        var why = (xhr.responseText || "").trim().slice(0, 300) || xhr.statusText;
+        fail("That didn't work (" + xhr.status + "): " + why);
+      });
+      document.addEventListener("htmx:sendError", function () {
+        fail("Couldn't reach tidepool. Is it still running?");
+      });
+      document.addEventListener("htmx:beforeRequest", function () { toast.hidden = true; });
     })();
   </script>
 </body>

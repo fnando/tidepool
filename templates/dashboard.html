@@ -8,5 +8,5 @@
 </header>
 {% include "live.html" %}
 {% include "status.html" %}
-<script src="/assets/live.js" defer></script>
+<script src="{{ crate::web::asset_url("live.js") }}" defer></script>
 {% endblock %}

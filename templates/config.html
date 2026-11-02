@@ -16,8 +16,9 @@
 {% endif %}
 <form hx-post="/config/check" hx-target="#result" hx-swap="innerHTML">
   <input type="hidden" name="base" value="{{ rev }}">
-  <div class="card">
-    <textarea name="text" class="editor" spellcheck="false" rows="30" aria-label="Config"{% if read_only %} readonly{% endif %}>{{ text }}</textarea>
+  <div class="card editor-wrap">
+    <pre aria-hidden="true"><code></code></pre>
+    <textarea name="text" class="editor" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-label="Config"{% if read_only %} readonly{% endif %}>{{ text }}</textarea>
   </div>
   <div class="section-head">
     <span class="hint">API keys and the token are shown masked; leave them as they are to keep them.</span>
@@ -49,4 +50,5 @@
     </table>
   </div>
 </section>
+<script src="{{ crate::web::asset_url("toml.js") }}" defer></script>
 {% endblock %}

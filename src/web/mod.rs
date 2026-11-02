@@ -175,6 +175,7 @@ pub fn router(web: Arc<Web>) -> Router {
         .route("/api/v1/cleanup", post(api_cleanup))
         .route("/api/v1/services/{name}/{action}", post(api_service))
         .layer(middleware::from_fn_with_state(web.clone(), guard))
+        .layer(middleware::map_response(no_store))
         .with_state(web)
 }
 
@@ -814,6 +815,9 @@ struct ConfigPage {
 struct ConfigResult {
     errors: Option<String>,
     changes: Vec<String>,
+    /// The text differs (settings may not: comments, formatting, the same
+    /// key written another way).
+    text_changed: bool,
     diff: String,
     rev: i64,
     saved: bool,
@@ -909,6 +913,7 @@ fn compare(
             ConfigResult {
                 errors: Some(err.to_string()),
                 changes: Vec::new(),
+                text_changed: false,
                 diff: String::new(),
                 rev,
                 saved: false,
@@ -927,6 +932,7 @@ fn compare(
                 ConfigResult {
                     errors: None,
                     changes,
+                    text_changed: text != toml,
                     diff,
                     rev,
                     saved: false,
@@ -1005,7 +1011,7 @@ async fn config_save(
                 ));
                 return Ok(Outcome::Result(result));
             }
-            let Some((text, loaded)) = checked.filter(|_| !result.changes.is_empty()) else {
+            let Some((text, loaded)) = checked.filter(|_| result.text_changed) else {
                 return Ok(Outcome::Result(result));
             };
             let (rev, written) =
@@ -1019,6 +1025,7 @@ async fn config_save(
         Outcome::Saved(rev, Err(problem)) => render(ConfigResult {
             errors: Some(format!("Saved as revision {rev}, but {problem}.")),
             changes: Vec::new(),
+            text_changed: false,
             diff: String::new(),
             rev,
             saved: true,
@@ -1114,24 +1121,65 @@ async fn login(
     Ok(response)
 }
 
-async fn asset(Path(file): Path<String>) -> Response {
-    let (body, kind): (&'static str, &str) = match file.as_str() {
+/// An asset built into the binary, and its content type.
+fn asset_file(file: &str) -> Option<(&'static str, &'static str)> {
+    Some(match file {
         "htmx.min.js" => (
             include_str!("../../assets/vendor/htmx.min.js"),
             "text/javascript",
         ),
         "app.css" => (include_str!("../../assets/app.css"), "text/css"),
         "live.js" => (include_str!("../../assets/live.js"), "text/javascript"),
-        _ => return StatusCode::NOT_FOUND.into_response(),
+        "toml.js" => (include_str!("../../assets/toml.js"), "text/javascript"),
+        _ => return None,
+    })
+}
+
+/// A short tag of an asset's contents.
+fn asset_tag(body: &str) -> String {
+    let digest = <sha2::Sha256 as sha2::Digest>::digest(body.as_bytes());
+    crate::hex::encode(&digest)[..16].to_string()
+}
+
+/// An asset's address, which changes with its contents, so browsers never
+/// use a copy from an older build.
+pub(crate) fn asset_url(file: &str) -> String {
+    let tag = asset_file(file)
+        .map(|(body, _)| asset_tag(body))
+        .unwrap_or_default();
+    format!("/assets/{file}?v={tag}")
+}
+
+/// An asset built into the binary. The browser checks back each time (a
+/// tag of its contents), so a new build's assets show up right away.
+async fn asset(Path(file): Path<String>, headers: HeaderMap) -> Response {
+    let Some((body, kind)) = asset_file(&file) else {
+        return StatusCode::NOT_FOUND.into_response();
     };
-    (
-        [
-            (header::CONTENT_TYPE, kind),
-            (header::CACHE_CONTROL, "public, max-age=3600"),
-        ],
-        body,
-    )
-        .into_response()
+    let etag = format!("\"{}\"", asset_tag(body));
+    let cache = [
+        (header::ETAG, etag.as_str()),
+        (header::CACHE_CONTROL, "no-cache"),
+    ];
+    let fresh = headers
+        .get(header::IF_NONE_MATCH)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(|value| value.split(',').any(|tag| tag.trim() == etag));
+    if fresh {
+        return (StatusCode::NOT_MODIFIED, cache).into_response();
+    }
+    (cache, [(header::CONTENT_TYPE, kind)], body).into_response()
+}
+
+/// Pages, fragments and API answers are always fetched fresh, so a browser
+/// never shows a page from an older build (or older state). Assets say
+/// their own.
+async fn no_store(mut response: Response) -> Response {
+    response
+        .headers_mut()
+        .entry(header::CACHE_CONTROL)
+        .or_insert(HeaderValue::from_static("no-store"));
+    response
 }
 
 /// Host, origin, sign-in and CSRF checks, before any handler.
@@ -1591,6 +1639,36 @@ mod tests {
             "{page}"
         );
 
+        // The same settings written another way: kept as a new revision.
+        let reworded = edited.replace(
+            "[sources.lofi]\nurls",
+            "# the lofi one\n[sources.lofi]\nurls",
+        );
+        let (_, _, body) = call(
+            &s.web,
+            form("/config/check", &s.web.csrf, form_body(&reworded, 2)),
+        )
+        .await;
+        assert!(
+            body.contains("Only comments or formatting changed"),
+            "{body}"
+        );
+        let (_, headers, _) = call(
+            &s.web,
+            form("/config/save", &s.web.csrf, form_body(&reworded, 2)),
+        )
+        .await;
+        assert_eq!(headers["hx-redirect"], "/config?saved=3");
+        let current = ConfigStore::new(&state.conn).current().unwrap().unwrap();
+        assert!(current.toml.contains("# the lofi one"));
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), current.toml);
+        let (_, _, body) = call(
+            &s.web,
+            form("/config/save", &s.web.csrf, form_body(&reworded, 3)),
+        )
+        .await;
+        assert!(body.contains("No changes from revision 3"), "{body}");
+
         // Saving from a page opened before that would replace it: refused.
         let (_, _, body) = call(
             &s.web,
@@ -1615,7 +1693,7 @@ mod tests {
         .await;
         assert_eq!(
             (status, &headers["hx-redirect"]),
-            (StatusCode::OK, &HeaderValue::from_static("/config?saved=3"))
+            (StatusCode::OK, &HeaderValue::from_static("/config?saved=4"))
         );
         assert_eq!(std::fs::read_to_string(&file).unwrap(), CONFIG);
     }
@@ -1762,6 +1840,35 @@ mod tests {
         let (status, _, body) = send(&s.web, get("/assets/htmx.min.js")).await;
         assert_eq!(status, StatusCode::OK);
         assert!(body.starts_with("var htmx"));
+        let (_, _, page) = send(&s.web, get("/")).await;
+        assert!(page.contains(&asset_url("app.css")), "{page}");
+        assert!(asset_url("app.css").len() > "/assets/app.css?v=".len());
+    }
+
+    #[tokio::test]
+    async fn pages_and_assets_are_never_used_stale() {
+        let s = setup("");
+        let (status, headers, _) = send(&s.web, get("/assets/app.css")).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(headers[header::CACHE_CONTROL], "no-cache");
+        for page in ["/", "/login"] {
+            let (_, page_headers, _) = send(&s.web, get(page)).await;
+            assert_eq!(page_headers[header::CACHE_CONTROL], "no-store", "{page}");
+        }
+        let etag = headers[header::ETAG].to_str().unwrap().to_string();
+        let (status, _, body) = send(
+            &s.web,
+            get("/assets/app.css").header(header::IF_NONE_MATCH, &etag),
+        )
+        .await;
+        assert_eq!(status, StatusCode::NOT_MODIFIED);
+        assert!(body.is_empty());
+        let (status, _, _) = send(
+            &s.web,
+            get("/assets/app.css").header(header::IF_NONE_MATCH, "\"old\""),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
     }
 
     #[tokio::test]
