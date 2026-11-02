@@ -491,7 +491,7 @@ or category, tidepool keeps only the song's title ("Sonho Médio", "Is That For
 Me") for videos tagged with their artist's `MUSICBRAINZ_ARTISTID` (see `tags`
 above); the artist's name comes from MusicBrainz. It takes out the artist and
 other credits wherever they sit ("feat. …", "&", "x", "Artist: Song"),
-"(Official Video)"-style notes in English and Portuguese, "[HD]", "[4K]",
+"(Official Video)"-style notes in English and Portuguese ("(Clipe Oficial)", "(Videoclip)"), "[HD]", "[4K]",
 remaster and soundtrack notes, while keeping what names a different version,
 like "(Alternate Version)" or "(Acoustic)"; a lyric video keeps
 "(Lyric Video)" at the end.

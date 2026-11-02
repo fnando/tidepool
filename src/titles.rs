@@ -39,6 +39,7 @@ static DESCRIPTORS: LazyLock<Regex> = LazyLock::new(|| {
         (?:web\s?|v[ií]deo\s?)?clipe?\s+oficial |
         v[ií]deo\s+oficial |
         lyric\s+oficial |
+        v[ií]deo\s?clipe? |
         web\s?clipe? |
         clipe |
         (?:4k|hd)\s+(?:upgrade|upscale) |
@@ -56,7 +57,7 @@ static KEEP_QUALIFIER: LazyLock<Regex> = LazyLock::new(|| {
 });
 static VIDEO_GROUP: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r"(?i)(?:official[^)\]}]*video|(?:music|lyric|hd|vertical|promo|performance)\s+video|v[ií]deo\s?clipe|v[ií]deo\s+oficial|clipe?\s+oficial|concert\s+film|from\s+the\s+motion\s+picture)",
+        r"(?i)(?:official[^)\]}]*video|(?:music|lyric|hd|vertical|promo|performance)\s+video|v[ií]deo\s?clipe?|v[ií]deo\s+oficial|clipe?\s+oficial|concert\s+film|from\s+the\s+motion\s+picture)",
     )
 });
 static GROUP: LazyLock<Regex> = LazyLock::new(|| re(r"[(\[{][^)\]}]*[)\]}]"));

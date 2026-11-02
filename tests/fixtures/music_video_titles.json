@@ -658,5 +658,20 @@
     "input": "Dashboard Confessional - Don't Wait (Closed Captioned)",
     "artist": "Dashboard Confessional",
     "clip_name": "Don't Wait"
+  },
+  {
+    "input": "Marisa Monte - Segue O Seco (Videoclip)",
+    "artist": "Marisa Monte",
+    "clip_name": "Segue O Seco"
+  },
+  {
+    "input": "Marisa Monte - Segue O Seco [Videoclipe]",
+    "artist": "Marisa Monte",
+    "clip_name": "Segue O Seco"
+  },
+  {
+    "input": "Marisa Monte - Segue O Seco - Videoclip",
+    "artist": "Marisa Monte",
+    "clip_name": "Segue O Seco"
   }
 ]
