@@ -60,15 +60,36 @@ pub fn current_asset() -> Result<&'static str, String> {
     asset_name(std::env::consts::OS, std::env::consts::ARCH, is_musl())
 }
 
-/// A musl-based Linux (e.g. Alpine) has a musl dynamic loader.
+/// A musl-based Linux (e.g. Alpine): tools must be its musl builds.
 fn is_musl() -> bool {
     std::env::consts::OS == "linux"
-        && std::fs::read_dir("/lib").is_ok_and(|entries| {
-            entries
-                .flatten()
-                .any(|e| e.file_name().to_string_lossy().starts_with("ld-musl-"))
-        })
-        || Path::new("/etc/alpine-release").exists()
+        && musl_system(
+            std::env::consts::ARCH,
+            |path| Path::new(path).exists(),
+            || {
+                std::fs::read_dir("/lib").is_ok_and(|entries| {
+                    entries
+                        .flatten()
+                        .any(|e| e.file_name().to_string_lossy().starts_with("ld-musl-"))
+                })
+            },
+        )
+}
+
+/// Whether a Linux system runs musl programs only. Its glibc loader decides:
+/// with it, glibc builds run (a musl loader may be there too, e.g. Debian's
+/// `musl` package or files copied from an Alpine image). Without it, a musl
+/// loader (or Alpine) means musl.
+fn musl_system(arch: &str, exists: impl Fn(&str) -> bool, musl_loader: impl Fn() -> bool) -> bool {
+    let glibc_loader = match arch {
+        "x86_64" => Some("/lib64/ld-linux-x86-64.so.2"),
+        "aarch64" => Some("/lib/ld-linux-aarch64.so.1"),
+        _ => None,
+    };
+    if glibc_loader.is_some_and(&exists) {
+        return false;
+    }
+    musl_loader() || exists("/etc/alpine-release")
 }
 
 /// Compare yt-dlp versions (`2026.10.26`, `2026.10.29.232701`) numerically,
@@ -98,6 +119,26 @@ pub fn compare_versions(a: &str, b: &str) -> Ordering {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_glibc_loader_decides_the_libc() {
+        let system = |files: &'static [&'static str], musl_loader: bool| {
+            move |arch: &str| musl_system(arch, |p| files.contains(&p), || musl_loader)
+        };
+        // Debian, also with the musl package installed.
+        let debian = system(
+            &["/lib64/ld-linux-x86-64.so.2", "/lib/ld-linux-aarch64.so.1"],
+            false,
+        );
+        assert!(!debian("x86_64") && !debian("aarch64"));
+        let debian_with_musl = system(&["/lib64/ld-linux-x86-64.so.2"], true);
+        assert!(!debian_with_musl("x86_64"));
+        // Alpine.
+        assert!(system(&[], true)("x86_64"));
+        assert!(system(&["/etc/alpine-release"], false)("aarch64"));
+        // Neither loader found: glibc, the common case.
+        assert!(!system(&[], false)("x86_64"));
+    }
 
     #[test]
     fn picks_assets() {
