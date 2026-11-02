@@ -35,6 +35,7 @@ version = 1
 # duplicates = "hardlink"           # same video in several sources: hardlink | symlink | copy | download
 # regex_backtrack_limit = 1000000   # fancy-regex step limit per match
 # shutdown_timeout = "10s"          # grace period for child processes after SIGINT/SIGTERM
+# download = true                   # false = only check sources (index); a category or source can set download itself
 
 [tools.yt-dlp]
 # managed = true                    # tidepool downloads yt-dlp and keeps it updated
@@ -84,6 +85,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # inherit_hooks = false             # elsewhere: true = add to the hooks inherited instead of replacing them
 # redownload_missing = false        # restore files that went missing (else each run reports them)
 # keep_raw_info = false             # keep yt-dlp's raw info.json
+# download = true                   # false = only check this source (index), don't download; default general.download
 # clean_title = "none"              # "music_video": only the song's title, for videos tagged MUSICBRAINZ_ARTISTID
 
 [category.default.youtube]          # YouTube Data API (optional)

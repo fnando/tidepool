@@ -91,6 +91,9 @@ pub struct EffectiveSource {
     pub hooks: Vec<String>,
     pub redownload_missing: bool,
     pub keep_raw_info: bool,
+    /// Download its videos (else only index it): the most specific
+    /// `download` set, else `general.download`.
+    pub download: bool,
     pub clean_title: crate::config::CleanTitle,
     pub embed: Embed,
     pub cleanup: Cleanup,
@@ -176,7 +179,18 @@ pub fn effective_source(config: &Config, key: &str, source: &SourceConfig) -> Ef
     let category = category_of(source).to_string();
     let mut layers = category_layers(config, &category);
     layers.push(source.options());
-    resolve(key, source, category, &layers)
+    let mut effective = resolve(key, source, category, &layers);
+    effective.download = downloads(config, &layers);
+    effective
+}
+
+/// The most specific `download` set, else `general.download`.
+fn downloads(config: &Config, layers: &[Options]) -> bool {
+    layers
+        .iter()
+        .rev()
+        .find_map(|l| l.download)
+        .unwrap_or(config.general.download)
 }
 
 /// Apply `layers` (lowest priority first) over the built-in defaults.
@@ -282,6 +296,7 @@ fn resolve(
         hooks: list(layers, |l| &l.hooks, inherit_hooks),
         redownload_missing: pick!(redownload_missing, false),
         keep_raw_info: pick!(keep_raw_info, false),
+        download: pick!(download, true),
         clean_title: pick!(clean_title, crate::config::CleanTitle::None),
         embed: Embed {
             metadata: table!(embed, metadata, false),
@@ -348,12 +363,10 @@ pub fn category_settings(config: &Config, category: &str) -> EffectiveSource {
         urls: Vec::new(),
         ..SourceConfig::default()
     };
-    resolve(
-        "",
-        &source,
-        category.to_string(),
-        &category_layers(config, category),
-    )
+    let layers = category_layers(config, category);
+    let mut effective = resolve("", &source, category.to_string(), &layers);
+    effective.download = downloads(config, &layers);
+    effective
 }
 
 /// A category's own resolved youtube settings.
@@ -380,6 +393,36 @@ mod tests {
 
     fn pat(s: &str) -> Rule {
         Rule::Pattern(s.into())
+    }
+
+    #[test]
+    fn download_comes_from_the_most_specific_setting() {
+        let config: Config = toml::from_str(&format!(
+            "[general]\ndownload = false\n\
+             [category.music]\ndownload = true\n\
+             [sources.a]\n{URL}\n\
+             [sources.b]\n{URL}\ncategory = 'music'\n\
+             [sources.c]\n{URL}\ncategory = 'music'\ndownload = false\n\
+             [sources.d]\n{URL}\ndownload = true\n"
+        ))
+        .unwrap();
+        let downloads: Vec<(String, bool)> = effective_sources(&config)
+            .into_iter()
+            .map(|s| (s.key, s.download))
+            .collect();
+        assert_eq!(
+            downloads,
+            [
+                ("a".into(), false),
+                ("b".into(), true),
+                ("c".into(), false),
+                ("d".into(), true)
+            ]
+        );
+        assert!(
+            only(&format!("[sources.a]\n{URL}")).download,
+            "on by default"
+        );
     }
 
     #[test]

@@ -676,6 +676,15 @@ impl App<'_> {
             recover: self.role == Role::OneShot,
             now: jiff::Timestamp::now(),
         };
+        if self.role == Role::OneShot {
+            for source in sources.iter().filter(|s| !s.download) {
+                writeln!(
+                    out,
+                    "{}: downloads are off (download = false); only checked",
+                    source.key
+                )?;
+            }
+        }
         let dirs = &self.dirs;
         let paths = |source: &EffectiveSource| {
             Ok(crate::download::SourcePaths {

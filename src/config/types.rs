@@ -65,11 +65,15 @@ pub struct GeneralConfig {
     pub regex_backtrack_limit: u64,
     /// Grace period for child processes after SIGINT/SIGTERM.
     pub shutdown_timeout: HumanDuration,
+    /// Download videos; false = only check sources (index) unless a category
+    /// or source sets `download` itself.
+    pub download: bool,
 }
 
 impl Default for GeneralConfig {
     fn default() -> Self {
         Self {
+            download: true,
             concurrency: 2,
             process_concurrency: 1,
             duplicates: Duplicates::Hardlink,
@@ -472,6 +476,10 @@ macro_rules! options_struct {
             /// Keep yt-dlp's raw info JSON next to the metadata file (as `<metadata file name>.ytdlp.json`).
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub keep_raw_info: Option<bool>,
+            /// Download its videos; false = only check the source (index).
+            /// Defaults to `general.download`.
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            pub download: Option<bool>,
             /// Clean up YouTube titles: `music_video` keeps only the song's title
             /// ("Artist - Song (Official Video)" → "Song"), for videos tagged with
             /// `MUSICBRAINZ_ARTISTID` (the artist's name comes from MusicBrainz).
@@ -515,6 +523,7 @@ macro_rules! options_struct {
                     inherit_hooks: self.inherit_hooks.clone(),
                     redownload_missing: self.redownload_missing.clone(),
                     keep_raw_info: self.keep_raw_info.clone(),
+                    download: self.download,
                     clean_title: self.clean_title,
                     embed: self.embed.clone(),
                     cleanup: self.cleanup.clone(),

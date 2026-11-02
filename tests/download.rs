@@ -1181,6 +1181,31 @@ async fn cleaning_up_a_title_never_overwrites_another_file() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn sources_with_downloads_off_are_only_checked() {
+    let env = Env::new().await;
+    let config = env.config("download = false");
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .success()
+        .stdout(
+            contains("dl: 4 videos (4 new): 4 to download")
+                .and(contains(
+                    "dl: downloads are off (download = false); only checked",
+                ))
+                .and(contains("nothing to download")),
+        );
+    assert!(!env.media().join("dl").exists());
+    assert!(env.statuses("dl").iter().all(|(_, s, _)| s == "pending"));
+
+    // Turned back on: what's waiting downloads.
+    let config = env.config("");
+    env.cmd(&["download", "--config", &config])
+        .assert()
+        .code(3)
+        .stdout(contains("dl: downloaded “Rick Astley"));
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn titles_without_an_artist_id_stay_as_they_are() {
     let env = Env::new().await;
     let config = hooks_config(&env, "clean_title = \"music_video\"", "");

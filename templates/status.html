@@ -10,6 +10,10 @@
       </div>
     </div>
     <p class="muted">
+      Downloads are <strong>{% if status.download %}on{% else %}off{% endif %}</strong> by default
+      {% if !read_only %}<button class="outline secondary small" hx-post="/actions/downloads/{% if status.download %}off{% else %}on{% endif %}" hx-target="#status" hx-swap="outerHTML">Turn {% if status.download %}off{% else %}on{% endif %}</button>{% endif %}
+    </p>
+    <p class="muted">
       {% if let Some(next) = status.next_sync %}Next sync at {{ next }}.{% else %}No schedule: syncs only when asked.{% endif %}
       {% if let Some(last) = status.last_sync %}Last sync ended at {{ last }}.{% endif %}
       {% if status.waiting_downloads > 0 %}{{ status.waiting_downloads }} downloads to finish.{% endif %}
@@ -54,7 +58,7 @@
     <table class="compact">
       <thead><tr>
         <th>Source</th><th class="num">Downloaded</th><th class="num">Waiting</th><th class="num">Skipped</th>
-        <th class="num">Failed</th><th class="num">Cleaned up</th><th class="num">Disk</th><th>Checked</th>
+        <th class="num">Failed</th><th class="num">Cleaned up</th><th class="num">Disk</th><th>Checked</th><th>Downloads</th>
       </tr></thead>
       <tbody>
       {% for source in status.sources %}
@@ -69,6 +73,8 @@
           <td class="num">{{ source.count("cleaned_up") }}</td>
           <td class="num">{{ source.disk }}{% if let Some(max) = source.max_size %}<small class="muted"> / {{ max }}</small>{% endif %}</td>
           <td><small>{{ source.last_indexed.as_deref().unwrap_or("never") }}</small></td>
+          <td>{% if source.download %}<span class="pill st-done">on</span>{% else %}<span class="pill st-paused">off</span>{% endif %}
+            {% if !read_only %}<button class="outline secondary small" hx-post="/actions/sources/{{ source.name }}/downloads/{% if source.download %}off{% else %}on{% endif %}" hx-target="#status" hx-swap="outerHTML">{% if source.download %}Turn off{% else %}Turn on{% endif %}</button>{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>

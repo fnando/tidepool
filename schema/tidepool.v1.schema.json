@@ -29,6 +29,10 @@
           "format": "cutoff",
           "type": "string"
         },
+        "download": {
+          "description": "Download its videos; false = only check the source (index).\nDefaults to `general.download`.",
+          "type": "boolean"
+        },
         "embed": {
           "$ref": "#/$defs/EmbedOptions",
           "description": "Metadata embedded in the media file."
@@ -367,6 +371,11 @@
           "minimum": 1,
           "type": "integer"
         },
+        "download": {
+          "default": true,
+          "description": "Download videos; false = only check sources (index) unless a category\nor source sets `download` itself.",
+          "type": "boolean"
+        },
         "duplicates": {
           "$ref": "#/$defs/Duplicates",
           "default": "hardlink",
@@ -626,6 +635,10 @@
           ],
           "format": "cutoff",
           "type": "string"
+        },
+        "download": {
+          "description": "Download its videos; false = only check the source (index).\nDefaults to `general.download`.",
+          "type": "boolean"
         },
         "embed": {
           "$ref": "#/$defs/EmbedOptions",
@@ -915,6 +928,7 @@
       "$ref": "#/$defs/GeneralConfig",
       "default": {
         "concurrency": 2,
+        "download": true,
         "duplicates": "hardlink",
         "process_concurrency": 1,
         "regex_backtrack_limit": 1000000,

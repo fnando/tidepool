@@ -144,6 +144,11 @@ pub fn router(web: Arc<Web>) -> Router {
         .route("/actions/sync", post(action_sync))
         .route("/actions/cleanup", post(action_cleanup))
         .route("/actions/services/{name}/{action}", post(action_service))
+        .route("/actions/downloads/{state}", post(action_downloads))
+        .route(
+            "/actions/sources/{name}/downloads/{state}",
+            post(action_source_downloads),
+        )
         .route("/sources/{name}", get(source_page))
         .route("/sources/{name}/videos/{id}", get(video_page))
         .route("/sources/{name}/videos/{id}/jobs", get(jobs_fragment))
@@ -191,6 +196,7 @@ struct DashboardPage {
     csrf: String,
     status: data::Status,
     message: Option<String>,
+    read_only: bool,
     live: crate::events::Live,
 }
 
@@ -244,6 +250,7 @@ async fn api_events(State(web): State<Arc<Web>>) -> Response {
 struct StatusFragment {
     status: data::Status,
     message: Option<String>,
+    read_only: bool,
 }
 
 #[derive(Template)]
@@ -259,6 +266,7 @@ async fn dashboard(State(web): State<Arc<Web>>) -> Result<Html<String>, WebError
         csrf: web.csrf.clone(),
         status,
         message: None,
+        read_only: web.read_only,
         live: crate::events::live(),
     })
 }
@@ -269,7 +277,11 @@ async fn status_fragment(State(web): State<Arc<Web>>) -> Result<Html<String>, We
 
 async fn fragment(web: &Arc<Web>, message: Option<String>) -> Result<Html<String>, WebError> {
     let status = web.status().await?;
-    render(StatusFragment { status, message })
+    render(StatusFragment {
+        status,
+        message,
+        read_only: web.read_only,
+    })
 }
 
 /// Sync now; returns what happened.
@@ -334,6 +346,84 @@ async fn action_service(
     match set_service(&web, &name, &action).await? {
         Some(message) => Ok(fragment(&web, Some(message)).await?.into_response()),
         None => Ok(StatusCode::NOT_FOUND.into_response()),
+    }
+}
+
+/// Turn downloads on or off (`source`: one source's `download`, else
+/// `general.download`), as a new config revision written to the config file
+/// too. Returns what to say.
+async fn set_downloads(
+    web: &Arc<Web>,
+    source: Option<String>,
+    state: &str,
+) -> Result<Option<String>, WebError> {
+    let on = match state {
+        "on" => true,
+        "off" => false,
+        _ => return Ok(None),
+    };
+    if web.read_only {
+        return Ok(Some(
+            "Editing the config is off (server.read_only_config).".into(),
+        ));
+    }
+    web.db(move |conn| {
+        let current = ConfigStore::new(conn)
+            .current()?
+            .ok_or_else(|| anyhow::anyhow!("there's no stored config yet"))?;
+        let mut doc: toml_edit::DocumentMut = current.toml.parse()?;
+        let what = match &source {
+            Some(key) => {
+                let Some(table) = doc
+                    .get_mut("sources")
+                    .and_then(|s| s.get_mut(key.as_str()))
+                    .and_then(|t| t.as_table_like_mut())
+                else {
+                    return Ok(None);
+                };
+                table.insert("download", toml_edit::value(on));
+                format!("for {key}")
+            }
+            None => {
+                if doc.get("general").is_none() {
+                    doc["general"] = toml_edit::table();
+                }
+                doc["general"]["download"] = toml_edit::value(on);
+                "for every source without its own setting".to_string()
+            }
+        };
+        let text = doc.to_string();
+        let loaded = crate::config::load_str("config", &text)?;
+        let (rev, written) = store_and_write(conn, |store| Ok(store.save_edit(&text, &loaded)?))?;
+        let mut message = format!(
+            "Downloads are {} {what} (config revision {rev}).",
+            if on { "on" } else { "off" }
+        );
+        if let Err(problem) = written {
+            message.push_str(&format!(" But {problem}."));
+        }
+        Ok(Some(message))
+    })
+    .await
+}
+
+async fn action_downloads(
+    State(web): State<Arc<Web>>,
+    Path(state): Path<String>,
+) -> Result<Response, WebError> {
+    match set_downloads(&web, None, &state).await? {
+        Some(message) => Ok(fragment(&web, Some(message)).await?.into_response()),
+        None => Ok(not_found("such state")),
+    }
+}
+
+async fn action_source_downloads(
+    State(web): State<Arc<Web>>,
+    Path((name, state)): Path<(String, String)>,
+) -> Result<Response, WebError> {
+    match set_downloads(&web, Some(name), &state).await? {
+        Some(message) => Ok(fragment(&web, Some(message)).await?.into_response()),
+        None => Ok(not_found("such source or state")),
     }
 }
 
@@ -1505,6 +1595,45 @@ mod tests {
         })
         .await;
         assert!(end.is_ok(), "the stream ended");
+    }
+
+    #[tokio::test]
+    async fn downloads_are_turned_on_and_off_from_the_dashboard() {
+        let s = setup("");
+        let (_, _, page) = send(&s.web, get("/")).await;
+        assert!(
+            page.contains("Downloads are <strong>on</strong> by default"),
+            "{page}"
+        );
+        let toggle = |uri: &str| post(uri).header("x-csrf-token", s.web.csrf.as_str());
+
+        let (status, _, body) = send(&s.web, toggle("/actions/sources/lofi/downloads/off")).await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(
+            body.contains("Downloads are off for lofi (config revision 2)."),
+            "{body}"
+        );
+        assert!(body.contains("st-paused\">off"), "{body}");
+        let file = std::fs::read_to_string(s.dir.path().join("config.toml")).unwrap();
+        assert!(file.starts_with("# my config"), "comments kept");
+        assert!(file.contains("download = false"), "{file}");
+
+        let (_, _, body) = send(&s.web, toggle("/actions/downloads/off")).await;
+        assert!(
+            body.contains("Downloads are off for every source without its own setting"),
+            "{body}"
+        );
+        let state = Db::open(&s.db).unwrap();
+        let (_, loaded) = ConfigStore::new(&state.conn).load_current().unwrap();
+        assert!(!loaded.config.general.download);
+        assert_eq!(loaded.config.sources["lofi"].download, Some(false));
+        let (_, _, body) = send(&s.web, toggle("/actions/sources/lofi/downloads/on")).await;
+        assert!(body.contains("Downloads are on for lofi"));
+
+        let (status, _, _) = send(&s.web, toggle("/actions/sources/nope/downloads/off")).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        let (status, _, _) = send(&s.web, toggle("/actions/downloads/maybe")).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
     }
 
     #[tokio::test]

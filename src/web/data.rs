@@ -14,6 +14,8 @@ use crate::state::daemon as store;
 /// Everything on the dashboard.
 #[derive(Debug, Clone, Serialize)]
 pub struct Status {
+    /// `general.download`: the default for sources.
+    pub download: bool,
     pub services: Vec<ServiceInfo>,
     /// When the syncer syncs next (local time), if it's on a schedule.
     pub next_sync: Option<String>,
@@ -42,6 +44,8 @@ pub struct SourceInfo {
     pub title: Option<String>,
     pub category: String,
     pub enabled: bool,
+    /// Its videos are downloaded (else it's only checked).
+    pub download: bool,
     pub last_indexed: Option<String>,
     /// Videos per group: downloaded, waiting, skipped, failed, unavailable,
     /// cleaned_up.
@@ -147,6 +151,7 @@ pub fn status(conn: &Connection, config: &Config) -> rusqlite::Result<Status> {
             title,
             category: source.category.clone(),
             enabled: source.enabled,
+            download: source.download,
             last_indexed: last_indexed.and_then(|t| t.parse().ok()).map(local),
             counts: counts.remove(&source.key).unwrap_or_default(),
             disk_bytes: bytes,
@@ -167,6 +172,7 @@ pub fn status(conn: &Connection, config: &Config) -> rusqlite::Result<Status> {
         .collect();
     let count = |sql: &str| -> rusqlite::Result<i64> { conn.query_row(sql, [], |r| r.get(0)) };
     Ok(Status {
+        download: config.general.download,
         services,
         next_sync,
         last_sync,

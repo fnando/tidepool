@@ -955,8 +955,15 @@ pub async fn download_all(
     }
 
     let keys: Vec<String> = sources.iter().map(|s| s.key.clone()).collect();
+    // Sources with `download = false` are only indexed; what they already
+    // downloaded still gets finished.
+    let downloading: Vec<String> = sources
+        .iter()
+        .filter(|s| s.download)
+        .map(|s| s.key.clone())
+        .collect();
     let mut queue = if options.fetch {
-        items::download_queue(&state.conn, &keys, now).map_err(db)?
+        items::download_queue(&state.conn, &downloading, now).map_err(db)?
     } else {
         Vec::new()
     };

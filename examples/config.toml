@@ -16,6 +16,7 @@ process_concurrency = 1             # videos processed at once after downloading
 duplicates = "hardlink"             # same video in several sources: hardlink | symlink | copy | download
 regex_backtrack_limit = 1000000     # fancy-regex step limit per match
 shutdown_timeout = "10s"            # grace period for child processes after SIGINT/SIGTERM
+download = true                     # false = only check sources (index); a category or source can set download itself
 
 [tools.yt-dlp]
 managed = true                      # tidepool downloads yt-dlp and keeps it updated
@@ -62,6 +63,7 @@ cutoff = "30d"                      # skip videos published more than 30d ago; "
 hooks = []
 redownload_missing = false          # true = restore missing files; false = just report them
 clean_title = "none"                # "music_video": only the song's title, for videos tagged MUSICBRAINZ_ARTISTID
+download = true                     # false = only check sources (index), don't download
 
 [category.default.youtube]
 # api_key = "AIza..."               # optional; without it, indexing uses yt-dlp only

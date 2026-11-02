@@ -380,6 +380,24 @@ longer each time, up to 5 attempts. Videos that can't be downloaded at all
 marked unavailable and not tried again. Either way, the other videos still
 download, and the command ends with exit code 3.
 
+**Checking without downloading.** `download = false` keeps a source (or a
+whole category) checked, with your rules applied, without downloading
+anything: handy for seeing what a new source would bring in, or for putting
+one on hold. Set it under `[general]` to make that the default for every
+source; a category or source that sets `download` itself wins. Videos waiting
+in the meantime download on the next sync after you turn it back on. Videos
+already downloaded are still finished and cleaned up as usual. The web
+interface shows which sources download, with buttons to turn it on or off
+(saved as a new revision of your config, and in your config file).
+
+```toml
+[general]
+download = false        # only check sources by default
+
+[sources.lofi]
+download = true         # except this one
+```
+
 **Downloading, then finishing.** Each video is downloaded into a work folder
 first, then finished: its hooks run, tags and the cover are written into the
 file, and everything is saved into your library. Finishing happens alongside
