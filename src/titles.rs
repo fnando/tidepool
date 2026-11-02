@@ -82,6 +82,15 @@ static CREDIT_START: LazyLock<Regex> =
 static OPENS_TITLE: LazyLock<Regex> = LazyLock::new(|| re(r#"\A["'(\[{]"#));
 static TRAILING_CREDIT: LazyLock<Regex> =
     LazyLock::new(|| re(r"(?i)\s+(?:feat\.?|ft\.?|featuring|part\.|starring)\s+.*\z"));
+/// Guests listed after the title's last bracket group: "Song (Version) A, B,
+/// C". Three names or more, so a place ("(Live) Paris, France") stays.
+static TRAILING_GUESTS: LazyLock<Regex> =
+    LazyLock::new(|| re(r"(?<=[)\]}])\s+[^()\[\]{}\-–—|]+(?:,[^()\[\]{}\-–—|,]+){2,}\z"));
+/// A word masked with asterisks ("F***ed"): the asterisks become one dash
+/// ("F-ed"), since "*" can't be in a file name.
+static MASKED: LazyLock<Regex> = LazyLock::new(|| re(r"(?<=\p{Alphabetic})\*+(?=\p{Alphabetic})"));
+/// Japanese quotes around the title: "KEMURI 「PMA」 Music Video".
+static CORNER_QUOTED: LazyLock<Regex> = LazyLock::new(|| re(r"(?s)[「『](.+?)[」』]"));
 static DOUBLE_QUOTED: LazyLock<Regex> = LazyLock::new(|| re(r#"(?s)"(.*)""#));
 static SINGLE_QUOTED: LazyLock<Regex> = LazyLock::new(|| re(r"(?s)\A'(.+)'\z"));
 /// Between a medley's pieces: "⧸" (how file names show "/"), or a "/" with
@@ -239,6 +248,19 @@ fn reduce_medley(name: &str) -> String {
     }
 }
 
+/// "Artist / Title": a slash after the artist's name works like a dash.
+fn strip_slash_artist(name: &str, artist: &str) -> String {
+    let Some(found) = MEDLEY_SPLIT.find(name).ok().flatten() else {
+        return name.to_string();
+    };
+    let (prefix, rest) = (&name[..found.start()], &name[found.end()..]);
+    if !rest.is_empty() && split_top_level(prefix).len() == 1 && credit_segment(prefix, artist) {
+        rest.to_string()
+    } else {
+        name.to_string()
+    }
+}
+
 /// Drop the artist credit before or after the title (split on dashes). The
 /// title itself may have " - ", so only end segments go.
 fn strip_dash_artist(name: &str, artist: &str) -> String {
@@ -284,7 +306,18 @@ pub fn music_video(title: &str, artist: &str) -> String {
     name = strip_video_groups(&name);
     name = cleanup_noise(&replace_all(&DESCRIPTORS, &name, ""));
     name = replace_all(&TRAILING_QUALITY, &name, "");
+    name = strip_slash_artist(&name, artist);
     name = reduce_medley(&name);
+
+    // A title in Japanese quotes is the whole title.
+    if let Some(quoted) = CORNER_QUOTED
+        .captures(name.as_str())
+        .ok()
+        .flatten()
+        .and_then(|c| c.get(1).map(|m| m.as_str().to_string()))
+    {
+        name = quoted;
+    }
 
     // A double-quoted title is the whole title ('Artist - "Song"').
     if name.matches('"').count() >= 2 {
@@ -299,6 +332,7 @@ pub fn music_video(title: &str, artist: &str) -> String {
     name = strip_colon_artist(&name, artist);
     name = strip_dash_artist(&name, artist);
     name = replace_all(&TRAILING_CREDIT, &name, "");
+    name = replace_all(&TRAILING_GUESTS, &name, "");
     if let Some(quoted) = SINGLE_QUOTED
         .captures(name.as_str())
         .ok()
@@ -309,7 +343,7 @@ pub fn music_video(title: &str, artist: &str) -> String {
     }
 
     // Safe as a file name: look-alikes that NFKC keeps as they are.
-    let name: String = name
+    let name: String = replace_all(&MASKED, &name, "-")
         .replace('/', "⧸")
         .replace('\\', "⧹")
         .replace(':', "꞉")
