@@ -254,7 +254,8 @@ mistakes is never applied.
 
 Editors that understand the `#:schema` line at the top of the file (for
 example VS Code with the *Even Better TOML* extension) suggest setting names
-and flag mistakes as you type.
+and flag mistakes as you type. `tidepool config schema` prints that schema, for
+editors or tools that want a local copy.
 
 ### History and undo
 
@@ -1180,6 +1181,7 @@ so `tidepool run -v > out.txt` keeps the summary lines separate. With
 | Cleaned-up files, until they're deleted for good (unless a category sets `trash_dir`) | `~/.local/share/tidepool/trash` |
 | What your hooks printed as errors | `~/.local/share/tidepool/logs/hooks/` |
 | The yt-dlp and Deno tidepool manages | `~/.local/share/tidepool/bin/` |
+| What MusicBrainz said about your artists (kept for 30 days) | `~/.local/share/tidepool/cache/musicbrainz/` |
 | tidepool's own data | `~/.local/share/tidepool/` |
 
 If you set `XDG_CONFIG_HOME` or `XDG_DATA_HOME`, tidepool uses those folders
@@ -1196,4 +1198,4 @@ For scripts:
 | 2 | The command was used incorrectly (unknown option, unknown source) |
 | 3 | Something failed for some sources, videos or hooks, but the rest finished |
 | 4 | The YouTube API couldn't be used and `fallback_to_ytdlp = false` |
-| 130 / 143 | Stopped by Ctrl-C / `kill` |
+| 130 / 143 | Stopped by Ctrl-C / `kill` (`tidepool run --daemon` exits 0 when stopped, so service managers don't count it as a failure) |
