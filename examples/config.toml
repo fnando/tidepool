@@ -1,4 +1,4 @@
-#:schema https://raw.githubusercontent.com/fnando/tidepool/v0.0.0/schema/tidepool.v1.schema.json
+#:schema https://raw.githubusercontent.com/fnando/tidepool/v0.0.1/schema/tidepool.v1.schema.json
 #
 # Example tidepool config. Import it with:
 #
