@@ -16,12 +16,13 @@ fn re(pattern: &str) -> Regex {
 
 /// Whole bracket groups that are credits or annotations rather than part of
 /// the title: "(feat. X)", "(from <movie>)", "(starring Y)", "(Sample: Z)",
-/// "(DVD … Ao Vivo)", remaster/mono/mix notes and bare "[HD]"/"[4K]".
+/// "(DVD … Ao Vivo)", remaster/mono/mix notes and bare "[HD]"/"[4K]"/"[EDIT]"
+/// ("(Radio Edit)" names a version, so it stays).
 static GROUP_NOISE: LazyLock<Regex> = LazyLock::new(|| {
     re(r"(?xi)
         [(\[{]\s*(?:feat\.?|ft\.?|featuring|from|starring|sample|dvd)[^)\]}]*[)\]}] |
         [(\[{][^)\]}]*(?:remaster(?:ed)?|\bmono\b|\bmix\b)[^)\]}]*[)\]}] |
-        [(\[{]\s*(?:hd|4k|official|video)\s*[)\]}]
+        [(\[{]\s*(?:hd|4k|official|video|edit)\s*[)\]}]
     ")
 });
 
