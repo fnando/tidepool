@@ -68,6 +68,10 @@ pub struct GeneralConfig {
     /// Download videos; false = only check sources (index) unless a category
     /// or source sets `download` itself.
     pub download: bool,
+    /// Where you put videos you downloaded yourself, to hand them to tidepool
+    /// from a video's page in the web UI. A full path (`{data_dir}` allowed).
+    #[schemars(extend("format" = "trash-dir-template"))]
+    pub backfill_dir: String,
 }
 
 impl Default for GeneralConfig {
@@ -79,6 +83,7 @@ impl Default for GeneralConfig {
             duplicates: Duplicates::Hardlink,
             regex_backtrack_limit: 1_000_000,
             shutdown_timeout: HumanDuration(Duration::from_secs(10)),
+            backfill_dir: "{data_dir}/backfill".into(),
         }
     }
 }

@@ -381,6 +381,19 @@ longer each time, up to 5 attempts. Videos that can't be downloaded at all
 marked unavailable and not tried again. Either way, the other videos still
 download, and the command ends with exit code 3.
 
+**Videos tidepool can't download.** For age-restricted videos, set
+`cookies_file`. For videos blocked in your country, a proxy somewhere else
+often works: `ytdlp_args = ["--proxy", "socks5://…"]` on that source. Or
+download the video yourself, any way you like, and put the file in the
+backfill folder (`~/.local/share/tidepool/backfill`, or `backfill_dir` under
+`[general]`), with its `.info.json` and subtitles next to it if you have them
+(yt-dlp's `--write-info-json` and `--write-subs`). Then open the video's page
+in the [web interface](#the-web-interface) and pick the file: it's moved out of
+the backfill folder and finished like any download (your hooks, the cover,
+tags, its place in your folders), then cleaned up like the rest. Without an
+`.info.json`, it gets the title, channel, date and description tidepool found
+when it checked the source.
+
 **Checking without downloading.** `download = false` keeps a source (or a
 whole category) checked, with your rules applied, without downloading
 anything: handy for seeing what a new source would bring in, or for putting
@@ -1116,8 +1129,10 @@ revision) until you enable it again. Click a video for everything
 about it: what each of your rules says about it (like `tidepool filter
 test`), its files, its hooks and their log, and buttons to run its hooks
 again, embed again, download it again (optionally deleting its files first),
-or restore it from the trash. That work happens in the background; the page
-shows how it went.
+or restore it from the trash. A video that couldn't be downloaded can be
+given a file you downloaded yourself, picked from the backfill folder (see
+[Videos tidepool can't download](#downloading)). That work happens in the
+background; the page shows how it went.
 
 **Editing your config.** The Config page shows your config as you wrote it,
 comments and all, with your API keys and token masked (leave them masked to
@@ -1210,6 +1225,7 @@ so `tidepool run -v > out.txt` keeps the summary lines separate. With
 | Videos (unless a category sets `media_dir` or `output_dir`) | `~/.local/share/tidepool/media` |
 | Downloads in progress (unless a category sets `tmp_dir`) | `~/.local/share/tidepool/tmp` |
 | Cleaned-up files, until they're deleted for good (unless a category sets `trash_dir`) | `~/.local/share/tidepool/trash` |
+| Videos you downloaded yourself, waiting to be picked (unless `backfill_dir` is set) | `~/.local/share/tidepool/backfill` |
 | What your hooks printed as errors | `~/.local/share/tidepool/logs/hooks/` |
 | The yt-dlp and Deno tidepool manages | `~/.local/share/tidepool/bin/` |
 | What MusicBrainz said about your artists (kept for 30 days) | `~/.local/share/tidepool/cache/musicbrainz/` |

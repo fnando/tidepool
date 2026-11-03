@@ -1,6 +1,7 @@
 //! Downloading: run yt-dlp into a temp dir, add the cover and metadata.json,
 //! and move the result into its media folder in one rename.
 
+pub mod backfill;
 pub mod embed;
 pub mod info;
 pub mod layout;

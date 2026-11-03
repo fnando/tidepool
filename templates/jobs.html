@@ -17,6 +17,25 @@
       {% endif %}
     </div>
   </div>
+  {% if let Some(backfill) = video.backfill %}
+  <div class="card backfill">
+    <h3>Use a file you downloaded</h3>
+    {% if let Some(error) = backfill.error %}
+    <p class="hint">The backfill folder isn't usable: {{ error }}</p>
+    {% else if backfill.files.is_empty() %}
+    <p class="hint">Can't be downloaded? Download it yourself (with its <code>.info.json</code>, if you can) into <code>{{ backfill.dir }}</code>, then pick it here.</p>
+    {% else %}
+    <form class="inline" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/backfill" hx-target="#jobs" hx-swap="outerHTML"
+          hx-confirm="Move this file out of the backfill folder and use it for this video?">
+      <select name="file" aria-label="File from the backfill folder">
+        {% for file in backfill.files %}<option value="{{ file.name }}">{{ crate::web::data::Backfill::label(file) }}</option>{% endfor %}
+      </select>
+      <button class="small">Use this file</button>
+    </form>
+    <p class="hint">From <code>{{ backfill.dir }}</code>. It's moved out of there and finished like a download: hooks, cover, embedding.</p>
+    {% endif %}
+  </div>
+  {% endif %}
   {% if !jobs.is_empty() %}
   <div class="card table-wrap">
     <table>

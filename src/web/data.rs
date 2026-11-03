@@ -335,6 +335,29 @@ pub struct VideoRow {
     pub clean_title: Option<String>,
 }
 
+/// The backfill folder, as a video's page shows it.
+#[derive(Debug, Clone)]
+pub struct Backfill {
+    pub dir: String,
+    pub files: Vec<crate::download::backfill::Candidate>,
+    /// Why the folder couldn't be found (a bad `backfill_dir`).
+    pub error: Option<String>,
+}
+
+impl Backfill {
+    /// A file as the picker shows it: its name and size, and whether it's
+    /// named after the video.
+    #[must_use]
+    pub fn label(file: &crate::download::backfill::Candidate) -> String {
+        let size = crate::download::human_bytes(file.bytes);
+        if file.matches_id {
+            format!("{} ({size}, this video)", file.name)
+        } else {
+            format!("{} ({size})", file.name)
+        }
+    }
+}
+
 /// Why a video is where it is, in words.
 fn why(
     status: &str,
@@ -459,6 +482,9 @@ pub struct VideoDetail {
     pub in_trash: bool,
     /// The title `clean_title` gives it, when that differs.
     pub clean_title: Option<String>,
+    /// The files it can be given from the backfill folder, when it can be.
+    #[serde(skip)]
+    pub backfill: Option<Backfill>,
 }
 
 /// `None` when `source` doesn't have the video.
@@ -534,6 +560,7 @@ pub fn video(
         hook_runs,
         in_trash: in_trash > 0,
         clean_title: None,
+        backfill: None,
     }))
 }
 

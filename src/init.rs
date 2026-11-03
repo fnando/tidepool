@@ -37,6 +37,7 @@ version = 1
 # regex_backtrack_limit = 1000000   # fancy-regex step limit per match
 # shutdown_timeout = "10s"          # grace period for child processes after SIGINT/SIGTERM
 # download = true                   # false = only check sources (index); a category or source can set download itself
+# backfill_dir = "{data_dir}/backfill" # videos you downloaded yourself, to pick from a video's page
 
 [tools.yt-dlp]
 # managed = true                    # tidepool downloads yt-dlp and keeps it updated

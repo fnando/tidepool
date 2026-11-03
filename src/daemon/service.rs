@@ -798,7 +798,7 @@ async fn server(app: &App<'_>, signals: Signals) -> anyhow::Result<()> {
     let addr = listener.local_addr()?;
     let web = Arc::new(crate::web::Web::new(
         app.paths.state_db.clone(),
-        app.dirs.data_dir.clone(),
+        app.dirs.clone(),
         app.paths.hook_logs.clone(),
         &config.server,
         addr,

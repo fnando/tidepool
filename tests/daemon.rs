@@ -911,6 +911,97 @@ async fn work_asked_on_a_video_page_is_done_by_the_processor() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn a_video_tidepool_cant_download_is_finished_from_a_file_put_in_the_backfill_folder() {
+    let env = Env::new().await;
+    let config = env.config("1h", "[general]\ndownload = false\n");
+    env.cmd(&["config", "import", &config]).assert().success();
+    env.cmd(&["index"]).assert().success();
+    // YouTube won't let it be downloaded here.
+    env.db()
+        .execute(
+            "UPDATE items SET status = 'unavailable', last_error = 'not available in your country'
+             WHERE video_id = 'dQw4w9WgXcQ'",
+            [],
+        )
+        .unwrap();
+    let backfill = env.path("data/tidepool/backfill");
+    fs::create_dir_all(&backfill).unwrap();
+    fs::write(
+        backfill.join("rick [dQw4w9WgXcQ].mkv"),
+        "downloaded elsewhere\n",
+    )
+    .unwrap();
+
+    let daemon = env.daemon(&config, &[]);
+    daemon.wait_for_log("web UI at http://127.0.0.1:");
+    let url = daemon
+        .log()
+        .lines()
+        .find_map(|l| {
+            l.split("web UI at ")
+                .nth(1)
+                .map(str::trim)
+                .map(str::to_string)
+        })
+        .unwrap();
+    let http = reqwest::Client::new();
+    let page = http
+        .get(format!("{url}/sources/dl/videos/dQw4w9WgXcQ"))
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+    assert!(page.contains("rick [dQw4w9WgXcQ].mkv"), "{page}");
+    let csrf = page
+        .split("\"X-CSRF-Token\": \"")
+        .nth(1)
+        .and_then(|rest| rest.split('"').next())
+        .unwrap()
+        .to_string();
+    let answer = http
+        .post(format!("{url}/sources/dl/videos/dQw4w9WgXcQ/backfill"))
+        .header("x-csrf-token", &csrf)
+        .header("content-type", "application/x-www-form-urlencoded")
+        .body(format!("file={}", encode("rick [dQw4w9WgXcQ].mkv")))
+        .send()
+        .await
+        .unwrap();
+    assert!(answer.status().is_success());
+    let text = answer.text().await.unwrap();
+    assert!(
+        text.contains("Processing rick [dQw4w9WgXcQ].mkv."),
+        "{text}"
+    );
+
+    let status = || -> String {
+        env.db()
+            .query_row(
+                "SELECT status FROM items WHERE video_id = 'dQw4w9WgXcQ'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap()
+    };
+    daemon.wait_for("the video done", || status() == "done");
+    let rick = env.path("media").join(RICK_DIR);
+    assert!(rick.join("metadata.json").is_file(), "{}", daemon.log());
+    let media = fs::read_dir(&rick)
+        .unwrap()
+        .flatten()
+        .find(|e| e.path().extension().is_some_and(|x| x == "mkv"))
+        .expect("the media placed");
+    assert_eq!(
+        fs::read_to_string(media.path()).unwrap(),
+        "downloaded elsewhere\n"
+    );
+    assert!(!backfill.join("rick [dQw4w9WgXcQ].mkv").exists());
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0), "{log}");
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn a_config_saved_in_the_web_ui_applies_and_the_next_start_agrees() {
     let env = Env::new().await;
     let config = env.config("1h", "");

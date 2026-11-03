@@ -676,3 +676,10 @@ ul.plain li + li { border-top: 1px solid var(--border); }
   animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* A video's page: picking a file from the backfill folder. */
+.backfill { margin-top: 12px; padding: 12px 16px; }
+.backfill h3 { margin: 0 0 8px; font-size: var(--font-sm); }
+.backfill form.inline { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.backfill select { flex: 1 1 260px; min-width: 0; }
+.backfill .hint { margin: 8px 0 0; }

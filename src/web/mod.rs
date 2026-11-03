@@ -47,8 +47,9 @@ pub struct Web {
     processor: Arc<Notify>,
     /// Where hook logs are (`<video_id>.log`).
     hook_logs: PathBuf,
-    /// tidepool's data folder (the MusicBrainz cache).
-    data_dir: PathBuf,
+    /// tidepool's folders: the MusicBrainz cache, where work areas and the
+    /// backfill folder are.
+    dirs: crate::paths::Dirs,
     /// `server.read_only_config`: no editing the config.
     read_only: bool,
     /// Ends the live event streams when the server stops.
@@ -70,7 +71,7 @@ impl Web {
     #[must_use]
     pub fn new(
         db: PathBuf,
-        data_dir: PathBuf,
+        dirs: crate::paths::Dirs,
         hook_logs: PathBuf,
         server: &ServerConfig,
         addr: SocketAddr,
@@ -95,7 +96,7 @@ impl Web {
             cleanup_now: wake.cleanup_now,
             processor: wake.processor,
             hook_logs,
-            data_dir,
+            dirs,
             read_only: server.read_only_config,
             shutdown: wake.shutdown,
             versions: Arc::default(),
@@ -130,7 +131,7 @@ impl Web {
         let tools = self
             .db(|conn| Ok(ConfigStore::new(conn).load_current()?.1.config.tools))
             .await?;
-        let (versions, bin_dir) = (self.versions.clone(), self.data_dir.join("bin"));
+        let (versions, bin_dir) = (self.versions.clone(), self.dirs.data_dir.join("bin"));
         tokio::task::spawn_blocking(move || versions.all(&tools, &bin_dir))
             .await
             .map_err(|e| WebError(anyhow::anyhow!(e)))
@@ -179,6 +180,7 @@ pub fn router(web: Arc<Web>) -> Router {
         .route("/sources/{name}/{action}", post(source_action))
         .route("/sources/{name}/videos/{id}", get(video_page))
         .route("/sources/{name}/videos/{id}/jobs", get(jobs_fragment))
+        .route("/sources/{name}/videos/{id}/backfill", post(video_backfill))
         .route("/sources/{name}/videos/{id}/{action}", post(video_action))
         .route("/config", get(config_page))
         .route("/config/check", post(config_check))
@@ -668,7 +670,7 @@ async fn clean_title_artist(
     }
     let id =
         crate::download::stages::artist_id(source, &crate::download::layout::Values::default())?;
-    crate::musicbrainz::artist_name(&source.embed.musicbrainz_server, &web.data_dir, &id)
+    crate::musicbrainz::artist_name(&source.embed.musicbrainz_server, &web.dirs.data_dir, &id)
         .await
         .map_err(|e| tracing::debug!("web UI: no artist name for {}: {e}", source.key))
         .ok()
@@ -875,11 +877,31 @@ async fn video_and_jobs(
     source: String,
     id: String,
 ) -> Result<Option<(data::VideoDetail, Vec<store::Job>)>, WebError> {
+    let dirs = web.dirs.clone();
     web.db(move |conn| {
         let (_, loaded) = ConfigStore::new(conn).load_current()?;
-        let Some(video) = data::video(conn, &loaded.config, &source, &id)? else {
+        let Some(mut video) = data::video(conn, &loaded.config, &source, &id)? else {
             return Ok(None);
         };
+        if can_backfill(&video.status) {
+            video.backfill = Some(
+                match crate::config::check::backfill_dir(&loaded.config, &dirs) {
+                    Ok(dir) => {
+                        let _ = std::fs::create_dir_all(&dir);
+                        data::Backfill {
+                            files: crate::download::backfill::candidates(&dir, &id),
+                            dir: dir.display().to_string(),
+                            error: None,
+                        }
+                    }
+                    Err(err) => data::Backfill {
+                        dir: loaded.config.general.backfill_dir.clone(),
+                        files: Vec::new(),
+                        error: Some(err),
+                    },
+                },
+            );
+        }
         let jobs = store::jobs_for(conn, &source, &id, 10)?;
         Ok(Some((video, jobs)))
     })
@@ -933,6 +955,103 @@ async fn jobs_response(
         message,
     })?
     .into_response())
+}
+
+/// Whether a video in `status` can be given a file from the backfill
+/// folder: not while it's being downloaded or processed, nor once it's done.
+fn can_backfill(status: &str) -> bool {
+    use crate::state::items::status;
+    ![
+        status::DOWNLOADING,
+        status::FETCHED,
+        status::PROCESSING,
+        status::DONE,
+    ]
+    .contains(&status)
+}
+
+#[derive(Deserialize)]
+struct BackfillForm {
+    file: String,
+}
+
+/// Hand a video a file from the backfill folder: it goes to the video's work
+/// area as if it had just been downloaded, and the processor finishes it.
+async fn video_backfill(
+    State(web): State<Arc<Web>>,
+    Path((source, id)): Path<(String, String)>,
+    Form(form): Form<BackfillForm>,
+) -> Result<Response, WebError> {
+    use crate::download::backfill;
+    use crate::state::items::{self, status};
+    let dirs = web.dirs.clone();
+    let (key, video_id) = (source.clone(), id.clone());
+    let staged = web
+        .db(move |conn| {
+            let (_, loaded) = ConfigStore::new(conn).load_current()?;
+            let Some(effective) = crate::config::merge::effective_sources(&loaded.config)
+                .into_iter()
+                .find(|s| s.key == key)
+            else {
+                return Ok(None);
+            };
+            let current: Option<String> = rusqlite::OptionalExtension::optional(conn.query_row(
+                "SELECT status FROM items WHERE source_key = ?1 AND video_id = ?2",
+                [&key, &video_id],
+                |r| r.get(0),
+            ))?;
+            let Some(current) = current else {
+                return Ok(None);
+            };
+            if !can_backfill(&current) {
+                return Ok(Some(Err(format!(
+                    "It can't be given a file while it's {current}."
+                ))));
+            }
+            let found = (|| {
+                let dir = crate::config::check::backfill_dir(&loaded.config, &dirs)?;
+                let media = backfill::resolve(&dir, &form.file)?;
+                let tmp_root = crate::config::check::tmp_dir(&effective, &dirs)?;
+                Ok::<_, String>((media, tmp_root))
+            })();
+            let (media, tmp_root) = match found {
+                Ok(found) => found,
+                Err(err) => return Ok(Some(Err(err))),
+            };
+            let Some(info) = backfill::index_info(conn, &video_id)? else {
+                return Ok(None);
+            };
+            // Claim it, so a download can't start on it meanwhile.
+            let claimed = conn.execute(
+                "UPDATE items SET status = ?3 WHERE source_key = ?1 AND video_id = ?2 AND status = ?4",
+                rusqlite::params![key, video_id, status::DOWNLOADING, current],
+            )?;
+            if claimed == 0 {
+                return Ok(Some(Err("It just started downloading; try again later.".into())));
+            }
+            let work = crate::download::work_area(&tmp_root, &video_id, &key);
+            match backfill::stage(&media, &work, &video_id, &info) {
+                Ok(()) => {
+                    items::mark_fetched(conn, &key, &video_id, jiff::Timestamp::now())?;
+                    tracing::info!("{key}: {video_id} given {} from the backfill folder", form.file);
+                    Ok(Some(Ok(form.file)))
+                }
+                Err(err) => {
+                    items::set_status(conn, &key, &video_id, &current)?;
+                    Ok(Some(Err(err)))
+                }
+            }
+        })
+        .await?;
+    let message = match staged {
+        None => return Ok(not_found("such video in this source")),
+        Some(Ok(file)) => {
+            web.processor.notify_one();
+            format!("Processing {file}.")
+        }
+        Some(Err(err)) => err,
+    };
+    jobs_response(&web, source, id, Some(message)).await
 }
 
 /// Queue work on a video for the processor.
@@ -1490,6 +1609,14 @@ mod tests {
         db: PathBuf,
     }
 
+    fn test_dirs(root: &std::path::Path) -> crate::paths::Dirs {
+        crate::paths::Dirs {
+            home: root.join("home"),
+            config_dir: root.join("config"),
+            data_dir: root.join("data"),
+        }
+    }
+
     fn setup(token: &str) -> Setup {
         let dir = tempfile::tempdir().unwrap();
         let db = dir.path().join("state.db");
@@ -1507,7 +1634,7 @@ mod tests {
         };
         let web = Arc::new(Web::new(
             db.clone(),
-            dir.path().join("data"),
+            test_dirs(dir.path()),
             dir.path().join("logs"),
             &server,
             "127.0.0.1:8787".parse().unwrap(),
@@ -1754,6 +1881,101 @@ mod tests {
         assert_eq!(status, StatusCode::NOT_FOUND);
     }
 
+    #[tokio::test]
+    async fn a_video_that_cant_be_downloaded_is_given_a_file_from_the_backfill_folder() {
+        let s = setup("");
+        seed(&s.db);
+        let backfill = s.dir.path().join("data/backfill");
+        let video = "/sources/lofi/videos/ccccccccccc";
+
+        // A done video isn't offered the folder; a failed one is, empty.
+        let (_, _, body) = send(&s.web, get("/sources/lofi/videos/aaaaaaaaaaa")).await;
+        assert!(!body.contains("Use a file you downloaded"), "{body}");
+        let (_, _, body) = send(&s.web, get(video)).await;
+        assert!(
+            body.contains("Use a file you downloaded")
+                && body.contains(&*backfill.to_string_lossy()),
+            "{body}"
+        );
+        assert!(!body.contains("Use this file"), "nothing to pick yet");
+
+        std::fs::write(backfill.join("Broken upload [ccccccccccc].mp4"), "video").unwrap();
+        std::fs::write(backfill.join("Broken upload [ccccccccccc].en.vtt"), "sub").unwrap();
+        std::fs::write(backfill.join("other.mkv"), "x").unwrap();
+        std::fs::write(s.dir.path().join("secret.mp4"), "x").unwrap();
+        let (_, _, body) = send(&s.web, get(video)).await;
+        let mine = body
+            .find("Broken upload [ccccccccccc].mp4 (5 B, this video)")
+            .expect(&body);
+        assert!(
+            mine < body.find("other.mkv").unwrap(),
+            "the video's own file first"
+        );
+
+        let pick = |file: &str| {
+            form(
+                &format!("{video}/backfill"),
+                &s.web.csrf,
+                format!("file={}", encode(file)),
+            )
+        };
+        let (_, _, body) = call(&s.web, pick("../secret.mp4")).await;
+        assert!(
+            body.contains("isn&#39;t a file in the backfill folder"),
+            "{body}"
+        );
+
+        let (status, _, body) = call(&s.web, pick("Broken upload [ccccccccccc].mp4")).await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        assert!(
+            body.contains("Processing Broken upload [ccccccccccc].mp4."),
+            "{body}"
+        );
+        tokio::time::timeout(
+            std::time::Duration::from_secs(1),
+            s.web.processor.notified(),
+        )
+        .await
+        .expect("the processor was woken");
+        let fetched = s.dir.path().join("data/tmp/ccccccccccc.lofi/fetched");
+        assert_eq!(
+            std::fs::read_to_string(fetched.join("media.mp4")).unwrap(),
+            "video"
+        );
+        assert_eq!(
+            std::fs::read_to_string(fetched.join("media.en.vtt")).unwrap(),
+            "sub"
+        );
+        let info = crate::download::info::VideoInfo::parse(
+            &std::fs::read_to_string(fetched.join("ytdlp.info.json")).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            (info.id.as_str(), info.title.as_str()),
+            ("ccccccccccc", "Broken upload")
+        );
+        assert!(
+            !backfill.join("Broken upload [ccccccccccc].mp4").exists(),
+            "moved"
+        );
+        assert!(backfill.join("other.mkv").exists());
+        let state = Db::open(&s.db).unwrap();
+        let status: String = state
+            .conn
+            .query_row(
+                "SELECT status FROM items WHERE video_id = 'ccccccccccc'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(status, "fetched");
+
+        // Being processed now: not offered again.
+        let (_, _, body) = call(&s.web, pick("other.mkv")).await;
+        assert!(body.contains("while it&#39;s fetched"), "{body}");
+        assert!(backfill.join("other.mkv").exists());
+    }
+
     fn form(uri: &str, csrf: &str, body: String) -> Request<Body> {
         Request::builder()
             .method(Method::POST)
@@ -1905,7 +2127,7 @@ mod tests {
             read_only: true,
             ..Web::new(
                 s.db.clone(),
-                s.dir.path().join("data"),
+                test_dirs(s.dir.path()),
                 s.dir.path().join("logs"),
                 &ServerConfig::default(),
                 "127.0.0.1:8787".parse().unwrap(),

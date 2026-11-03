@@ -364,6 +364,12 @@
       "additionalProperties": false,
       "description": "`[general]`: settings for the whole run.",
       "properties": {
+        "backfill_dir": {
+          "default": "{data_dir}/backfill",
+          "description": "Where you put videos you downloaded yourself, to hand them to tidepool\nfrom a video's page in the web UI. A full path (`{data_dir}` allowed).",
+          "format": "trash-dir-template",
+          "type": "string"
+        },
         "concurrency": {
           "default": 2,
           "description": "Parallel yt-dlp downloads.",
@@ -927,6 +933,7 @@
     "general": {
       "$ref": "#/$defs/GeneralConfig",
       "default": {
+        "backfill_dir": "{data_dir}/backfill",
         "concurrency": 2,
         "download": true,
         "duplicates": "hardlink",

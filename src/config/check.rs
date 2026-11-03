@@ -58,6 +58,23 @@ pub fn trash_dir(source: &EffectiveSource, dirs: &Dirs) -> Result<PathBuf, Strin
     work_dir(&source.trash_dir, Setting::TrashDir, source, dirs)
 }
 
+/// Where videos downloaded by hand wait to be picked (`general.backfill_dir`,
+/// with `{data_dir}` filled in).
+///
+/// # Errors
+///
+/// When `backfill_dir` has an unknown placeholder or doesn't render to a full
+/// path without `..`.
+pub fn backfill_dir(config: &crate::config::Config, dirs: &Dirs) -> Result<PathBuf, String> {
+    render_path(
+        &config.general.backfill_dir,
+        Setting::TrashDir,
+        &dirs.home,
+        |name| (name == "data_dir").then(|| dirs.data_dir.display().to_string()),
+    )
+    .map_err(|e| format!("backfill_dir {e}"))
+}
+
 fn work_dir(
     template: &str,
     setting: Setting,
