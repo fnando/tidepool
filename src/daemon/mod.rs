@@ -1,7 +1,7 @@
 //! `tidepool run --daemon`: a supervisor on the main thread that starts the
-//! services (`syncer`, `processor`), watches for new config revisions,
-//! restarts a service that stops unexpectedly, and stops everything on
-//! SIGINT/SIGTERM.
+//! services (`syncer`, `downloader`, `processor`, `server`), watches for new
+//! config revisions, restarts a service that stops unexpectedly, and stops
+//! everything on SIGINT/SIGTERM.
 
 pub mod control;
 pub mod schedule;
@@ -131,6 +131,7 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
         library,
         fetched: Arc::new(Notify::new()),
         sync_now: Arc::default(),
+        download_now: Arc::default(),
         cleanup_now: Arc::new(Notify::new()),
         config: config_rx,
     };
@@ -413,9 +414,9 @@ async fn wait_for_library(
 fn failed(state: &State, service: Service, why: &str, now: jiff::Timestamp) -> anyhow::Result<()> {
     store::failed(&state.conn, service.name(), why, now)?;
     let interrupted = match service {
-        Service::Syncer => Some((status::DOWNLOADING, status::PENDING)),
+        Service::Downloader => Some((status::DOWNLOADING, status::PENDING)),
         Service::Processor => Some((status::PROCESSING, status::FETCHED)),
-        Service::Server => None,
+        Service::Syncer | Service::Server => None,
     };
     if let Some((from, to)) = interrupted {
         items::reset_status(&state.conn, from, to)?;

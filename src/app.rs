@@ -61,8 +61,10 @@ pub(crate) struct App<'a> {
 pub(crate) enum Role {
     /// A command: download and process, then run the queued hooks.
     OneShot,
-    /// The daemon's syncer: index, download, clean up.
+    /// The daemon's syncer: index, clean up.
     Syncer,
+    /// The daemon's downloader: download what indexing queued.
+    Downloader,
     /// The daemon's processor: process downloads, run queued hooks.
     Processor,
     /// The daemon's web UI.
@@ -670,18 +672,19 @@ impl App<'_> {
             shutdown: self.shutdown.clone(),
             fetched: self.fetched.clone(),
         };
-        // In the daemon, the syncer downloads and the processor processes;
-        // the daemon cleans up after a crash once, when it starts.
+        // In the daemon, the downloader downloads and the processor
+        // processes; the daemon cleans up after a crash once, when it starts.
         let options = Options {
             limit,
             concurrency: concurrency.unwrap_or(config.general.concurrency) as usize,
             process_concurrency: config.general.process_concurrency as usize,
-            fetch: self.role != Role::Processor,
-            process: self.role != Role::Syncer,
+            fetch: matches!(self.role, Role::OneShot | Role::Downloader),
+            process: matches!(self.role, Role::OneShot | Role::Processor),
             recover: self.role == Role::OneShot,
             now: jiff::Timestamp::now(),
         };
-        if options.fetch {
+        // The daemon's syncer says so as it syncs.
+        if options.fetch && self.role == Role::OneShot {
             for source in sources.iter().filter(|s| !s.download) {
                 writeln!(
                     out,
@@ -864,13 +867,11 @@ impl App<'_> {
         Ok(Self::exit_code(&summary, 0))
     }
 
-    /// `tidepool run`: index, then download, once.
-    /// One sync of the daemon's syncer: index every enabled source, download
-    /// what's new (the processor finishes it), clean up. `None` when another
-    /// tidepool holds the library.
-    /// One sync: index, download and clean up `only` these sources (keys),
-    /// or every enabled one. `mode`: `Index` looks for new videos, nothing
-    /// more; `Download` downloads even sources whose downloads are off.
+    /// One sync of the daemon's syncer: index `only` these sources (keys), or
+    /// every enabled one, and clean up; the downloader downloads what's new.
+    /// `mode`: `Index` looks for new videos, nothing more; `Download` is told
+    /// apart by the caller (the downloader downloads even sources whose
+    /// downloads are off). `None` when another tidepool holds the library.
     pub(crate) async fn sync_once(
         &self,
         only: &[String],
@@ -882,14 +883,7 @@ impl App<'_> {
         let mut state = self.open_state()?;
         let config = self.current_config(&state)?.config;
         let refs: Vec<SourceRef> = only.iter().cloned().map(SourceRef::Key).collect();
-        let mut sources = Self::scoped_sources(&config, &refs)?;
-        let index_only = mode == SyncMode::Index;
-        if mode == SyncMode::Download {
-            // Asked for by name: downloaded whatever `download` says.
-            for source in &mut sources {
-                source.download = true;
-            }
-        }
+        let sources = Self::scoped_sources(&config, &refs)?;
         if sources.is_empty() {
             return Ok(Some(
                 "no enabled sources; add one under [sources.<name>] in your config".into(),
@@ -914,22 +908,65 @@ impl App<'_> {
         if self.shutdown.is_stopping() {
             return Ok(Some("stopped".into()));
         }
-        let couldnt = |failed: usize| {
-            format!(
+        self.finish_problems(&state, &config, tracker, &ytdlp)
+            .await?;
+        drop(lock);
+        let plural = if sources.len() == 1 { "" } else { "s" };
+        let mut parts = if mode == SyncMode::Index {
+            vec![format!("indexed {} source{plural}", sources.len())]
+        } else {
+            if mode == SyncMode::Sync {
+                for source in sources.iter().filter(|s| !s.download) {
+                    writeln!(
+                        out,
+                        "{}: downloads are off (download = false); only checked",
+                        source.key
+                    )?;
+                }
+            }
+            self.cleanup(&ScopeArgs { sources: refs }, out).await?;
+            vec![format!("synced {} source{plural}", sources.len())]
+        };
+        if failed > 0 {
+            parts.push(format!(
                 "{failed} source{} couldn't be checked",
                 if failed == 1 { "" } else { "s" }
-            )
-        };
-        let plural = if sources.len() == 1 { "" } else { "s" };
-        if index_only {
-            self.finish_problems(&state, &config, tracker, &ytdlp)
-                .await?;
-            let mut parts = vec![format!("indexed {} source{plural}", sources.len())];
-            if failed > 0 {
-                parts.push(couldnt(failed));
-            }
-            return Ok(Some(parts.join(", ")));
+            ));
         }
+        Ok(Some(parts.join(", ")))
+    }
+
+    /// One pass of the daemon's downloader: download what's queued for every
+    /// enabled source, and for `forced` (keys) even where `download` is off.
+    /// `None` when another tidepool holds the library.
+    pub(crate) async fn download_once(
+        &self,
+        forced: &[String],
+        out: &mut dyn Write,
+    ) -> anyhow::Result<Option<crate::download::Summary>> {
+        let mut state = self.open_state()?;
+        let config = self.current_config(&state)?.config;
+        let mut sources = Self::scoped_sources(&config, &[])?;
+        for source in effective_sources(&config) {
+            if forced.contains(&source.key) && !sources.iter().any(|s| s.key == source.key) {
+                sources.push(source);
+            }
+        }
+        for source in &mut sources {
+            if forced.contains(&source.key) {
+                source.download = true;
+            }
+        }
+        if !sources.iter().any(|s| s.download) {
+            return Ok(Some(crate::download::Summary::default()));
+        }
+        let _lock = match self.lock() {
+            Ok(lock) => lock,
+            Err(LockError::Held { .. }) => return Ok(None),
+            Err(e) => return Err(e.into()),
+        };
+        let ytdlp = self.ytdlp_binary(&state, &config).await?;
+        let mut tracker = crate::problems::Tracker::default();
         let summary = self
             .download_sources(
                 &mut state,
@@ -942,24 +979,11 @@ impl App<'_> {
                 out,
             )
             .await?;
-        if summary.interrupted.is_some() {
-            return Ok(Some("stopped".into()));
+        if summary.interrupted.is_none() {
+            self.finish_problems(&state, &config, tracker, &ytdlp)
+                .await?;
         }
-        self.finish_problems(&state, &config, tracker, &ytdlp)
-            .await?;
-        drop(lock);
-        self.cleanup(&ScopeArgs { sources: refs }, out).await?;
-        let mut parts = vec![format!("synced {} source{plural}", sources.len())];
-        if summary.fetched > 0 {
-            parts.push(format!("{} downloaded", summary.fetched));
-        }
-        if summary.failed > 0 {
-            parts.push(format!("{} failed", summary.failed));
-        }
-        if failed > 0 {
-            parts.push(couldnt(failed));
-        }
-        Ok(Some(parts.join(", ")))
+        Ok(Some(summary))
     }
 
     /// One pass of the daemon's processor: finish what's downloaded, run the

@@ -1044,14 +1044,17 @@ tidepool run --daemon
 - **Stopping.** Ctrl-C or `kill` stops it cleanly, the same way as other
   commands, and it exits with 0.
 - **If something goes wrong.** The daemon is made of parts that work
-  independently: one syncs, one finishes downloads. If one stops unexpectedly,
-  the daemon starts it again on its own (waiting a little longer each time)
-  and `tidepool problems` tells you about it; `tidepool daemon status` shows
-  how often it had to.
+  independently: one checks your sources, one downloads, one finishes
+  downloads. If one stops unexpectedly, the daemon starts it again on its own
+  (waiting a little longer each time) and `tidepool problems` tells you about
+  it; `tidepool daemon status` shows how often it had to.
 
-**Checking on it and steering it.** The daemon has two parts: the *syncer*
-(checks your sources, downloads, cleans up) and the *processor* (finishes
-downloads and runs hooks). From another terminal:
+**Checking on it and steering it.** The daemon has three parts: the *syncer*
+(checks your sources and cleans up), the *downloader* (downloads the new
+videos the syncer found) and the *processor* (finishes downloads and runs
+hooks). They work side by side, so a long download never holds up checking
+your sources, and a source's *Index now* runs right away. From another
+terminal:
 
 ```sh
 tidepool daemon status             # is it running, what's each part doing, when's the next sync
@@ -1061,9 +1064,9 @@ tidepool daemon resume syncer
 tidepool daemon restart processor  # stop a part and start it again
 ```
 
-(The web interface is a third part, `server`.)
+(The web interface is a fourth part, `server`.)
 
-Leave out the part's name to pause, resume or restart both. A paused part
+Leave out the part's name to pause, resume or restart all of them. A paused part
 stays paused, even if the daemon restarts, until you resume it; you can pause
 or resume while the daemon isn't running too. Pausing lets the part wind down
 what it's doing first, like Ctrl-C does.
@@ -1072,6 +1075,7 @@ what it's doing first, like Ctrl-C does.
 $ tidepool daemon status
 daemon: running (pid 79820)
 syncer: idle, next sync at 2026-11-01 18:40
+downloader: running, downloading since 2026-11-01 12:30
 processor: idle
 last sync: 2026-11-01 12:30, took 2m
 ```
@@ -1152,7 +1156,7 @@ accept other addresses, the same as having no token.
 
 **For scripts**, the same information is at `/api/v1/status` (JSON), and
 `POST` to `/api/v1/sync`, `/api/v1/cleanup` or
-`/api/v1/services/<syncer|processor|server>/<pause|resume>` does the same as
+`/api/v1/services/<syncer|downloader|processor|server>/<pause|resume>` does the same as
 the buttons. Send `Content-Type: application/json`, or the token as
 `Authorization: Bearer <token>`:
 

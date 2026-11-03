@@ -49,6 +49,7 @@ pub(crate) async fn command(
 fn name(service: DaemonService) -> &'static str {
     match service {
         DaemonService::Syncer => Service::Syncer.name(),
+        DaemonService::Downloader => Service::Downloader.name(),
         DaemonService::Processor => Service::Processor.name(),
         DaemonService::Server => Service::Server.name(),
     }

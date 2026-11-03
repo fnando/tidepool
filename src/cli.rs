@@ -299,8 +299,10 @@ pub enum DaemonCmd {
 /// A part of the daemon.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum DaemonService {
-    /// Checks sources, downloads, cleans up
+    /// Checks sources on the schedule, cleans up
     Syncer,
+    /// Downloads what the syncer found
+    Downloader,
     /// Finishes downloads and runs queued hooks
     Processor,
     /// The web UI

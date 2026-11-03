@@ -19,8 +19,10 @@ use crate::state::daemon as store;
 /// The parts of the daemon that can be paused and restarted.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Service {
-    /// Indexes, downloads and cleans up on the schedule.
+    /// Indexes and cleans up on the schedule.
     Syncer,
+    /// Downloads what indexing queued (the processor finishes it).
+    Downloader,
     /// Finishes downloads (hooks, embedding, saving) and runs queued hooks.
     Processor,
     /// The web UI (when `server.enabled`).
@@ -28,12 +30,18 @@ pub enum Service {
 }
 
 impl Service {
-    pub const ALL: [Service; 3] = [Service::Syncer, Service::Processor, Service::Server];
+    pub const ALL: [Service; 4] = [
+        Service::Syncer,
+        Service::Downloader,
+        Service::Processor,
+        Service::Server,
+    ];
 
     #[must_use]
     pub fn name(self) -> &'static str {
         match self {
             Service::Syncer => "syncer",
+            Service::Downloader => "downloader",
             Service::Processor => "processor",
             Service::Server => "server",
         }
@@ -47,6 +55,7 @@ impl Service {
     fn role(self) -> Role {
         match self {
             Service::Syncer => Role::Syncer,
+            Service::Downloader => Role::Downloader,
             Service::Processor => Role::Processor,
             Service::Server => Role::Server,
         }
@@ -62,6 +71,8 @@ pub struct Signals {
     /// Sync now (everything, or some sources) instead of waiting for the
     /// schedule.
     pub sync_now: Arc<SyncNow>,
+    /// Download now (the syncer tells the downloader after a sync).
+    pub download_now: Arc<DownloadNow>,
     /// Clean up now (the syncer does it).
     pub cleanup_now: Arc<Notify>,
     /// The current config revision; changes when a new one is stored.
@@ -208,6 +219,48 @@ impl Drop for Working<'_> {
     }
 }
 
+/// Wakes the downloader, with the sources it should download even where
+/// `download` is off (a source's own Sync now button).
+#[derive(Default)]
+pub struct DownloadNow {
+    notify: Notify,
+    forced: std::sync::Mutex<std::collections::BTreeSet<String>>,
+}
+
+impl DownloadNow {
+    /// Download what's queued now.
+    pub fn wake(&self) {
+        self.notify.notify_one();
+    }
+
+    /// Download `keys` now, even where `download` is off.
+    pub fn force(&self, keys: &[String]) {
+        self.lock().extend(keys.iter().cloned());
+        self.notify.notify_one();
+    }
+
+    /// Wait until woken.
+    pub async fn notified(&self) {
+        self.notify.notified().await;
+    }
+
+    /// `keys` (taken) weren't downloaded: they wait for the next try.
+    fn put_back(&self, keys: &[String]) {
+        self.lock().extend(keys.iter().cloned());
+    }
+
+    /// The sources to download even where `download` is off, clearing them.
+    pub fn take(&self) -> Vec<String> {
+        std::mem::take(&mut *self.lock()).into_iter().collect()
+    }
+
+    fn lock(&self) -> std::sync::MutexGuard<'_, std::collections::BTreeSet<String>> {
+        self.forced
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+}
+
 /// A running service.
 pub struct Handle {
     pub service: Service,
@@ -265,6 +318,7 @@ pub fn spawn(
                 .map_err(|e| format!("cannot start: {e}"))?;
             let span = match service {
                 Service::Syncer => tracing::info_span!("syncer"),
+                Service::Downloader => tracing::info_span!("downloader"),
                 Service::Processor => tracing::info_span!("processor"),
                 Service::Server => tracing::info_span!("server"),
             };
@@ -282,6 +336,7 @@ pub fn spawn(
                         test_panic(service);
                         match service {
                             Service::Syncer => syncer(&app, signals).await,
+                            Service::Downloader => downloader(&app, signals).await,
                             Service::Processor => processor(&app, signals).await,
                             Service::Server => server(&app, signals).await,
                         }
@@ -409,6 +464,7 @@ async fn syncer(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
             every,
             out: &mut out,
             sync_now: &signals.sync_now,
+            download_now: &signals.download_now,
         };
         if asked.everything {
             // Sources asked for by name are synced along with the rest.
@@ -434,13 +490,16 @@ struct Batch<'o> {
     out: &'o mut LogWriter,
     /// Told which sources are being synced.
     sync_now: &'o SyncNow,
+    /// Told when a sync may have queued downloads.
+    download_now: &'o DownloadNow,
 }
 
 impl Batch<'_> {
     /// Sync or index `keys`: `only` those (else every enabled source, which
-    /// `keys` lists). A sync schedules each source's next one; a sync that
-    /// couldn't run (another tidepool has the library) is tried again in a
-    /// minute. Indexing keeps the schedule.
+    /// `keys` lists). A sync schedules each source's next one and has the
+    /// downloader download what's new; a sync that couldn't run (another
+    /// tidepool has the library) is tried again in a minute. Indexing keeps
+    /// the schedule.
     async fn run(
         self,
         app: &App<'_>,
@@ -481,6 +540,13 @@ impl Batch<'_> {
         self.out.flush()?;
         if app.shutdown.is_stopping() {
             return Ok(self);
+        }
+        if matches!(result, Ok(Some(_))) {
+            match mode {
+                SyncMode::Download => self.download_now.force(keys),
+                SyncMode::Sync => self.download_now.wake(),
+                SyncMode::Index => {}
+            }
         }
         let finished = jiff::Timestamp::now();
         let mut suffix = String::new();
@@ -532,6 +598,64 @@ fn report(result: anyhow::Result<Option<String>>, prefix: &str, suffix: &str) {
         tracing::info!("{prefix}{summary}");
     }
     crate::events::emit(crate::events::Event::SyncFinished { summary });
+}
+
+/// How long the downloader waits when nothing wakes it: failed downloads
+/// whose retry is due get another try then.
+const DOWNLOAD_EVERY: Duration = Duration::from_secs(3600);
+
+/// Download what indexing queued, when woken after a sync (and hourly),
+/// until stopped. The processor finishes each download.
+async fn downloader(app: &App<'_>, mut signals: Signals) -> anyhow::Result<()> {
+    let name = Service::Downloader.name();
+    let mut out = LogWriter::default();
+    loop {
+        if app.shutdown.is_stopping() {
+            return Ok(());
+        }
+        let forced = signals.download_now.take();
+        let state = app.open_state()?;
+        let started = jiff::Timestamp::now();
+        let activity = format!("downloading since {}", local(started));
+        store::set_status(&state.conn, name, "running", Some(&activity), started)?;
+        let wait = match app.download_once(&forced, &mut out).await {
+            Ok(Some(summary)) => {
+                if summary.fetched > 0 || summary.failed > 0 {
+                    let mut parts = vec![format!("{} downloaded", summary.fetched)];
+                    if summary.failed > 0 {
+                        parts.push(format!("{} failed", summary.failed));
+                    }
+                    tracing::info!("{}", parts.join(", "));
+                }
+                DOWNLOAD_EVERY
+            }
+            // Another tidepool has the library: look again in a minute.
+            Ok(None) => {
+                signals.download_now.put_back(&forced);
+                schedule::CHECK_EVERY
+            }
+            Err(e) => {
+                tracing::error!("downloading failed: {e:#}");
+                schedule::CHECK_EVERY
+            }
+        };
+        out.flush()?;
+        if app.shutdown.is_stopping() {
+            return Ok(());
+        }
+        store::set_status(&state.conn, name, "idle", None, jiff::Timestamp::now())?;
+        drop(state);
+        tokio::select! {
+            () = tokio::time::sleep(wait) => {}
+            () = signals.download_now.notified() => {}
+            changed = signals.config.changed() => {
+                if changed.is_err() {
+                    return Ok(());
+                }
+            }
+            () = app.shutdown.stopping() => return Ok(()),
+        }
+    }
 }
 
 /// Finish downloads as they come in, and run queued hooks when they're
@@ -753,6 +877,28 @@ mod tests {
 
         sync_now.all();
         assert_eq!(sync_now.busy("jazz"), Some(Busy::Waiting));
+    }
+
+    #[tokio::test]
+    async fn forced_downloads_add_up_until_taken() {
+        let now = super::DownloadNow::default();
+        assert!(now.take().is_empty());
+        now.force(&["lofi".into()]);
+        now.force(&["jazz".into(), "lofi".into()]);
+        tokio::time::timeout(std::time::Duration::from_secs(1), now.notified())
+            .await
+            .expect("the downloader was woken");
+        assert_eq!(now.take(), ["jazz", "lofi"]);
+        assert!(now.take().is_empty(), "taking clears it");
+
+        // Put back (another tidepool had the library): kept, without a wake.
+        now.put_back(&["lofi".into()]);
+        assert!(
+            tokio::time::timeout(std::time::Duration::from_millis(50), now.notified())
+                .await
+                .is_err()
+        );
+        assert_eq!(now.take(), ["lofi"]);
     }
 
     #[test]

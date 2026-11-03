@@ -215,7 +215,45 @@ async fn syncs_right_away_then_on_schedule_and_stops_cleanly() {
         .unwrap()
         .map(Result::unwrap)
         .collect();
-    assert_eq!(statuses, ["stopped", "stopped", "stopped"]);
+    assert_eq!(statuses, ["stopped", "stopped", "stopped", "stopped"]);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn indexing_goes_on_while_downloads_run() {
+    let env = Env::new().await;
+    let config = env.config("1h", "[general]\nshutdown_timeout = \"1s\"\n");
+    let daemon = env.daemon(&config, &[("TIDEPOOL_FAKE_YTDLP_SLEEP", "30")]);
+    daemon.wait_for_log("synced 1 source");
+    let downloading = || {
+        env.db()
+            .query_row(
+                "SELECT COUNT(*) FROM items WHERE status = 'downloading'",
+                [],
+                |r| r.get::<_, i64>(0),
+            )
+            .unwrap()
+            > 0
+    };
+    daemon.wait_for("a download running", downloading);
+
+    // Asked to sync again mid-download: it indexes right away.
+    env.cmd(&["daemon", "sync"])
+        .assert()
+        .success()
+        .stdout("syncing now\n");
+    daemon.wait_for("a second sync", || {
+        daemon.log().matches("synced 1 source").count() >= 2
+    });
+    assert!(downloading(), "still downloading:\n{}", daemon.log());
+    let status = env.cmd(&["daemon", "status"]).output().unwrap();
+    let status = String::from_utf8_lossy(&status.stdout);
+    assert!(
+        status.contains("downloader: running, downloading since "),
+        "{status}"
+    );
+
+    let (code, log) = daemon.stop();
+    assert_eq!(code, Some(0), "{log}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -436,7 +474,8 @@ async fn daemon_commands_without_a_daemon() {
     let config = env.config("1h", "");
     env.cmd(&["config", "import", &config]).assert().success();
     env.cmd(&["daemon", "status"]).assert().success().stdout(
-        "daemon: not running\nsyncer: not running\nprocessor: not running\nserver: not running\n",
+        "daemon: not running\nsyncer: not running\ndownloader: not running\nprocessor: not running\n\
+         server: not running\n",
     );
     env.cmd(&["daemon", "pause", "syncer"])
         .assert()
@@ -455,8 +494,8 @@ async fn daemon_commands_without_a_daemon() {
         .code(1)
         .stderr(contains("the syncer is paused"));
     env.cmd(&["daemon", "resume"]).assert().success().stdout(
-        "resumed syncer; it runs when the daemon starts\nprocessor is already not paused\n\
-         server is already not paused\n",
+        "resumed syncer; it runs when the daemon starts\ndownloader is already not paused\n\
+         processor is already not paused\nserver is already not paused\n",
     );
     env.cmd(&["daemon", "restart"])
         .assert()
