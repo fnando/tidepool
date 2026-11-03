@@ -2,4 +2,4 @@
 source: tests/config_validation.rs
 expression: err
 ---
-version.toml:1:11 version: config version 2 is not supported by tidepool 0.0.8; it reads version 1
+version.toml:1:11 version: config version 2 is not supported by tidepool 0.0.9; it reads version 1
