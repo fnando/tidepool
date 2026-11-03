@@ -1,7 +1,7 @@
 //! Checks the JSON Schema can't express: cross-references, uniqueness and
 //! ordering between values. Reported with the same path + line format.
 
-use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 
 use super::load::Diagnostic;
 use super::merge::{DEFAULT_CATEGORY, category_of, category_settings, effective_source};
@@ -156,22 +156,19 @@ fn check_kind_rules(config: &Config, out: &mut Vec<Diagnostic>) {
     }
 }
 
+/// A list only once per source. Several sources may share one (each with
+/// its own rules).
 fn check_unique_ids(config: &Config, out: &mut Vec<Diagnostic>) {
-    let mut ids: BTreeMap<String, &str> = BTreeMap::new();
     for (key, source) in &config.sources {
         let effective = effective_source(config, key, source);
+        let mut ids = BTreeSet::new();
         for (i, list) in effective.lists().iter().enumerate() {
-            let used = if list.channel { "channel" } else { "playlist" };
-            match ids.insert(list.id.clone(), key) {
-                Some(other) if other == key => out.push(Diagnostic::error(
+            if !ids.insert(list.id.clone()) {
+                let used = if list.channel { "channel" } else { "playlist" };
+                out.push(Diagnostic::error(
                     format!("/sources/{key}/urls/{i}"),
                     format!("{used} {} is already in this source's urls", list.id),
-                )),
-                Some(other) => out.push(Diagnostic::error(
-                    format!("/sources/{key}/urls/{i}"),
-                    format!("{used} {} is already used by sources.{other}", list.id),
-                )),
-                None => {}
+                ));
             }
         }
     }

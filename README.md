@@ -149,7 +149,9 @@ urls = [
 ]
 ```
 
-An address can only be in one source.
+Several sources can use the same address, each with its own rules: a label's
+channel, say, split into one source per band with `include`. Each keeps its
+own list of videos and its own folder.
 
 The name (`lofi` here) is up to you: lowercase letters, digits, `-` and `_`. By
 default it's also the name of the source's folder (see `output_dir` below).

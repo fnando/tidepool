@@ -254,9 +254,10 @@ impl App<'_> {
         }
         let mut picked: Vec<EffectiveSource> = Vec::new();
         for r in refs {
-            let source = resolve_source(r, &all)?;
-            if !picked.iter().any(|p| p.key == source.key) {
-                picked.push(source.clone());
+            for source in resolve_sources(r, &all)? {
+                if !picked.iter().any(|p| p.key == source.key) {
+                    picked.push(source.clone());
+                }
             }
         }
         Ok(picked)
@@ -1998,9 +1999,10 @@ impl App<'_> {
         let every = effective_sources(config);
         let mut picked: Vec<EffectiveSource> = Vec::new();
         for r in source_refs {
-            let source = resolve_source(r, &every)?;
-            if !picked.iter().any(|p| p.key == source.key) {
-                picked.push(source.clone());
+            for source in resolve_sources(r, &every)? {
+                if !picked.iter().any(|p| p.key == source.key) {
+                    picked.push(source.clone());
+                }
             }
         }
         for category in categories {
@@ -3440,21 +3442,50 @@ pub fn resolve_source<'a>(
     r: &SourceRef,
     sources: &'a [EffectiveSource],
 ) -> anyhow::Result<&'a EffectiveSource> {
-    let found = match r {
-        SourceRef::Key(key) => sources.iter().find(|p| &p.key == key),
+    match resolve_sources(r, sources)?.as_slice() {
+        [one] => Ok(one),
+        several => {
+            let keys: Vec<&str> = several.iter().map(|s| s.key.as_str()).collect();
+            Err(UsageError(format!(
+                "--source {:?} is used by several sources ({}); pick one by name",
+                r.raw(),
+                keys.join(", ")
+            ))
+            .into())
+        }
+    }
+}
+
+/// Every source `r` names: one by name, or each that uses the playlist or
+/// channel (sources may share one).
+///
+/// # Errors
+///
+/// A [`UsageError`] when it matches no source.
+pub fn resolve_sources<'a>(
+    r: &SourceRef,
+    sources: &'a [EffectiveSource],
+) -> anyhow::Result<Vec<&'a EffectiveSource>> {
+    let found: Vec<&EffectiveSource> = match r {
+        SourceRef::Key(key) => sources.iter().filter(|p| &p.key == key).collect(),
         SourceRef::Id(id) | SourceRef::Url { id, .. } => {
-            sources.iter().find(|p| p.ids().contains(id))
+            sources.iter().filter(|p| p.ids().contains(id)).collect()
         }
     };
-    found.ok_or_else(|| {
+    if found.is_empty() {
         let known: Vec<&str> = sources.iter().map(|p| p.key.as_str()).collect();
-        let known = if known.is_empty() { "none".to_string() } else { known.join(", ") };
-        UsageError(format!(
+        let known = if known.is_empty() {
+            "none".to_string()
+        } else {
+            known.join(", ")
+        };
+        return Err(UsageError(format!(
             "--source {:?} matches no configured source (configured: {known}); add it under [sources.<name>] in your config",
             r.raw()
         ))
-        .into()
-    })
+        .into());
+    }
+    Ok(found)
 }
 
 /// Write `text` to a new file at `path` with owner-only permissions.

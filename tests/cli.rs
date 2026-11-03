@@ -762,6 +762,40 @@ fn item_statuses(env: &Env, source: &str) -> Vec<(String, String)> {
 }
 
 #[test]
+fn sources_can_share_a_playlist_with_their_own_rules() {
+    let env = Env::new();
+    let file = write_index_config(&env, "");
+    let text = fs::read_to_string(&file).unwrap()
+        + "\n[sources.no-trailers]\nurls = [\"https://www.youtube.com/playlist?list=PLmixedmixedmixed\"]\n\
+           exclude = ['(?i)trailer']\n";
+    fs::write(&file, text).unwrap();
+
+    env.cmd(&["config", "check", &file]).assert().success();
+    env.cmd(&["index", "--config", &file, "-s", "PLmixedmixedmixed"])
+        .assert()
+        .success()
+        .stdout(contains("mixed: 12 videos").and(contains("no-trailers: 12 videos")))
+        .stdout(contains("sample:").not());
+    let trailer = |source: &str| {
+        item_statuses(&env, source)
+            .into_iter()
+            .find(|(title, _)| title == "Official trailer")
+            .unwrap()
+            .1
+    };
+    assert_eq!(trailer("mixed"), "pending");
+    assert_eq!(trailer("no-trailers"), "filtered");
+
+    // A command about one source has to be told which.
+    env.cmd(&["filter", "test", "Some title", "-s", "PLmixedmixedmixed"])
+        .assert()
+        .code(2)
+        .stderr(contains(
+            "--source \"PLmixedmixedmixed\" is used by several sources (mixed, no-trailers); pick one by name",
+        ));
+}
+
+#[test]
 fn index_records_each_source_and_explains_what_it_skipped() {
     let env = Env::new();
     let log = env.path("ytdlp.log");
