@@ -178,6 +178,7 @@ pub fn router(web: Arc<Web>) -> Router {
         .route("/sources/{name}", get(source_page))
         .route("/sources/{name}/actions", get(source_actions_fragment))
         .route("/sources/{name}/{action}", post(source_action))
+        .route("/sources/{name}/ignore/{group}", post(source_ignore_all))
         .route("/sources/{name}/videos/{id}", get(video_page))
         .route("/sources/{name}/videos/{id}/jobs", get(jobs_fragment))
         .route("/sources/{name}/videos/{id}/backfill", post(video_backfill))
@@ -715,6 +716,9 @@ struct SourcePage {
     query: String,
     groups: Vec<GroupOption>,
     all_count: i64,
+    /// How many videos "Ignore all" would ignore, when the list is of ones
+    /// that couldn't be downloaded.
+    ignorable: Option<i64>,
     rows: Vec<data::VideoRow>,
     page: usize,
     pages: usize,
@@ -819,7 +823,15 @@ async fn source_page(
                         selected: status == *key,
                     })
                     .collect(),
-                all_count: counts.values().sum(),
+                all_count: counts
+                    .iter()
+                    .filter(|(group, _)| !data::HIDDEN_GROUPS.contains(group))
+                    .map(|(_, n)| n)
+                    .sum(),
+                ignorable: crate::state::items::status::IGNORABLE
+                    .contains(&status.as_str())
+                    .then(|| counts.get(status.as_str()).copied().unwrap_or(0))
+                    .filter(|n| *n > 0),
                 title,
                 rows,
                 page,
@@ -1054,11 +1066,100 @@ async fn video_backfill(
     jobs_response(&web, source, id, Some(message)).await
 }
 
-/// Queue work on a video for the processor.
+/// Ignore every video of a source that couldn't be downloaded, in `group`
+/// (failed or unavailable); then the list of ignored ones.
+async fn source_ignore_all(
+    State(web): State<Arc<Web>>,
+    Path((name, group)): Path<(String, String)>,
+    headers: HeaderMap,
+) -> Result<Response, WebError> {
+    use crate::state::items;
+    if !items::status::IGNORABLE.contains(&group.as_str()) {
+        return Ok(not_found("such list"));
+    }
+    let key = name.clone();
+    let ignored = web
+        .db(move |conn| {
+            let (_, loaded) = ConfigStore::new(conn).load_current()?;
+            if !crate::config::merge::effective_sources(&loaded.config)
+                .iter()
+                .any(|s| s.key == key)
+            {
+                return Ok(None);
+            }
+            Ok(Some(items::ignore_all(conn, &key, &group)?))
+        })
+        .await?;
+    let Some(ignored) = ignored else {
+        return Ok(not_found("such source"));
+    };
+    tracing::info!("{name}: ignored {ignored} videos");
+    crate::events::emit(crate::events::Event::Changed);
+    Ok(go_to(
+        format!("/sources/{}?status=ignored", encode(&name)),
+        &headers,
+    ))
+}
+
+/// Ignore a video that couldn't be downloaded, or stop ignoring it; then
+/// its page again.
+async fn video_ignore(
+    web: &Arc<Web>,
+    source: String,
+    id: String,
+    ignore: bool,
+    headers: &HeaderMap,
+) -> Result<Response, WebError> {
+    use crate::state::items;
+    let (key, video_id) = (source.clone(), id.clone());
+    let changed = web
+        .db(move |conn| {
+            let sources = [key];
+            Ok(if ignore {
+                items::ignore(conn, &video_id, &sources)?
+            } else {
+                items::unignore(conn, &video_id, &sources)?
+            })
+        })
+        .await?;
+    if changed.is_empty() {
+        let message = if ignore {
+            "Only a video that couldn't be downloaded can be ignored."
+        } else {
+            "It isn't ignored."
+        };
+        return jobs_response(web, source, id, Some(message.into())).await;
+    }
+    if ignore {
+        tracing::info!("{source}: ignored {id}");
+    } else {
+        tracing::info!("{source}: stopped ignoring {id}; it will be downloaded again");
+    }
+    crate::events::emit(crate::events::Event::Changed);
+    Ok(go_to(
+        format!("/sources/{}/videos/{}", encode(&source), encode(&id)),
+        headers,
+    ))
+}
+
+/// Send the browser to `to` (htmx follows `hx-redirect`).
+fn go_to(to: String, headers: &HeaderMap) -> Response {
+    if headers.contains_key("hx-request") {
+        ([("hx-redirect", to)], StatusCode::OK).into_response()
+    } else {
+        Redirect::to(&to).into_response()
+    }
+}
+
+/// Queue work on a video for the processor (or ignore it, or stop).
 async fn video_action(
     State(web): State<Arc<Web>>,
     Path((source, id, action)): Path<(String, String, String)>,
+    headers: HeaderMap,
 ) -> Result<Response, WebError> {
+    if action == "ignore" || action == "unignore" {
+        return video_ignore(&web, source, id, action == "ignore", &headers).await;
+    }
     if !store::JOB_ACTIONS.contains(&action.as_str()) {
         return Ok(not_found("such action"));
     }
@@ -1280,12 +1381,7 @@ fn read_only() -> Response {
 
 /// Back to the config page, saying what was saved.
 fn saved(rev: i64, headers: &HeaderMap) -> Response {
-    let to = format!("/config?saved={rev}");
-    if headers.contains_key("hx-request") {
-        ([("hx-redirect", to)], StatusCode::OK).into_response()
-    } else {
-        Redirect::to(&to).into_response()
-    }
+    go_to(format!("/config?saved={rev}"), headers)
 }
 
 /// Save a new revision and write it to the config file; `Err` text says
@@ -1879,6 +1975,87 @@ mod tests {
         assert_eq!(status, StatusCode::NOT_FOUND);
         let (status, _, _) = send(&s.web, get("/sources/lofi/videos/zzzzzzzzzzz")).await;
         assert_eq!(status, StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn videos_that_cant_be_downloaded_can_be_ignored() {
+        let s = setup("");
+        seed(&s.db);
+        let video = "/sources/lofi/videos/ccccccccccc";
+        let action = |uri: String| {
+            post(&uri)
+                .header("x-csrf-token", s.web.csrf.as_str())
+                .header("hx-request", "true")
+        };
+        let status_of = |id: &str| -> String {
+            Db::open(&s.db)
+                .unwrap()
+                .conn
+                .query_row("SELECT status FROM items WHERE video_id = ?1", [id], |r| {
+                    r.get(0)
+                })
+                .unwrap()
+        };
+
+        // Only a video that couldn't be downloaded offers it.
+        let (_, _, body) = send(&s.web, get("/sources/lofi/videos/aaaaaaaaaaa")).await;
+        assert!(!body.contains("/ignore\""), "{body}");
+        let (_, _, body) = send(&s.web, get(video)).await;
+        assert!(body.contains(&format!("{video}/ignore\"")), "{body}");
+        let (_, _, body) = send(
+            &s.web,
+            action("/sources/lofi/videos/aaaaaaaaaaa/ignore".into()),
+        )
+        .await;
+        assert!(
+            body.contains("Only a video that couldn&#39;t be downloaded"),
+            "{body}"
+        );
+        assert_eq!(status_of("aaaaaaaaaaa"), "done");
+
+        let (status, headers, _) = send(&s.web, action(format!("{video}/ignore"))).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(headers["hx-redirect"], video);
+        assert_eq!(status_of("ccccccccccc"), "ignored");
+        let (_, _, body) = send(&s.web, get(video)).await;
+        assert!(
+            body.contains("Stop ignoring") && body.contains("HTTP 429"),
+            "{body}"
+        );
+
+        // Out of the full list and its count; the Ignored filter has it.
+        let (_, _, body) = send(&s.web, get("/sources/lofi?status=")).await;
+        assert!(
+            body.contains("All <b>62</b>") && body.contains("Ignored <b>1</b>"),
+            "{body}"
+        );
+        assert!(!body.contains("Broken upload"), "{body}");
+        let (_, _, body) = send(&s.web, get("/sources/lofi?status=ignored")).await;
+        assert!(body.contains("Broken upload"), "{body}");
+
+        let (_, headers, _) = send(&s.web, action(format!("{video}/unignore"))).await;
+        assert_eq!(headers["hx-redirect"], video);
+        assert_eq!(status_of("ccccccccccc"), "pending");
+
+        // Bulk, from the Failed list.
+        Db::open(&s.db)
+            .unwrap()
+            .conn
+            .execute(
+                "UPDATE items SET status = 'failed' WHERE video_id = 'ccccccccccc'",
+                [],
+            )
+            .unwrap();
+        let (_, _, body) = send(&s.web, get("/sources/lofi?status=failed")).await;
+        assert!(body.contains("Ignore all 1"), "{body}");
+        let (_, _, body) = send(&s.web, get("/sources/lofi?status=waiting")).await;
+        assert!(!body.contains("Ignore all"), "{body}");
+        let (status, _, _) = send(&s.web, action("/sources/lofi/ignore/waiting".into())).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        let (_, headers, _) = send(&s.web, action("/sources/lofi/ignore/failed".into())).await;
+        assert_eq!(headers["hx-redirect"], "/sources/lofi?status=ignored");
+        assert_eq!(status_of("ccccccccccc"), "ignored");
+        assert_eq!(status_of("w0000000000"), "pending");
     }
 
     #[tokio::test]

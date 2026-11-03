@@ -172,6 +172,47 @@ async fn run_indexes_and_downloads_into_the_library() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn videos_that_cant_be_downloaded_can_be_ignored() {
+    let env = Env::new().await;
+    let config = env.config("");
+    env.cmd(&["run", "--config", &config]).assert().code(3);
+
+    env.cmd(&["ignore", "flaky001", "members01", "okvideo01", "nope"])
+        .assert()
+        .code(3)
+        .stdout(
+            "dl: ignored flaky001\ndl: ignored members01\n\
+             okvideo01: nothing to ignore (only videos that couldn't be downloaded can be)\n\
+             nope: nothing to ignore (only videos that couldn't be downloaded can be)\n",
+        );
+    assert_eq!(
+        env.statuses("dl")[2..],
+        [
+            ("flaky001".into(), "ignored".into(), 1),
+            ("members01".into(), "ignored".into(), 0),
+        ]
+    );
+    // Not tried again.
+    env.cmd(&["download"])
+        .assert()
+        .success()
+        .stdout(contains("nothing to download"));
+
+    env.cmd(&["unignore", "flaky001", "-s", "dl"])
+        .assert()
+        .success()
+        .stdout("dl: flaky001 will be downloaded on the next sync\n");
+    env.cmd(&["unignore", "flaky001"])
+        .assert()
+        .code(3)
+        .stdout("flaky001: not ignored\n");
+    assert_eq!(
+        env.statuses("dl")[2],
+        ("flaky001".into(), "pending".into(), 0)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn duplicates_are_linked_and_reset_downloads_again() {
     let env = Env::new().await;
     let config = env.config("");

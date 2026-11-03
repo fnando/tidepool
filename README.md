@@ -394,6 +394,18 @@ tags, its place in your folders), then cleaned up like the rest. Without an
 `.info.json`, it gets the title, channel, date and description tidepool found
 when it checked the source.
 
+**Ignoring videos that will never download.** A video that's gone for good
+but still listed in the playlist would otherwise sit in the failed or
+unavailable list forever. Ignore it: it's never tried again, and only the
+source's Ignored list shows it. On a video's page, click Ignore; on a source's
+Failed or Unavailable list, Ignore all ignores every video there. From a
+terminal:
+
+```sh
+tidepool ignore <video id>...      # add -s <source> to ignore it in just that source
+tidepool unignore <video id>...    # download it again on the next sync
+```
+
 **Checking without downloading.** `download = false` keeps a source (or a
 whole category) checked, with your rules applied, without downloading
 anything: handy for seeing what a new source would bring in, or for putting
@@ -1117,7 +1129,8 @@ Deno versions running, and whether the YouTube API key was used today (and
 how much of its daily quota).
 
 Click a source to see its videos, 50 at a time: filter by status
-(downloaded, waiting, skipped, failed, unavailable, cleaned up), search titles
+(downloaded, waiting, skipped, failed, unavailable, cleaned up, ignored;
+everything but the ignored ones by default), search titles
 or ids, and see why each one is where it is (the rule that skipped it, the
 error that failed it, why cleanup removed it). Its Sync now button checks
 just that source for new videos and downloads them right away (even if its

@@ -26,9 +26,13 @@ pub mod status {
     pub const FAILED: &str = "failed";
     pub const UNAVAILABLE: &str = "unavailable";
     pub const CLEANED_UP: &str = "cleaned_up";
+    /// Couldn't be downloaded, and you said to stop showing it.
+    pub const IGNORED: &str = "ignored";
 
     /// Statuses whose decision is recomputed on every index.
     pub const UNDECIDED: [&str; 4] = [PENDING, PENDING_CHECK, FILTERED, FILTER_ERROR];
+    /// Statuses a video can be ignored in: it couldn't be downloaded.
+    pub const IGNORABLE: [&str; 2] = [FAILED, UNAVAILABLE];
 }
 
 /// The status a filter decision puts an item in.
@@ -1916,6 +1920,97 @@ pub fn reset_video(
     Ok(items)
 }
 
+/// Ignore `video_id` in `sources` (every source when empty) where it
+/// couldn't be downloaded: it's never tried again, and lists leave it out.
+/// Returns the sources it was ignored in.
+///
+/// # Errors
+///
+/// If a DB read or write fails.
+pub fn ignore(
+    conn: &Connection,
+    video_id: &str,
+    sources: &[String],
+) -> rusqlite::Result<Vec<String>> {
+    set_ignored(conn, video_id, sources, true)
+}
+
+/// Stop ignoring `video_id` in `sources` (every source when empty): it's
+/// checked and downloaded again like a new video. Returns the sources it was
+/// ignored in.
+///
+/// # Errors
+///
+/// If a DB read or write fails.
+pub fn unignore(
+    conn: &Connection,
+    video_id: &str,
+    sources: &[String],
+) -> rusqlite::Result<Vec<String>> {
+    set_ignored(conn, video_id, sources, false)
+}
+
+fn set_ignored(
+    conn: &Connection,
+    video_id: &str,
+    sources: &[String],
+    ignore: bool,
+) -> rusqlite::Result<Vec<String>> {
+    let from: &[&str] = if ignore {
+        &status::IGNORABLE
+    } else {
+        &[status::IGNORED]
+    };
+    let mut stmt = conn
+        .prepare("SELECT source_key, status FROM items WHERE video_id = ?1 ORDER BY source_key")?;
+    let found: Vec<String> = stmt
+        .query_map([video_id], |r| {
+            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+        })?
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .filter(|(key, status)| {
+            from.contains(&status.as_str()) && (sources.is_empty() || sources.contains(key))
+        })
+        .map(|(key, _)| key)
+        .collect();
+    for key in &found {
+        if ignore {
+            // The error stays: it says why.
+            conn.execute(
+                "UPDATE items SET status = 'ignored', next_attempt_at = NULL
+                 WHERE source_key = ?1 AND video_id = ?2",
+                [key, video_id],
+            )?;
+        } else {
+            conn.execute(
+                "UPDATE items SET status = 'pending', attempts = 0, next_attempt_at = NULL,
+                   last_error = NULL
+                 WHERE source_key = ?1 AND video_id = ?2",
+                [key, video_id],
+            )?;
+        }
+    }
+    Ok(found)
+}
+
+/// Ignore every video of `source` in `status` (one of
+/// [`status::IGNORABLE`]). Returns how many.
+///
+/// # Errors
+///
+/// If the DB write fails.
+pub fn ignore_all(conn: &Connection, source: &str, status: &str) -> rusqlite::Result<usize> {
+    if !status::IGNORABLE.contains(&status) {
+        return Ok(0);
+    }
+    conn.execute(
+        "UPDATE items SET status = 'ignored', next_attempt_at = NULL
+         WHERE source_key = ?1 AND status = ?2",
+        [source, status],
+    )
+}
+
 #[cfg(test)]
 mod download_tests {
     use super::*;
@@ -2024,6 +2119,44 @@ mod download_tests {
         // Gone from the source: not downloaded.
         seed(&mut state, "a", &[]);
         assert!(queued(&state, &["a"], now()).is_empty());
+    }
+
+    #[test]
+    fn ignored_videos_stay_ignored_until_brought_back() {
+        let mut state = State::open_in_memory().unwrap();
+        seed(&mut state, "a", &["x", "y", "z"]);
+        seed(&mut state, "b", &["x"]);
+        mark_failed(&state.conn, "a", "x", "HTTP Error 429", false, now()).unwrap();
+        mark_failed(&state.conn, "b", "x", "Video unavailable", true, now()).unwrap();
+        let later: Timestamp = "2026-11-30T00:00:00Z".parse().unwrap();
+
+        // Only where it couldn't be downloaded.
+        assert!(ignore(&state.conn, "y", &[]).unwrap().is_empty());
+        assert_eq!(ignore(&state.conn, "x", &["a".into()]).unwrap(), ["a"]);
+        assert_eq!(row(&state, "b", "x").0, "unavailable", "only in a");
+        assert_eq!(ignore(&state.conn, "x", &[]).unwrap(), ["b"]);
+        assert_eq!(
+            row(&state, "a", "x"),
+            ("ignored".into(), 1, None, None),
+            "never retried"
+        );
+        assert_eq!(queued(&state, &["a"], later), vec!["a/y", "a/z"]);
+        // Indexing again leaves it alone.
+        seed(&mut state, "a", &["x", "y", "z"]);
+        assert_eq!(row(&state, "a", "x").0, "ignored");
+
+        // Bulk: every failed video of a source.
+        mark_failed(&state.conn, "a", "z", "HTTP Error 429", false, now()).unwrap();
+        assert_eq!(ignore_all(&state.conn, "a", status::FAILED).unwrap(), 1);
+        assert_eq!(row(&state, "a", "z").0, "ignored");
+        assert_eq!(ignore_all(&state.conn, "a", status::PENDING).unwrap(), 0);
+        assert_eq!(row(&state, "a", "y").0, "pending");
+
+        // Brought back: downloaded again like a new video.
+        assert!(unignore(&state.conn, "y", &[]).unwrap().is_empty());
+        assert_eq!(unignore(&state.conn, "x", &[]).unwrap(), ["a", "b"]);
+        assert_eq!(row(&state, "a", "x"), ("pending".into(), 0, None, None));
+        assert_eq!(queued(&state, &["a"], now()), vec!["a/x", "a/y"]);
     }
 
     #[test]

@@ -388,9 +388,11 @@ pre.toml { white-space: pre; overflow-x: auto; overflow-wrap: normal; line-heigh
 .dot.g-failed      { background: var(--danger); }
 .dot.g-unavailable { background: var(--warn); }
 .dot.g-cleaned_up  { background: var(--paused); }
+.dot.g-ignored     { background: var(--muted); }
 
 .search { display: flex; gap: 8px; margin-bottom: 18px; }
 .search input { flex: 1; min-width: 0; }
+.bulk { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 
 /* ---------- status labels ---------- */
 .pill {
@@ -413,7 +415,7 @@ pre.toml { white-space: pre; overflow-x: auto; overflow-wrap: normal; line-heigh
 .st-done, .st-ok, .st-running, .st-saved, .st-on { color: var(--ok); }
 .st-downloading, .st-processing, .st-fetched, .st-finishing { color: var(--info); }
 .st-pending, .st-pending_check, .st-retrying, .st-idle, .st-waiting { color: var(--muted); }
-.st-paused, .st-off, .st-cleaned_up { color: var(--paused); }
+.st-paused, .st-off, .st-cleaned_up, .st-ignored { color: var(--paused); }
 .st-restarting, .st-unavailable, .st-filter_error { color: var(--warn); }
 .st-excluded { color: var(--queued); }
 .st-failed, .st-stopped { color: var(--danger); }

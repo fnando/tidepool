@@ -26,6 +26,14 @@
   <button type="submit">Search</button>
 </form>
 
+{% if let Some(count) = ignorable %}
+<div class="bulk">
+  <span class="muted">Videos that will never download? Ignore them: they're not tried again, and only the Ignored list shows them.</span>
+  <button class="small" hx-post="/sources/{{ name }}/ignore/{{ status }}"
+          hx-confirm="Ignore all {{ count }} of these videos?">Ignore all {{ count }}</button>
+</div>
+{% endif %}
+
 {% if rows.is_empty() %}
 <div class="card"><p class="empty">No videos{% if !status.is_empty() || !query.is_empty() %} match{% endif %}.</p></div>
 {% else %}

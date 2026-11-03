@@ -10,7 +10,16 @@
       {% if video.in_trash %}
       <button class="small" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/restore" hx-target="#jobs" hx-swap="outerHTML">Restore from trash</button>
       {% endif %}
+      {% if video.status == "failed" || video.status == "unavailable" %}
+      <button class="small" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/ignore" hx-target="#jobs" hx-swap="outerHTML"
+              title="Never try it again, and leave it out of the source's list">Ignore</button>
+      {% endif %}
+      {% if video.status == "ignored" %}
+      <button class="small" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/unignore" hx-target="#jobs" hx-swap="outerHTML"
+              title="Download it again on the next sync">Stop ignoring</button>
+      {% else %}
       <button class="small" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/reset" hx-target="#jobs" hx-swap="outerHTML">Download again</button>
+      {% endif %}
       {% if !video.files.is_empty() %}
       <button class="small danger" hx-post="/sources/{{ video.source }}/videos/{{ video.video_id }}/reset_delete" hx-target="#jobs" hx-swap="outerHTML"
               hx-confirm="Delete this video's files and download it again?">Delete files and download again</button>

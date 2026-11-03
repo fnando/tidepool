@@ -179,6 +179,7 @@ pub fn group(status: &str) -> &'static str {
         "failed" => "failed",
         "unavailable" => "unavailable",
         "cleaned_up" => "cleaned_up",
+        "ignored" => "ignored",
         _ => "other",
     }
 }
@@ -290,14 +291,19 @@ pub fn status(conn: &Connection, config: &Config) -> rusqlite::Result<Status> {
 }
 
 /// Statuses in each group the source page filters by.
-pub const GROUPS: [(&str, &str); 6] = [
+pub const GROUPS: [(&str, &str); 7] = [
     ("downloaded", "Downloaded"),
     ("waiting", "Waiting"),
     ("skipped", "Skipped"),
     ("failed", "Failed"),
     ("unavailable", "Unavailable"),
     ("cleaned_up", "Cleaned up"),
+    ("ignored", "Ignored"),
 ];
+
+/// Groups left out of a source's full list (and its count): only their own
+/// filter shows them.
+pub const HIDDEN_GROUPS: [&str; 1] = ["ignored"];
 
 fn statuses_of(group: &str) -> &'static [&'static str] {
     match group {
@@ -313,6 +319,7 @@ fn statuses_of(group: &str) -> &'static [&'static str] {
         "failed" => &["failed"],
         "unavailable" => &["unavailable"],
         "cleaned_up" => &["cleaned_up"],
+        "ignored" => &["ignored"],
         _ => &[],
     }
 }
@@ -369,14 +376,15 @@ fn why(
         "filtered" | "filter_error" | "pending_check" => decision
             .and_then(crate::filter::Decision::from_json)
             .map(|d| d.to_string()),
-        "failed" | "unavailable" => error,
+        "failed" | "unavailable" | "ignored" => error,
         "cleaned_up" => cleanup,
         "fetched" | "processing" => Some("downloaded, being finished".into()),
         _ => None,
     }
 }
 
-/// A page of `source`'s videos: in `group` (all when `None`), with
+/// A page of `source`'s videos: in `group` (all but [`HIDDEN_GROUPS`] when
+/// `None`), with
 /// `query` in the title, in source order. Returns the rows and how many
 /// match in all.
 ///
@@ -403,6 +411,13 @@ pub fn videos(
             list.join(", ")
         };
         let _ = write!(filter, " AND i.status IN ({list})");
+    } else {
+        let hidden: Vec<String> = HIDDEN_GROUPS
+            .iter()
+            .flat_map(|group| statuses_of(group))
+            .map(|s| format!("'{s}'"))
+            .collect();
+        let _ = write!(filter, " AND i.status NOT IN ({})", hidden.join(", "));
     }
     let like = query.map(str::trim).filter(|q| !q.is_empty()).map(|q| {
         format!(

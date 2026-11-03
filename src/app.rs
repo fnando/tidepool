@@ -153,6 +153,8 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Run(args) if !args.daemon => app.run_once(args, out).await,
         Command::Run(_) => crate::daemon::run(&app).await,
         Command::Reset(args) => app.reset(args, out),
+        Command::Ignore(args) => app.ignore(args, true, out),
+        Command::Unignore(args) => app.ignore(args, false, out),
         Command::Problems { cmd } => app.problems(cmd.as_ref(), out),
         Command::Hooks { cmd } => app.hooks(cmd, out).await,
         Command::Embed(args) => app.embed(args, out).await,
@@ -1267,6 +1269,57 @@ impl App<'_> {
             sources.join(", ")
         )?;
         Ok(exit::OK)
+    }
+
+    /// `tidepool ignore|unignore`: stop trying videos that can't be
+    /// downloaded (`ignore`), or bring them back. No library lock: it's one
+    /// update per video, so it works while the daemon runs.
+    pub(crate) fn ignore(
+        &self,
+        args: &crate::cli::IgnoreArgs,
+        ignore: bool,
+        out: &mut dyn Write,
+    ) -> anyhow::Result<i32> {
+        use crate::state::items;
+
+        let state = self.open_state()?;
+        let keys: Vec<String> = if args.sources.is_empty() {
+            Vec::new()
+        } else {
+            let config = self.current_config(&state)?.config;
+            Self::scoped_sources(&config, &args.sources)?
+                .into_iter()
+                .map(|s| s.key)
+                .collect()
+        };
+        let mut missed = 0;
+        for id in &args.video_ids {
+            let changed = if ignore {
+                items::ignore(&state.conn, id, &keys)?
+            } else {
+                items::unignore(&state.conn, id, &keys)?
+            };
+            if changed.is_empty() {
+                missed += 1;
+                if ignore {
+                    writeln!(
+                        out,
+                        "{id}: nothing to ignore (only videos that couldn't be downloaded can be)"
+                    )?;
+                } else {
+                    writeln!(out, "{id}: not ignored")?;
+                }
+            }
+            for key in changed {
+                if ignore {
+                    writeln!(out, "{key}: ignored {id}")?;
+                } else {
+                    writeln!(out, "{key}: {id} will be downloaded on the next sync")?;
+                }
+            }
+        }
+        crate::events::emit(crate::events::Event::Changed);
+        Ok(if missed > 0 { exit::PARTIAL } else { exit::OK })
     }
 
     /// `tidepool clean-titles`: clean up the titles of downloaded videos

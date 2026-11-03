@@ -97,6 +97,10 @@ pub enum Command {
     CleanTitles(VideoSelection),
     /// Forget an item so it is downloaded again
     Reset(ResetArgs),
+    /// Stop trying videos that can't be downloaded, and leave them out of lists
+    Ignore(IgnoreArgs),
+    /// Download ignored videos again
+    Unignore(IgnoreArgs),
     /// List open problems, or acknowledge one
     Problems {
         #[command(subcommand)]
@@ -230,6 +234,15 @@ pub struct ResetArgs {
     /// Also delete the video's files
     #[arg(long)]
     pub delete_files: bool,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct IgnoreArgs {
+    #[arg(required = true)]
+    pub video_ids: Vec<String>,
+    /// Only in these sources: name, playlist id or URL; repeatable
+    #[arg(long = "source", short = 's', value_name = "NAME|ID|URL")]
+    pub sources: Vec<SourceRef>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
