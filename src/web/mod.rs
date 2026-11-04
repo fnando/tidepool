@@ -895,7 +895,7 @@ async fn video_and_jobs(
         let Some(mut video) = data::video(conn, &loaded.config, &source, &id)? else {
             return Ok(None);
         };
-        if can_backfill(&video.status) {
+        if crate::download::backfill::can_backfill(&video.status) {
             video.backfill = Some(
                 match crate::config::check::backfill_dir(&loaded.config, &dirs) {
                     Ok(dir) => {
@@ -969,19 +969,6 @@ async fn jobs_response(
     .into_response())
 }
 
-/// Whether a video in `status` can be given a file from the backfill
-/// folder: not while it's being downloaded or processed, nor once it's done.
-fn can_backfill(status: &str) -> bool {
-    use crate::state::items::status;
-    ![
-        status::DOWNLOADING,
-        status::FETCHED,
-        status::PROCESSING,
-        status::DONE,
-    ]
-    .contains(&status)
-}
-
 #[derive(Deserialize)]
 struct BackfillForm {
     file: String,
@@ -1015,7 +1002,7 @@ async fn video_backfill(
             let Some(current) = current else {
                 return Ok(None);
             };
-            if !can_backfill(&current) {
+            if !crate::download::backfill::can_backfill(&current) {
                 return Ok(Some(Err(format!(
                     "It can't be given a file while it's {current}."
                 ))));

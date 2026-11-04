@@ -7,6 +7,5 @@ source.toml:5:9 sources.no_list.urls[0]: "https://www.youtube.com/watch?v=dQw4w9
 source.toml:8:9 sources.bare_id.urls[0]: "PLcccccccc" is not a URL; use the playlist's or channel's URL (e.g. "https://www.youtube.com/playlist?list=PLxxxxxxxx" or "https://www.youtube.com/@channel")
 source.toml:11:9 sources.not_youtube.urls[0]: "https://example.com/playlist?list=PLdddddddd" is not a YouTube URL (e.g. "https://www.youtube.com/playlist?list=PLxxxxxxxx" or "https://www.youtube.com/@channel")
 source.toml:15:12 sources.bad_category.category: "Music!" isn't a category name: use lowercase letters, digits, '-' and '_'
-source.toml:18:8 sources.empty.urls: needs at least one playlist or channel URL
-source.toml:21:8 sources.not_a_list.urls: must be a list of URLs, e.g. urls = ["https://www.youtube.com/playlist?list=PLeeeeeeee"]
-source.toml:24:8 sources.repeated.urls: has the same URL more than once
+source.toml:18:8 sources.not_a_list.urls: must be a list of URLs, e.g. urls = ["https://www.youtube.com/playlist?list=PLeeeeeeee"]
+source.toml:21:8 sources.repeated.urls: has the same URL more than once

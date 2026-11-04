@@ -59,6 +59,9 @@ const MIGRATION_LIST: &[M<'static>] = &[
          ALTER TABLE sources ADD COLUMN next_sync_at TEXT;
          DELETE FROM daemon_state WHERE key = 'next_sync_at';",
     ),
+    // Videos imported from a source's own backfill folder: not on its
+    // playlists, so never "removed" from them nor downloaded from YouTube.
+    M::up("ALTER TABLE items ADD COLUMN local INTEGER NOT NULL DEFAULT 0;"),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_LIST);
 

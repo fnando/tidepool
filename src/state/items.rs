@@ -131,6 +131,16 @@ pub fn record_index(
     }
     summary.total = seen.len();
     mark_removed(&tx, source, &seen, &mut summary)?;
+    // Imported from its backfill folder: in it, though not on YouTube.
+    let mut stmt = tx.prepare("SELECT video_id FROM items WHERE source_key = ?1 AND local = 1")?;
+    let local: Vec<String> = stmt
+        .query_map([source.key], |r| r.get(0))?
+        .collect::<Result<_, _>>()?;
+    drop(stmt);
+    summary.total += local
+        .iter()
+        .filter(|id| !seen.contains(id.as_str()))
+        .count();
     summary.by_status = count_by_status(&tx, source.key)?;
     tx.commit()?;
     Ok(summary)
@@ -268,8 +278,9 @@ fn mark_removed(
     seen: &HashSet<&str>,
     summary: &mut IndexSummary,
 ) -> rusqlite::Result<()> {
-    let mut stmt =
-        tx.prepare("SELECT video_id FROM items WHERE source_key = ?1 AND in_remote = 1")?;
+    let mut stmt = tx.prepare(
+        "SELECT video_id FROM items WHERE source_key = ?1 AND in_remote = 1 AND local = 0",
+    )?;
     let previously: Vec<String> = stmt
         .query_map([source.key], |r| r.get(0))?
         .collect::<Result<_, _>>()?;
@@ -716,7 +727,7 @@ pub fn download_queue(
     queue_where(
         conn,
         sources,
-        "i.in_remote = 1
+        "i.in_remote = 1 AND i.local = 0
            AND (i.status IN ('pending', 'pending_check')
                 OR (i.status = 'failed' AND i.attempts < ?3
                     AND (i.next_attempt_at IS NULL OR i.next_attempt_at <= ?2)))",
@@ -1747,6 +1758,8 @@ pub struct Kept {
     pub files: VideoFiles,
     pub media_bytes: u64,
     pub downloaded_at: Option<Timestamp>,
+    /// Imported from the source's backfill folder.
+    pub local: bool,
 }
 
 /// A source's downloaded videos.
@@ -1756,7 +1769,7 @@ pub struct Kept {
 /// If the DB read fails.
 pub fn kept(conn: &Connection, source_key: &str) -> rusqlite::Result<Vec<Kept>> {
     let mut stmt = conn.prepare(
-        "SELECT video_id, position, files, media_bytes, downloaded_at FROM items
+        "SELECT video_id, position, files, media_bytes, downloaded_at, local FROM items
          WHERE source_key = ?1 AND status = 'done' AND files IS NOT NULL
          ORDER BY position",
     )?;
@@ -1767,11 +1780,12 @@ pub fn kept(conn: &Connection, source_key: &str) -> rusqlite::Result<Vec<Kept>> 
             VideoFiles::from_column(r.get(2)?),
             r.get::<_, Option<i64>>(3)?,
             r.get::<_, Option<String>>(4)?,
+            r.get::<_, bool>(5)?,
         ))
     })?;
     let mut out = Vec::new();
     for row in rows {
-        let (video_id, position, files, bytes, downloaded_at) = row?;
+        let (video_id, position, files, bytes, downloaded_at, local) = row?;
         if let Some(files) = files {
             out.push(Kept {
                 video_id,
@@ -1779,6 +1793,7 @@ pub fn kept(conn: &Connection, source_key: &str) -> rusqlite::Result<Vec<Kept>> 
                 files,
                 media_bytes: u64::try_from(bytes.unwrap_or(0)).unwrap_or(0),
                 downloaded_at: downloaded_at.and_then(|t| t.parse().ok()),
+                local,
             });
         }
     }

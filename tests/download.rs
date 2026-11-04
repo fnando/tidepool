@@ -1129,6 +1129,115 @@ async fn music_video_titles_are_cleaned_up_before_anything_else() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn files_in_a_sources_backfill_folder_are_imported() {
+    let env = Env::new().await;
+    let musicbrainz = fake_musicbrainz(200).await;
+    let config = env.path("config.toml");
+    fs::write(
+        &config,
+        format!(
+            "[category.default]\nmedia_dir = \"{}\"\nclean_title = \"music_video\"\n\
+             [category.default.embed]\ntags = {{ MUSICBRAINZ_ARTISTID = \"rick-artist\" }}\n\
+             musicbrainz = {{ server = \"{}\", enabled = false }}\n\n\
+             [tools.deno]\nmanaged = false\n\n[tools.yt-dlp]\nmanaged = false\npath = \"{}\"\n\n\
+             [sources.rick]\nurls = []\n",
+            env.media().display(),
+            musicbrainz.uri(),
+            test_bin().join("yt-dlp").display()
+        ),
+    )
+    .unwrap();
+    let config = config.display().to_string();
+    let folder = env.path("data/tidepool/backfill/rick");
+    fs::create_dir_all(&folder).unwrap();
+    fs::write(
+        folder.join("Rick Astley - Never Gonna Give You Up (Official Video).mp4"),
+        "video",
+    )
+    .unwrap();
+    fs::write(folder.join("notes.txt"), "not a video").unwrap();
+    // Only a source's own folder: not the one above.
+    fs::write(env.path("data/tidepool/backfill/elsewhere.mp4"), "x").unwrap();
+
+    env.cmd(&["run", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains(
+            "rick: imported Rick Astley - Never Gonna Give You Up (Official Video).mp4 from the backfill folder",
+        ));
+    let placed: Vec<PathBuf> = walk(&env.media().join("rick"));
+    let media = placed
+        .iter()
+        .find(|p| p.extension().is_some_and(|e| e == "mp4"))
+        .unwrap_or_else(|| panic!("placed: {placed:?}"));
+    assert_eq!(
+        media.file_name().unwrap().to_string_lossy(),
+        "Never Gonna Give You Up.mp4"
+    );
+    assert_eq!(fs::read_to_string(media).unwrap(), "video");
+    let meta: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(media.parent().unwrap().join("metadata.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(meta["title"], "Never Gonna Give You Up");
+    assert_eq!(meta["channel"]["name"], "Rick Astley");
+    assert_eq!(
+        fs::read_dir(&folder)
+            .unwrap()
+            .map(|e| e.unwrap().file_name())
+            .collect::<Vec<_>>(),
+        ["notes.txt"]
+    );
+    assert!(env.path("data/tidepool/backfill/elsewhere.mp4").exists());
+    let statuses = env.statuses("rick");
+    assert_eq!(statuses.len(), 1);
+    assert_eq!((statuses[0].0.len(), statuses[0].1.as_str()), (11, "done"));
+
+    // Still there on the next run: a source without URLs has nothing to lose.
+    env.cmd(&["run", "--config", &config])
+        .assert()
+        .success()
+        .stdout(contains("rick: 1 video: 1 already downloaded"));
+    assert_eq!(env.statuses("rick"), statuses);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_backfilled_file_named_after_a_listed_video_is_used_for_it() {
+    let env = Env::new().await;
+    let config = env.config("");
+    env.cmd(&["index", "--config", &config]).assert().success();
+    let folder = env.path("data/tidepool/backfill/dl");
+    fs::create_dir_all(&folder).unwrap();
+    fs::write(folder.join("my copy [dQw4w9WgXcQ].mkv"), "mine").unwrap();
+    env.cmd(&["download", "-s", "dl"]).assert().code(3).stdout(
+        contains("dl: imported my copy [dQw4w9WgXcQ].mkv from the backfill folder")
+            // Finished from the file (4 bytes), not downloaded.
+            .and(contains("(4K Remaster)” (4 B)")),
+    );
+    // YouTube's details, the file from the folder.
+    let media = env
+        .media()
+        .join(RICK_DIR)
+        .join("Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mkv");
+    assert_eq!(fs::read_to_string(media).unwrap(), "mine");
+    assert_eq!(env.statuses("dl").len(), 4, "no new video");
+}
+
+/// Every file under `dir`.
+fn walk(dir: &Path) -> Vec<PathBuf> {
+    let mut out = Vec::new();
+    for entry in fs::read_dir(dir).into_iter().flatten().flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            out.extend(walk(&path));
+        } else {
+            out.push(path);
+        }
+    }
+    out
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn titles_of_videos_already_downloaded_are_cleaned_up_on_request() {
     let env = Env::new().await;
     let config = env.config("");

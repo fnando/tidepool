@@ -561,8 +561,8 @@ options_struct! {
     pub struct SourceConfig {
         /// Where videos come from: YouTube playlist URLs (with `list=`) and channel
         /// URLs (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`: all its uploads).
+        /// Empty for a source whose videos only come from its backfill folder.
         #[schemars(
-            length(min = 1),
             extend("uniqueItems" = true, "items" = { "type": "string", "format": "source-url" })
         )]
         pub urls: Vec<String>,

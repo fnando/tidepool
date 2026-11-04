@@ -674,6 +674,9 @@ impl App<'_> {
             shutdown_timeout: config.general.shutdown_timeout.0,
             shutdown: self.shutdown.clone(),
             fetched: self.fetched.clone(),
+            backfill_dir: crate::config::check::backfill_dir(config, &self.dirs)
+                .map_err(|e| tracing::warn!("the backfill folder isn't usable: {e}"))
+                .ok(),
         };
         // In the daemon, the downloader downloads and the processor
         // processes; the daemon cleans up after a crash once, when it starts.
@@ -2986,11 +2989,14 @@ fn cleanup_candidates(
     kept.iter()
         .map(|k| {
             let video = details.get(&k.video_id);
-            let unmatched = video.and_then(|v| match rules.decide(&Fields::from_item(v)) {
-                crate::filter::Decision::Keep { .. }
-                | crate::filter::Decision::Deferred { .. }
-                | crate::filter::Decision::FilterError { .. } => None,
-                other => Some(other.to_string()),
+            // Files put in the source's folder by hand stay, whatever the rules.
+            let unmatched = video.filter(|_| !k.local).and_then(|v| {
+                match rules.decide(&Fields::from_item(v)) {
+                    crate::filter::Decision::Keep { .. }
+                    | crate::filter::Decision::Deferred { .. }
+                    | crate::filter::Decision::FilterError { .. } => None,
+                    other => Some(other.to_string()),
+                }
             });
             crate::cleanup::Candidate {
                 video_id: k.video_id.clone(),

@@ -759,12 +759,11 @@
           "type": "string"
         },
         "urls": {
-          "description": "Where videos come from: YouTube playlist URLs (with `list=`) and channel\nURLs (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`: all its uploads).",
+          "description": "Where videos come from: YouTube playlist URLs (with `list=`) and channel\nURLs (`/@handle`, `/channel/UC…`, `/c/name`, `/user/name`: all its uploads).\nEmpty for a source whose videos only come from its backfill folder.",
           "items": {
             "format": "source-url",
             "type": "string"
           },
-          "minItems": 1,
           "type": "array",
           "uniqueItems": true
         },

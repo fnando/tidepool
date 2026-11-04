@@ -6,7 +6,11 @@
 //! downloaded it (`media.<ext>`, subtitles, `ytdlp.info.json`), so the
 //! processor finishes it like any other download: hooks, cover, embedding,
 //! placing.
+//!
+//! [`import_source`] does it on its own for the files in a source's folder
+//! there (`<backfill_dir>/<source>/`), even ones that aren't on YouTube.
 
+use std::io::Write;
 use std::path::{Component, Path, PathBuf};
 
 use rusqlite::{Connection, OptionalExtension};
@@ -264,6 +268,311 @@ pub fn stage(media: &Path, work: &Path, video_id: &str, index_info: &str) -> Res
     }
 }
 
+/// Whether a video in `status` can be given a file from the backfill
+/// folder: not while it's being downloaded or processed, nor once it's done.
+#[must_use]
+pub fn can_backfill(status: &str) -> bool {
+    use crate::state::items::status;
+    ![
+        status::DOWNLOADING,
+        status::FETCHED,
+        status::PROCESSING,
+        status::DONE,
+    ]
+    .contains(&status)
+}
+
+/// The media files in a source's own folder, `<dir>/<source_key>/` (not
+/// its subfolders), by name.
+#[must_use]
+pub fn source_files(dir: &Path, source_key: &str) -> Vec<PathBuf> {
+    let Ok(entries) = std::fs::read_dir(dir.join(source_key)) else {
+        return Vec::new();
+    };
+    let mut out: Vec<PathBuf> = entries
+        .flatten()
+        .filter(|e| !e.file_name().to_string_lossy().starts_with('.'))
+        .map(|e| e.path())
+        .filter(|p| p.is_file() && is_media(p))
+        .collect();
+    out.sort();
+    out
+}
+
+/// The YouTube ID in a name the way yt-dlp writes it ("Song [dQw4w9WgXcQ]").
+fn id_in_name(stem: &str) -> Option<&str> {
+    let inside = stem.strip_suffix(']')?;
+    let (_, id) = inside.rsplit_once('[')?;
+    (id.len() == 11
+        && id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_'))
+    .then_some(id)
+}
+
+/// The title in a file's name: without the ID yt-dlp puts at the end.
+fn title_in_name(stem: &str) -> String {
+    let title = match id_in_name(stem) {
+        Some(id) => stem[..stem.len() - id.len() - 2].trim_end(),
+        None => stem,
+    };
+    let title = title.trim();
+    if title.is_empty() { stem } else { title }.to_string()
+}
+
+/// An ID for a file that isn't a YouTube video: 11 characters, like
+/// YouTube's, from its name and size (the same file keeps its ID).
+fn local_id(name: &str, bytes: u64) -> String {
+    use sha2::Digest;
+    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    let digest = sha2::Sha256::digest(format!("{name}\0{bytes}").as_bytes());
+    let bits = digest[..9]
+        .iter()
+        .fold(0u128, |acc, b| (acc << 8) | u128::from(*b));
+    (0..11)
+        .map(|i| char::from(ALPHABET[((bits >> (66 - 6 * (i + 1))) & 63) as usize]))
+        .collect()
+}
+
+/// The details of a file that came without any: its title from its name
+/// (cleaned up when the `artist` is known, who's also its channel).
+fn file_info(video_id: &str, title: &str, artist: Option<&str>, on_youtube: bool) -> String {
+    let title = match artist {
+        Some(artist) => crate::titles::music_video(title, artist),
+        None => title.to_string(),
+    };
+    let (url, thumbnails) = if on_youtube {
+        (
+            format!("https://www.youtube.com/watch?v={video_id}"),
+            ["hqdefault", "maxresdefault"]
+                .iter()
+                .map(|n| serde_json::json!({ "url": format!("https://i.ytimg.com/vi/{video_id}/{n}.jpg") }))
+                .collect(),
+        )
+    } else {
+        (String::new(), Vec::new())
+    };
+    serde_json::json!({
+        "id": video_id,
+        "title": title,
+        "channel": artist,
+        "webpage_url": url,
+        "thumbnails": thumbnails,
+    })
+    .to_string()
+}
+
+/// One file of a source's folder, ready to be imported.
+struct Found {
+    /// Its file name.
+    name: String,
+    video_id: String,
+    /// Its info JSON: its `.info.json`, or what indexing found.
+    info: Option<String>,
+    title: String,
+    /// Its ID is YouTube's.
+    on_youtube: bool,
+}
+
+/// The video `media` is for: the one its `.info.json` or name (`[<id>]`)
+/// says, else one of its own.
+fn identify(conn: &Connection, media: &Path) -> rusqlite::Result<Found> {
+    let name = media
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let stem = media
+        .file_stem()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let sidecar = sidecars(media)
+        .0
+        .and_then(|p| std::fs::read_to_string(p).ok())
+        .and_then(|t| VideoInfo::parse(&t).ok().map(|info| (info, t)));
+    Ok(if let Some((info, text)) = sidecar {
+        Found {
+            name,
+            video_id: info.id,
+            info: Some(text),
+            title: info.title,
+            on_youtube: true,
+        }
+    } else if let Some(id) = id_in_name(&stem) {
+        Found {
+            video_id: id.to_string(),
+            info: index_info(conn, id)?,
+            title: title_in_name(&stem),
+            name,
+            on_youtube: true,
+        }
+    } else {
+        let bytes = std::fs::metadata(media).map_or(0, |m| m.len());
+        Found {
+            video_id: local_id(&name, bytes),
+            info: None,
+            title: title_in_name(&stem),
+            name,
+            on_youtube: false,
+        }
+    })
+}
+
+/// Take `found`'s video for importing (status `downloading`), adding it to
+/// the source when it isn't there (`current` is its status). `false` when
+/// something else took it first.
+fn claim(
+    conn: &Connection,
+    key: &str,
+    found: &Found,
+    info: &str,
+    current: Option<&str>,
+) -> rusqlite::Result<bool> {
+    use crate::state::items::status;
+    if let Some(current) = current {
+        // So a download can't start on it meanwhile.
+        let claimed = conn.execute(
+            "UPDATE items SET status = ?3 WHERE source_key = ?1 AND video_id = ?2 AND status = ?4",
+            rusqlite::params![key, found.video_id, status::DOWNLOADING, current],
+        )?;
+        return Ok(claimed > 0);
+    }
+    let now = jiff::Timestamp::now().to_string();
+    let parsed = VideoInfo::parse(info).ok();
+    conn.execute(
+        "INSERT OR IGNORE INTO sources (key, lists) VALUES (?1, '[]')",
+        [key],
+    )?;
+    conn.execute(
+        "INSERT INTO videos (id, title, channel, updated_at) VALUES (?1, ?2, ?3, ?4)
+         ON CONFLICT(id) DO NOTHING",
+        rusqlite::params![
+            found.video_id,
+            parsed
+                .as_ref()
+                .map_or(found.title.as_str(), |i| i.title.as_str()),
+            parsed.as_ref().and_then(|i| i.channel.clone()),
+            now
+        ],
+    )?;
+    conn.execute(
+        "INSERT INTO items (source_key, video_id, position, added_at, in_remote, status, lists, local)
+         VALUES (?1, ?2, (SELECT COALESCE(MAX(position), 0) + 1 FROM items WHERE source_key = ?1),
+                 ?3, 1, ?4, '[]', 1)",
+        rusqlite::params![key, found.video_id, now, status::DOWNLOADING],
+    )?;
+    Ok(true)
+}
+
+/// Import the files in `source`'s own folder in `dir`: each becomes one of
+/// its videos (a new one when the source doesn't have it), staged in its
+/// work area under `tmp_root` for the processor, as if just downloaded.
+/// The video is the one its `.info.json` or name (`[<id>]`) says; other
+/// files get an ID of their own and their name as the title, cleaned up
+/// when the source names its artist (`MUSICBRAINZ_ARTISTID`), whose name
+/// comes from MusicBrainz. A file that can't be imported now stays.
+/// Returns how many were.
+///
+/// # Errors
+///
+/// If a DB read or write fails.
+pub async fn import_source(
+    conn: &Connection,
+    source: &crate::config::merge::EffectiveSource,
+    dir: &Path,
+    tmp_root: &Path,
+    data_dir: &Path,
+    out: &mut dyn Write,
+) -> rusqlite::Result<usize> {
+    use crate::state::items;
+    let key = &source.key;
+    let mut artist: Option<Option<String>> = None;
+    let mut imported = 0;
+    for media in source_files(dir, key) {
+        let found = identify(conn, &media)?;
+        let name = &found.name;
+        let current: Option<String> = conn
+            .query_row(
+                "SELECT status FROM items WHERE source_key = ?1 AND video_id = ?2",
+                [key, &found.video_id],
+                |r| r.get(0),
+            )
+            .optional()?;
+        if let Some(current) = &current
+            && !can_backfill(current)
+        {
+            tracing::info!(
+                "{key}: {name} stays in the backfill folder: its video ({}) is {current}",
+                found.video_id
+            );
+            continue;
+        }
+        let info = match &found.info {
+            Some(info) => info.clone(),
+            None if current.is_some() => index_info(conn, &found.video_id)?.unwrap_or_default(),
+            None => {
+                if artist.is_none() {
+                    match artist_name(source, data_dir).await {
+                        Ok(name) => artist = Some(name),
+                        Err(e) => {
+                            tracing::warn!(
+                                "{key}: {name} stays in the backfill folder for now: {e}"
+                            );
+                            continue;
+                        }
+                    }
+                }
+                file_info(
+                    &found.video_id,
+                    &found.title,
+                    artist.clone().flatten().as_deref(),
+                    found.on_youtube,
+                )
+            }
+        };
+        if !claim(conn, key, &found, &info, current.as_deref())? {
+            continue;
+        }
+        let video_id = &found.video_id;
+        let work = super::work_area(tmp_root, video_id, key);
+        match stage(&media, &work, video_id, &info) {
+            Ok(()) => {
+                items::mark_fetched(conn, key, video_id, jiff::Timestamp::now())?;
+                tracing::info!("{key}: {video_id} given {name} from its backfill folder");
+                let _ = writeln!(out, "{key}: imported {name} from the backfill folder");
+                imported += 1;
+            }
+            Err(err) => {
+                if let Some(current) = &current {
+                    items::set_status(conn, key, video_id, current)?;
+                } else {
+                    conn.execute(
+                        "DELETE FROM items WHERE source_key = ?1 AND video_id = ?2",
+                        [key, video_id],
+                    )?;
+                }
+                tracing::warn!("{key}: {name} stays in the backfill folder: {err}");
+            }
+        }
+    }
+    Ok(imported)
+}
+
+/// The name of the artist `source` names (`MUSICBRAINZ_ARTISTID`), from
+/// MusicBrainz; `None` when it doesn't name one.
+async fn artist_name(
+    source: &crate::config::merge::EffectiveSource,
+    data_dir: &Path,
+) -> Result<Option<String>, String> {
+    let values = super::layout::Values::default();
+    let Some(id) = super::stages::artist_id(source, &values) else {
+        return Ok(None);
+    };
+    crate::musicbrainz::artist_name(&source.embed.musicbrainz_server, data_dir, &id)
+        .await
+        .map(Some)
+        .map_err(|e| format!("cannot look up the artist's name: {e}"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -274,6 +583,75 @@ mod tests {
     }
 
     const INFO: &str = r#"{"id": "abc123", "title": "Song"}"#;
+
+    #[test]
+    fn a_files_name_gives_its_video_and_title() {
+        assert_eq!(id_in_name("Song [dQw4w9WgXcQ]"), Some("dQw4w9WgXcQ"));
+        assert_eq!(id_in_name("Song [Official Video]"), None);
+        assert_eq!(id_in_name("Song [Live]"), None);
+        assert_eq!(id_in_name("Song"), None);
+        assert_eq!(title_in_name("Song [dQw4w9WgXcQ]"), "Song");
+        assert_eq!(title_in_name("[dQw4w9WgXcQ]"), "[dQw4w9WgXcQ]");
+        assert_eq!(title_in_name("  Song (Live) "), "Song (Live)");
+    }
+
+    #[test]
+    fn files_without_a_video_get_an_id_like_youtubes() {
+        let id = local_id("Song.mp4", 100);
+        assert_eq!(id.len(), 11);
+        assert!(
+            id.chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+        );
+        assert_eq!(id, local_id("Song.mp4", 100), "the same file, the same ID");
+        assert_ne!(id, local_id("Song.mp4", 101));
+        assert_ne!(id, local_id("Other.mp4", 100));
+        assert!(super::super::is_work_folder(&format!("{id}.music")));
+    }
+
+    #[test]
+    fn a_sources_folder_has_its_own_media_files() {
+        let dir = tempfile::tempdir().unwrap();
+        touch(&dir.path().join("lofi/b.mp4"), "x");
+        touch(&dir.path().join("lofi/a.MKV"), "x");
+        touch(&dir.path().join("lofi/a.info.json"), "{}");
+        touch(&dir.path().join("lofi/.hidden.mp4"), "x");
+        touch(&dir.path().join("lofi/deeper/c.mp4"), "x");
+        touch(&dir.path().join("other.mp4"), "x");
+        let names: Vec<String> = source_files(dir.path(), "lofi")
+            .iter()
+            .map(|p| p.file_name().unwrap().to_string_lossy().into_owned())
+            .collect();
+        assert_eq!(names, ["a.MKV", "b.mp4"]);
+        assert!(source_files(dir.path(), "none").is_empty());
+    }
+
+    #[test]
+    fn file_details_name_the_artist_and_clean_the_title_up() {
+        let info = VideoInfo::parse(&file_info(
+            "abcdefghijk",
+            "Rick Astley - Song (Official Video)",
+            Some("Rick Astley"),
+            false,
+        ))
+        .unwrap();
+        assert_eq!(info.title, "Song");
+        assert_eq!(info.channel.as_deref(), Some("Rick Astley"));
+        let info = VideoInfo::parse(&file_info(
+            "abcdefghijk",
+            "Racionais MC's - Negro Drama (Clipe Oficial)",
+            Some("Racionais MC's"),
+            false,
+        ))
+        .unwrap();
+        assert_eq!(info.title, "Negro Drama");
+        assert_eq!(info.webpage_url.as_deref(), Some(""));
+        assert!(info.thumbnails().is_empty());
+        let info = VideoInfo::parse(&file_info("dQw4w9WgXcQ", "Song", None, true)).unwrap();
+        assert_eq!(info.title, "Song");
+        assert_eq!(info.channel, None);
+        assert_eq!(info.thumbnails().len(), 2);
+    }
 
     #[test]
     fn lists_media_files_with_the_video_first() {

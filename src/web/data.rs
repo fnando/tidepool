@@ -497,6 +497,8 @@ pub struct VideoDetail {
     pub in_trash: bool,
     /// The title `clean_title` gives it, when that differs.
     pub clean_title: Option<String>,
+    /// Imported from the source's backfill folder (maybe not on YouTube).
+    pub local: bool,
     /// The files it can be given from the backfill folder, when it can be.
     #[serde(skip)]
     pub backfill: Option<Backfill>,
@@ -514,9 +516,9 @@ pub fn video(
     video_id: &str,
 ) -> anyhow::Result<Option<VideoDetail>> {
     use rusqlite::OptionalExtension;
-    let Some((title, status, decision, error, cleanup, files)) = conn
+    let Some((title, status, decision, error, cleanup, files, local)) = conn
         .query_row(
-            "SELECT v.title, i.status, i.decision, i.last_error, i.cleanup_reason, i.files
+            "SELECT v.title, i.status, i.decision, i.last_error, i.cleanup_reason, i.files, i.local
              FROM items i JOIN videos v ON v.id = i.video_id
              WHERE i.source_key = ?1 AND i.video_id = ?2",
             [source, video_id],
@@ -528,6 +530,7 @@ pub fn video(
                     r.get::<_, Option<String>>(3)?,
                     r.get::<_, Option<String>>(4)?,
                     r.get::<_, Option<String>>(5)?,
+                    r.get::<_, bool>(6)?,
                 ))
             },
         )
@@ -575,6 +578,7 @@ pub fn video(
         hook_runs,
         in_trash: in_trash > 0,
         clean_title: None,
+        local,
         backfill: None,
     }))
 }

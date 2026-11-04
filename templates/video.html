@@ -9,7 +9,7 @@
     <div class="totals">
       <span class="pill st-{{ video.badge }}">{{ video.label }}</span>
       {% if let Some(why) = video.why %}<span>{{ why }}</span>{% endif %}
-      <a href="https://www.youtube.com/watch?v={{ video.video_id }}" rel="noreferrer"><code>{{ video.video_id }}</code> ↗</a>
+      {% if video.local %}<span><code>{{ video.video_id }}</code> · from the backfill folder</span>{% else %}<a href="https://www.youtube.com/watch?v={{ video.video_id }}" rel="noreferrer"><code>{{ video.video_id }}</code> ↗</a>{% endif %}
     </div>
   </div>
 </header>

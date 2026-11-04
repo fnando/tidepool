@@ -153,6 +153,9 @@ Several sources can use the same address, each with its own rules: a label's
 channel, say, split into one source per band with `include`. Each keeps its
 own list of videos and its own folder.
 
+A source can also have no addresses at all, `urls = []`, when all its videos
+come from your own files (see [Downloading](#downloading)).
+
 The name (`lofi` here) is up to you: lowercase letters, digits, `-` and `_`. By
 default it's also the name of the source's folder (see `output_dir` below).
 
@@ -395,6 +398,27 @@ the backfill folder and finished like any download (your hooks, the cover,
 tags, its place in your folders), then cleaned up like the rest. Without an
 `.info.json`, it gets the title, channel, date and description tidepool found
 when it checked the source.
+
+**Files you downloaded yourself.** Files in a folder named after a source,
+inside the backfill folder
+(`~/.local/share/tidepool/backfill/racionais/` for `[sources.racionais]`), are
+picked up on their own each time the source syncs, as long as its downloads
+are on (or you click Sync now). Each one is moved out of there and finished
+like any download, then cleaned up like the rest:
+
+- With an `.info.json` next to it, or the video's ID in its name the way
+  yt-dlp writes it (`Song [dQw4w9WgXcQ].mp4`), it's that YouTube video:
+  if the source lists it, the file is used for it instead of downloading it.
+- Any other file becomes a video of its own, titled after the file's name.
+  When the source names its artist (`MUSICBRAINZ_ARTISTID` in `embed.tags`),
+  the title is cleaned up ("Racionais MC's - Negro Drama (Clipe Oficial)"
+  becomes "Negro Drama") and the artist's name, from MusicBrainz, is used as
+  the channel. If MusicBrainz can't be reached, the file waits for the next
+  sync.
+
+Your files stay in the source even though they aren't on its playlists, and
+your `include` and `exclude` rules never remove them. A file whose video is
+already downloaded stays where it is.
 
 **Ignoring videos that will never download.** A video that's gone for good
 but still listed in the playlist would otherwise sit in the failed or

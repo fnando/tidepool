@@ -71,6 +71,8 @@ pub struct Context {
     pub shutdown: crate::shutdown::Shutdown,
     /// Told each time a download is waiting to be processed.
     pub fetched: Option<Arc<tokio::sync::Notify>>,
+    /// `general.backfill_dir`; `None` when it isn't usable.
+    pub backfill_dir: Option<PathBuf>,
 }
 
 pub struct Options {
@@ -1059,6 +1061,29 @@ pub async fn download_all(
     let mut summary = Summary::default();
     if options.fetch {
         summary.missing = missing::check(state, sources, &by_source, &ctx, out).await?;
+    }
+
+    if options.fetch
+        && let Some(dir) = &ctx.backfill_dir
+    {
+        let mut imported = 0;
+        for source in sources.iter().filter(|s| s.download) {
+            imported += backfill::import_source(
+                &state.conn,
+                source,
+                dir,
+                &by_source[&source.key].tmp_root,
+                &ctx.dirs.data_dir,
+                out,
+            )
+            .await
+            .map_err(db)?;
+        }
+        if imported > 0
+            && let Some(fetched) = &ctx.fetched
+        {
+            fetched.notify_one();
+        }
     }
 
     let (queue, waiting) = queues(state, sources, &options).map_err(db)?;

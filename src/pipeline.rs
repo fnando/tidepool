@@ -388,7 +388,21 @@ pub async fn index_source(
         found_in,
         errors,
         hows,
-    } = list_all(&lister, &lists, apis, tracker).await?;
+    } = if lists.is_empty() {
+        // Only what its backfill folder brings.
+        Listing {
+            merged: RemoteList {
+                id: String::new(),
+                title: None,
+                items: Vec::new(),
+            },
+            found_in: HashMap::new(),
+            errors: Vec::new(),
+            hows: Vec::new(),
+        }
+    } else {
+        list_all(&lister, &lists, apis, tracker).await?
+    };
 
     // Rules on `kind`: settle what can be settled now. The API marks live
     // streams, so through it "not a Short" means a regular video; through

@@ -14,9 +14,6 @@ urls = ["https://example.com/playlist?list=PLdddddddd"]
 urls = ["https://www.youtube.com/playlist?list=PLaaaaaaaa"]
 category = "Music!"
 
-[sources.empty]
-urls = []
-
 [sources.not_a_list]
 urls = "https://www.youtube.com/playlist?list=PLeeeeeeee"
 

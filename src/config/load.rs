@@ -335,12 +335,6 @@ fn convert(error: &ValidationError<'_>, out: &mut Vec<Diagnostic>) {
                 not_one_of(instance, options.iter()),
             ));
         }
-        ValidationErrorKind::MinItems { limit: 1 } if pointer.ends_with("/urls") => {
-            out.push(Diagnostic::error(
-                pointer,
-                "needs at least one playlist or channel URL",
-            ));
-        }
         ValidationErrorKind::Type { .. } if pointer.ends_with("/urls") => {
             out.push(Diagnostic::error(
                 pointer,
