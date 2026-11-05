@@ -1018,6 +1018,14 @@ async fn musicbrainz_ids_are_looked_up_from_the_artist() {
         .expect(1)
         .mount(&musicbrainz)
         .await;
+    Mock::given(path_regex("/ws/2/artist/rick-artist"))
+        .respond_with(
+            ResponseTemplate::new(200).set_body_json(
+                serde_json::json!({"id": "rick-artist", "name": "Rick Astley (MB)"}),
+            ),
+        )
+        .mount(&musicbrainz)
+        .await;
     let config = hooks_config(
         &env,
         &format!(
@@ -1048,6 +1056,9 @@ async fn musicbrainz_ids_are_looked_up_from_the_artist() {
     assert_eq!(tags["MUSICBRAINZ_RELEASEGROUPID"], "whenever-group");
     assert_eq!(tags["MUSICBRAINZ_TRACKID"], "the-recording");
     assert_eq!(tags["MUSICBRAINZ_RELEASETRACKID"], "whenever-track");
+    // The artist's name, not the channel's.
+    assert_eq!(tags["ARTIST"], "Rick Astley (MB)", "{tags}");
+    assert_eq!(tags["ALBUM_ARTIST"], "Rick Astley (MB)");
     let meta: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(rick.join("metadata.json")).unwrap()).unwrap();
     assert_eq!(meta["musicbrainz"]["release"], "Whenever You Need Somebody");
@@ -2160,7 +2171,7 @@ async fn embed_applies_the_current_settings_to_downloaded_videos() {
     let config = hooks_config(
         &env,
         "hooks = [\"upper\"]\n[category.default.embed]\nmetadata = true\ncover = true\nchapters = true\n\
-         tags = { MUSICBRAINZ_ARTISTID = \"abc-123\", album_artist = \"{channel} (YouTube)\", GENRE = \"\" }",
+         tags = { MUSICBRAINZ_ARTISTID = \"abc-123\", artist = \"{channel}\", album_artist = \"{channel} (YouTube)\", GENRE = \"\" }",
         &format!(
             "[hooks.upper]\ntype = \"embed\"\ncommand = [\"{}\"]\n",
             upper.display()

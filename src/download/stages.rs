@@ -478,6 +478,53 @@ impl Stage<'_> {
         Ok(())
     }
 
+    /// [`Self::tags`], with the artist the source names
+    /// (`MUSICBRAINZ_ARTISTID`) as `artist` and `album_artist`, with its name from MusicBrainz, in place of the
+    /// channel's. Tags set in `embed.tags` are left alone. `Err` when the
+    /// name can't be looked up: the download is tried again later rather
+    /// than tagged with the channel's name.
+    ///
+    /// # Errors
+    ///
+    /// Fails when the artist's name can't be looked up on MusicBrainz.
+    pub async fn embed_tags(
+        &self,
+        info: &VideoInfo,
+        values: &Values,
+    ) -> Result<BTreeMap<String, String>, Failure> {
+        let mut tags = self.tags(info, values);
+        if !self.source.embed.metadata {
+            return Ok(tags);
+        }
+        let Some(artist_id) = artist_id(self.source, values) else {
+            return Ok(tags);
+        };
+        let set = |key: &str| {
+            self.source
+                .embed
+                .tags
+                .keys()
+                .any(|k| k.eq_ignore_ascii_case(key))
+        };
+        if set("artist") && set("album_artist") {
+            return Ok(tags);
+        }
+        let name = crate::musicbrainz::artist_name(
+            &self.source.embed.musicbrainz_server,
+            self.data_dir,
+            &artist_id,
+        )
+        .await
+        .map_err(|e| fail(format!("cannot tag the artist: {e}")))?;
+        for key in ["artist", "album_artist"] {
+            if !set(key) {
+                tags.retain(|k, _| !k.eq_ignore_ascii_case(key));
+                tags.insert(key.to_string(), name.clone());
+            }
+        }
+        Ok(tags)
+    }
+
     /// `embed.musicbrainz`: album and track ids for `tags` that name the
     /// artist (`MUSICBRAINZ_ARTISTID`). `known` is what metadata.json
     /// recorded before: a match there is used again, not looked up. Tags set

@@ -504,7 +504,7 @@ subtitles = true    # subtitles you asked yt-dlp for (with --write-subs)
 
 | Option | What goes into the file |
 | --- | --- |
-| `metadata` | title, artist and album artist (the channel), genre (YouTube's category), date, description, the video's address, album (the source's title on YouTube) and track (its position in the source) |
+| `metadata` | title, artist and album artist (the channel, or the artist `MUSICBRAINZ_ARTISTID` names), genre (YouTube's category), date, description, the video's address, album (the source's title on YouTube) and track (its position in the source) |
 | `cover` | the poster, the same image as `cover_file` |
 | `chapters` | the video's chapters |
 | `subtitles` | the subtitles; the separate subtitle files are kept too |
@@ -519,6 +519,13 @@ mark whose music videos a source holds:
 [sources.afi.embed]
 tags = { MUSICBRAINZ_ARTISTID = "…", album_artist = "{channel}", genre = "" }
 ```
+
+With `MUSICBRAINZ_ARTISTID`, the artist and album artist are the artist's name
+on MusicBrainz ("AFI", not the channel's "AFI Official"), unless `tags` sets
+them, as `album_artist` does above. The name is looked up once and kept for 30
+days; if it can't be looked up, the video waits and is tried again later. For
+videos you already have, `tidepool embed --all` (or `-s <source>`) tags them
+again.
 
 Tags add up: a source's `tags` are added to its category's and
 `[category.default]`'s, and a tag set again replaces the earlier one, so you can

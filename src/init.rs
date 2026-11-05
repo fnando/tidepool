@@ -98,7 +98,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # requests_per_second = 5           # API request rate limit
 
 [category.default.embed]            # what goes into the media file
-# metadata = false                  # title, artist/album artist (channel), genre, date, description, URL, album (source title), track
+# metadata = false                  # title, artist/album artist (channel, or the MUSICBRAINZ_ARTISTID artist), genre, date, description, URL, album (source title), track
 # cover = false                     # the poster, as in cover_file (not for webm, opus or ogg)
 # chapters = false                  # chapter markers
 # subtitles = false                 # subtitles from --write-subs; the subtitle files are kept too

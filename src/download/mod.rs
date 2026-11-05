@@ -737,7 +737,7 @@ async fn assemble(
     }
     // What gets embedded: processed by `embed` hooks, then embedded.
     let mut data = hooks::EmbedData {
-        tags: stage.tags(&info, &values),
+        tags: stage.embed_tags(&info, &values).await?,
         cover: raw.cover.clone(),
         chapters: info.chapters.clone().unwrap_or_default(),
         subtitles: raw.subtitles.clone(),
