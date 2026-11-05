@@ -114,7 +114,9 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         | Command::Download(_)
         | Command::Hooks { .. }
         | Command::Embed(_)
-        | Command::CleanTitles(_)
+        | Command::Titles {
+            cmd: crate::cli::TitlesCmd::Clean(_),
+        }
         | Command::Cleanup(_) => crate::shutdown::Shutdown::listen(),
         _ => crate::shutdown::Shutdown::default(),
     };
@@ -158,7 +160,19 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
         Command::Problems { cmd } => app.problems(cmd.as_ref(), out),
         Command::Hooks { cmd } => app.hooks(cmd, out).await,
         Command::Embed(args) => app.embed(args, out).await,
-        Command::CleanTitles(select) => app.clean_titles(select, out).await,
+        Command::Titles {
+            cmd: crate::cli::TitlesCmd::Clean(select),
+        } => app.clean_titles(select, out).await,
+        Command::Titles {
+            cmd: crate::cli::TitlesCmd::Test { title, artist },
+        } => {
+            writeln!(
+                out,
+                "{}",
+                crate::titles::music_video(title, artist.as_deref().unwrap_or(""))
+            )?;
+            Ok(exit::OK)
+        }
         Command::Cleanup(scope) => app.cleanup(scope, out).await,
         Command::Trash { cmd } => app.trash(cmd, out),
         Command::Daemon { cmd } => crate::daemon::control::command(&app, cmd, out).await,
@@ -189,7 +203,9 @@ fn checks_config_drift(command: &Command) -> bool {
         | Command::Filter { .. }
         | Command::Hooks { .. }
         | Command::Embed(_)
-        | Command::CleanTitles(_)
+        | Command::Titles {
+            cmd: crate::cli::TitlesCmd::Clean(_),
+        }
         | Command::Cleanup(_) => true,
         _ => false,
     }
@@ -216,7 +232,9 @@ fn uses_stored_config(command: &Command) -> bool {
         | Command::Reset(_)
         | Command::Hooks { .. }
         | Command::Embed(_)
-        | Command::CleanTitles(_)
+        | Command::Titles {
+            cmd: crate::cli::TitlesCmd::Clean(_),
+        }
         | Command::Cleanup(_) => true,
         // The daemon compares the file instead (`daemon::startup_check`).
         Command::Run(args) => !args.daemon,
@@ -1326,7 +1344,7 @@ impl App<'_> {
         Ok(if missed > 0 { exit::PARTIAL } else { exit::OK })
     }
 
-    /// `tidepool clean-titles`: clean up the titles of downloaded videos
+    /// `tidepool titles clean`: clean up the titles of downloaded videos
     /// (`clean_title`) from YouTube's original, renaming their files to match
     /// and embedding the new title.
     async fn clean_titles(
@@ -3216,7 +3234,7 @@ fn check_stored_config(
     loaded
 }
 
-/// `tidepool clean-titles`' last line: how many were renamed, already
+/// `tidepool titles clean`' last line: how many were renamed, already
 /// clean, or failed.
 fn clean_titles_summary(dry_run: bool, renamed: usize, unchanged: usize, failed: usize) -> String {
     let videos = if renamed == 1 { "video" } else { "videos" };

@@ -62,6 +62,31 @@ impl Env {
 }
 
 #[test]
+fn titles_test_prints_the_cleaned_title_without_a_config() {
+    let env = Env::new();
+    env.cmd(&[
+        "titles",
+        "test",
+        "--title",
+        "Dead Fish - Sonho Médio (Clipe Oficial)",
+        "--artist",
+        "Dead Fish",
+    ])
+    .assert()
+    .success()
+    .stdout("Sonho Médio\n");
+    env.cmd(&[
+        "titles",
+        "test",
+        "--title",
+        "Sonho Médio (Official Video) [4K]",
+    ])
+    .assert()
+    .success()
+    .stdout("Sonho Médio\n");
+}
+
+#[test]
 fn commands_without_a_config_explain_how_to_import_one() {
     let env = Env::new();
     env.cmd(&["config"]).assert().code(1).stderr(contains(

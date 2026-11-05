@@ -93,8 +93,11 @@ pub enum Command {
     },
     /// (Re)apply metadata/cover embedding
     Embed(EmbedArgs),
-    /// Clean up titles of videos you already have (`clean_title`), renaming their files
-    CleanTitles(VideoSelection),
+    /// Clean up video titles (`clean_title`)
+    Titles {
+        #[command(subcommand)]
+        cmd: TitlesCmd,
+    },
     /// Forget an item so it is downloaded again
     Reset(ResetArgs),
     /// Stop trying videos that can't be downloaded, and leave them out of lists
@@ -151,6 +154,21 @@ pub enum HooksCmd {
         /// Only hooks whose last run failed
         #[arg(long)]
         failed: bool,
+    },
+}
+
+#[derive(Debug, Clone, Subcommand)]
+pub enum TitlesCmd {
+    /// Clean up titles of videos you already have, renaming their files
+    Clean(VideoSelection),
+    /// Show how a title would be cleaned up; nothing is changed
+    Test {
+        /// The title, as on YouTube
+        #[arg(long, value_name = "TITLE")]
+        title: String,
+        /// The artist's name, dropped from the title ("Artist - Song")
+        #[arg(long, value_name = "NAME")]
+        artist: Option<String>,
     },
 }
 

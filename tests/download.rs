@@ -1304,7 +1304,7 @@ async fn titles_of_videos_already_downloaded_are_cleaned_up_on_request() {
         "",
     );
     env.cmd(&["config", "import", &config]).assert().success();
-    env.cmd(&["clean-titles", "--all", "--dry-run"])
+    env.cmd(&["titles", "clean", "--all", "--dry-run"])
         .assert()
         .success()
         .stdout(
@@ -1313,7 +1313,7 @@ async fn titles_of_videos_already_downloaded_are_cleaned_up_on_request() {
         );
     assert!(old.is_dir(), "a dry run moves nothing");
 
-    env.cmd(&["clean-titles", "--all"])
+    env.cmd(&["titles", "clean", "--all"])
         .assert()
         .success()
         .stdout(contains("renamed 1 video; 1 already clean"));
@@ -1337,7 +1337,7 @@ async fn titles_of_videos_already_downloaded_are_cleaned_up_on_request() {
         .assert()
         .success()
         .stdout(contains("missing").not());
-    env.cmd(&["clean-titles", "--all"])
+    env.cmd(&["titles", "clean", "--all"])
         .assert()
         .success()
         .stdout(contains("renamed 0 videos; 2 already clean"));
@@ -1367,7 +1367,7 @@ async fn cleaning_up_a_title_never_overwrites_another_file() {
         .join("dl/2009-10-25 - Never Gonna Give You Up [dQw4w9WgXcQ]/Never Gonna Give You Up.mkv");
     fs::create_dir_all(taken.parent().unwrap()).unwrap();
     fs::write(&taken, "someone else's").unwrap();
-    env.cmd(&["clean-titles", "dQw4w9WgXcQ"])
+    env.cmd(&["titles", "clean", "dQw4w9WgXcQ"])
         .assert()
         .code(3)
         .stdout(contains("skipped:").and(contains("already exists")));

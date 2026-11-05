@@ -515,7 +515,7 @@ nfo = true          # an .nfo file next to the video (on unless you turn it off)
 **The `.nfo` file** is for media servers. Jellyfin and Kodi read the title,
 artist, album, date, description and MusicBrainz ids from it, and trust it
 over the tags inside the video. They also read it again whenever it changes,
-so new details from `tidepool embed` or `tidepool clean-titles` show up on the
+so new details from `tidepool embed` or `tidepool titles clean` show up on the
 next library scan, without refreshing the metadata by hand. It's written even
 when `metadata` is off, and `tidepool embed` writes it for videos you already
 have. Set `nfo = false` to leave it out; `tidepool embed --remove-disabled`
@@ -585,7 +585,7 @@ video waits and is tried again later, so it's never saved under the raw title
 is turned off there.
 
 Videos you downloaded before turning it on keep their names until you run
-`tidepool clean-titles`, which picks videos like `tidepool embed` does
+`tidepool titles clean`, which picks videos like `tidepool embed` does
 (`--all`, `--source`, `--category` or video ids). It cleans each one up from
 YouTube's original title, moves its files to match (the video, poster,
 subtitles and metadata file, and the folder when its name has the title), and
@@ -594,7 +594,7 @@ shows what would change. A file already sitting at the new name is never
 overwritten: that video is skipped and left where it was.
 
 ```text
-$ tidepool clean-titles --category music --dry-run
+$ tidepool titles clean --category music --dry-run
 dead-fish: “Dead Fish - Sonho Médio (Clipe Oficial)” → “Sonho Médio” (dry run)
 would rename 1 video; 12 already clean
 ```
@@ -602,6 +602,15 @@ would rename 1 video; 12 already clean
 Files are moved to where your path settings put them now, so if a `prepare`
 hook chose a video's paths when it was downloaded, check with `--dry-run`
 first.
+
+To see what a title would become, without touching anything, use
+`tidepool titles test --title <title>`. `--artist` is the artist's name,
+which is dropped from the title like the one from MusicBrainz:
+
+```text
+$ tidepool titles test --title 'Dead Fish - Sonho Médio (Clipe Oficial)' --artist 'Dead Fish'
+Sonho Médio
+```
 
 **MusicBrainz album and track ids.** For music videos tagged with their
 artist's `MUSICBRAINZ_ARTISTID`, tidepool can find the song on one of the
