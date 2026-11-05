@@ -51,7 +51,8 @@ pub enum Found {
 }
 
 impl Found {
-    /// The tags to add (MusicBrainz Picard's names).
+    /// The tags to add (MusicBrainz Picard's names), and the release's title
+    /// as `album`.
     #[must_use]
     pub fn tags(&self) -> Vec<(&'static str, String)> {
         match self {
@@ -64,6 +65,7 @@ impl Found {
                 if let Some(group) = &release.group_id {
                     tags.push(("MUSICBRAINZ_RELEASEGROUPID", group.clone()));
                 }
+                tags.push(("album", release.title.clone()));
                 tags
             }
             Found::None(_) => Vec::new(),
@@ -99,6 +101,9 @@ impl Found {
         ];
         if let Some(group) = get("release_group_id") {
             tags.push(("MUSICBRAINZ_RELEASEGROUPID", group));
+        }
+        if let Some(release) = get("release") {
+            tags.push(("album", release));
         }
         Some(tags)
     }

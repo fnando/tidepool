@@ -500,15 +500,26 @@ metadata = true     # title, artist, date, description, …
 cover = true        # the poster
 chapters = true     # chapter markers
 subtitles = true    # subtitles you asked yt-dlp for (with --write-subs)
+nfo = true          # an .nfo file next to the video (on unless you turn it off)
 ```
 
 | Option | What goes into the file |
 | --- | --- |
-| `metadata` | title, artist and album artist (the channel, or the artist `MUSICBRAINZ_ARTISTID` names), genre (YouTube's category), date, description, the video's address, album (the source's title on YouTube) and track (its position in the source) |
+| `metadata` | title, artist and album artist (the channel, or the artist `MUSICBRAINZ_ARTISTID` names), genre (YouTube's category), date, description, the video's address, album (the source's title on YouTube, or the release MusicBrainz finds) and track (its position in the source) |
 | `cover` | the poster, the same image as `cover_file` |
 | `chapters` | the video's chapters |
 | `subtitles` | the subtitles; the separate subtitle files are kept too |
-| `tags` | your own tags, added to (or replacing) the ones above; needs `metadata = true` |
+| `tags` | your own tags, added to (or replacing) the ones above; needs `metadata = true` (or `nfo`) |
+| `nfo` | not in the file: an `.nfo` file next to it, named after it, with the same details as the tags; on by default |
+
+**The `.nfo` file** is for media servers. Jellyfin and Kodi read the title,
+artist, album, date, description and MusicBrainz ids from it, and trust it
+over the tags inside the video. They also read it again whenever it changes,
+so new details from `tidepool embed` or `tidepool clean-titles` show up on the
+next library scan, without refreshing the metadata by hand. It's written even
+when `metadata` is off, and `tidepool embed` writes it for videos you already
+have. Set `nfo = false` to leave it out; `tidepool embed --remove-disabled`
+then deletes the ones already there.
 
 `tags` takes fixed text or `{placeholders}` (not file paths), and an empty
 value leaves a tag out, also taking it off the video and audio tracks inside the
@@ -596,7 +607,8 @@ first.
 artist's `MUSICBRAINZ_ARTISTID`, tidepool can find the song on one of the
 artist's MusicBrainz releases and add the release's and the track's ids too
 (`MUSICBRAINZ_ALBUMID`, `MUSICBRAINZ_RELEASEGROUPID`, `MUSICBRAINZ_TRACKID` and
-`MUSICBRAINZ_RELEASETRACKID`, the names Picard uses):
+`MUSICBRAINZ_RELEASETRACKID`, the names Picard uses). The release's title
+becomes the album, in place of the source's title, unless `tags` sets `album`:
 
 ```toml
 [category.music.embed]

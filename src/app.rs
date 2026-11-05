@@ -1495,6 +1495,13 @@ impl App<'_> {
         }
         let metadata_dest = layout.metadata_file().map_err(anyhow::Error::msg)?;
         new.metadata = metadata_dest.display().to_string();
+        if files.nfo.is_some() {
+            new.nfo = Some(
+                crate::download::nfo::path_for(Path::new(&new.media))
+                    .display()
+                    .to_string(),
+            );
+        }
         if files.raw_info.is_some() {
             let mut name = metadata_dest.file_stem().unwrap_or_default().to_owned();
             name.push(".ytdlp.json");
@@ -1513,7 +1520,10 @@ impl App<'_> {
         let embed_sources: Vec<SourceRef> = selected
             .sources
             .iter()
-            .filter(|s| s.embed.metadata && s.clean_title != crate::config::CleanTitle::None)
+            .filter(|s| {
+                (s.embed.metadata || s.embed.nfo)
+                    && s.clean_title != crate::config::CleanTitle::None
+            })
             .map(|s| SourceRef::Key(s.key.clone()))
             .collect();
         if embed_sources.is_empty() {
@@ -1628,7 +1638,10 @@ impl App<'_> {
                 break;
             }
             let source = selected.source(&item.source_key);
-            if !crate::download::stages::embedding_on(source) && !args.remove_disabled {
+            if !crate::download::stages::embedding_on(source)
+                && !source.embed.nfo
+                && !args.remove_disabled
+            {
                 if !nothing_on.contains(&source.key.as_str()) {
                     nothing_on.push(&source.key);
                 }
@@ -1653,7 +1666,11 @@ impl App<'_> {
                 problems.push(format!("embedding failed: {e}"));
             }
             if problems.is_empty() {
-                writeln!(out, "{label}: {}", describe_embedding(&embedding))?;
+                writeln!(
+                    out,
+                    "{label}: {}",
+                    describe_embedding(&embedding, source.embed.nfo)
+                )?;
             } else {
                 failed += 1;
                 writeln!(out, "{label}: {}", problems.join("; "))?;
@@ -1664,7 +1681,7 @@ impl App<'_> {
         for key in nothing_on {
             writeln!(
                 out,
-                "{key}: nothing to embed (every embed option is off; --remove-disabled takes out what's in the files)"
+                "{key}: nothing to embed (every embed option is off, nfo too; --remove-disabled takes out what's in the files)"
             )?;
         }
         if let Some(code) = self.shutdown.code() {
@@ -3257,6 +3274,7 @@ fn move_retitled(
         (Some(&files.media), Some(&new.media)),
         (files.cover.as_ref(), new.cover.as_ref()),
         (files.raw_info.as_ref(), new.raw_info.as_ref()),
+        (files.nfo.as_ref(), new.nfo.as_ref()),
     ];
     for (old, now) in files.subtitles.iter().zip(&new.subtitles) {
         pairs.push((Some(&old.path), Some(&now.path)));
@@ -3710,7 +3728,7 @@ impl<'a> Rerun<'a> {
 }
 
 /// `embedded cover, chapters; removed subtitles`, or `nothing changed`.
-fn describe_embedding(embedding: &crate::download::stages::Embedding) -> String {
+fn describe_embedding(embedding: &crate::download::stages::Embedding, nfo: bool) -> String {
     let names = |e: &crate::download::embed::Embedded| {
         [
             (e.metadata, "tags"),
@@ -3730,6 +3748,9 @@ fn describe_embedding(embedding: &crate::download::stages::Embedding) -> String 
     }
     if embedding.removed.any() {
         parts.push(format!("removed {}", names(&embedding.removed)));
+    }
+    if nfo {
+        parts.push("wrote the .nfo".into());
     }
     if parts.is_empty() {
         "nothing changed".into()

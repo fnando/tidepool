@@ -326,6 +326,10 @@
           "$ref": "#/$defs/MusicBrainzOptions",
           "description": "Look up MusicBrainz album and track ids for videos whose tags have\n`MUSICBRAINZ_ARTISTID`, e.g. `{ server = \"http://mirror:5000\" }`."
         },
+        "nfo": {
+          "description": "An `.nfo` file next to the video (named after it) with the same\ndetails as the tags, for Jellyfin and Kodi. On by default.",
+          "type": "boolean"
+        },
         "subtitles": {
           "description": "Languages from --sub-langs.",
           "type": "boolean"

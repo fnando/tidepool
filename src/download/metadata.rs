@@ -153,6 +153,7 @@ mod tests {
                 path: "/m/lofi/x/subs/x.en.vtt".into(),
             }],
             metadata: "/m/lofi/x/metadata.json".into(),
+            nfo: None,
             raw_info: None,
             removed: vec![],
         };

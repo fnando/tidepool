@@ -248,8 +248,15 @@ async fn reprocess(
     let Placement {
         media_dest,
         mut moves,
-        files: new,
+        files: mut new,
     } = moves_back(files, &raw, &layout, &cover_dest)?;
+    if video.source.embed.nfo {
+        let dest = super::nfo::path_for(&media_dest);
+        moves.push((super::nfo::write(tmp, &data.tags, info)?, dest.clone()));
+        new.nfo = Some(dest.display().to_string());
+    } else if remove_disabled {
+        new.nfo = None;
+    }
     let linked = hardlinked(video.others, &old_media);
 
     let media_bytes = std::fs::metadata(&raw.media)
@@ -267,6 +274,11 @@ async fn reprocess(
     place_all(&moves).map_err(|f| f.message)?;
     if media_dest != old_media {
         let _ = std::fs::remove_file(&old_media);
+    }
+    if let Some(old) = &files.nfo
+        && new.nfo.as_ref() != Some(old)
+    {
+        let _ = std::fs::remove_file(old);
     }
     for other in linked.iter().filter(|o| Path::new(&o.media) != old_media) {
         if let Err(e) = relink(&media_dest, Path::new(&other.media)) {

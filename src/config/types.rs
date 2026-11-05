@@ -642,6 +642,10 @@ pub struct EmbedOptions {
     /// Languages from --sub-langs.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub subtitles: Option<bool>,
+    /// An `.nfo` file next to the video (named after it) with the same
+    /// details as the tags, for Jellyfin and Kodi. On by default.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nfo: Option<bool>,
     /// Tags to add or replace, e.g. `{ MUSICBRAINZ_ARTISTID = "…", album_artist = "{channel}" }`;
     /// an empty value removes the tag. Applied before `embed` hooks.
     #[serde(default, skip_serializing_if = "Option::is_none")]

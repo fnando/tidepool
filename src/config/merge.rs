@@ -135,6 +135,7 @@ pub struct Embed {
     pub cover: bool,
     pub chapters: bool,
     pub subtitles: bool,
+    pub nfo: bool,
     pub tags: BTreeMap<String, String>,
     /// The MusicBrainz server to look up album and track ids on, when on.
     #[serde(skip)]
@@ -229,6 +230,7 @@ fn resolve_embed(layers: &[Options]) -> Embed {
         cover: table!(layers, embed, cover, false),
         chapters: table!(layers, embed, chapters, false),
         subtitles: table!(layers, embed, subtitles, false),
+        nfo: table!(layers, embed, nfo, true),
         tags: merged_tags(layers),
         musicbrainz: musicbrainz(layers),
         musicbrainz_server: musicbrainz_server(layers),

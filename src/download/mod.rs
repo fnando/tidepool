@@ -7,6 +7,7 @@ pub mod info;
 pub mod layout;
 pub mod metadata;
 pub mod missing;
+pub mod nfo;
 pub mod prepare;
 pub mod rerun;
 pub mod stages;
@@ -727,7 +728,7 @@ async fn assemble(
     let Placement {
         media_dest,
         mut moves,
-        files,
+        mut files,
     } = plan_moves(source, &layout, &raw, tmp, &cover_dest, &metadata_dest)?;
     // A `downloaded` hook may have removed the cover.
     let cover = cover.filter(|_| raw.cover.is_some());
@@ -756,9 +757,8 @@ async fn assemble(
         )
         .await;
 
-    let media_bytes = std::fs::metadata(&raw.media)
-        .map_err(|e| io_fail("cannot read", &raw.media, &e))?
-        .len();
+    add_nfo(source, tmp, &data.tags, &info, &mut moves, &mut files)?;
+    let media_bytes = file_size(&raw.media)?;
     let metadata = Metadata {
         info: &info,
         source,
@@ -777,8 +777,7 @@ async fn assemble(
     };
     let json =
         serde_json::to_string_pretty(&metadata.to_json()).expect("metadata serializes") + "\n";
-    let metadata_path = write_metadata(tmp, &json)?;
-    moves.push((metadata_path, metadata_dest.clone()));
+    moves.push((write_metadata(tmp, &json)?, metadata_dest.clone()));
 
     job.save(ctx, tmp, &moves, embedding.relink, &media_dest)?;
     tracing::debug!(
@@ -928,6 +927,31 @@ fn plan_moves(
         moves,
         files,
     })
+}
+
+/// With `embed.nfo`: the `.nfo` for `tags`, written in `tmp`, to go next
+/// to the media.
+fn add_nfo(
+    source: &EffectiveSource,
+    tmp: &Path,
+    tags: &BTreeMap<String, String>,
+    info: &VideoInfo,
+    moves: &mut Vec<(PathBuf, PathBuf)>,
+    files: &mut items::VideoFiles,
+) -> Result<(), Failure> {
+    if source.embed.nfo {
+        let dest = nfo::path_for(Path::new(&files.media));
+        moves.push((nfo::write(tmp, tags, info).map_err(fail)?, dest.clone()));
+        files.nfo = Some(dest.display().to_string());
+    }
+    Ok(())
+}
+
+/// `path`'s size.
+fn file_size(path: &Path) -> Result<u64, Failure> {
+    Ok(std::fs::metadata(path)
+        .map_err(|e| io_fail("cannot read", path, &e))?
+        .len())
 }
 
 /// Write `json` to `tmp/metadata.json`, synced to disk.

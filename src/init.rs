@@ -98,10 +98,11 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # requests_per_second = 5           # API request rate limit
 
 [category.default.embed]            # what goes into the media file
-# metadata = false                  # title, artist/album artist (channel, or the MUSICBRAINZ_ARTISTID artist), genre, date, description, URL, album (source title), track
+# metadata = false                  # title, artist/album artist (channel, or the MUSICBRAINZ_ARTISTID artist), genre, date, description, URL, album (source title, or the MusicBrainz release), track
 # cover = false                     # the poster, as in cover_file (not for webm, opus or ogg)
 # chapters = false                  # chapter markers
 # subtitles = false                 # subtitles from --write-subs; the subtitle files are kept too
+# nfo = true                        # an .nfo file next to the video with the same details as the tags, for Jellyfin and Kodi
 # tags = {}                         # tags to add or replace (with metadata = true), e.g. { genre = "Music", album_artist = "{channel}" }; "" removes one
 # musicbrainz = { server = "https://musicbrainz.org", enabled = true } # add album/track ids to videos tagged MUSICBRAINZ_ARTISTID (mkv); off unless set
 

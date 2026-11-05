@@ -126,9 +126,25 @@ async fn run_indexes_and_downloads_into_the_library() {
             "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)-poster.jpg",
             "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).en.vtt",
             "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mkv",
+            "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).nfo",
             "metadata.json"
         ]
     );
+    // The details media servers read, next to the video.
+    let nfo = fs::read_to_string(
+        rick.join("Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).nfo"),
+    )
+    .unwrap();
+    for line in [
+        "<musicvideo>",
+        "<title>Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)</title>",
+        "<artist>Rick Astley</artist>",
+        "<album>Downloads</album>",
+        "<premiered>2009-10-25</premiered>",
+        "<uniqueid type=\"youtube\" default=\"true\">dQw4w9WgXcQ</uniqueid>",
+    ] {
+        assert!(nfo.contains(line), "{line} in {nfo}");
+    }
     let metadata: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(rick.join("metadata.json")).unwrap()).unwrap();
     assert_eq!(metadata["source"]["name"], "dl");
@@ -708,8 +724,10 @@ async fn files_go_anywhere_and_folders_can_be_shared() {
         vec![
             "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).en.vtt",
             "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mkv",
+            "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).nfo",
             "Video okvideo01.en.vtt",
             "Video okvideo01.mkv",
+            "Video okvideo01.nfo",
             "dQw4w9WgXcQ.json",
             "dQw4w9WgXcQ.ytdlp.json",
             "okvideo01.json",
@@ -731,6 +749,7 @@ async fn files_go_anywhere_and_folders_can_be_shared() {
         .success()
         .stdout(contains(format!("deleted {}", cover.display())));
     assert!(!cover.exists() && !dir.join("Video okvideo01.mkv").exists());
+    assert!(!dir.join("Video okvideo01.nfo").exists());
     assert!(!dir.join("okvideo01.json").exists() && !dir.join("okvideo01.ytdlp.json").exists());
     assert!(dir.join("dQw4w9WgXcQ.json").is_file());
 }
@@ -1059,6 +1078,17 @@ async fn musicbrainz_ids_are_looked_up_from_the_artist() {
     // The artist's name, not the channel's.
     assert_eq!(tags["ARTIST"], "Rick Astley (MB)", "{tags}");
     assert_eq!(tags["ALBUM_ARTIST"], "Rick Astley (MB)");
+    // The release it's on, not the source's title.
+    assert_eq!(tags["ALBUM"], "Whenever You Need Somebody");
+    let nfo = fs::read_to_string(media.with_extension("nfo")).unwrap();
+    for line in [
+        "<artist>Rick Astley (MB)</artist>",
+        "<album>Whenever You Need Somebody</album>",
+        "<musicbrainzartistid>rick-artist</musicbrainzartistid>",
+        "<musicbrainzalbumid>whenever</musicbrainzalbumid>",
+    ] {
+        assert!(nfo.contains(line), "{line} in {nfo}");
+    }
     let meta: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(rick.join("metadata.json")).unwrap()).unwrap();
     assert_eq!(meta["musicbrainz"]["release"], "Whenever You Need Somebody");
@@ -1077,9 +1107,13 @@ async fn musicbrainz_ids_are_looked_up_from_the_artist() {
 
     // Embedding again keeps the ids, without asking again (one request in
     // all: the mock expects it).
-    cmd(&["embed", "dQw4w9WgXcQ"]).assert().success();
+    cmd(&["embed", "dQw4w9WgXcQ"])
+        .assert()
+        .success()
+        .stdout(contains("embedded tags; wrote the .nfo"));
     let tags = &ffprobe_json(&media)["format"]["tags"];
     assert_eq!(tags["MUSICBRAINZ_TRACKID"], "the-recording");
+    assert_eq!(tags["ALBUM"], "Whenever You Need Somebody");
 }
 
 /// A fake MusicBrainz knowing Rick Astley (`rick-artist`); `artist_status`
@@ -2149,17 +2183,22 @@ async fn embed_applies_the_current_settings_to_downloaded_videos() {
         cmd.env("PATH", &path).env("TIDEPOOL_FAKE_MEDIA", &sample);
         cmd
     };
-    // Downloaded with nothing embedded.
-    let config = env.config("");
+    // Downloaded with nothing embedded, and no .nfo.
+    let config = env.config("embed.nfo = false");
     run(&["run", "-s", "dl", "--config", &config])
         .assert()
         .code(3);
+    let nfo = env
+        .media()
+        .join(RICK_DIR)
+        .join("Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).nfo");
+    assert!(!nfo.exists());
     run(&["embed"])
         .assert()
         .failure()
         .stderr(contains("pick the videos"));
     run(&["embed", "dQw4w9WgXcQ"]).assert().success().stdout(contains(
-        "dl: nothing to embed (every embed option is off; --remove-disabled takes out what's in the files)",
+        "dl: nothing to embed (every embed option is off, nfo too; --remove-disabled takes out what's in the files)",
     ));
 
     // Turned on later, with an embed hook: backfilled.

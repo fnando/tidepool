@@ -493,7 +493,7 @@ impl Stage<'_> {
         values: &Values,
     ) -> Result<BTreeMap<String, String>, Failure> {
         let mut tags = self.tags(info, values);
-        if !self.source.embed.metadata {
+        if !self.source.embed.metadata && !self.source.embed.nfo {
             return Ok(tags);
         }
         let Some(artist_id) = artist_id(self.source, values) else {
@@ -536,17 +536,24 @@ impl Stage<'_> {
         known: Option<&serde_json::Value>,
     ) -> Option<serde_json::Value> {
         use crate::musicbrainz::{Found, lookup};
-        let (Some(server), true) = (&self.source.embed.musicbrainz, self.source.embed.metadata)
-        else {
+        let embed = &self.source.embed;
+        let (Some(server), true) = (&embed.musicbrainz, embed.metadata || embed.nfo) else {
             return known.cloned();
         };
         let artist = tags
             .iter()
             .find(|(k, v)| k.eq_ignore_ascii_case("MUSICBRAINZ_ARTISTID") && !v.trim().is_empty())
             .map(|(_, v)| v.trim().to_string())?;
+        // The release's title is the album, unless `embed.tags` sets one.
+        let album_set = embed.tags.keys().any(|k| k.eq_ignore_ascii_case("album"));
         let mut add = |found: Vec<(&'static str, String)>| {
             for (key, value) in found {
-                if !tags.keys().any(|k| k.eq_ignore_ascii_case(key)) {
+                if key == "album" {
+                    if !album_set {
+                        tags.retain(|k, _| !k.eq_ignore_ascii_case("album"));
+                        tags.insert(key.to_string(), value);
+                    }
+                } else if !tags.keys().any(|k| k.eq_ignore_ascii_case(key)) {
                     tags.insert(key.to_string(), value);
                 }
             }

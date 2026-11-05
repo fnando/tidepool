@@ -890,6 +890,9 @@ pub struct VideoFiles {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub subtitles: Vec<Subtitle>,
     pub metadata: String,
+    /// The `.nfo` next to the media (`embed.nfo`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nfo: Option<String>,
     /// yt-dlp's raw info JSON, with `keep_raw_info`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub raw_info: Option<String>,
@@ -918,6 +921,7 @@ impl VideoFiles {
         out.extend(self.cover.as_deref());
         out.extend(self.subtitles.iter().map(|s| s.path.as_str()));
         out.extend(self.raw_info.as_deref());
+        out.extend(self.nfo.as_deref());
         out.push(&self.metadata);
         out
     }

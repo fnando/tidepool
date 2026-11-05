@@ -145,6 +145,7 @@ pub fn files_to_remove(files: &VideoFiles, keep: CleanupKeep) -> Vec<PathBuf> {
     }
     if keep == CleanupKeep::Nothing {
         out.extend(files.raw_info.as_deref());
+        out.extend(files.nfo.as_deref());
         if let Some(cover) = files
             .cover
             .as_deref()
@@ -391,6 +392,7 @@ mod tests {
                 path: file("v.en.vtt"),
             }],
             metadata: file("metadata.json"),
+            nfo: Some(file("v.nfo")),
             raw_info: None,
             removed: Vec::new(),
         }
@@ -411,13 +413,14 @@ mod tests {
         assert_eq!(bytes, ("v.mkv".len() + "v.en.vtt".len()) as u64);
         assert!(!dir.join("v.mkv").exists() && trash.join("v.mkv").exists());
         assert!(dir.join("metadata.json").exists() && dir.join("v-poster.jpg").exists());
+        assert!(dir.join("v.nfo").exists(), "the .nfo is metadata too");
 
         restore(&moved).unwrap();
         assert!(dir.join("v.mkv").exists() && dir.join("v.en.vtt").exists());
 
         // Everything ours goes; the folder stays for the file that isn't.
         let paths = files_to_remove(&files, CleanupKeep::Nothing);
-        assert_eq!(paths.len(), 4);
+        assert_eq!(paths.len(), 5);
         remove(&paths, &dir, None).unwrap();
         assert!(dir.join("someone-else.mkv").exists());
         std::fs::remove_file(dir.join("someone-else.mkv")).unwrap();
