@@ -917,7 +917,7 @@
       "type": "object"
     }
   },
-  "$id": "https://raw.githubusercontent.com/fnando/tidepool/v0.0.13/schema/tidepool.v1.schema.json",
+  "$id": "https://raw.githubusercontent.com/fnando/tidepool/v0.0.14/schema/tidepool.v1.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "A tidepool config file.",

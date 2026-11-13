@@ -271,8 +271,7 @@ fn restore_metadata(
     }
     let name = dest
         .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
+        .map_or_default(|n| n.to_string_lossy().into_owned());
     let tmp = dest.with_file_name(format!(".{name}.tidepool-partial"));
     std::fs::write(
         &tmp,

@@ -379,12 +379,10 @@ struct Found {
 fn identify(conn: &Connection, media: &Path) -> rusqlite::Result<Found> {
     let name = media
         .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
+        .map_or_default(|n| n.to_string_lossy().into_owned());
     let stem = media
         .file_stem()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
+        .map_or_default(|n| n.to_string_lossy().into_owned());
     let sidecar = sidecars(media)
         .0
         .and_then(|p| std::fs::read_to_string(p).ok())

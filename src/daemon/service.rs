@@ -518,9 +518,7 @@ impl Batch<'_> {
             SyncMode::Sync | SyncMode::Download => "syncing",
             SyncMode::Index => "indexing",
         };
-        let what = only
-            .map(|keys| format!("{} ", keys.join(", ")))
-            .unwrap_or_default();
+        let what = only.map_or_default(|keys| format!("{} ", keys.join(", ")));
         let activity = format!("{doing} {what}since {}", local(started));
         store::set_status(
             &state.conn,

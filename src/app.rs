@@ -301,8 +301,7 @@ impl App<'_> {
                 let when = rev
                     .created_at
                     .parse::<jiff::Timestamp>()
-                    .map(|t| t.strftime("%Y-%m-%d %H:%M UTC").to_string())
-                    .unwrap_or_default();
+                    .map_or_default(|t| t.strftime("%Y-%m-%d %H:%M UTC").to_string());
                 let origin = match (rev.source, &rev.source_path) {
                     (Source::Import, Some(path)) => format!("imported from {path}"),
                     (Source::Rollback, Some(from)) => {
@@ -918,7 +917,7 @@ impl App<'_> {
             Err(LockError::Held { pid }) => {
                 tracing::info!(
                     "skipped: another tidepool is running{}",
-                    pid.map(|p| format!(" (pid {p})")).unwrap_or_default()
+                    pid.map_or_default(|p| format!(" (pid {p})"))
                 );
                 return Ok(None);
             }
@@ -1155,8 +1154,7 @@ impl App<'_> {
                     .resolved_at
                     .as_deref()
                     .and_then(|t| t.parse::<jiff::Timestamp>().ok())
-                    .map(|t| t.strftime("%Y-%m-%d %H:%M UTC").to_string())
-                    .unwrap_or_default();
+                    .map_or_default(|t| t.strftime("%Y-%m-%d %H:%M UTC").to_string());
                 writeln!(
                     out,
                     "  #{} {} (resolved {when})",
@@ -1484,8 +1482,7 @@ impl App<'_> {
         let ext = |path: &str| {
             Path::new(path)
                 .extension()
-                .map(|e| e.to_string_lossy().into_owned())
-                .unwrap_or_default()
+                .map_or_default(|e| e.to_string_lossy().into_owned())
         };
         let mut new = files.clone();
         new.dir = layout.output_dir().display().to_string();
@@ -1935,8 +1932,7 @@ impl App<'_> {
         };
         let day = |at: &str| {
             at.parse::<jiff::Timestamp>()
-                .map(|t| t.strftime("%Y-%m-%d").to_string())
-                .unwrap_or_default()
+                .map_or_default(|t| t.strftime("%Y-%m-%d").to_string())
         };
         match cmd {
             TrashCmd::List => {

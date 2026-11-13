@@ -90,7 +90,7 @@ pub(crate) async fn run(app: &App<'_>) -> anyhow::Result<i32> {
         Ok(held) => held,
         Err(LockError::Held { pid }) => bail!(
             "another tidepool daemon is running{}",
-            pid.map(|p| format!(" (pid {p})")).unwrap_or_default()
+            pid.map_or_default(|p| format!(" (pid {p})"))
         ),
         Err(e) => return Err(e.into()),
     };
@@ -395,7 +395,7 @@ async fn wait_for_library(
                 if !told {
                     tracing::info!(
                         "waiting for another tidepool{} to finish",
-                        pid.map(|p| format!(" (pid {p})")).unwrap_or_default()
+                        pid.map_or_default(|p| format!(" (pid {p})"))
                     );
                     told = true;
                 }
