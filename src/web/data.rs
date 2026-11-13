@@ -542,8 +542,7 @@ pub fn video(
     crate::app::explain_video(conn, config, video_id, Some(source), &mut explanation)?;
     let files = files
         .and_then(|f| serde_json::from_str::<crate::state::items::VideoFiles>(&f).ok())
-        .map(|f| f.paths().into_iter().map(str::to_string).collect())
-        .unwrap_or_default();
+        .map_or_default(|f| f.paths().into_iter().map(str::to_string).collect());
     let mut stmt = conn.prepare(
         "SELECT hook, type, status, finished_at, error, next_attempt_at FROM hook_runs
          WHERE source_key = ?1 AND video_id = ?2 ORDER BY type, hook",

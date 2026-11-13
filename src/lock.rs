@@ -13,7 +13,7 @@ pub struct LibraryLock {
 
 #[derive(Debug, thiserror::Error)]
 pub enum LockError {
-    #[error("another tidepool is running{}; try again when it's done", .pid.map(|p| format!(" (pid {p})")).unwrap_or_default())]
+    #[error("another tidepool is running{}; try again when it's done", .pid.map_or_default(|p| format!(" (pid {p})")))]
     Held { pid: Option<u32> },
     #[error("cannot lock {path}: {source}")]
     Io {

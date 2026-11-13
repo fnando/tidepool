@@ -1291,8 +1291,7 @@ async fn config_page(
                 rev: current.as_ref().map_or(0, |c| c.rev),
                 text: current
                     .as_ref()
-                    .map(|c| crate::config::diff::mask_toml(&c.toml))
-                    .unwrap_or_default(),
+                    .map_or_default(|c| crate::config::diff::mask_toml(&c.toml)),
                 file: file.map(|f| f.display().to_string()),
                 read_only,
                 history,
@@ -1546,9 +1545,7 @@ fn asset_tag(body: &str) -> String {
 /// An asset's address, which changes with its contents, so browsers never
 /// use a copy from an older build.
 pub(crate) fn asset_url(file: &str) -> String {
-    let tag = asset_file(file)
-        .map(|(body, _)| asset_tag(body))
-        .unwrap_or_default();
+    let tag = asset_file(file).map_or_default(|(body, _)| asset_tag(body));
     format!("/assets/{file}?v={tag}")
 }
 

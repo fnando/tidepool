@@ -779,7 +779,7 @@ pub struct OptionalDuration(pub Option<Duration>);
 
 impl Serialize for OptionalDuration {
     fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        s.serialize_str(&self.0.map(format_duration).unwrap_or_default())
+        s.serialize_str(&self.0.map_or_default(format_duration))
     }
 }
 

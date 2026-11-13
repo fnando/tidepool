@@ -1,6 +1,6 @@
 //! A fake YouTube Data API serving the responses recorded by
 //! tests/fixtures/youtube/record.py, matched on endpoint and parameters
-//! (never the key). Shared by the unit tests and tests/youtube_api.rs, which
+//! (never the key). Shared by the unit tests and `tests/youtube_api.rs`, which
 //! each use only some of it.
 #![allow(dead_code)]
 

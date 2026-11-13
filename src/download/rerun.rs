@@ -342,8 +342,7 @@ fn moves_back(
     let new_ext = raw
         .media
         .extension()
-        .map(|e| e.to_string_lossy().into_owned())
-        .unwrap_or_default();
+        .map_or_default(|e| e.to_string_lossy().into_owned());
     let media_dest = if new_ext == extension_of(&files.media) {
         old_media.clone()
     } else {

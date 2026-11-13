@@ -133,8 +133,7 @@ pub async fn embed(
     let ext = request
         .media
         .extension()
-        .map(|e| e.to_string_lossy().into_owned())
-        .unwrap_or_default();
+        .map_or_default(|e| e.to_string_lossy().into_owned());
     let container = Container::from_extension(&ext);
     let dir = request.media.parent().unwrap_or(Path::new("."));
     let before = probe(ffprobe, request.media, &run).await?;
@@ -222,8 +221,7 @@ impl Replaced {
         let new_subtitles = request.subtitles.iter().any(|(path, _)| {
             let sub_ext = path
                 .extension()
-                .map(|e| e.to_string_lossy().to_ascii_lowercase())
-                .unwrap_or_default();
+                .map_or_default(|e| e.to_string_lossy().to_ascii_lowercase());
             container.takes_subtitle(&sub_ext)
         });
         let new_chapters = !request.chapters.is_empty();
@@ -393,8 +391,7 @@ impl Pass {
         for (path, lang) in &request.subtitles {
             let sub_ext = path
                 .extension()
-                .map(|e| e.to_string_lossy().to_ascii_lowercase())
-                .unwrap_or_default();
+                .map_or_default(|e| e.to_string_lossy().to_ascii_lowercase());
             if !container.takes_subtitle(&sub_ext) {
                 self.skipped.push(format!(
                     "{lang} subtitles (a .{ext} file can't hold .{sub_ext} subtitles; they're still saved as subtitle_file)"
@@ -665,8 +662,7 @@ where
     streams.chapters = json["chapters"].as_array().map_or(0, Vec::len);
     streams.tag_names = json["format"]["tags"]
         .as_object()
-        .map(|tags| tags.keys().map(|k| k.to_ascii_lowercase()).collect())
-        .unwrap_or_default();
+        .map_or_default(|tags| tags.keys().map(|k| k.to_ascii_lowercase()).collect());
     streams.tags = streams
         .tag_names
         .iter()

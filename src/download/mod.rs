@@ -350,8 +350,7 @@ pub(crate) fn place(src: &Path, dest: &Path) -> std::io::Result<()> {
     }
     let name = dest
         .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
+        .map_or_default(|n| n.to_string_lossy().into_owned());
     let staged = dest.with_file_name(format!(".{name}.tidepool-partial"));
     let copied = match std::fs::read_link(src) {
         // A symlinked duplicate stays a symlink.
@@ -562,8 +561,7 @@ async fn fetch_files(
         *details = Some(merge_details(&job.queued.item, &info));
         let name = media
             .file_name()
-            .map(|n| n.to_string_lossy().into_owned())
-            .unwrap_or_default();
+            .map_or_default(|n| n.to_string_lossy().into_owned());
         if !fetched.join(&name).is_file() {
             return Err(fail(format!(
                 "yt-dlp reported {} but it isn't in the work area",
@@ -848,7 +846,7 @@ async fn get_cover(
         tracing::debug!("{label}: cover linked from {}", other_cover.display());
         return Ok((None, Some(cover_tmp)));
     }
-    let thumbs = details.map(|d| d.thumbnails.clone()).unwrap_or_default();
+    let thumbs = details.map_or_default(|d| d.thumbnails.clone());
     let urls = thumbnail::candidates(video_id, &thumbs, &ctx.thumbnail_base, cover_format);
     let Some(found) = thumbnail::fetch_largest(&ctx.http, &urls, cover_format).await else {
         tracing::warn!("{}: no cover image found for {video_id}", job.source.key);
@@ -886,8 +884,7 @@ fn plan_moves(
     let media_ext = raw
         .media
         .extension()
-        .map(|e| e.to_string_lossy().into_owned())
-        .unwrap_or_default();
+        .map_or_default(|e| e.to_string_lossy().into_owned());
     let media_dest = layout.output_file(&media_ext).map_err(fail)?;
     let mut moves: Vec<(PathBuf, PathBuf)> = vec![(raw.media.clone(), media_dest.clone())];
     let mut files = items::VideoFiles {
@@ -900,8 +897,7 @@ fn plan_moves(
         let ext = sub
             .path
             .extension()
-            .map(|e| e.to_string_lossy().into_owned())
-            .unwrap_or_default();
+            .map_or_default(|e| e.to_string_lossy().into_owned());
         let dest = layout.subtitle_file(&sub.lang, &ext).map_err(fail)?;
         moves.push((sub.path.clone(), dest.clone()));
         files.subtitles.push(items::Subtitle {
@@ -980,8 +976,7 @@ fn relink_copy(media_dest: &Path, other: &items::VideoFiles, label: &str) {
 fn relink(ours: &Path, other: &Path) -> std::io::Result<()> {
     let name = other
         .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
+        .map_or_default(|n| n.to_string_lossy().into_owned());
     let staged = other.with_file_name(format!(".{name}.tidepool-partial"));
     let _ = std::fs::remove_file(&staged);
     std::fs::hard_link(ours, &staged).or_else(|_| std::fs::copy(ours, &staged).map(drop))?;
@@ -994,8 +989,7 @@ fn relink(ours: &Path, other: &Path) -> std::io::Result<()> {
 fn extension_of(path: &str) -> String {
     Path::new(path)
         .extension()
-        .map(|e| e.to_string_lossy().into_owned())
-        .unwrap_or_default()
+        .map_or_default(|e| e.to_string_lossy().into_owned())
 }
 
 /// After a crash: interrupted videos go back (downloads to the queue,

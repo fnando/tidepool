@@ -223,9 +223,7 @@ async fn run_once(run: &Run<'_>) -> (Result<Vec<u8>, String>, Option<i32>) {
         Err(e) => return (Err(e.to_string()), None),
     };
     if !status.success() {
-        let detail = last_log_line(run.log)
-            .map(|l| format!(": {l}"))
-            .unwrap_or_default();
+        let detail = last_log_line(run.log).map_or_default(|l| format!(": {l}"));
         return (Err(format!("exited with {status}{detail}")), status.code());
     }
     if output.len() as u64 > MAX_OUTPUT {
