@@ -560,13 +560,19 @@ For Me (Official Music Video)". With `clean_title = "music_video"` on a source
 or category, tidepool keeps only the song's title ("Sonho Médio", "Is That For
 Me") for videos tagged with their artist's `MUSICBRAINZ_ARTISTID` (see `tags`
 above); the artist's name comes from MusicBrainz. It takes out the artist and
-other credits wherever they sit ("feat. …", "&", "x", "Artist: Song"),
-"(Official Video)"-style notes in English and Portuguese ("(Clipe Oficial)", "(Videoclip)", "(Official Visualizer)"), "[HD]", "[4K]", "[EDIT]", a trailing "HD",
-remaster and soundtrack notes, while keeping what names a different version,
-like "(Alternate Version)" or "(Acoustic)". A medley of several songs
-("A - Song / B - Song / C - Last Song") keeps only the last song, while a
-mashup title like "Numb / Encore" stays whole. "(Live Performance)" becomes
-"(Live)", and a lyric video keeps "(Lyric Video)" at the end.
+other credits wherever they sit ("feat. …", "(with …)", "&", "x", "Artist:
+Song"), "(Official Video)"-style notes in English and Portuguese ("(Clipe
+Oficial)", "(Videoclip)", "(Official Visualizer)"), "[HD]", "[4K]", "[EDIT]", a
+trailing "HD", remaster, stereo/mono, bonus track and soundtrack notes, and
+versions of the song ("(Radio Edit)", "(Single Version)", "(… Remix)", "(…
+Cover)", anything in brackets ending with "Version", "Remix", "Edit", "Edition"
+or "Cover"). A live or
+acoustic take gets one marker at the end instead: "(Live Version)", "[Live]",
+"(Live at Wembley)" and "(Live Performance)" become "(Live)", and "[Live]
+(Acoustic Version)" becomes "(Live Acoustic)". A medley of several songs ("A -
+Song / B - Song / C - Last Song") keeps only the last song, while a mashup
+title like "Numb / Encore" stays whole. A lyric video keeps "(Lyric Video)" at
+the end.
 
 ```toml
 [category.music]

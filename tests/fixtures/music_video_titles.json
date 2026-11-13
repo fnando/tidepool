@@ -337,17 +337,17 @@
   {
     "input": "The Cure - Close To Me (1990 Version)",
     "artist": "The Cure",
-    "clip_name": "Close To Me (1990 Version)"
+    "clip_name": "Close To Me"
   },
   {
     "input": "Weezer - Island In The Sun (Spike Jonze Version)",
     "artist": "Weezer",
-    "clip_name": "Island In The Sun (Spike Jonze Version)"
+    "clip_name": "Island In The Sun"
   },
   {
     "input": "Nirvana - In Bloom (Alternate Version)",
     "artist": "Nirvana",
-    "clip_name": "In Bloom (Alternate Version)"
+    "clip_name": "In Bloom"
   },
   {
     "input": "Weezer - El Scorcho (Director's Cut)",
@@ -357,12 +357,12 @@
   {
     "input": "Anitta feat. Rasel - Zen (Spanish Version) (Official Music Video)",
     "artist": "Anitta",
-    "clip_name": "Zen (Spanish Version)"
+    "clip_name": "Zen"
   },
   {
     "input": "The Strokes - You Only Live Once (Alternate Version - Official HD Video)",
     "artist": "The Strokes",
-    "clip_name": "You Only Live Once (Alternate Version)"
+    "clip_name": "You Only Live Once"
   },
   {
     "input": "VENCEREMOS (Clipe)",
@@ -697,7 +697,7 @@
   {
     "input": "The Beatles - Don't Let Me Down [Live Performance]",
     "artist": "The Beatles",
-    "clip_name": "Don't Let Me Down [Live]"
+    "clip_name": "Don't Let Me Down (Live)"
   },
   {
     "input": "Paramore - Hard Times (Live Performance Video)",
@@ -712,7 +712,7 @@
   {
     "input": "Red City Radio - Two Notes Shy (Radio Edit)",
     "artist": "Red City Radio",
-    "clip_name": "Two Notes Shy (Radio Edit)"
+    "clip_name": "Two Notes Shy"
   },
   {
     "input": "Dashboard Confessional - Vindicated (Official Music Video) HD",
@@ -747,7 +747,7 @@
   {
     "input": "BOYS LIKE GIRLS - THE OUTSIDE (OUTSIDERS VERSION) 3OH!3, State Champs, The Summer Set, The Ready Set",
     "artist": "BOYS LIKE GIRLS",
-    "clip_name": "THE OUTSIDE (OUTSIDERS VERSION)"
+    "clip_name": "THE OUTSIDE"
   },
   {
     "input": "City and Colour - F***ed It Up (Official Music Video)",
@@ -773,5 +773,100 @@
     "input": "KEMURI「O-zora」",
     "artist": "KEMURI",
     "clip_name": "O-zora"
+  },
+  {
+    "input": "Shut Down (Stereo)",
+    "artist": "",
+    "clip_name": "Shut Down"
+  },
+  {
+    "input": "Jimmy James (Single Version)",
+    "artist": "",
+    "clip_name": "Jimmy James"
+  },
+  {
+    "input": "Jimmy James (Original Original Version)",
+    "artist": "",
+    "clip_name": "Jimmy James"
+  },
+  {
+    "input": "Finger Lickin' Good (Government Cheese Remix)",
+    "artist": "",
+    "clip_name": "Finger Lickin' Good"
+  },
+  {
+    "input": "Earth Song (Radio Edit)",
+    "artist": "",
+    "clip_name": "Earth Song"
+  },
+  {
+    "input": "Jasey Rae (MTV Unplugged Live Version)",
+    "artist": "",
+    "clip_name": "Jasey Rae (Live)"
+  },
+  {
+    "input": "So What'Cha Want (Butt Naked Version)",
+    "artist": "",
+    "clip_name": "So What'Cha Want"
+  },
+  {
+    "input": "Lost in Stereo [Bonus Track]",
+    "artist": "",
+    "clip_name": "Lost in Stereo"
+  },
+  {
+    "input": "Until the Day I Die (Acoustic Version)",
+    "artist": "",
+    "clip_name": "Until the Day I Die (Acoustic)"
+  },
+  {
+    "input": "Story of the Year - Until the Day I Die (Acoustic Version) [Official Video]",
+    "artist": "Story of the Year",
+    "clip_name": "Until the Day I Die (Acoustic)"
+  },
+  {
+    "input": "Hands Down (Live Acoustic Version)",
+    "artist": "",
+    "clip_name": "Hands Down (Live Acoustic)"
+  },
+  {
+    "input": "Hands Down [Live] (Acoustic Version)",
+    "artist": "",
+    "clip_name": "Hands Down (Live Acoustic)"
+  },
+  {
+    "input": "Song (Live at Wembley)",
+    "artist": "",
+    "clip_name": "Song (Live)"
+  },
+  {
+    "input": "Hands Down (Acoustic) (Lyric Video)",
+    "artist": "",
+    "clip_name": "Hands Down (Acoustic) (Lyric Video)"
+  },
+  {
+    "input": "Hellraiser (30th Anniversary Edition)",
+    "artist": "",
+    "clip_name": "Hellraiser"
+  },
+  {
+    "input": "This Is Not America (with Pat Metheny Group)",
+    "artist": "",
+    "clip_name": "This Is Not America"
+  },
+  {
+    "input": "Song (Without You)",
+    "artist": "",
+    "clip_name": "Song (Without You)"
+  },
+  {
+    "input": "Slowing Down (1666472301)",
+    "artist": "",
+    "clip_name": "Slowing Down"
+  },
+  {
+    "input": "Vanilla Sky - Umbrella (Rihanna Cover)",
+    "artist": "Vanilla Sky",
+    "clip_name": "Umbrella"
   }
 ]

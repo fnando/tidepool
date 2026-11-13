@@ -15,19 +15,21 @@ fn re(pattern: &str) -> Regex {
 }
 
 /// Whole bracket groups that are credits or annotations rather than part of
-/// the title: "(feat. X)", "(from <movie>)", "(starring Y)", "(Sample: Z)",
-/// "(DVD … Ao Vivo)", remaster/mono/mix notes and bare "[HD]"/"[4K]"/"[EDIT]"
-/// ("(Radio Edit)" names a version, so it stays).
+/// the title: "(feat. X)", "(with X)", "(from <movie>)", "(starring Y)",
+/// "(Sample: Z)", "(DVD … Ao Vivo)", remaster/mono/stereo/mix/bonus track
+/// notes, bare "[HD]"/"[4K]"/"[EDIT]" and bare ids ("(1666472301)"; a
+/// year like "(1990)" is too short to count).
 static GROUP_NOISE: LazyLock<Regex> = LazyLock::new(|| {
     re(r"(?xi)
-        [(\[{]\s*(?:feat\.?|ft\.?|featuring|from|starring|sample|dvd)[^)\]}]*[)\]}] |
-        [(\[{][^)\]}]*(?:remaster(?:ed)?|\bmono\b|\bmix\b)[^)\]}]*[)\]}] |
-        [(\[{]\s*(?:hd|4k|official|video|edit)\s*[)\]}]
+        [(\[{]\s*(?:feat\.?|ft\.?|featuring|with\b|from|starring|sample|dvd)[^)\]}]*[)\]}] |
+        [(\[{][^)\]}]*(?:remaster(?:ed)?|\bmono\b|\bstereo\b|\bmix\b|\bbonus\s+tracks?\b)[^)\]}]*[)\]}] |
+        [(\[{]\s*(?:hd|4k|official|video|edit)\s*[)\]}] |
+        [(\[{]\s*\d{6,}\s*[)\]}]
     ")
 });
 
-/// Video/release descriptors, removed wherever they appear. "Version",
-/// "Cut" and year "Mix" qualifiers stay on purpose.
+/// Video/release descriptors, removed wherever they appear. "Cut"
+/// qualifiers stay on purpose.
 static DESCRIPTORS: LazyLock<Regex> = LazyLock::new(|| {
     re(r"(?xi)
         official(?:\s+(?:music|hd|4k|lyric|lyrics|vertical))?\s+videos? |
@@ -62,6 +64,14 @@ static VIDEO_GROUP: LazyLock<Regex> = LazyLock::new(|| {
         r"(?i)(?:official[^)\]}]*video|(?:music|lyric|hd|vertical|promo|performance)\s+video|v[ií]deo\s?clipe?|visuali[sz]er|v[ií]deo\s+oficial|clipe?\s+oficial|concert\s+film|from\s+the\s+motion\s+picture)",
     )
 });
+/// A bracket group naming a version of the song: "(Radio Edit)",
+/// "(Spanish Version)", "(Government Cheese Remix)", "(Rihanna Cover)",
+/// "(30th Anniversary Edition)". Checked once the video descriptors and trailing guests are
+/// gone, so "(Alternate Version - Official HD Video)" goes too.
+static VERSION_GROUP: LazyLock<Regex> =
+    LazyLock::new(|| re(r"(?i)[(\[{][^)\]}]*\b(?:version|remix|edit|edition|cover)\s*[)\]}]"));
+static LIVE: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\blive\b"));
+static ACOUSTIC: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\bacoustic\b"));
 static GROUP: LazyLock<Regex> = LazyLock::new(|| re(r"[(\[{][^)\]}]*[)\]}]"));
 /// A quality tag left at the very end ("… HD", "… 4K").
 static TRAILING_QUALITY: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\s+(?:hd|4k|hq)\z"));
@@ -131,6 +141,50 @@ fn strip_video_groups(name: &str) -> String {
     }
     out.push_str(&name[last..]);
     out
+}
+
+/// Whether a video is a live and/or acoustic take, from the notes taken
+/// out of its title ("(Live Version)", "(Acoustic)"); it's written back as
+/// one marker at the end: "(Live)", "(Acoustic)" or "(Live Acoustic)".
+#[derive(Default)]
+struct Take {
+    live: bool,
+    acoustic: bool,
+}
+
+impl Take {
+    fn marker(&self) -> Option<&'static str> {
+        match (self.live, self.acoustic) {
+            (true, true) => Some("(Live Acoustic)"),
+            (true, false) => Some("(Live)"),
+            (false, true) => Some("(Acoustic)"),
+            (false, false) => None,
+        }
+    }
+}
+
+/// Take out the version notes ([`VERSION_GROUP`]) and the groups that say
+/// the take ("(Live)", "[Acoustic]", "(Live at Wembley)"), noting whether
+/// it's live or acoustic.
+fn strip_version_groups(name: &str) -> (String, Take) {
+    let mut take = Take::default();
+    let mut out = String::new();
+    let mut last = 0;
+    for found in GROUP.find_iter(name).flatten() {
+        let group = found.as_str();
+        out.push_str(&name[last..found.start()]);
+        let (live, acoustic) = (is_match(&LIVE, group), is_match(&ACOUSTIC, group));
+        if live || acoustic || is_match(&VERSION_GROUP, group) {
+            take.live |= live;
+            take.acoustic |= acoustic;
+            out.push(' ');
+        } else {
+            out.push_str(group);
+        }
+        last = found.end();
+    }
+    out.push_str(&name[last..]);
+    (cleanup_noise(&out), take)
 }
 
 fn normalize_for_match(text: &str) -> String {
@@ -333,6 +387,8 @@ pub fn music_video(title: &str, artist: &str) -> String {
     name = strip_dash_artist(&name, artist);
     name = replace_all(&TRAILING_CREDIT, &name, "");
     name = replace_all(&TRAILING_GUESTS, &name, "");
+    let (stripped, take) = strip_version_groups(&name);
+    name = stripped;
     if let Some(quoted) = SINGLE_QUOTED
         .captures(name.as_str())
         .ok()
@@ -351,14 +407,17 @@ pub fn music_video(title: &str, artist: &str) -> String {
         .filter(|c| !"?|*<>\"".contains(*c))
         .collect();
 
-    let result = cleanup_noise(&name);
+    let mut result = cleanup_noise(&name);
     if result.is_empty() {
-        nfkc(title).trim().to_string()
-    } else if lyric_video {
-        format!("{result} (Lyric Video)")
-    } else {
-        result
+        return nfkc(title).trim().to_string();
     }
+    if let Some(marker) = take.marker() {
+        result = format!("{result} {marker}");
+    }
+    if lyric_video {
+        result.push_str(" (Lyric Video)");
+    }
+    result
 }
 
 #[cfg(test)]
