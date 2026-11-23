@@ -80,7 +80,10 @@ static LIVE_PERFORMANCE: LazyLock<Regex> =
     LazyLock::new(|| re(r"(?i)\blive\s+performance(?:\s+video)?\b"));
 static LYRIC_VIDEO: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\blyric\s+video\b"));
 static SPACES: LazyLock<Regex> = LazyLock::new(|| re(r"\s+"));
-static EMPTY_GROUP: LazyLock<Regex> = LazyLock::new(|| re(r"[(\[{]\s*[)\]}]"));
+/// An empty bracket group, or empty quotes left once a descriptor is gone
+/// ('Song - "Official Video"'); quotes between two quoted titles stay.
+static EMPTY_GROUP: LazyLock<Regex> =
+    LazyLock::new(|| re(r#"[(\[{]\s*[)\]}]|(?<![^\s\-–—|:(\[{])"\s*"(?![^\s\-–—|:)\]}])"#));
 static SEPARATOR_BEFORE_CLOSE: LazyLock<Regex> = LazyLock::new(|| re(r"\s*[-–—|:]+\s*(?=[)\]}])"));
 static SEPARATOR_AFTER_OPEN: LazyLock<Regex> = LazyLock::new(|| re(r"(?<=[(\[{])\s*[-–—|:]+\s*"));
 static LEADING_NOISE: LazyLock<Regex> = LazyLock::new(|| re(r"\A[\s\-–—|:]+"));
