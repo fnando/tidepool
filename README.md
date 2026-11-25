@@ -545,6 +545,11 @@ days; if it can't be looked up, the video waits and is tried again later. For
 videos you already have, `tidepool embed --all` (or `-s <source>`) tags them
 again.
 
+Each artist id belongs to one source: when two enabled sources end up with the
+same `MUSICBRAINZ_ARTISTID` (a source copied from another, say), the config is
+rejected, so one artist's videos are never tagged as another's. Put all of an
+artist's playlists in one source's `urls` instead.
+
 Tags add up: a source's `tags` are added to its category's and
 `[category.default]`'s, and a tag set again replaces the earlier one, so you can
 set shared tags once and one id per source. Not every file type keeps every

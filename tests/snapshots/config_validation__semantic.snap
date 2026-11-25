@@ -6,5 +6,7 @@ semantic.toml:2:10 category.default.hooks[0]: unknown hook "notify" (defined hoo
 semantic.toml:3:16 category.default.min_duration: min_duration must not be greater than max_duration
 semantic.toml:11:23 sources.one.hooks[1]: unknown hook "upload" (defined hooks: transcode)
 semantic.toml:19:16 sources.three.min_duration: min_duration must not be greater than max_duration
-semantic.toml:30:12 sources.five.category: unknown category "podcasts" (categories: default, music)
+semantic.toml:30:12 sources.five.category: unknown category "podcasts" (categories: default, music, tagged)
 semantic.toml:33:58 sources.twice.urls[1]: playlist PLtwice is already in this source's urls
+semantic.toml:41:39 sources.copied-band.embed.tags.MUSICBRAINZ_ARTISTID: MUSICBRAINZ_ARTISTID 2A1C6D4E-0000-4000-8000-000000000001 is already the artist of source "band"
+semantic.toml:55:1 sources.tagged-two: MUSICBRAINZ_ARTISTID 99999999-0000-4000-8000-000000000009 is already the artist of source "tagged-one"

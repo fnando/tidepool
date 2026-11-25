@@ -15,6 +15,7 @@ pub fn check(config: &Config) -> Vec<Diagnostic> {
     check_categories(config, &mut out);
     check_kind_rules(config, &mut out);
     check_unique_ids(config, &mut out);
+    check_unique_artist_ids(config, &mut out);
     check_durations(config, &mut out);
     check_youtube(config, &mut out);
     check_server(config, &mut out);
@@ -171,6 +172,45 @@ fn check_unique_ids(config: &Config, out: &mut Vec<Diagnostic>) {
                 ));
             }
         }
+    }
+}
+
+/// A `MUSICBRAINZ_ARTISTID` only once across enabled sources: a copied
+/// source that keeps the artist id tags (and names) another artist's videos
+/// as that artist's. Ids made of placeholders aren't compared.
+fn check_unique_artist_ids(config: &Config, out: &mut Vec<Diagnostic>) {
+    let is_artist = |k: &String| k.eq_ignore_ascii_case("MUSICBRAINZ_ARTISTID");
+    let mut seen: std::collections::BTreeMap<String, &str> = std::collections::BTreeMap::new();
+    for (key, source) in &config.sources {
+        if source.enabled == Some(false) {
+            continue;
+        }
+        let effective = effective_source(config, key, source);
+        let Some((_, id)) = effective.embed.tags.iter().find(|(k, _)| is_artist(k)) else {
+            continue;
+        };
+        let id = id.trim();
+        if id.is_empty() || id.contains('{') {
+            continue;
+        }
+        let Some(first) = seen.get(&id.to_lowercase()) else {
+            seen.insert(id.to_lowercase(), key);
+            continue;
+        };
+        // Where this source sets it, or the source itself when it's inherited.
+        let own = source
+            .embed
+            .as_ref()
+            .and_then(|e| e.tags.as_ref())
+            .and_then(|tags| tags.keys().find(|k| is_artist(k)));
+        let pointer = match own {
+            Some(tag) => format!("/sources/{key}/embed/tags/{tag}"),
+            None => format!("/sources/{key}"),
+        };
+        out.push(Diagnostic::error(
+            pointer,
+            format!("MUSICBRAINZ_ARTISTID {id} is already the artist of source {first:?}"),
+        ));
     }
 }
 

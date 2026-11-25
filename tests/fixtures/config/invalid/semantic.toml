@@ -31,3 +31,27 @@ category = "podcasts"
 
 [sources.twice]
 urls = ["https://www.youtube.com/playlist?list=PLtwice", "https://youtu.be/x?list=PLtwice"]
+
+[sources.band]
+urls = ["https://www.youtube.com/playlist?list=PLband"]
+embed.tags = { MUSICBRAINZ_ARTISTID = "2a1c6d4e-0000-4000-8000-000000000001" }
+
+[sources.copied-band]
+urls = ["https://www.youtube.com/playlist?list=PLcopied"]
+embed.tags = { MUSICBRAINZ_ARTISTID = "2A1C6D4E-0000-4000-8000-000000000001" }
+
+[sources.old-band]
+enabled = false
+urls = ["https://www.youtube.com/playlist?list=PLold"]
+embed.tags = { MUSICBRAINZ_ARTISTID = "2a1c6d4e-0000-4000-8000-000000000001" }
+
+[category.tagged]
+embed.tags = { MUSICBRAINZ_ARTISTID = "99999999-0000-4000-8000-000000000009" }
+
+[sources.tagged-one]
+urls = ["https://www.youtube.com/playlist?list=PLtaggedone"]
+category = "tagged"
+
+[sources.tagged-two]
+urls = ["https://www.youtube.com/playlist?list=PLtaggedtwo"]
+category = "tagged"
