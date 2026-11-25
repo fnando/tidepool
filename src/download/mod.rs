@@ -2,6 +2,7 @@
 //! and move the result into its media folder in one rename.
 
 pub mod backfill;
+pub mod claims;
 pub mod embed;
 pub mod info;
 pub mod layout;
@@ -74,6 +75,9 @@ pub struct Context {
     pub fetched: Option<Arc<tokio::sync::Notify>>,
     /// `general.backfill_dir`; `None` when it isn't usable.
     pub backfill_dir: Option<PathBuf>,
+    /// Which video each placed file is, so same-named videos don't
+    /// overwrite each other.
+    pub claims: claims::Claims,
 }
 
 pub struct Options {
@@ -125,15 +129,39 @@ impl Job {
         format!("{}: “{}”", self.source.key, self.queued.item.title)
     }
 
-    /// Place the files in `moves` (metadata last), clear the work area `tmp`
-    /// and, when `relink`, point the linked copy at the placed media.
+    /// Write the metadata file (`json`), place it and the files in `moves`
+    /// (metadata last), clear the work area `tmp` and, when `relink`, point
+    /// the linked copy at the placed media. When that fails, `files` aren't
+    /// the video's after all.
     fn save(
         &self,
         ctx: &Context,
         tmp: &Path,
-        moves: &[(PathBuf, PathBuf)],
+        json: &str,
+        mut moves: Vec<(PathBuf, PathBuf)>,
+        files: &items::VideoFiles,
         relink: bool,
-        media_dest: &Path,
+    ) -> Result<(), Failure> {
+        let placed = write_metadata(tmp, json).and_then(|written| {
+            moves.push((written, PathBuf::from(&files.metadata)));
+            self.place(ctx, tmp, &moves)
+        });
+        if placed.is_err() {
+            ctx.claims.release(&self.queued.video_id, files.paths());
+        }
+        placed?;
+        if relink && let Some(other) = &self.copy_from {
+            relink_copy(Path::new(&files.media), other, &self.label());
+        }
+        Ok(())
+    }
+
+    /// Place the files in `moves` and clear the work area `tmp`.
+    fn place(
+        &self,
+        ctx: &Context,
+        tmp: &Path,
+        moves: &[(PathBuf, PathBuf)],
     ) -> Result<(), Failure> {
         // Stopping: nothing is placed (an embed may have been cut short); the
         // video goes back to the queue.
@@ -143,9 +171,6 @@ impl Job {
         self.step("saving");
         place_all(moves)?;
         let _ = std::fs::remove_dir_all(tmp);
-        if relink && let Some(other) = &self.copy_from {
-            relink_copy(media_dest, other, &self.label());
-        }
         Ok(())
     }
 
@@ -724,7 +749,7 @@ async fn assemble(
         .await?;
 
     let Placement {
-        media_dest,
+        media_dest: _,
         mut moves,
         mut files,
     } = plan_moves(source, &layout, &raw, tmp, &cover_dest, &metadata_dest)?;
@@ -757,6 +782,8 @@ async fn assemble(
 
     add_nfo(source, tmp, &data.tags, &info, &mut moves, &mut files)?;
     let media_bytes = file_size(&raw.media)?;
+
+    claim_names(ctx, &job.queued.video_id, label, &mut moves, &mut files);
     let metadata = Metadata {
         info: &info,
         source,
@@ -775,12 +802,10 @@ async fn assemble(
     };
     let json =
         serde_json::to_string_pretty(&metadata.to_json()).expect("metadata serializes") + "\n";
-    moves.push((write_metadata(tmp, &json)?, metadata_dest.clone()));
-
-    job.save(ctx, tmp, &moves, embedding.relink, &media_dest)?;
+    job.save(ctx, tmp, &json, moves, &files, embedding.relink)?;
     tracing::debug!(
         "{label}: saved as {} ({:.1}s)",
-        media_dest.display(),
+        files.media,
         started.elapsed().as_secs_f64()
     );
 
@@ -805,10 +830,11 @@ async fn prepare_details(
     hook_runs: &mut Vec<hooks::Report>,
 ) -> Result<(BTreeMap<String, String>, Option<serde_json::Value>), Failure> {
     let original = prepare::Details::of(info);
-    if job.source.clean_title != crate::config::CleanTitle::None {
+    if job.source.clean_title != crate::config::CleanTitle::None || !job.source.scrubbers.is_empty()
+    {
         job.step("cleaning up the title");
     }
-    stage.clean_title(info).await?;
+    stage.clean_title(info, ctx.backtrack_limit).await?;
     let overrides = stage
         .prepare_hooks(info, &job.paths.media_dir, &ctx.dirs, tmp, media, hook_runs)
         .await?;
@@ -923,6 +949,30 @@ fn plan_moves(
         moves,
         files,
     })
+}
+
+/// Claim `files` for `video_id`; when they're another video's, its ID is
+/// added to their names (and to the `moves` going there).
+fn claim_names(
+    ctx: &Context,
+    video_id: &str,
+    label: &str,
+    moves: &mut [(PathBuf, PathBuf)],
+    files: &mut items::VideoFiles,
+) {
+    let renames = ctx.claims.claim(video_id, files);
+    if renames.is_empty() {
+        return;
+    }
+    for (_, dest) in moves {
+        if let Some(new) = renames.get(dest) {
+            dest.clone_from(new);
+        }
+    }
+    tracing::info!(
+        "{label}: another video has the same file names; saved as {}",
+        files.media
+    );
 }
 
 /// With `embed.nfo`: the `.nfo` for `tags`, written in `tmp`, to go next

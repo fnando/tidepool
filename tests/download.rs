@@ -754,6 +754,123 @@ async fn files_go_anywhere_and_folders_can_be_shared() {
     assert!(dir.join("dQw4w9WgXcQ.json").is_file());
 }
 
+/// The names of the files in `dir`, sorted.
+fn names_in(dir: &Path) -> Vec<String> {
+    let mut names: Vec<String> = fs::read_dir(dir)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
+    names.sort();
+    names
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn videos_with_the_same_file_names_dont_overwrite_each_other() {
+    let env = Env::new().await;
+    let config = env.config(
+        "output_dir = \"{media_dir}/{source}\"\n\
+         output_file = \"{output_dir}/clip.{ext}\"\n\
+         cover_file = \"{output_dir}/clip-poster.jpg\"\n\
+         subtitle_file = \"{output_dir}/clip.{lang}.{ext}\"\n\
+         metadata_file = \"{output_dir}/clip.json\"",
+    );
+    env.cmd(&["run", "--config", &config]).assert().code(3);
+
+    let dir = env.media().join("dl");
+    let read = |name: &str| -> serde_json::Value {
+        serde_json::from_str(&fs::read_to_string(dir.join(name)).unwrap()).unwrap()
+    };
+    let first = read("clip.json")["id"].as_str().unwrap().to_string();
+    let second = if first == "okvideo01" {
+        "dQw4w9WgXcQ"
+    } else {
+        "okvideo01"
+    };
+    let mut expected: Vec<String> = [
+        "clip.mkv",
+        "clip-poster.jpg",
+        "clip.en.vtt",
+        "clip.nfo",
+        "clip.json",
+    ]
+    .iter()
+    .map(|n| (*n).to_string())
+    .collect();
+    expected.extend(
+        [".mkv", "-poster.jpg", ".en.vtt", ".nfo", ".json"]
+            .iter()
+            .map(|rest| format!("clip [{second}]{rest}")),
+    );
+    expected.sort();
+    assert_eq!(
+        names_in(&dir),
+        expected,
+        "the second one's names get its id"
+    );
+
+    let meta = read(&format!("clip [{second}].json"));
+    assert_eq!(meta["id"], second);
+    assert!(
+        !meta["title"].as_str().unwrap().contains('['),
+        "the title stays"
+    );
+    assert_eq!(meta["files"]["media"], format!("clip [{second}].mkv"));
+    let nfo = fs::read_to_string(dir.join(format!("clip [{second}].nfo"))).unwrap();
+    assert!(
+        !nfo.contains(&format!("[{second}]")),
+        "the .nfo stays: {nfo}"
+    );
+
+    // The stored paths follow: nothing counts as missing, and deleting one
+    // video leaves the other.
+    env.cmd(&["download"])
+        .assert()
+        .success()
+        .stdout(contains("missing").not());
+    env.cmd(&["reset", second, "--delete-files"])
+        .assert()
+        .success();
+    assert_eq!(
+        names_in(&dir),
+        [
+            "clip-poster.jpg",
+            "clip.en.vtt",
+            "clip.json",
+            "clip.mkv",
+            "clip.nfo"
+        ]
+    );
+    assert_eq!(read("clip.json")["id"], first.as_str());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn scrubbers_take_words_out_of_titles() {
+    let env = Env::new().await;
+    let config = env.config("scrubbers = ['(?i)4k remaster']");
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    let dir = env.media().join(
+        "dl/2009-10-25 - Rick Astley - Never Gonna Give You Up (Official Video) [dQw4w9WgXcQ]",
+    );
+    assert!(
+        dir.join("Rick Astley - Never Gonna Give You Up (Official Video).mkv")
+            .is_file(),
+        "{:?}",
+        names_in(&env.media().join("dl"))
+    );
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(dir.join("metadata.json")).unwrap()).unwrap();
+    assert_eq!(
+        meta["title"],
+        "Rick Astley - Never Gonna Give You Up (Official Video)"
+    );
+    assert_eq!(
+        meta["original"]["title"],
+        "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)"
+    );
+}
+
 /// A directory whose `ffmpeg`/`ffprobe` are the real ones and whose `yt-dlp`
 /// is the fake; `None` when ffmpeg isn't installed.
 fn real_ffmpeg_bin(env: &Env) -> Option<PathBuf> {
@@ -1373,6 +1490,50 @@ async fn cleaning_up_a_title_never_overwrites_another_file() {
         .stdout(contains("skipped:").and(contains("already exists")));
     assert_eq!(fs::read_to_string(&taken).unwrap(), "someone else's");
     assert!(env.media().join(RICK_DIR).is_dir(), "left where it was");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn cleaning_up_titles_to_the_same_name_adds_the_id() {
+    let env = Env::new().await;
+    let layout = "output_dir = \"{media_dir}/{source}\"\n\
+                  metadata_file = \"{output_dir}/{id}.json\"";
+    let config = env.config(layout);
+    env.cmd(&["run", "-s", "dl", "--config", &config])
+        .assert()
+        .code(3);
+    // Both titles become "Video".
+    let config = env.config(&format!(
+        "{layout}\nscrubbers = ['(?<=Video).*', '^.*?(?=Video)']"
+    ));
+    env.cmd(&["config", "import", &config]).assert().success();
+    env.cmd(&["titles", "clean", "--all"])
+        .assert()
+        .success()
+        .stdout(contains("renamed 2 videos"));
+
+    let dir = env.media().join("dl");
+    let names = names_in(&dir);
+    let second = if names.contains(&"Video [okvideo01].mkv".to_string()) {
+        "okvideo01"
+    } else {
+        "dQw4w9WgXcQ"
+    };
+    for name in ["Video.mkv", "Video-poster.jpg", "Video.en.vtt"] {
+        assert!(names.contains(&name.to_string()), "{name} in {names:?}");
+    }
+    for rest in [".mkv", "-poster.jpg", ".en.vtt"] {
+        let name = format!("Video [{second}]{rest}");
+        assert!(names.contains(&name), "{name} in {names:?}");
+    }
+    let meta: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(dir.join(format!("{second}.json"))).unwrap())
+            .unwrap();
+    assert_eq!(meta["title"], "Video", "the id is only in the file names");
+    assert_eq!(meta["files"]["media"], format!("Video [{second}].mkv"));
+    env.cmd(&["titles", "clean", "--all"])
+        .assert()
+        .success()
+        .stdout(contains("renamed 0 videos; 2 already clean"));
 }
 
 #[tokio::test(flavor = "multi_thread")]

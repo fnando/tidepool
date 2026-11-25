@@ -63,6 +63,7 @@ cutoff = "30d"                      # skip videos published more than 30d ago; "
 hooks = []
 redownload_missing = false          # true = restore missing files; false = just report them
 clean_title = "none"                # "music_video": only the song's title, for videos tagged MUSICBRAINZ_ARTISTID
+scrubbers = []                      # regexes taken out of titles, e.g. ["(?i)offical"]: "Song - OFFICAL" → "Song"
 download = true                     # false = only check sources (index), don't download
 
 [category.default.youtube]

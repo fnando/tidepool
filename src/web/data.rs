@@ -590,10 +590,10 @@ pub fn log_tail(path: &std::path::Path, lines: usize) -> Option<String> {
     Some(all[all.len().saturating_sub(lines)..].join("\n"))
 }
 
-/// The title `clean_title = "music_video"` gives `title`, when it differs.
+/// The title `scrubbers` and `clean_title` give `title`, when it differs.
 #[must_use]
-pub fn clean_title(title: &str, artist: &str) -> Option<String> {
-    let cleaned = crate::titles::music_video(title, artist);
+pub fn clean_title(title: &str, how: &crate::titles::Cleaner) -> Option<String> {
+    let cleaned = how.clean(title);
     (cleaned != title).then_some(cleaned)
 }
 

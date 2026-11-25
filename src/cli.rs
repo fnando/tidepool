@@ -169,6 +169,9 @@ pub enum TitlesCmd {
         /// The artist's name, dropped from the title ("Artist - Song")
         #[arg(long, value_name = "NAME")]
         artist: Option<String>,
+        /// A regex taken out of the title first, like `scrubbers`; repeatable
+        #[arg(long = "scrubber", value_name = "REGEX")]
+        scrubbers: Vec<String>,
     },
 }
 

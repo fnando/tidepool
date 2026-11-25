@@ -659,22 +659,36 @@ async fn api_service(
 
 const PER_PAGE: usize = 50;
 
-/// The artist's name `clean_title = "music_video"` needs for `source`'s
-/// videos, when it's on and the source names the artist; `None` otherwise
-/// (or when MusicBrainz can't say: titles then show as they are).
-async fn clean_title_artist(
+/// How `source`'s titles get cleaned up (`scrubbers`, then
+/// `clean_title = "music_video"` when the source names the artist and
+/// MusicBrainz knows them); `None` when titles show as they are.
+async fn title_cleaner(
     web: &Arc<Web>,
     source: &crate::config::merge::EffectiveSource,
-) -> Option<String> {
-    if source.clean_title != crate::config::CleanTitle::MusicVideo {
-        return None;
-    }
-    let id =
-        crate::download::stages::artist_id(source, &crate::download::layout::Values::default())?;
-    crate::musicbrainz::artist_name(&source.embed.musicbrainz_server, &web.dirs.data_dir, &id)
+) -> Option<crate::titles::Cleaner> {
+    let limit = crate::config::GeneralConfig::default().regex_backtrack_limit;
+    let scrubbers = crate::titles::compile_scrubbers(
+        &source.scrubbers,
+        usize::try_from(limit).unwrap_or(usize::MAX),
+    )
+    .map_err(|e| tracing::debug!("web UI: {}: {e}", source.key))
+    .ok()?;
+    let mut artist = None;
+    if source.clean_title == crate::config::CleanTitle::MusicVideo
+        && let Some(id) =
+            crate::download::stages::artist_id(source, &crate::download::layout::Values::default())
+    {
+        artist = crate::musicbrainz::artist_name(
+            &source.embed.musicbrainz_server,
+            &web.dirs.data_dir,
+            &id,
+        )
         .await
         .map_err(|e| tracing::debug!("web UI: no artist name for {}: {e}", source.key))
-        .ok()
+        .ok();
+    }
+    let cleaner = crate::titles::Cleaner { scrubbers, artist };
+    (!cleaner.is_noop()).then_some(cleaner)
 }
 
 /// A source from the current config.
@@ -854,10 +868,10 @@ async fn source_page(
         return Ok(not_found("such source"));
     };
     if let Some(source) = source_named(&web, &page.name).await?
-        && let Some(artist) = clean_title_artist(&web, &source).await
+        && let Some(cleaner) = title_cleaner(&web, &source).await
     {
         for row in &mut page.rows {
-            row.clean_title = data::clean_title(&row.title, &artist);
+            row.clean_title = data::clean_title(&row.title, &cleaner);
         }
     }
     Ok(render(page)?.into_response())
@@ -928,9 +942,9 @@ async fn video_page(
         return Ok(not_found("such video in this source"));
     };
     if let Some(source) = source_named(&web, &source).await?
-        && let Some(artist) = clean_title_artist(&web, &source).await
+        && let Some(cleaner) = title_cleaner(&web, &source).await
     {
-        video.clean_title = data::clean_title(&video.title, &artist);
+        video.clean_title = data::clean_title(&video.title, &cleaner);
     }
     let log = data::log_tail(&web.hook_logs.join(format!("{id}.log")), 40);
     Ok(render(VideoPage {

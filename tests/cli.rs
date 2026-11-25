@@ -84,6 +84,19 @@ fn titles_test_prints_the_cleaned_title_without_a_config() {
     .assert()
     .success()
     .stdout("Sonho Médio\n");
+    env.cmd(&[
+        "titles",
+        "test",
+        "--title",
+        "Dead Fish - Sonho Médio - OFFICAL",
+        "--artist",
+        "Dead Fish",
+        "--scrubber",
+        "(?i)offical",
+    ])
+    .assert()
+    .success()
+    .stdout("Sonho Médio\n");
 }
 
 #[test]

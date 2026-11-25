@@ -103,6 +103,8 @@ pub struct EffectiveSource {
     /// `download` set, else `general.download`.
     pub download: bool,
     pub clean_title: crate::config::CleanTitle,
+    /// Regexes taken out of titles before `clean_title`.
+    pub scrubbers: Vec<String>,
     pub embed: Embed,
     pub cleanup: Cleanup,
     pub youtube: YoutubeConfig,
@@ -378,6 +380,7 @@ fn resolve(
         keep_raw_info: pick!(keep_raw_info, false),
         download: pick!(download, true),
         clean_title: pick!(clean_title, crate::config::CleanTitle::None),
+        scrubbers: pick!(scrubbers, Vec::new()),
         embed: resolve_embed(layers),
         cleanup: resolve_cleanup(layers),
         youtube: resolve_youtube(layers),

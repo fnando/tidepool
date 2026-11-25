@@ -89,6 +89,7 @@ interval = "6h"                     # tidepool run --daemon: sync + cleanup this
 # keep_raw_info = false             # keep yt-dlp's raw info.json
 # download = true                   # false = only check this source (index), don't download; default general.download
 # clean_title = "none"              # "music_video": only the song's title, for videos tagged MUSICBRAINZ_ARTISTID
+# scrubbers = []                    # regexes taken out of titles, e.g. ["(?i)offical"]: "Song - OFFICAL" → "Song"
 
 [category.default.youtube]          # YouTube Data API (optional)
 # api_key = "AIza..."               # or "$YOUTUBE_API_KEY" to read it from that variable; without one, indexing uses yt-dlp only

@@ -359,6 +359,13 @@ metadata_file = "{output_dir}/{id}.json"
 Videos can share a folder: tidepool only ever replaces or deletes its own files
 for a video, never anything else you keep there.
 
+When two videos would get the same file names (two uploads of the same song
+in one folder, say), the second one's names get its id added, so neither
+overwrites the other: `Song.mkv` and `Song-poster.jpg` for the first,
+`Song [dQw4w9WgXcQ].mkv` and `Song [dQw4w9WgXcQ]-poster.jpg` for the second.
+Only the file names change: the title written into the file, the `.nfo` and
+the metadata file stay as they are.
+
 You never see half-finished downloads: while a video downloads, its files wait
 in a work folder (`~/.local/share/tidepool/tmp`, or `tmp_dir`), and they only
 show up in your folders once everything is ready, even when that's on another
@@ -580,6 +587,21 @@ clean_title = "music_video"
 embed.tags = { MUSICBRAINZ_ARTISTID = "…" }   # per source, usually
 ```
 
+**Taking words out of titles.** Some titles carry words you'd rather not
+keep, like a playlist that ends every title with " - OFFICAL". `scrubbers` is
+a list of regexes (the same syntax as `include` and `exclude`); each match is
+taken out of the title, and the dashes, empty brackets and spaces left behind
+go with it:
+
+```toml
+[sources.my-band]
+scrubbers = ["(?i)offical"]   # "Song - OFFICAL" → "Song"
+```
+
+Scrubbers work on any source, with or without `clean_title`, and run first, so
+`clean_title` sees the scrubbed title. A title that would end up empty stays
+as it was.
+
 The cleaned title is the video's title from then on: file names (`{title}`),
 the title written into the file, the metadata file (which keeps YouTube's under
 `original`), MusicBrainz matching and your hooks. It's cleaned before your
@@ -590,14 +612,16 @@ video waits and is tried again later, so it's never saved under the raw title
 `embed.musicbrainz` is used for this even when looking up album and track ids
 is turned off there.
 
-Videos you downloaded before turning it on keep their names until you run
-`tidepool titles clean`, which picks videos like `tidepool embed` does
-(`--all`, `--source`, `--category` or video ids). It cleans each one up from
-YouTube's original title, moves its files to match (the video, poster,
-subtitles and metadata file, and the folder when its name has the title), and
-writes the new title into the file when `embed.metadata` is on. `--dry-run`
-shows what would change. A file already sitting at the new name is never
-overwritten: that video is skipped and left where it was.
+Videos you downloaded before turning on `clean_title` or `scrubbers` keep
+their names until you run `tidepool titles clean`, which picks videos like
+`tidepool embed` does (`--all`, `--source`, `--category` or video ids). It
+cleans each one up from YouTube's original title, moves its files to match (the
+video, poster, subtitles and metadata file, and the folder when its name has
+the title), and writes the new title into the file when `embed.metadata` is
+on. `--dry-run` shows what would change. When another video already has the
+new names, this one's get its id added, as for downloads. A file tidepool
+didn't put there is never overwritten: that video is skipped and left where it
+was.
 
 ```text
 $ tidepool titles clean --category music --dry-run
@@ -611,10 +635,13 @@ first.
 
 To see what a title would become, without touching anything, use
 `tidepool titles test --title <title>`. `--artist` is the artist's name,
-which is dropped from the title like the one from MusicBrainz:
+which is dropped from the title like the one from MusicBrainz, and
+`--scrubber <regex>` (repeatable) works like `scrubbers`:
 
 ```text
 $ tidepool titles test --title 'Dead Fish - Sonho Médio (Clipe Oficial)' --artist 'Dead Fish'
+Sonho Médio
+$ tidepool titles test --title 'Dead Fish - Sonho Médio - OFFICAL' --artist 'Dead Fish' --scrubber '(?i)offical'
 Sonho Médio
 ```
 

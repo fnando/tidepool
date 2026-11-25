@@ -447,30 +447,38 @@ impl Stage<'_> {
         (!keep.is_empty()).then(|| keep.join("; "))
     }
 
-    /// `clean_title`: clean the video's title up when the source asks and its
-    /// tags name the artist (`MUSICBRAINZ_ARTISTID`; the name comes from
-    /// MusicBrainz). `Err` when the name can't be looked up: the download is
-    /// tried again later rather than saved under YouTube's title.
+    /// `scrubbers`, then `clean_title`: clean the video's title up. With
+    /// `clean_title = "music_video"`, only when its tags name the artist
+    /// (`MUSICBRAINZ_ARTISTID`; the name comes from MusicBrainz). `Err` when
+    /// the name can't be looked up: the download is tried again later rather
+    /// than saved under YouTube's title.
     ///
     /// # Errors
     ///
-    /// Fails when the artist's name can't be looked up on MusicBrainz.
-    pub async fn clean_title(&self, info: &mut VideoInfo) -> Result<(), Failure> {
-        if self.source.clean_title != crate::config::CleanTitle::MusicVideo {
-            return Ok(());
+    /// Fails when a scrubber isn't a valid regex, or the artist's name can't
+    /// be looked up on MusicBrainz.
+    pub async fn clean_title(
+        &self,
+        info: &mut VideoInfo,
+        backtrack_limit: usize,
+    ) -> Result<(), Failure> {
+        let scrubbers = crate::titles::compile_scrubbers(&self.source.scrubbers, backtrack_limit)
+            .map_err(fail)?;
+        let mut artist = None;
+        if self.source.clean_title == crate::config::CleanTitle::MusicVideo {
+            let values = Values::new(info, self.source, self.source_title, self.position);
+            if let Some(artist_id) = artist_id(self.source, &values) {
+                let name = crate::musicbrainz::artist_name(
+                    &self.source.embed.musicbrainz_server,
+                    self.data_dir,
+                    &artist_id,
+                )
+                .await
+                .map_err(|e| fail(format!("cannot clean up the title: {e}")))?;
+                artist = Some(name);
+            }
         }
-        let values = Values::new(info, self.source, self.source_title, self.position);
-        let Some(artist_id) = artist_id(self.source, &values) else {
-            return Ok(());
-        };
-        let name = crate::musicbrainz::artist_name(
-            &self.source.embed.musicbrainz_server,
-            self.data_dir,
-            &artist_id,
-        )
-        .await
-        .map_err(|e| fail(format!("cannot clean up the title: {e}")))?;
-        let cleaned = crate::titles::music_video(&info.title, &name);
+        let cleaned = crate::titles::Cleaner { scrubbers, artist }.clean(&info.title);
         if cleaned != info.title {
             tracing::debug!("{}: title cleaned up: “{cleaned}”", self.label);
             info.title = cleaned;

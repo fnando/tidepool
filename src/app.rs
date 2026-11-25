@@ -164,13 +164,23 @@ pub async fn run(cli: &Cli, out: &mut dyn Write) -> anyhow::Result<i32> {
             cmd: crate::cli::TitlesCmd::Clean(select),
         } => app.clean_titles(select, out).await,
         Command::Titles {
-            cmd: crate::cli::TitlesCmd::Test { title, artist },
+            cmd:
+                crate::cli::TitlesCmd::Test {
+                    title,
+                    artist,
+                    scrubbers,
+                },
         } => {
-            writeln!(
-                out,
-                "{}",
-                crate::titles::music_video(title, artist.as_deref().unwrap_or(""))
-            )?;
+            let limit = crate::config::GeneralConfig::default().regex_backtrack_limit;
+            let cleaner = crate::titles::Cleaner {
+                scrubbers: crate::titles::compile_scrubbers(
+                    scrubbers,
+                    usize::try_from(limit).unwrap_or(usize::MAX),
+                )
+                .map_err(anyhow::Error::msg)?,
+                artist: Some(artist.clone().unwrap_or_default()),
+            };
+            writeln!(out, "{}", cleaner.clean(title))?;
             Ok(exit::OK)
         }
         Command::Cleanup(scope) => app.cleanup(scope, out).await,
@@ -694,6 +704,8 @@ impl App<'_> {
             backfill_dir: crate::config::check::backfill_dir(config, &self.dirs)
                 .map_err(|e| tracing::warn!("the backfill folder isn't usable: {e}"))
                 .ok(),
+
+            claims: crate::download::claims::Claims::load(&state.conn)?,
         };
         // In the daemon, the downloader downloads and the processor
         // processes; the daemon cleans up after a crash once, when it starts.
@@ -1358,13 +1370,15 @@ impl App<'_> {
         let selected = Self::select_downloaded(&state, &config, select, out)?;
         let library_lock = if dry_run { None } else { Some(self.lock()?) };
         let (mut renamed, mut unchanged, mut failed) = (Vec::new(), 0usize, 0usize);
+        let claims = crate::download::claims::Claims::load(&state.conn)?;
         let mut skipped_sources = std::collections::BTreeSet::new();
         for item in &selected.videos {
             if self.shutdown.is_stopping() {
                 break;
             }
             let source = selected.source(&item.source_key);
-            if source.clean_title != crate::config::CleanTitle::MusicVideo {
+            if source.clean_title == crate::config::CleanTitle::None && source.scrubbers.is_empty()
+            {
                 skipped_sources.insert(source.key.clone());
                 continue;
             }
@@ -1385,8 +1399,8 @@ impl App<'_> {
             let source_title = meta["source"]["title"].as_str().map(str::to_string);
             let position = source_position(&meta);
             let values = Values::new(&info, source, source_title.as_deref(), position);
-            let name = match self.music_video_artist(source, &values).await {
-                Ok(Some(name)) => name,
+            let cleaned = match self.title_cleaner(source, &values, &config.general).await {
+                Ok(Some(cleaner)) => cleaner.clean(&youtube),
                 Ok(None) => {
                     writeln!(out, "{label}: skipped: no MUSICBRAINZ_ARTISTID")?;
                     continue;
@@ -1397,7 +1411,6 @@ impl App<'_> {
                     continue;
                 }
             };
-            let cleaned = crate::titles::music_video(&youtube, &name);
             if cleaned == info.title {
                 unchanged += 1;
                 continue;
@@ -1412,14 +1425,15 @@ impl App<'_> {
             let mut new_info = info.clone();
             new_info.title.clone_from(&cleaned);
             let new_values = Values::new(&new_info, source, source_title.as_deref(), position);
-            let (new, metadata_dest) =
-                Self::retitled_files(source, &new_values, &item.files, &self.dirs)?;
-            let meta = retitled_metadata(&meta, &cleaned, &youtube, &new);
-            if let Err(problem) = move_retitled(&item.files, &new, &metadata_dest, &meta) {
-                writeln!(out, "{label}: {problem}")?;
-                failed += 1;
-                continue;
-            }
+            let (new, _) = Self::retitled_files(source, &new_values, &item.files, &self.dirs)?;
+            let new = match rename_retitled(&claims, item, new, &meta, &cleaned, &youtube) {
+                Ok(new) => new,
+                Err(problem) => {
+                    writeln!(out, "{label}: {problem}")?;
+                    failed += 1;
+                    continue;
+                }
+            };
             let bytes = std::fs::metadata(&new.media).map_or(0, |m| m.len());
             crate::state::items::update_files(
                 &state.conn,
@@ -1432,7 +1446,10 @@ impl App<'_> {
             renamed.push(item.video_id.clone());
         }
         for key in &skipped_sources {
-            writeln!(out, "{key}: skipped: clean_title isn't set for it")?;
+            writeln!(
+                out,
+                "{key}: skipped: neither clean_title nor scrubbers is set"
+            )?;
         }
 
         // The new titles go into the files too.
@@ -1447,6 +1464,26 @@ impl App<'_> {
             clean_titles_summary(dry_run, renamed.len(), unchanged, failed)
         )?;
         Ok(if failed > 0 { exit::PARTIAL } else { code })
+    }
+
+    /// How a video of `source` gets its title cleaned up: `scrubbers`, then
+    /// `clean_title`. `None` when there's nothing to do without the artist's
+    /// id.
+    async fn title_cleaner(
+        &self,
+        source: &EffectiveSource,
+        values: &crate::download::layout::Values,
+        general: &crate::config::GeneralConfig,
+    ) -> Result<Option<crate::titles::Cleaner>, String> {
+        let limit = usize::try_from(general.regex_backtrack_limit).unwrap_or(usize::MAX);
+        let scrubbers = crate::titles::compile_scrubbers(&source.scrubbers, limit)?;
+        let artist = if source.clean_title == crate::config::CleanTitle::MusicVideo {
+            self.music_video_artist(source, values).await?
+        } else {
+            None
+        };
+        let cleaner = crate::titles::Cleaner { scrubbers, artist };
+        Ok((!cleaner.is_noop()).then_some(cleaner))
     }
 
     /// The name of the artist a music video's `MUSICBRAINZ_ARTISTID` tag
@@ -1537,7 +1574,7 @@ impl App<'_> {
             .iter()
             .filter(|s| {
                 (s.embed.metadata || s.embed.nfo)
-                    && s.clean_title != crate::config::CleanTitle::None
+                    && (s.clean_title != crate::config::CleanTitle::None || !s.scrubbers.is_empty())
             })
             .map(|s| SourceRef::Key(s.key.clone()))
             .collect();
@@ -3271,6 +3308,32 @@ fn retitled_metadata(
     }
     meta["files"] = crate::download::metadata::files_json(new);
     meta
+}
+
+/// Move a retitled video's files to `new` (with its ID added to their names
+/// when they're another video's), and keep `claims` up to date. Returns
+/// where its files are now.
+fn rename_retitled(
+    claims: &crate::download::claims::Claims,
+    item: &crate::state::items::Downloaded,
+    mut new: crate::state::items::VideoFiles,
+    meta: &Value,
+    cleaned: &str,
+    youtube: &str,
+) -> Result<crate::state::items::VideoFiles, String> {
+    claims.claim(&item.video_id, &mut new);
+    let meta = retitled_metadata(meta, cleaned, youtube, &new);
+    let (old_paths, new_paths) = (item.files.paths(), new.paths());
+    let moved = move_retitled(&item.files, &new, Path::new(&new.metadata), &meta);
+    let (released, kept) = match moved {
+        Ok(()) => (old_paths, new_paths),
+        Err(_) => (new_paths, old_paths),
+    };
+    claims.release(
+        &item.video_id,
+        released.into_iter().filter(|p| !kept.contains(p)),
+    );
+    moved.map(|()| new)
 }
 
 /// Move a retitled video's media, cover, subtitles and raw info to their new

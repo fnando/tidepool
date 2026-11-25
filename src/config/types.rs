@@ -495,6 +495,11 @@ macro_rules! options_struct {
             /// `MUSICBRAINZ_ARTISTID` (the artist's name comes from MusicBrainz).
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub clean_title: Option<CleanTitle>,
+            /// Regexes (fancy-regex syntax) taken out of every video's title, before
+            /// `clean_title`: `["(?i)offical"]` turns "Song - OFFICAL" into "Song".
+            #[serde(default, skip_serializing_if = "Option::is_none")]
+            #[schemars(extend("items" = { "type": "string", "format": "fancy-regex" }))]
+            pub scrubbers: Option<Vec<String>>,
             /// Metadata embedded in the media file.
             #[serde(default, skip_serializing_if = "Option::is_none")]
             pub embed: Option<EmbedOptions>,
@@ -536,6 +541,7 @@ macro_rules! options_struct {
                     keep_raw_info: self.keep_raw_info.clone(),
                     download: self.download,
                     clean_title: self.clean_title,
+                    scrubbers: self.scrubbers.clone(),
                     embed: self.embed.clone(),
                     cleanup: self.cleanup.clone(),
                     youtube: self.youtube.clone(),

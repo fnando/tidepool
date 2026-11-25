@@ -126,6 +126,14 @@
           "description": "Restore a downloaded video's missing files (video, poster, subtitles,\nmetadata); otherwise each run reports them.",
           "type": "boolean"
         },
+        "scrubbers": {
+          "description": "Regexes (fancy-regex syntax) taken out of every video's title, before\n`clean_title`: `[\"(?i)offical\"]` turns \"Song - OFFICAL\" into \"Song\".",
+          "items": {
+            "format": "fancy-regex",
+            "type": "string"
+          },
+          "type": "array"
+        },
         "subtitle_file": {
           "description": "Each subtitle file, a full path; must contain `{lang}` and `{ext}`.\nDefaults to `{output_dir}/{normalized_title}.{lang}.{ext}`.",
           "format": "subtitle-file-template",
@@ -746,6 +754,14 @@
         "redownload_missing": {
           "description": "Restore a downloaded video's missing files (video, poster, subtitles,\nmetadata); otherwise each run reports them.",
           "type": "boolean"
+        },
+        "scrubbers": {
+          "description": "Regexes (fancy-regex syntax) taken out of every video's title, before\n`clean_title`: `[\"(?i)offical\"]` turns \"Song - OFFICAL\" into \"Song\".",
+          "items": {
+            "format": "fancy-regex",
+            "type": "string"
+          },
+          "type": "array"
         },
         "subtitle_file": {
           "description": "Each subtitle file, a full path; must contain `{lang}` and `{ext}`.\nDefaults to `{output_dir}/{normalized_title}.{lang}.{ext}`.",

@@ -343,6 +343,77 @@ fn strip_dash_artist(name: &str, artist: &str) -> String {
     segments.join(" - ")
 }
 
+/// `scrubbers` compiled, each with `backtrack_limit`.
+///
+/// # Errors
+///
+/// Returns a message naming the first pattern that isn't a valid regex.
+pub fn compile_scrubbers(
+    patterns: &[String],
+    backtrack_limit: usize,
+) -> Result<Vec<Regex>, String> {
+    patterns
+        .iter()
+        .map(|p| {
+            fancy_regex::RegexBuilder::new(p)
+                .backtrack_limit(backtrack_limit)
+                .build()
+                .map_err(|e| format!("scrubber {p:?} is not a valid regex: {e}"))
+        })
+        .collect()
+}
+
+/// `title` with every match of `scrubbers` taken out, and the separators,
+/// empty brackets and spaces that leaves behind tidied up: "Song - OFFICAL"
+/// → "Song". A scrubber that hits its backtrack limit is skipped; when
+/// nothing would be left, the title stays as it was.
+#[must_use]
+pub fn scrub(title: &str, scrubbers: &[Regex]) -> String {
+    if scrubbers.is_empty() {
+        return title.to_string();
+    }
+    let mut name = title.to_string();
+    for scrubber in scrubbers {
+        match scrubber.try_replacen(&name, 0, "") {
+            Ok(scrubbed) => name = scrubbed.into_owned(),
+            Err(e) => tracing::warn!("scrubber {:?} skipped: {e}", scrubber.as_str()),
+        }
+    }
+    if name == title {
+        return name;
+    }
+    match cleanup_noise(&name) {
+        cleaned if cleaned.is_empty() => title.to_string(),
+        cleaned => cleaned,
+    }
+}
+
+/// How a source's titles get cleaned up: its `scrubbers`, then, with
+/// `clean_title = "music_video"` and the artist's name, [`music_video`].
+#[derive(Debug, Default)]
+pub struct Cleaner {
+    pub scrubbers: Vec<Regex>,
+    /// The artist's name, for `music_video`.
+    pub artist: Option<String>,
+}
+
+impl Cleaner {
+    /// Whether it leaves every title as it is.
+    #[must_use]
+    pub fn is_noop(&self) -> bool {
+        self.scrubbers.is_empty() && self.artist.is_none()
+    }
+
+    #[must_use]
+    pub fn clean(&self, title: &str) -> String {
+        let scrubbed = scrub(title, &self.scrubbers);
+        match &self.artist {
+            Some(artist) => music_video(&scrubbed, artist),
+            None => scrubbed,
+        }
+    }
+}
+
 /// The song's title in a music video's `title`, given the `artist`'s name.
 pub fn music_video(title: &str, artist: &str) -> String {
     let name: String = nfkc(title)
@@ -432,6 +503,41 @@ mod tests {
         input: String,
         artist: String,
         clip_name: String,
+    }
+
+    fn scrubbers(patterns: &[&str]) -> Vec<Regex> {
+        let patterns: Vec<String> = patterns.iter().map(|p| (*p).to_string()).collect();
+        compile_scrubbers(&patterns, 1_000_000).unwrap()
+    }
+
+    #[test]
+    fn scrubbers_take_matches_out_and_tidy_up() {
+        let s = scrubbers(&["(?i)offical"]);
+        assert_eq!(scrub("Song - OFFICAL", &s), "Song");
+        assert_eq!(scrub("Song (Offical) Live", &s), "Song Live");
+        assert_eq!(scrub("Song", &s), "Song");
+        assert_eq!(scrub("OFFICAL", &s), "OFFICAL", "nothing left: as it was");
+        assert_eq!(scrub("Song (Offical)", &s), "Song", "empty brackets go");
+        assert_eq!(
+            scrub("A  -  B", &s),
+            "A  -  B",
+            "untouched when nothing matches"
+        );
+        assert!(compile_scrubbers(&["(".into()], 10).is_err());
+    }
+
+    #[test]
+    fn cleaner_scrubs_before_music_video() {
+        let cleaner = Cleaner {
+            scrubbers: scrubbers(&["(?i)offical"]),
+            artist: Some("Dead Fish".into()),
+        };
+        assert_eq!(
+            cleaner.clean("Dead Fish - Sonho Médio - OFFICAL"),
+            "Sonho Médio"
+        );
+        assert!(Cleaner::default().is_noop());
+        assert_eq!(Cleaner::default().clean("A - B"), "A - B");
     }
 
     #[test]
